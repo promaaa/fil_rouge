@@ -4,192 +4,271 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Maker Lens — État de l'art</title>
-   <style>
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      background-color: #fafafa;
-      margin: 0;
-      padding: 0;
+  <style>
+    :root{
+      --bg:#f6f7f9;
+      --fg:#1f2937;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --accent:#0ea5e9;
+      --border:#e5e7eb;
+      --maxw: 920px;
     }
-
-    main {
-      max-width: 900px;   /* largeur max du texte */
-      margin: 0 auto;     /* centre le contenu */
-      padding: 20px;      /* espace intérieur */
-      background: #fff;   /* fond blanc au centre */
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* légère ombre */
-      border-radius: 8px; /* coins arrondis */
+    html,body{margin:0;padding:0}
+    body{
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif;
+      color:var(--fg);
+      background:var(--bg);
+      line-height:1.6;
     }
-
-    h1, h2, h3 {
-      margin-top: 1.5em;
-      color: #2c3e50;
+    header.site{
+      background:#ffffffcc;
+      backdrop-filter:saturate(180%) blur(8px);
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:50;
     }
-
-    p {
-      text-align: justify; /* texte justifié = plus propre */
+    header.site .wrap, main{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:16px 20px;
     }
+    header.site h1{margin:0 0 8px 0; font-size:1.5rem}
+    nav a{
+      margin-right:14px; text-decoration:none; color:var(--muted);
+    }
+    nav a:hover{color:var(--accent)}
+    main{
+      margin-top:16px;
+      margin-bottom:60px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,.06);
+      padding:24px;
+    }
+    .hero{
+      display:flex; gap:16px; align-items:center; flex-wrap:wrap;
+      border:1px solid var(--border); padding:12px; border-radius:10px; background:#fff;
+    }
+    .hero img{width:92px;height:92px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+    .muted{color:var(--muted)}
+    h2{margin-top:1.75rem}
+    h3{margin-top:1rem}
+    p{margin:0.5rem 0; text-align:justify}
+    ul{padding-left:1.1rem}
+    table{
+      width:100%; border-collapse:collapse; margin:12px 0; font-size:0.95rem;
+      border:1px solid var(--border);
+    }
+    th,td{border:1px solid var(--border); padding:8px 10px; vertical-align:top}
+    th{background:#f9fafb; text-align:left}
+    code, pre{background:#f3f4f6; border:1px solid var(--border); border-radius:6px; padding:2px 6px}
+    .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
+    .section-card{
+      background:#fff; border:1px solid var(--border); border-radius:10px; padding:14px; margin:12px 0;
+    }
+    .toc{
+      padding:10px 12px; border:1px dashed var(--border); border-radius:10px; background:#fafafa; margin:12px 0 20px;
+    }
+    .badge{display:inline-block; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:999px; font-size:.8rem; border:1px solid #bae6fd}
+    a{color:#0369a1}
   </style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>Maker Lens — État de l'art</h1>
-    <div>
+
+  <!-- EN-TÊTE FIXE + SOMMAIRE -->
+  <header class="site">
+    <div class="wrap">
+      <h1>Maker Lens — État de l'art</h1>
+      <nav aria-label="Sommaire">
+        <a href="#introduction">Introduction</a>
+        <a href="#problematique">Problématique</a>
+        <a href="#contexte">Contexte</a>
+        <a href="#ecosysteme">Écosystème (PESTEL)</a>
+        <a href="#projets-existants">Projets existants</a>
+        <a href="#probleme-reponse">Problème & réponse</a>
+        <a href="#references">Références</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- BLOC HERO (image + auteurs) -->
+    <section class="hero" aria-label="Visuel et auteurs">
       <a href="https://telefab.fr/wp-content/uploads/2025/09/maker-lens-Photoroom.png">
         <img src="https://telefab.fr/wp-content/uploads/2025/09/maker-lens-Photoroom-300x300.png" alt="Maker Lens" />
       </a>
-    </div>
-    <p><strong>Auteurs</strong> : Bérénice CARDOSO-FAUCHET, Pol TYMEN, Lucas REIS OLIVER, Divine BANON, Alex PEIRANO, Marc DUBOC — 
-    Contact : <a href="mailto:marc.duboc@imt-atlantique.net">marc.duboc@imt-atlantique.net</a></p>
-  </header>
+      <div>
+        <div class="badge">Projet Maker Lens</div>
+        <p class="muted" style="margin-top:6px;">
+          <strong>Auteurs</strong> : Bérénice CARDOSO-FAUCHET, Pol TYMEN, Lucas REIS OLIVER, Divine BANON,
+          Alex PEIRANO, Marc DUBOC — Contact :
+          <a href="mailto:marc.duboc@imt-atlantique.net">marc.duboc@imt-atlantique.net</a>
+        </p>
+      </div>
+    </section>
 
-  <section id="intro">
-    <h1>1. Introduction</h1>
-    <p>La notion de <strong>low-tech</strong> renvoie à des technologies utiles, accessibles et durables, conçues pour répondre à des besoins essentiels avec un minimum de ressources. On la rapproche souvent de la <em>frugal innovation</em>, qui vise à faire mieux avec moins.</p>
-    <p>Dans un contexte écologique marqué par le changement climatique, économique par l'explosion des déchets électroniques, et technologique par une dépendance croissante aux solutions high-tech, il devient nécessaire de cartographier l'écosystème des pratiques low-tech.</p>
-    <p><strong>Objectif</strong> : dresser un état des lieux des acteurs, solutions et contraintes afin de positionner le projet <em>Maker Lens</em>.</p>
-  </section>
+    <!-- 1. INTRODUCTION -->
+    <section id="introduction">
+      <h2>1. Introduction</h2>
+      <p>Près de neuf Français sur dix estiment que l’obsolescence programmée est une réalité, mais seuls 38&nbsp;% déclarent faire réparer régulièrement leurs appareils électriques et électroniques lorsqu’ils tombent en panne (Ifop pour le MTES, 2018). Cette contradiction traduit un paradoxe central de notre société : d’un côté, une conscience grandissante des dérives de la consommation high-tech, et de l’autre, des pratiques quotidiennes qui demeurent ancrées dans le remplacement systématique.</p>
+      <p>Face à ce constat, la démarche <strong>low-tech</strong> apparaît comme une alternative. Elle propose de concevoir des technologies utiles, accessibles et durables, centrées sur les besoins réels des utilisateurs, et non sur une logique d’innovation permanente. Cette approche, encore peu connue du grand public, a néanmoins donné lieu à une structuration croissante : selon le Low-Tech Lab, plus de 800 projets low-tech étaient déjà recensés en 2024, allant d’outils simples pour la cuisson des aliments (marmite norvégienne, four solaire) à des dispositifs plus élaborés de gestion énergétique ou de mobilité.</p>
+      <p><strong>Objectif</strong> : dresser un état des lieux des acteurs, solutions et contraintes afin de positionner le projet <em>Maker Lens</em>.</p>
+    </section>
 
-  <section id="problématique">
-    <h2>a) Problématique</h2>
-  </section>
+    <!-- 1.a PROBLÉMATIQUE -->
+    <section id="problematique">
+      <h3>a) Problématique</h3>
+      <p>Ce qui ressort de notre enquête terrain, c’est que l’innovation frugale et le low-tech restent encore enfermés dans une niche, malgré une documentation abondante mais dispersée. Les étudiants privilégient des projets très « high-tech », les fab managers peinent à susciter l’intérêt durable pour la démarche frugale, et les enseignants manquent de temps et d’outils pour l’intégrer en profondeur dans les cursus. <strong>Comment attirer des profils plus variés vers l’approche frugale&nbsp;?</strong></p>
+    </section>
 
-  <section id="contexte">
-    <h2>b) Contexte</h2>
-      <h3>i. Acteurs</h3>
-      <h3>ii. Interactions</h3>
-  </section>
+    <!-- 1.b CONTEXTE (i Acteurs, ii Interactions) -->
+    <section id="contexte">
+      <h3>b) Contexte</h3>
 
+      <h4 id="acteurs">i. Acteurs</h4>
+      <div class="section-card">
+        <p><strong>Enseignement</strong> — Transmettre, encadrer des projets, ateliers/hackathons, intégrer la sobriété technique dans les cursus. Intérêt&nbsp;: sensibilisation, attractivité des formations, pédagogie concrète.</p>
+        <p><strong>Secteur privé</strong> — Éco-conception, robustesse, réparabilité, nouveaux modèles autour de la durabilité. Intérêt&nbsp;: conformité (CSRD/RSE), nouveaux marchés, image de marque.</p>
+        <p><strong>Collectifs & associations</strong> — Ateliers de réparation, médiation scientifique, espaces de co-construction. Intérêt&nbsp;: transition juste, autonomie citoyenne, éducation populaire.</p>
+        <p><strong>Ressources digitales</strong> — Documentation (tutoriels, wikis), partage open source. Intérêt&nbsp;: démocratisation, communauté mondiale, modernisation de l’image.</p>
+        <p><strong>Utilisateurs individuels</strong> — Test, adaptation, retours d’usage. Intérêt&nbsp;: solutions abordables et résilientes pour des besoins concrets.</p>
+      </div>
 
-  <section id="ecosysteme">
-    <h1>2. Écosystème</h1>
-    <h2>a) PESTEL</h2>
-   
-       <section id="ecosysteme">
-    <h1>2. Écosystème</h1>
-    <h2>a) PESTEL</h2>
-      <h3>Politique</h3>
-        <p>La question du low-tech ne peut pas être envisagée sans prendre en compte sa dimension politique. Il s’agit à la fois d’un mot, d’une communauté et d’une démarche, tous porteurs d’une charge symbolique et normative qui dépasse le simple cadre technique.</p>
-<strong>Une démarche et un mot intrinsèquement politiques </strong>
- <p>Le terme “low-tech” est en lui-même politisé : il renvoie à une volonté de rupture avec les logiques dominantes de croissance et d’innovation illimitée. Parler de low-tech, ce n’est pas seulement désigner un objet plus simple, c’est remettre en cause un imaginaire collectif centré sur le progrès technique et la complexité. De nombreux auteurs insistent sur le fait que la low-tech est d’abord une démarche politique avant d’être un catalogue d’objets (Low-Tech Journal). La communauté qui s’en réclame est, par ailleurs, souvent militante, composée d’acteurs déjà sensibilisés aux enjeux écologiques et investis personnellement dans la promotion de la sobriété.</p>
+      <h4 id="interactions">ii. Interactions</h4>
+      <p>Ces acteurs forment un réseau : l’enseignement initie, les collectifs diffusent, les entreprises traduisent en modèles économiques, les plateformes documentent, les usagers réinventent. La dynamique reste toutefois asymétrique (portée surtout par les collectifs), d’où la nécessité d’élargir à d’autres profils.</p>
+    </section>
 
+    <!-- 2. ECOSYSTÈME / PESTEL -->
+    <section id="ecosysteme">
+      <h2>2. Écosystème</h2>
+      <h3>a) PESTEL</h3>
 
-<strong>Politiques publiques et cadres institutionnels </strong>
- <p>Certaines collectivités territoriales commencent à intégrer la low-tech dans leurs stratégies, en particulier pour des raisons de résilience locale. Le rapport La Ville Low-Tech (Institut Paris Région, 2022) montre comment ces démarches s’articulent avec l’économie sociale et solidaire, la relocalisation d’activités et la structuration de coopératives (Institut Paris Région). De même, le Labo ESS a publié un guide incitant les pouvoirs publics à soutenir l’autoconstruction, la réparation et la sobriété (ess-europe.eu). Toutefois, ces initiatives restent marginales et contrastent avec les priorités nationales ou européennes qui continuent de valoriser une “transition verte” largement techno solutionniste et high-tech.</p>
+      <h4 id="p-politique">Politique</h4>
+      <p><strong>Démarche et mot intrinsèquement politiques.</strong> Le terme «&nbsp;low-tech&nbsp;» s’oppose à la logique d’innovation illimitée et questionne l’imaginaire du progrès technicien (références&nbsp;: Low-Tech Journal).</p>
+      <p><strong>Politiques publiques et cadres institutionnels.</strong> Quelques collectivités intègrent la low-tech pour la résilience locale (ex. <em>La Ville Low-Tech</em>, Institut Paris Région, 2022&nbsp;; ressources Labo ESS), mais cela reste marginal face à une «&nbsp;transition verte&nbsp;» très high-tech.</p>
+      <p><strong>Freins institutionnels.</strong> La recherche low-tech reste peu financée et mal connectée aux acteurs hors académie (étude ADEME <em>Recherche & Low-Tech</em>).</p>
 
-<strong>Freins institutionnels et politiques </strong>
-<p>Malgré ces signaux positifs, le poids du low-tech dans les agendas politiques demeure limité. L’étude Recherche & Low-Tech (ADEME) note que la recherche dans ce domaine reste peu financée et peine à attirer des acteurs hors du milieu académique (ADEME)</p>
-      <li>Économique : Réemploi, économie circulaire, réduction des coûts.</li>
-      <li>Socioculturel : Adoption du DIY, sensibilisation, accessibilité grand public.</li>
-      <li>Technologique : Simplicité, résilience, réparabilité, limites de standardisation.</li>
-      <li>Environnemental : Réduction des émissions, préservation des ressources, allongement de la durée de vie.</li>
-      <li>Légal : Normes de sécurité, cadre réglementaire du réemploi, responsabilités.</li>
-    
-  </section>
+      <h4 id="p-economie">Économie</h4>
+      <p><strong>Micro-économie.</strong> Sobriété matérielle et coûts d’usage réduits, mais coûts unitaires d’industrialisation parfois élevés (petites séries, main-d’œuvre qualifiée). Ex.&nbsp;: réflexions «&nbsp;armée de Terre low-tech&nbsp;» sur la robustesse et la logistique.</p>
+      <p><strong>Macro-économie.</strong> Ancrage dans l’ESS et l’économie circulaire (modularité, réparabilité, ex.&nbsp;: Fairphone). <em>La Ville Low-Tech</em> souligne des cadres organisationnels adaptés.</p>
+      <p><strong>Échelle mondiale.</strong> Concurrence des produits low-cost ; ROI long peu attractif pour l’investissement classique (rapports ADEME). Trajectoires régionales divergentes.</p>
+      <p><strong>Individuel.</strong> Économies (énergie, réemploi) vs. contraintes (temps, accès aux pièces), d’où une adoption parfois freinée.</p>
 
-  <section id="projets-existants">
-  <h2>b) Projets existants</h2>
-    <ul>
-      <li><strong>Google Lens</strong> — Application de reconnaissance d'objets permettant d'identifier instantanément un objet à partir d'une photo et de proposer des usages, tutoriels ou informations associées.</li>
-      <li><strong>WasteNet (MIT)</strong> — Projet de recherche exploitant la vision par ordinateur pour identifier automatiquement des déchets (plastique, métal, verre) et faciliter leur tri.</li>
-      <li><strong>Recyc'IA (INRIA)</strong> — Prototype français utilisant l'IA pour reconnaître des objets du quotidien et guider vers les filières de recyclage adaptées.</li>
-      <li><strong>ImageNet for Waste</strong> — Bases de données d'images annotées dédiées à la classification d'objets et de déchets, utilisées pour entraîner des modèles de détection open source.</li>
-      <li><strong>Google AutoML Vision</strong> — Outils de reconnaissance visuelle entraînables pour détecter et catégoriser des objets selon des besoins spécifiques, y compris le réemploi.</li>
-      <li><strong>Carton Recognition (Alibaba Cloud)</strong> — Application de détection automatique des emballages pour améliorer le tri logistique et la réutilisation des cartons.</li>
-      <li><strong>Recycleye (UK)</strong> — Startup spécialisée dans la vision artificielle appliquée au tri des déchets, avec caméras et IA capables de détecter des matériaux recyclables en temps réel.</li>
-      <li><strong>NVIDIA Jetson DIY Projects</strong> — Projets communautaires exploitant l'IA embarquée pour détecter des objets et proposer des applications de réemploi localisées.</li>
-      <li><strong>Microsoft Seeing AI</strong> — Bien que pensé pour l'accessibilité (description d'objets aux personnes malvoyantes), ce projet montre le potentiel de la détection d'objets appliqué à des usages sociaux.</li>
-    </ul>
-  </section>
+      <h4 id="p-social">Social</h4>
+      <p><strong>Réappropriation et accessibilité.</strong> Utile, accessible, durable (manifeste Low-Tech Lab). Open-source et fablabs, mais besoin de médiation pour l’appropriation (ex.&nbsp;: «&nbsp;The user experience of low-techs&nbsp;», ResearchGate).</p>
+      <p><strong>Désirabilité.</strong> La société valorise le high-tech (performance) ; «&nbsp;low&nbsp;» peut être perçu négativement (Bouygues Construction&nbsp;: <em>Low-tech, Just-tech, Right-tech</em>).</p>
+      <p><strong>Communautés et inclusion.</strong> Rôle clé des tiers-lieux ; la communauté reste spécialisée (ADEME). Enjeu&nbsp;: attirer des publics non-experts.</p>
+      <p><strong>Résilience et crises.</strong> Atout des low-techs en contexte dégradé (continuité d’usage, justice sociale).</p>
 
-  <section id="probleme">
-    <h1>3. Problème et réponse</h1>
-    
-    <h2>a) Le constat</h2>
-    <p>À travers notre enquête terrain nous constatons que la démarche frugale et le low tech restent encore enfermés dans une niche.Il existe une multitude de sites et de tutoriels qui proposent des solutions pratiques, mais ceux-ci s’adressent principalement à un public déjà convaincu : des passionnés de bricolage ou des personnes sensibilisées aux questions écologiques. Cette limitation vient en grande partie de l’image qui colle au low tech, souvent réduit à une vision « bobo-écolo ».</p>
+      <h4 id="p-technologie">Technologie</h4>
+      <p><strong>Place centrale.</strong> Accessibilité, reproductibilité, durabilité. Les fablabs expérimentent et diffusent (open source, wikis, tutoriels). Voir étude&nbsp;: <a href="https://hal.science/hal-02005289v1" target="_blank" rel="noreferrer">HAL</a>.</p>
+      <p><strong>Labels & certifications.</strong> Référentiels pour informer sur l’impact et la durabilité (ex.&nbsp;: <a href="https://www.artio-strategies.com/blogue/certifications-developpement-durable-bien-choisir" target="_blank" rel="noreferrer">panorama de labels</a>).</p>
 
-    <p>Pour les étudiants en ingénierie et en formation technique, l’approche low tech n’est pas perçue comme un domaine porteur. Leur intérêt se porte prioritairement sur des projets à forte valeur ajoutée technologique et innovante, ce qui relègue les démarches frugales au second plan.
-</p>
-    <p>Les fab managers cherchent à transmettre une démarche fondée sur la frugalité et l’ingéniosité. Toutefois, ils rencontrent des difficultés à mobiliser l’attention des participants et à faire reconnaître la valeur et l’importance de ces savoirs au sein de leurs activités.</p>
+      <h4 id="p-environnement">Environnement</h4>
+      <p><strong>Réutilisation des matières.</strong> Réemploi de plastiques, bois, cartes électroniques&nbsp;: déchets réduits et extraction limitée.</p>
+      <p><strong>Approche durable.</strong> Conception responsable, cycle de vie, longévité, réduction des déchets&nbsp;: une vision systémique.</p>
 
-    <p>Chez les enseignants, le manque de temps et d’outils pédagogiques freine une intégration plus large de l’approche low tech dans les cursus. Ils se trouvent également confrontés à un public d’élèves profondément ancré dans la culture numérique, pour qui cette approche peut sembler dépassée, voire dénuée de pertinence.</p>
-    
-    <p>Face à ces constats, une question centrale émerge : <strong>Comment attirer des profils plus variés à l’approche frugale ?</strong></p>
+      <h4 id="p-legal">Légal</h4>
+      <p><strong>Open source & licences.</strong> Conditions de réutilisation/diffusion (réf.&nbsp;: <a href="https://code.gouv.fr/fr/doc/licences-libres-dinum/" target="_blank" rel="noreferrer">DINUM — Licences libres</a>).</p>
+      <p><strong>CSRD.</strong> Directive européenne sur le reporting de durabilité&nbsp;: impact sur conception et documentation (<a href="https://portail-rse.beta.gouv.fr/csrd/csrd-comprendre-la-directive-europeenne-et-ses-enjeux-pour-la-durabilite/" target="_blank" rel="noreferrer">portail RSE</a>).</p>
+      <p><strong>Évolutions législatives.</strong> Obsolescence programmée (FR, 2015), loi AGEC (indice de réparabilité), CSRD&nbsp;: institutionnalisation progressive (cf. analyses type Rödl & Partner).</p>
+      <p><strong>Responsabilité.</strong> Respect des normes, information utilisateur, assurances adaptées selon parties prenantes.</p>
+    </section>
 
+    <!-- PROJETS EXISTANTS -->
+    <section id="projets-existants">
+      <h3>b) Projets existants</h3>
+      <ul>
+        <li><strong>Google Lens</strong> — Reconnaissance d’objets et d’usages.</li>
+        <li><strong>WasteNet (MIT)</strong> — Vision pour tri des déchets.</li>
+        <li><strong>Recyc'IA (INRIA)</strong> — Reconnaissance d’objets et filières de recyclage.</li>
+        <li><strong>ImageNet for Waste</strong> — Jeux de données annotés pour détection open source.</li>
+        <li><strong>Google AutoML Vision</strong> — Entraînement personnalisable pour détection.</li>
+        <li><strong>Carton Recognition (Alibaba Cloud)</strong> — Détection logistique de colis/emballages.</li>
+        <li><strong>Recycleye (UK)</strong> — Vision temps réel pour tri industriel.</li>
+        <li><strong>NVIDIA Jetson DIY Projects</strong> — IA embarquée et réemploi local.</li>
+        <li><strong>Microsoft Seeing AI</strong> — Détection pour accessibilité (potentiel social).</li>
+      </ul>
+    </section>
 
-    <h2>b) Notre réponse</h2>
-    <p>
-      Pour répondre à la question posée ci-dessus, nous avons décidé de développer le projet <em>Maker Lens</em>. C'est une application qui permet à l'utilisateur de prendre en photo avec la caméra de son téléphone des objets du quotidien en bon ou mauvais état, de les analyser et instantanément accéder à plusieurs idées de projets low-tech qu'on pourrait faire avec l'objet lui-même ou ses composants. De plus, les personnes ayant créé leurs propres projets pourront les partager.
-    </p>
-    <p>
-      De cette manière, nous rendons plus facile et intéressante l'accès aux connaissances et à la pratique low-tech. N'importe qui pourra de cette manière, intégrer ces pratiques à son quotidien.
-    </p>
-  </section>
+    <!-- 3. PROBLÈME & RÉPONSE -->
+    <section id="probleme-reponse">
+      <h2>3. Problème et réponse</h2>
 
-  <section id="references">
-    <h1>4. Références</h1>
-    <table border="1" cellspacing="0" cellpadding="6">
-      <tr>
-        <th>Ressource</th>
-        <th>Description</th>
-      </tr>
-      <tr>
-        <td><a href="https://www.instructables.com/">Instructables</a></td>
-        <td>Base de projets DIY couvrant l'électronique, la mécanique et la décoration, incluant de nombreux tutoriels de réutilisation de composants issus d'appareils usagés.</td>
-      </tr>
-      <tr>
-        <td><a href="https://hackaday.io/">Hackaday.io</a></td>
-        <td>Communauté internationale de “makers” partageant des projets open source et des idées de recyclage de composants électroniques.</td>
-      </tr>
-      <tr>
-        <td><a href="https://www.ifixit.com/">iFixit</a></td>
-        <td>Plateforme de guides de démontage et de réparation d'appareils électroniques, utile pour identifier et récupérer des pièces.</td>
-      </tr>
-      <tr>
-        <td><a href="https://www.wikihow.com/">WikiHow</a></td>
-        <td>Collection de tutoriels généralistes incluant des conseils de réutilisation et de détournement d'objets.</td>
-      </tr>
-      <tr>
-        <td><a href="https://www.thingiverse.com/">Thingiverse</a></td>
-        <td>Bibliothèque de modèles 3D destinés à l'impression, proposant souvent des designs adaptés à la récupération de composants.</td>
-      </tr>
-      <tr>
-        <td><a href="https://electronics.stackexchange.com/">Electronics Stack Exchange</a></td>
-        <td>Forum technique permettant de poser des questions spécialisées sur l'utilisation et le recyclage de composants électroniques.</td>
-      </tr>
-      <tr>
-        <td><a href="https://therestartproject.org/">The Restart Project</a></td>
-        <td>Initiative collaborative visant à promouvoir la réparation et la réutilisation afin de réduire le gaspillage électronique.</td>
-      </tr>
-      <tr>
-        <td><a href="https://reprap.org/wiki/">RepRap Wiki</a></td>
-        <td>Wiki consacré à l'impression 3D open source, intégrant des ressources sur la récupération de pièces pour construire ses propres machines.</td>
-      </tr>
-      <tr>
-        <td><a href="https://www.eevblog.com/forum/">EEVblog Forum</a></td>
-        <td>Forum d'électronique regroupant de nombreuses discussions sur le réemploi de composants et les techniques associées.</td>
-      </tr>
-      <tr>
-        <td><a href="https://lowtechlab.org/">Low-Tech Lab</a></td>
-        <td>Plateforme collaborative dédiée aux technologies simples, durables et accessibles, avec de nombreux tutoriels de fabrication et d'expérimentation.</td>
-      </tr>
-      <tr>
-        <td><a href="https://www.lowtechmagazine.com/">Low-Tech Magazine</a></td>
-        <td>Magazine en ligne explorant des solutions technologiques sobres et résilientes pour répondre aux défis environnementaux et énergétiques.</td>
-      </tr>
-      <tr>
-        <td><a href="https://preciousplastic.com/">Precious Plastic</a></td>
-        <td>Communauté mondiale proposant des machines open source et des idées pour recycler le plastique localement en objets utiles.</td>
-      </tr>
-      <tr>
-        <td><a href="https://opensourceecology.org/">Open Source Ecology</a></td>
-        <td>Projet open source visant à développer un ensemble de machines modulaires, durables et accessibles pour l'agriculture, l'énergie et la production.</td>
-      </tr>
-    </table>
-  </section>
+      <h3>a) Le constat</h3>
+      <p>À travers notre enquête terrain nous constatons que la démarche frugale et le low-tech restent encore enfermés dans une niche. Il existe une multitude de sites et de tutoriels qui proposent des solutions pratiques, mais ceux-ci s’adressent principalement à un public déjà convaincu (bricolage/écologie). Les étudiants en ingénierie privilégient des projets perçus comme plus «&nbsp;innovants&nbsp;», les fab managers peinent à capter l’attention, et les enseignants manquent de temps et d’outils pour une intégration plus large, face à un public très «&nbsp;numérique&nbsp;».</p>
+      <p><strong>Question centrale</strong> : Comment attirer des profils plus variés à l’approche frugale&nbsp;?</p>
 
-</main>
+      <h3>b) Notre réponse</h3>
+      <p><em>Maker Lens</em> est une application mobile qui permet de photographier des objets du quotidien (en bon ou mauvais état), de les analyser et de proposer instantanément des idées de projets low-tech réalisables avec l’objet ou ses composants. Les utilisateurs peuvent aussi partager leurs propres réalisations.</p>
+      <p>Objectif&nbsp;: rendre l’accès aux connaissances et à la pratique low-tech plus simple, contextualisé et motivant, afin de favoriser l’appropriation par un public élargi.</p>
+    </section>
+
+    <!-- 4. RÉFÉRENCES -->
+    <section id="references">
+      <h2>4. Références</h2>
+      <div class="toc muted">⚠️ Idéalement, ajoute une courte notice (date, auteur, accès) pour chaque lien.</div>
+      <table>
+        <thead>
+          <tr><th>Ressource</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="https://www.instructables.com/" target="_blank" rel="noreferrer">Instructables</a></td>
+            <td>Projets DIY (réutilisation, réparation), large couverture.</td>
+          </tr>
+          <tr>
+            <td><a href="https://hackaday.io/" target="_blank" rel="noreferrer">Hackaday.io</a></td>
+            <td>Communauté makers open source (électronique, réemploi).</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.ifixit.com/" target="_blank" rel="noreferrer">iFixit</a></td>
+            <td>Guides de démontage/réparation, identification de pièces.</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.wikihow.com/" target="_blank" rel="noreferrer">WikiHow</a></td>
+            <td>Tutoriels généralistes, détournement et réutilisation.</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.thingiverse.com/" target="_blank" rel="noreferrer">Thingiverse</a></td>
+            <td>Modèles 3D pour conception et réparation.</td>
+          </tr>
+          <tr>
+            <td><a href="https://electronics.stackexchange.com/" target="_blank" rel="noreferrer">Electronics Stack Exchange</a></td>
+            <td>Questions/réponses techniques (réemploi composants).</td>
+          </tr>
+          <tr>
+            <td><a href="https://therestartproject.org/" target="_blank" rel="noreferrer">The Restart Project</a></td>
+            <td>Promotion de la réparation et réduction du e-waste.</td>
+          </tr>
+          <tr>
+            <td><a href="https://reprap.org/wiki/" target="_blank" rel="noreferrer">RepRap Wiki</a></td>
+            <td>Impression 3D open source, récupération de pièces.</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.eevblog.com/forum/" target="_blank" rel="noreferrer">EEVblog Forum</a></td>
+            <td>Forum électronique (techniques de réemploi).</td>
+          </tr>
+          <tr>
+            <td><a href="https://lowtechlab.org/" target="_blank" rel="noreferrer">Low-Tech Lab</a></td>
+            <td>Plateforme low-tech (tutoriels, expérimentations).</td>
+          </tr>
+          <tr>
+            <td><a href="https://www.lowtechmagazine.com/" target="_blank" rel="noreferrer">Low-Tech Magazine</a></td>
+            <td>Articles sur sobriété, énergie, résilience.</td>
+          </tr>
+          <tr>
+            <td><a href="https://preciousplastic.com/" target="_blank" rel="noreferrer">Precious Plastic</a></td>
+            <td>Machines open source pour recycler le plastique localement.</td>
+          </tr>
+          <tr>
+            <td><a href="https://opensourceecology.org/" target="_blank" rel="noreferrer">Open Source Ecology</a></td>
+            <td>Machines modulaires durables (agri, énergie, production).</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
 </body>
 </html>
