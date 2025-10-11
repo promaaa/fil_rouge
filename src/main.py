@@ -28,7 +28,7 @@ while True:
 
     # Read key, quit if ESC
     k = cv.waitKey(1)
-    if k == 27:
+    if k == ord("q"):
         break
 
 # Cleanup
