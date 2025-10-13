@@ -1,6 +1,7 @@
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
@@ -161,21 +162,41 @@ class SuggestionScreen(Screen):
         super().__init__(**kwargs)
         layout = BoxLayout(orientation="vertical")
 
-        # --- Bandeau gris en haut ---
-        top_bar = BoxLayout(size_hint_y=None, height=dp(65), orientation="vertical", padding=[0, dp(10), 0, dp(10)])
+        # --- Bandeau gris en haut avec bouton retour ---
+        top_bar = BoxLayout(size_hint_y=None, height=dp(65), orientation="horizontal", padding=[dp(8), dp(10), dp(8), dp(10)])
         with top_bar.canvas.before:
             Color(*SECONDARY_COLOR)
             self.rect = Rectangle(pos=top_bar.pos, size=top_bar.size)
-            top_bar.bind(pos=self.update_rect, size=self.update_rect)
+        top_bar.bind(pos=self.update_rect, size=self.update_rect)
 
+        # Bouton flèche pour revenir à l'écran précédent (icône PNG)
+        class ImageButton(ButtonBehavior, Image):
+            pass
+
+        btn_back = ImageButton(source='fleche.png', size_hint=(None, None), size=(dp(48), dp(48)))
+
+        def go_back(instance):
+            prev = getattr(self.manager, 'previous_screen', None)
+            # Vérifier que prev est un nom d'écran valide
+            if prev and any(s.name == prev for s in self.manager.screens):
+                self.manager.current = prev
+            else:
+                self.manager.current = 'creation'
+
+        btn_back.bind(on_press=go_back)
+
+        # Titre centré (prend tout l'espace restant)
         title = Label(
             text="[b]Suggestion de projets en lien avec votre projet[/b]",
             markup=True,
             font_size="15sp",
             color=TEXT_COLOR,
-            halign="center"
+            halign="center",
+            size_hint_x=1
         )
+        title.bind(size=title.setter('text_size'))
 
+        top_bar.add_widget(btn_back)
         top_bar.add_widget(title)
         layout.add_widget(top_bar)
 
