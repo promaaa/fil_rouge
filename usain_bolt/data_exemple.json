@@ -1,14 +1,104 @@
 {
     "vélo": {
-        "titre": [],
-        "difficulté": [],
-        "durée": [],
-        "coût": [],
-        "introduction": [],
-        "mentions légales": [],
-        "matériaux": [],
-        "outils": [],
-        "étapes": [],
-        "annexes": []
+        "titre": ["Vélo à assistance électrique"],
+        "difficulté": ["Difficile"],
+        "durée": ["2 jour(s)"],
+        "coût": ["50 EUR (€)"],
+        "introduction": [
+            "Dans ce tutoriel nous allons vous expliquer comment modifier un vélo classique pour lui ajouter une assistance électrique. Celle-ci vous permettra de facilement franchir les pentes les plus raides et de rouler plus vite en fournissant moins d'effort.",
+            "Attention ! Les différentes étapes impliquent beaucoup d'électronique, de soudure et de mécanique. Nous vous conseillons donc de bien lire ce tutoriel et de vous renseigner de votre côté sur les différentes sources fournies avant de vous lancer dans la construction de ce vélo à assistance électrique."
+        ],
+        "mentions légales": [
+            "Avec les modifications qui vont être apportées, ce vélo respectera la réglementation européenne concernant les vélos à assistance électrique.",
+            "Points importants de la réglementation :",
+            "- L'assistance ne doit fonctionner que jusqu'à une vitesse de 25 km/h (il est possible de pédaler plus vite, mais sans assistance)",
+            "- La puissance du moteur ne doit pas excéder 250W",
+            "- L'assistance doit être activée par le pédalage",
+            "- Quand l'utilisateur arrête de pédaler le moteur se coupe",
+            "- La modification ne doit pas altérer la sécurité et l'efficacité du freinage",
+            "Le vélo ne pourra cependant pas être homologué ce qui ne vous posera pas de problème concernant les forces de l'ordre mais vous ne serez pas assuré en cas d'accident."
+        ],
+        "matériaux": [
+            "Moteur + roue de hoverboard 6\" : 36v",
+            "Batterie 36V 4.4Ah",
+            "Chargeur 36V",
+            "Tous ces éléments se trouvent sur un hoverboard de récupération ou d'occasion. Un hoverboard d'occasion peut se trouver pour 50€ à 100€.",
+            "Contrôleur e-bike 24V/36V 250w : ~26€ (Disponible sur Aliexpress pour moins cher)",
+            "Capteur PAS (Attention : Vérifiez bien, avant de commencer/commander quoi que ce soit, que l'écart entre le cadre et la manivelle de pédalier est, au minimum, de 4.5mm sinon vous ne pourrez pas monter le capteur)",
+            "Capteur à monter sur le pédalier, à effet hall + disque avec aimants",
+            "2 options en fonction du boitier de pédalier du vélo :",
+            "- à axes carrés (\"universel\"): ~8€",
+            "- à axes carrés dernières générations (\"intégré\") : ~8€",
+            "Remarque : malheureusement pour les boitiers de pédaliers à roulements externes il n'existe pas de capteurs PAS vendus à l'unité, adaptés à notre tutoriel.",
+            "Capteur de frein Ebike (à monter au niveau des leviers de freins): ~4-7€ (peut être trouvé sur Ali express)",
+            "Transistor (permet d'obtenir le bon signal du capteur de pédalage si celui-ci envoie un signal inversé), peut ne pas être nécessaire suivant le capteur PAS, Référence : BS170 : ~3-5€ (par 10 pièces voir plus)",
+            "Connecteurs XT60 pour sécuriser le branchement de la batterie : ~10€ les 25 paires",
+            "Tube ouvert en métal",
+            "Équerre en métal",
+            "Colliers de serrages pour fixer les différents composants sur le vélo",
+            "Gaine thermo-rétractable (optionnel, pour isoler de l'eau)",
+            "Éléments de fixation pour le contrôleur, la batterie et la roue"
+        ],
+        "outils": [
+            "Fer à souder et poste de soudure à l'arc",
+            "Multimètre",
+            "Cutter",
+            "Pince coupante",
+            "Outils pour démonter le pédalier du vélo",
+            "EPI",
+            "Clé allen",
+            "Arrache-manivelle",
+            "Clé de 15mm"
+        ],
+        "étapes": [
+            {
+                "numero": 1,
+                "titre": "Démontage Hoverboard",
+                "description": "Enlever la coque plastique qui enferme tous les composants électroniques. Faire attention aux fils possiblement connectés aux coques plastique. Débrancher les câbles tout en repérant leur branchement. Garder de côté le câble de charge et repérer sur la carte mère l'endroit où celui-ci est relié. Démonter soigneusement la batterie après l'avoir débranchée. Attention : La batterie est l'élément le plus dangereux. Garder la carte mère pour permettre la recharge de la batterie. Démonter les cartes \"Capteur\" pour accéder aux fixations des moteurs. Dévisser avec une clef Allen pour obtenir la roue motorisée."
+            },
+            {
+                "numero": 2,
+                "titre": "Installation du capteur PAS Situation 1 (vélo à boitier de pédalier à axe carrés capteur \"universel\")",
+                "description": "Démonter la manivelle avec les plateaux du côté de la transmission. Dévisser le cache situé derrière (attention le pas de la vis peut être un pas à gauche). Attention à ne pas perdre les roulements du pédalier. Placer le capteur PAS sur cet axe et revisser le cache pour le caler. La partie en plastique noir doit être orientée vers l'extérieur et la flêche indiquant le sens de rotation vers l'avant du vélo. Placer le disque aimanté sur l'axe du pédalier. Veillez à bien laisser un petit espace entre le capteur et le disque pour éviter les frottements. Remonter le pédalier."
+            },
+            {
+                "numero": 3,
+                "titre": "Installation du capteur PAS Situation 2 (vélo à boitier de pédalier à axe carrés nouvelle génération, capteur \"intégré\")",
+                "description": "Outils nécessaires : clé allen, arrache-manivelle, clé de 15mm. Démonter la manivelle gauche avec l'arrache-manivelle. Déboulonner la manivelle avec la clé allen. Installer l'arrache-manivelle dans le filetage ainsi libéré. Visser l'arrache-manivelle à l'aide de la clé de 15mm pour faire sortir la manivelle. Encastrer le capteur dans les cannelures du boîtier. Remonter la manivelle."
+            },
+            {
+                "numero": 4,
+                "titre": "Installation du capteur de freinage",
+                "description": "Installer des capteurs magnétiques sur les leviers de frein pour s'assurer que le moteur arrête de tourner lorsque l'on freine. Solution 1 : Coller l'aimant au levier de frein (partie mobile) avec une colle à prise rapide et placer le capteur sur la partie fixe, les deux éléments doivent être quasiment en contact. Solution 2 : Passer le collier dans le trou au centre de l'aimant et l'attacher à la partie mobile. Attacher le capteur avec un collier de serrage autour du guidon."
+            },
+            {
+                "numero": 5,
+                "titre": "Fixation de la roue d'hoverboard",
+                "description": "Solution 1 (plus résistant et moins coûteux si vous disposez d'un poste de soudure à l'arc) : Souder l'axe sortant du moteur à une extrémité d'une barre de fixation (profilé ouvert). Souder une équerre à la base du hauban, à la jointure avec le tube de selle, de manière légèrement inclinée. La roue du hoverboard doit bien appuyer sur la roue arrière du vélo. Solution 2 (non permanente et réglable) : Fixer un tube en métal sur la tige de selle en l'écrasant contre celle-ci avec des plaquettes en métal et 4 boulons. Le réglage en hauteur de la selle permet d'appliquer plus ou moins de pression."
+            },
+            {
+                "numero": 6,
+                "titre": "Installation de contrôleur - Câblage",
+                "description": "Repérer les pôles positifs et négatifs de l'alimentation. Souder un connecteur XT60 femelle (cable noir à la borne -, cable rouge à la borne +). Brancher le capteur PAS, les lignes d'alimentation du moteur sans balais, le capteur à effet Hall du moteur, le capteur de freinage. Les lignes d'auto réglage servent à synchroniser le moteur et si besoin, le sens de rotation. Vérifier que le capteur PAS renvoie une tension lorsqu'un aimants passe devant. Dans le cas contraire, utiliser le transistor pour inverser le signal."
+            },
+            {
+                "numero": 7,
+                "titre": "Installation de contrôleur - Isolation",
+                "description": "Isoler le contrôleur de l'humidité avec la batterie. Utiliser une bouteille de 1,5L ou 2L. Découper le fond de la bouteille sur quelques centimètres (4-5cm), placer le goulot vers le pédalier pour y faire passer les câbles. Les batteries LIPO sont sensibles aux vibrations, les recouvrir d'une couche d'éponge. Fermer les ouvertures nécessaires pour les fils par un isolant (type silicone). Fixer la bouteille au cadre avec des colliers de serrage ou du scotch. Optionnel : Remplacer la bouteille par une boîte en plastique spécialement conçue pour contenir une batterie."
+            },
+            {
+                "numero": 8,
+                "titre": "Recharge de la batterie",
+                "description": "Reprendre la carte mère de l'hoverboard ainsi que le câble de charge qui doit être reconnecté. Fabriquer une boîte pour ranger la carte et ne laisser sortir que la fiche du câble de charge soigneusement rebranché sur la carte mère ainsi que le câble de la batterie. La fiche jaune doit être de format XT60 et être compatible avec la fiche XT60 male du câble de la batterie. Tous les autres câbles non utilisés doivent être inaccessibles et isolés."
+            }
+        ],
+        "annexes": [
+            {
+                "titre": "Modification du moteur (gain de vitesse mais consommation électrique plus importante)",
+                "description": "Cette étape est nécessaire si il y a besoin de plus de vitesse. L'opération est compliquée et il ne faut pas dépasser les limites réglementaires. Pour que le moteur de hoverboard puisse correctement entraîner la roue, il faut changer son couplage, passer d'un couplage étoile à un couplage triangle. Démonter le moteur pour séparer le stator et le rotor. Retirer la gaine d'isolation, dessouder l'endroit où les bobinages se rejoignent et séparer les trois bornes principales. Enlever les gaines isolantes au niveau du centre du moteur. Identifier les paires de bornes internes et externes reliées avec un multimètre en mode ohmmètre. Réaliser le couplage en triangle en soudant : borne interne 'a' avec borne externe 'B', 'b' avec 'C', 'c' avec 'A'. Utiliser de la gaine thermo-rétractable pour isoler. Bien ranger les fils à l'intérieur et remonter le moteur modifié."
+            }
+        ]
     }
 }
+
+
