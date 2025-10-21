@@ -1,30 +1,41 @@
-# Maker Lens
+# MakerLens
 
-## Description
+**Plateforme web pour transformer vos idées et objets en projets maker concrets**
 
-Ce projet contient l'ensemble des codes développés pour la création de la Maker Lens dans le cadre du projet fil rouge. La Maker Lens est un dispositif innovant conçu pour faciliter et améliorer l'expérience des makers dans leurs projets de fabrication.
+## Concept
 
-## Structure du projet
+MakerLens aide les makers à :
+- **Créer** : Générer des tutoriels pour fabriquer de nouveaux objets
+- **Recycler** : Trouver comment réutiliser des objets existants
+- **Naviguer** : Découvrir des tutoriels tendance de la communauté
 
-Le repository est organisé de manière à regrouper tous les composants nécessaires au développement de la Maker Lens :
+## Structure
 
-- Code source des différents modules
-- Documentation technique
-- Fichiers de configuration
-- Scripts de déploiement
+```
+fil_rouge/
+├── website/          # Interface web (HTML/CSS/JS)
+├── scrapping-bdd/    # Base de données et extraction de tutoriels
+└── embedding/        # Système d'IA et génération de contenu
+```
 
-## Installation
+## Design
 
-Instructions d'installation détaillées à venir selon l'évolution du projet.
+- Style blueprint technique moderne
+- Couleurs : Vert (#00DB21) et Marron (#502800)
+- Interface responsive avec animations fluides
 
-## Utilisation
+## Démarrage
 
-Guide d'utilisation à compléter au fur et à mesure du développement.
+1. Cloner le repo
+2. Ouvrir `website/index.html` dans un navigateur
+3. Choisir un mode (Création, Recyclage ou Navigation)
 
-## Contribution
+## Technologies
 
-Ce projet est développé dans le cadre d'un projet fil rouge collaboratif.
+- Frontend : HTML5, CSS3, JavaScript vanilla
+- Fonts : Space Grotesk + Roboto Mono
+- Logo personnalisé intégré
 
 ## Licence
 
-Voir le fichier `LICENSE` pour plus de détails.
+Voir `LICENSE` pour les détails.
