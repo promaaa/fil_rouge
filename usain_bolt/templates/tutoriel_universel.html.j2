@@ -29,6 +29,18 @@
       margin-left: 1.5em;
     }
 
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
     .section {
       margin-bottom: 2em;
       background: #fff;
@@ -83,13 +95,13 @@
   </div>
 
   <div class="section">
-    <h2>🪜 Étapes</h2>
+    <h2> Étapes</h2>
     {% if etapes %}
       <ol>
-        <p>{% for e in etapes %}</p><p>{{ e }}</p>{% endfor %}
+        {% for e in etapes %}<li>{{ e|safe }}</li>{% endfor %}
       </ol>
     {% else %}
-      <p><em>Pas encore d’étapes définies</em></p>
+      <p><em>Pas encore d'étapes définies</em></p>
     {% endif %}
   </div>
 
