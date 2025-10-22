@@ -35,6 +35,7 @@ fil_rouge/
 - Frontend : HTML5, CSS3, JavaScript vanilla
 - Fonts : Space Grotesk + Roboto Mono
 - Logo personnalisé intégré
+- Base de données : Tutoriels hardcodés en JSON
 
 ## Licence
 
