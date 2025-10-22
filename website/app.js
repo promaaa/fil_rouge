@@ -48,7 +48,6 @@ function changeGridColor(target) {
 
   setTimeout(() => {
     cover.style.backgroundColor = "transparent";
-    document.body.classList.remove("grid-color-change");
     document.documentElement.style.setProperty(
       "--line-color",
       `var(--${target}-line-color)`,
@@ -57,7 +56,7 @@ function changeGridColor(target) {
       "--accent-primary",
       `var(--${target}-color)`,
     );
-  }, 150);
+  }, 100);
 }
 
 // Navigation depuis l'accueil vers les différentes pages
