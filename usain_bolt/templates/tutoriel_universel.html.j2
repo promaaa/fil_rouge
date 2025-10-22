@@ -93,13 +93,20 @@
   <header>
     <h1>{{ titre }}</h1>
     <p>{{ intro }}</p>
+    {% if difficulte or duree or cout %}
+    <p style="color: #666; font-size: 0.95em;">
+      {% if difficulte %}<strong>Difficulté :</strong> {{ difficulte }} &nbsp;&nbsp; {% endif %}
+      {% if duree %}<strong>Durée :</strong> {{ duree }} &nbsp;&nbsp; {% endif %}
+      {% if cout %}<strong>Coût :</strong> {{ cout }}{% endif %}
+    </p>
+    {% endif %}
   </header>
 
   <div class="section">
-    <h2> Matériaux</h2>
+    <h2>🛠️ Matériaux</h2>
     {% if materiaux %}
       <ul>
-        {% for m in materiaux %}<li>{{ m }}</li>{% endfor %}
+        {% for m in materiaux %}<li>{{ m|safe }}</li>{% endfor %}
       </ul>
     {% else %}
       <p><em>Non spécifié</em></p>
@@ -110,7 +117,7 @@
     <h2>🔧 Outils</h2>
     {% if outils %}
       <ul>
-        {% for o in outils %}<li>{{ o }}</li>{% endfor %}
+        {% for o in outils %}<li>{{ o|safe }}</li>{% endfor %}
       </ul>
     {% else %}
       <p><em>Non spécifié</em></p>
