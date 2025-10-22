@@ -1,14 +1,25 @@
 :root {
     --bg-main: #1a0f00;
     --bg-light: #502800;
+
     --line-color: #00db21;
     --accent-primary: #00db21;
     --accent-secondary: #6b3600;
+
+    --default-color: #00db21;
+    --default-line-color: #00db21;
+    --creation-color: #d0db00;
+    --creation-line-color: #c6c600;
+    --recyclage-color: #00f024;
+    --recyclage-line-color: #00a218;
+    --navigate-color: #f07800;
+    --navigate-line-color: #6b3600;
+    
     --text-primary: #ffffff;
     --text-secondary: #ffffff;
-    --text-tertiary: #ffffff;
     --card: #502800;
     --card-hover: #6b3600;
+    --btn-hover-shadow: #5c9ead40;
     --radius: 16px;
     --font-title: "Space Grotesk", sans-serif;
     --font-body: "Roboto Mono", monospace;
@@ -22,16 +33,26 @@ html,
 body {
     height: 100%;
     margin: 0;
+    
     background-color: var(--bg-main);
-    background-image:
+    background-image: /* Grid background */
         linear-gradient(var(--line-color) 1px, transparent 1px),
         linear-gradient(to right, var(--line-color) 1px, var(--bg-main) 1px);
+
     background-size: 40px 40px;
     background-position: -1px -1px;
     color: var(--text-primary);
     font-family: var(--font-body);
     overflow-x: hidden;
 }
+
+div.backdrop-cover {
+    margin: 0;
+    background: transparent;
+    transition-property: background, color;
+    transition-duration: 300ms;
+}
+
 
 ::placeholder {
     color: var(--line-color);
@@ -139,7 +160,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 48px;
+    gap: 36px;
     width: 100%;
 }
 
@@ -193,6 +214,39 @@ img.page-logo {
     max-width: 540px;
 }
 
+.cta-section {
+    text-align: center;
+    margin-top: 12px;
+}
+
+.cta-section h2 {
+    font-family: var(--font-title);
+    font-size: 1.4rem;
+    color: var(--accent-primary);
+    margin: 0 0 20px;
+    letter-spacing: 0.08em;
+}
+
+.home-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+
+.home-buttons .btn {
+    width: auto;
+    min-width: 220px;
+    justify-content: center;
+}
+
+.home-buttons .btn:hover {
+    transform: translateY(-6px);
+    border-color: var(--line-color);
+    box-shadow: 0 12px 30px var(--btn-hover-shadow);
+}
+
 .features-grid {
     position: relative;
     z-index: 2;
@@ -218,9 +272,9 @@ img.page-logo {
 }
 
 .feature-card:hover {
-    transform: translateY(-6px);
+    /* transform: translateY(-6px); */
     border-color: var(--line-color);
-    box-shadow: 0 12px 30px rgba(92, 158, 173, 0.25);
+    box-shadow: 0 12px 30px var(--btn-hover-shadow);
 }
 
 .feature-icon {
@@ -252,33 +306,6 @@ img.page-logo {
     font-size: 0.9rem;
     line-height: 1.6;
     margin: 0;
-}
-
-.cta-section {
-    text-align: center;
-    margin-top: 12px;
-}
-
-.cta-section h2 {
-    font-family: var(--font-title);
-    font-size: 1.4rem;
-    color: var(--accent-primary);
-    margin: 0 0 20px;
-    letter-spacing: 0.08em;
-}
-
-.home-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 8px;
-}
-
-.home-buttons .btn {
-    width: auto;
-    min-width: 220px;
-    justify-content: center;
 }
 
 .home-metrics {
@@ -650,17 +677,17 @@ img.page-logo {
 }
 
 .btn-primary {
-    background: var(--line-color);
+    background: var(--creation-color);
 }
 
 .btn-secondary {
-    background: var(--accent-secondary);
-    color: #ffffff;
+    background: var(--recyclage-color);
+    color: var(--bg-main);
 }
 
 .btn-accent {
-    background: var(--accent-primary);
-    color: var(--bg-main);
+    background: var(--accent-secondary);
+    color: #ffffff;
 }
 
 .btn-icon {
@@ -910,12 +937,12 @@ img.page-logo {
     height: 22px;
 }
 
-.card-action {
+/* .card-action {
     border-color: var(--accent-primary);
-}
+} */
 
 .output-box {
-    margin-top: 16px;
+    /* margin-top: 0px; */
     padding: 16px;
     background: var(--bg-main);
     border-radius: 10px;

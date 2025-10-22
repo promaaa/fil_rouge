@@ -38,6 +38,18 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
+function changeGridColor(target) {
+  const cover = document.querySelector('.backdrop-cover');
+  cover.style.backgroundColor = 'black';
+
+  setTimeout(() => {
+    cover.style.backgroundColor = 'transparent';
+    document.body.classList.remove('grid-color-change');
+    document.documentElement.style.setProperty('--line-color', `var(--${target}-line-color)`);
+    document.documentElement.style.setProperty('--accent-primary', `var(--${target}-color)`);
+  }, 150);
+}
+
 // Navigation depuis l'accueil vers les différentes pages
 document.querySelectorAll('.home .btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -47,6 +59,10 @@ document.querySelectorAll('.home .btn').forEach(btn => {
     
     // Ajouter à l'historique
     history.pushState({ page: target }, '', `#${target}`);
+    console.log("Moving to page:", target);
+
+    changeGridColor(target);
+
   });
 });
 
@@ -54,6 +70,7 @@ document.querySelectorAll('.home .btn').forEach(btn => {
 document.querySelectorAll('.back-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     goToHome();
+    changeGridColor('default');
   });
 });
 
