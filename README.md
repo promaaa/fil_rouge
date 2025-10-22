@@ -1,6 +1,6 @@
 # 🌍 Scraping-part
 
-Ce projet Python permet d’extraire automatiquement les **tutoriels low-tech** des sites sélectionnés au préalable 
+ce projet s'occupe de la user story consistant à scraper les sites low tech et d'en extraire automatiquement les **tutoriels h** 
 Il télécharge pour chaque page :
 - le **code HTML** complet du tutoriel,
 - toutes les **images associées**.
