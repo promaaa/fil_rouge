@@ -40,21 +40,45 @@ class TutorialHarmonizer:
         self.env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 
     def harmonize(self, data: dict):
+        # On prend la première clé du dictionnaire (vélo, marmite, etc.)
+        project_data = list(data.values())[0]
+        
         # Normalisation
-        titre = data.get("titre", "Projet maker").strip()
-        materiaux = unique_preserve_order([m.strip() for m in data.get("matériaux", [])])
-        outils = unique_preserve_order([o.strip() for o in data.get("outils", [])])
-        etapes = [
-            sentencify(e["description"]) if isinstance(e, dict) else sentencify(e)
-            for e in data.get("étapes", [])
-        ]
-        remarques = data.get("remarques", "").strip()
-        intro = f"Ce tutoriel explique comment {titre.lower()}."
+        titre = project_data.get("titre", ["Projet maker"])[0].strip()
+        difficulte = project_data.get("difficulté", [""])[0].strip()
+        duree = project_data.get("durée", [""])[0].strip()
+        cout = project_data.get("coût", [""])[0].strip()
+        
+        # Introduction est maintenant une liste
+        introduction = [i.strip() for i in project_data.get("introduction", [])]
+        intro = " ".join(introduction) if introduction else f"Ce tutoriel explique comment {titre.lower()}."
+        
+        # Matériaux et outils sont déjà des listes
+        materiaux = unique_preserve_order([m.strip() for m in project_data.get("matériaux", [])])
+        outils = unique_preserve_order([o.strip() for o in project_data.get("outils", [])])
+        
+        # Les étapes sont des dictionnaires avec titre et description
+        etapes = []
+        for e in project_data.get("étapes", []):
+            if isinstance(e, dict):
+                description = sentencify(e["description"])
+                etapes.append(f"{e.get('titre', '')}: {description}")
+            else:
+                etapes.append(sentencify(e))
+        
+        # Annexes comme remarques
+        annexes = project_data.get("annexes", [])
+        remarques = "\n".join(
+            [a["description"] if isinstance(a, dict) else a for a in annexes]
+        ).strip()
 
         # Rendu via Jinja
         template = self.env.get_template("tutoriel_universel.html.j2")
         html_output = template.render(
             titre=titre,
+            difficulte=difficulte,
+            duree=duree,
+            cout=cout,
             materiaux=materiaux,
             outils=outils,
             etapes=etapes,
