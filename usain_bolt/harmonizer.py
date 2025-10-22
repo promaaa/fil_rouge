@@ -29,6 +29,35 @@ class TutorialHarmonizer:
     def __init__(self):
         self.env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
 
+    def format_hierarchical_list(self, items):
+        """Formate une liste d'items avec structure titre/sous_items en HTML"""
+        if not items:
+            return []
+        
+        formatted = []
+        for item in items:
+            if isinstance(item, dict):
+                titre = item.get('titre', '').strip()
+                sous_items = item.get('sous_items', [])
+                
+                if sous_items:
+                    # Item avec sous-items
+                    html = f"{titre}"
+                    html += "<ul>"
+                    for sub in sous_items:
+                        if sub.strip():
+                            html += f"<li>{sub.strip()}</li>"
+                    html += "</ul>"
+                    formatted.append(html)
+                else:
+                    # Item simple
+                    if titre:
+                        formatted.append(titre)
+            elif isinstance(item, str) and item.strip():
+                formatted.append(item.strip())
+        
+        return formatted
+
     def harmonize(self, data: dict):
         # On prend la première clé du dictionnaire (vélo, marmite, etc.)
         project_data = list(data.values())[0]
@@ -39,12 +68,17 @@ class TutorialHarmonizer:
         duree = project_data.get("durée", [""])[0].strip()
         cout = project_data.get("coût", [""])[0].strip()
         
-        introduction = [i.strip() for i in project_data.get("introduction", [])]
-        intro = " ".join(introduction) if introduction else f"Ce tutoriel explique comment {titre.lower()}."
+        # Introduction avec structure hiérarchique
+        intro_items = project_data.get("introduction", [])
+        intro_formatted = self.format_hierarchical_list(intro_items)
+        intro = " ".join(intro_formatted) if intro_formatted else f"Ce tutoriel explique comment {titre.lower()}."
         
+        # Matériaux et outils avec structure hiérarchique
+        materiaux_raw = project_data.get("matériaux", [])
+        materiaux = unique_preserve_order(self.format_hierarchical_list(materiaux_raw))
         
-        materiaux = unique_preserve_order([m.strip() for m in project_data.get("matériaux", [])])
-        outils = unique_preserve_order([o.strip() for o in project_data.get("outils", [])])
+        outils_raw = project_data.get("outils", [])
+        outils = unique_preserve_order(self.format_hierarchical_list(outils_raw))
         
         # Les étapes avec la nouvelle structure "solutions"
         etapes = []
@@ -56,7 +90,7 @@ class TutorialHarmonizer:
                 if solutions:
                     # Traiter chaque solution
                     for sol in solutions:
-                        formatted = f"<strong>{titre_etape}</strong>"
+                        formatted = f"<strong>{titre_etape}</strong>"  
                         
                         # Images (ajoutées juste après le titre)
                         images = sol.get("images", [])
@@ -93,7 +127,19 @@ class TutorialHarmonizer:
                         if etapes_solution:
                             formatted += "<p><strong>Étapes :</strong></p><ol>"
                             for step in etapes_solution:
-                                if step.strip():
+                                if isinstance(step, dict):  # C'est une étape avec sous-étapes
+                                    titre_step = step.get('titre', '').strip()
+                                    sous_etapes = step.get('sous_etapes', [])
+                                    if titre_step:
+                                        formatted += f"<li>{titre_step}"
+                                        if sous_etapes:
+                                            formatted += "<ul>"
+                                            for sub in sous_etapes:
+                                                if sub.strip():
+                                                    formatted += f"<li>{sub.strip()}</li>"
+                                            formatted += "</ul>"
+                                        formatted += "</li>"
+                                elif isinstance(step, str) and step.strip():
                                     formatted += f"<li>{step.strip()}</li>"
                             formatted += "</ol>"
                         
@@ -145,7 +191,16 @@ class TutorialHarmonizer:
                         if etapes_annexe:
                             annexe_text += "<strong>Étapes :</strong><br>"
                             for i, step in enumerate(etapes_annexe, 1):
-                                if step.strip():
+                                if isinstance(step, dict):  # Étape avec sous-étapes
+                                    titre_step = step.get('titre', '').strip()
+                                    sous_etapes = step.get('sous_etapes', [])
+                                    if titre_step:
+                                        annexe_text += f"{titre_step}<br>"
+                                        if sous_etapes:
+                                            for sub in sous_etapes:
+                                                if sub.strip():
+                                                    annexe_text += f"  - {sub.strip()}<br>"
+                                elif isinstance(step, str) and step.strip():
                                     annexe_text += f"{i}. {step.strip()}<br>"
                         
                         # Remarques
