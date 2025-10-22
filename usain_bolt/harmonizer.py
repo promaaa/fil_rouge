@@ -58,6 +58,22 @@ class TutorialHarmonizer:
                     for sol in solutions:
                         formatted = f"<strong>{titre_etape}</strong>"
                         
+                        # Images (ajoutées juste après le titre)
+                        images = sol.get("images", [])
+                        if images:
+                            formatted += "<div class='step-images'>"
+                            for img in images:
+                                url = img.get("url", "")
+                                alt = img.get("alt", "")
+                                description = img.get("description", "")
+                                if url:
+                                    formatted += f"<figure>"
+                                    formatted += f"<img src='{url}' alt='{alt}'>"
+                                    if description:
+                                        formatted += f"<figcaption>{description}</figcaption>"
+                                    formatted += f"</figure>"
+                            formatted += "</div>"
+                        
                         # Objectif
                         objectif = sol.get("objectif", "").strip()
                         if objectif:
