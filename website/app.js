@@ -1553,10 +1553,81 @@ function findBestMatch(input, database) {
   return null;
 }
 
+const $tutorialPage = document.getElementById("outputPage");
+const $tutorialContent = document.getElementById("outputContent");
+
 // ===== MODE CRÉATION =====
 const $objetCreation = document.getElementById("objetCreation");
 const $creationOut = document.getElementById("creationOut");
 const $btnCreation = document.getElementById("genCreation");
+
+function loadCreation(tutorial) {
+  $tutorialContent.innerHTML = `
+    <div class="tutorial-page">
+      <div class="result-header">
+        <h3>${tutorial.titre}</h3>
+        <div class="badges">
+          <span class="badge badge-difficulty">${tutorial.difficulté}</span>
+          <span class="badge badge-time">${tutorial.temps}</span>
+          <span class="badge badge-cost">${tutorial.cout}</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h4>Matériaux nécessaires</h4>
+        <ul class="material-list">
+          ${tutorial.materiaux.map((m) => `<li><span class="check">✓</span>${m}</li>`).join("")}
+        </ul>
+      </div>
+
+      <div class="section">
+        <h4>Outils requis</h4>
+        <ul class="tool-list">
+          ${tutorial.outils.map((o) => `<li><span class="tool-icon">•</span>${o}</li>`).join("")}
+        </ul>
+      </div>
+
+      <div class="section">
+        <h4>Étapes de fabrication</h4>
+        <ol class="steps-list">
+          ${tutorial.etapes
+            .map(
+              (e, i) => `
+            <li>
+              <span class="step-number">${i + 1}</span>
+              <span class="step-text">${e}</span>
+            </li>
+          `,
+            )
+            .join("")}
+        </ol>
+      </div>
+
+      <div class="section tips-section">
+        <h4>Conseils importants</h4>
+        <ul class="tips-list">
+          ${tutorial.conseils.map((c) => `<li><span class="tip-icon">•</span>${c}</li>`).join("")}
+        </ul>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-action btn-primary" onclick="window.print()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Imprimer
+        </button>
+        <button class="btn-action btn-secondary" onclick="navigator.clipboard.writeText(document.querySelector('.tutorial-result').innerText).then(() => showToast('✓ Tutoriel copié dans le presse-papiers'))">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Copier
+        </button>
+      </div>
+    </div>
+  `;
+  $tutorialPage.classList.add("active");
+}
 
 // Recherche avec Enter
 $objetCreation.addEventListener("keypress", (e) => {
@@ -1596,67 +1667,43 @@ $btnCreation.addEventListener("click", () => {
       $creationOut.innerHTML = `
         <div class="tutorial-result">
           <div class="result-header">
-            <h3>${tutorial.titre}</h3>
-            <div class="badges">
-              <span class="badge badge-difficulty">${tutorial.difficulté}</span>
-              <span class="badge badge-time">${tutorial.temps}</span>
-              <span class="badge badge-cost">${tutorial.cout}</span>
-            </div>
+            <span style="">
+              <h3>${tutorial.titre}</h3>
+              <div class="badges">
+                <span class="badge badge-difficulty">${tutorial.difficulté}</span>
+                <span class="badge badge-time">${tutorial.temps}</span>
+                <span class="badge badge-cost">${tutorial.cout}</span>
+              </div>
+            </span>
+            <span style="">
+              <button class="btn btn-open-tuto" id="btnSeeTutorialCreation">Voir tutorial</button>
+            <span>
           </div>
 
           <div class="section">
-            <h4>Matériaux nécessaires</h4>
-            <ul class="material-list">
-              ${tutorial.materiaux.map((m) => `<li><span class="check">✓</span>${m}</li>`).join("")}
-            </ul>
+            <span>
+              <strong>Matériaux nécessaires :</strong> 
+              ${tutorial.materiaux.toString()
+                  .replaceAll(",", ", ")
+                  .replace("[", "")
+                  .replace("]", "")
+              }
+            </span>
           </div>
 
           <div class="section">
-            <h4>Outils requis</h4>
-            <ul class="tool-list">
-              ${tutorial.outils.map((o) => `<li><span class="tool-icon">•</span>${o}</li>`).join("")}
-            </ul>
-          </div>
-
-          <div class="section">
-            <h4>Étapes de fabrication</h4>
-            <ol class="steps-list">
-              ${tutorial.etapes
-                .map(
-                  (e, i) => `
-                <li>
-                  <span class="step-number">${i + 1}</span>
-                  <span class="step-text">${e}</span>
-                </li>
-              `,
-                )
-                .join("")}
-            </ol>
-          </div>
-
-          <div class="section tips-section">
-            <h4>Conseils importants</h4>
-            <ul class="tips-list">
-              ${tutorial.conseils.map((c) => `<li><span class="tip-icon">•</span>${c}</li>`).join("")}
-            </ul>
-          </div>
-
-          <div class="action-buttons">
-            <button class="btn-action btn-primary" onclick="window.print()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              Imprimer
-            </button>
-            <button class="btn-action btn-secondary" onclick="navigator.clipboard.writeText(document.querySelector('.tutorial-result').innerText).then(() => showToast('✓ Tutoriel copié dans le presse-papiers'))">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Copier
-            </button>
+            <span>
+              <strong>Outils requis :</strong> 
+              ${tutorial.outils.toString()
+                  .replaceAll(",", ", ")
+                  .replace("[", "")
+                  .replace("]", "")
+              }
+            </span>
           </div>
         </div>
       `;
+      document.getElementById("btnSeeTutorialCreation").addEventListener("click", () => {document.getElementById("creation").classList.remove("active"); loadCreation(tutorial);}); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
       $creationOut.innerHTML = `
         <div class="tutorial-result">
@@ -1688,6 +1735,90 @@ $btnCreation.addEventListener("click", () => {
 const $objetRecyclage = document.getElementById("objetRecyclage");
 const $recyclageOut = document.getElementById("recyclageOut");
 const $btnRecyclage = document.getElementById("genRecyclage");
+
+function loadRecyclage(tutorial) {
+  $tutorialContent.innerHTML = `
+    <div class="tutorial-page">
+      <div class="result-header">
+        <h3>${tutorial.titre}</h3>
+        <div class="badges">
+          <span class="badge badge-difficulty">${tutorial.difficulté}</span>
+          <span class="badge badge-eco">Économie: ${tutorial.economie}</span>
+        </div>
+      </div>
+
+      <div class="section highlight-section">
+        <h4>Projet principal : ${tutorial.projet_principal.nom}</h4>
+        <p class="project-time">Temps estimé : ${tutorial.projet_principal.temps}</p>
+
+        <h5 style="margin-top: 16px;">Étapes :</h5>
+        <ol class="steps-list">
+          ${tutorial.projet_principal.etapes
+            .map(
+              (e, i) => `
+            <li>
+              <span class="step-number">${i + 1}</span>
+              <span class="step-text">${e}</span>
+            </li>
+          `,
+            )
+            .join("")}
+        </ol>
+
+        <div class="advantages">
+          <h5>Avantages :</h5>
+          <ul>
+            ${tutorial.projet_principal.avantages.map((a) => `<li>✓ ${a}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <h4>Autres projets possibles</h4>
+        <div class="project-chips">
+          ${tutorial.objets_possibles.map((p) => `<span class="project-chip">${p}</span>`).join("")}
+        </div>
+      </div>
+
+      <div class="section">
+        <h4>Composants récupérables</h4>
+        <div class="component-grid">
+          ${tutorial.composants_recuperables
+            .map(
+              (c) => `
+            <div class="component-item">
+              <span class="component-icon">📦</span>
+              <span>${c}</span>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
+      </div>
+
+      <div class="section eco-section">
+        <h4>Impact écologique</h4>
+        <p class="eco-impact">${tutorial.impact_eco}</p>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-action btn-primary" onclick="window.print()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Imprimer
+        </button>
+        <button class="btn-action btn-secondary" onclick="navigator.clipboard.writeText(document.querySelector('.recycle-result').innerText).then(() => showToast('✓ Tutoriel copié dans le presse-papiers'))">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          Copier
+        </button>
+      </div>
+    </div>
+  `;
+  $tutorialPage.classList.add("active");
+}
 
 // Recherche avec Enter
 $objetRecyclage.addEventListener("keypress", (e) => {
@@ -1727,45 +1858,25 @@ $btnRecyclage.addEventListener("click", () => {
       $recyclageOut.innerHTML = `
         <div class="tutorial-result recycle-result">
           <div class="result-header">
-            <h3>${tutorial.titre}</h3>
-            <div class="badges">
-              <span class="badge badge-difficulty">${tutorial.difficulté}</span>
-              <span class="badge badge-eco">Économie: ${tutorial.economie}</span>
-            </div>
+            <span>
+              <h3>${tutorial.titre}</h3>
+              <div class="badges">
+                <span class="badge badge-difficulty">${tutorial.difficulté}</span>
+                <span class="badge badge-eco">Économie: ${tutorial.economie}</span>
+              </div>
+            </span>
           </div>
 
           <div class="section highlight-section">
-            <h4>Projet principal : ${tutorial.projet_principal.nom}</h4>
-            <p class="project-time">Temps estimé : ${tutorial.projet_principal.temps}</p>
-
-            <h5 style="margin-top: 16px;">Étapes :</h5>
-            <ol class="steps-list">
-              ${tutorial.projet_principal.etapes
-                .map(
-                  (e, i) => `
-                <li>
-                  <span class="step-number">${i + 1}</span>
-                  <span class="step-text">${e}</span>
-                </li>
-              `,
-                )
-                .join("")}
-            </ol>
-
-            <div class="advantages">
-              <h5>Avantages :</h5>
-              <ul>
-                ${tutorial.projet_principal.avantages.map((a) => `<li>✓ ${a}</li>`).join("")}
-              </ul>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span>
+                <h4>Projet principal : ${tutorial.projet_principal.nom}</h4>
+                <p class="project-time">Temps estimé : ${tutorial.projet_principal.temps}</p>
+              </span>
+              <span>
+                <button class="btn btn-open-tuto" id="btnSeeTutorialRecyclage">Voir tutorial</button>
+              <span>
             </div>
-          </div>
-
-          <div class="section">
-            <h4>Autres projets possibles</h4>
-            <div class="project-chips">
-              ${tutorial.objets_possibles.map((p) => `<span class="project-chip">${p}</span>`).join("")}
-            </div>
-          </div>
 
           <div class="section">
             <h4>Composants récupérables</h4>
@@ -1782,28 +1893,8 @@ $btnRecyclage.addEventListener("click", () => {
                 .join("")}
             </div>
           </div>
-
-          <div class="section eco-section">
-            <h4>Impact écologique</h4>
-            <p class="eco-impact">${tutorial.impact_eco}</p>
-          </div>
-
-          <div class="action-buttons">
-            <button class="btn-action btn-primary" onclick="window.print()">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              Imprimer
-            </button>
-            <button class="btn-action btn-secondary" onclick="navigator.clipboard.writeText(document.querySelector('.recycle-result').innerText).then(() => showToast('✓ Tutoriel copié dans le presse-papiers'))">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Copier
-            </button>
-          </div>
-        </div>
       `;
+      document.getElementById("btnSeeTutorialRecyclage").addEventListener("click", () => {document.getElementById("recyclage").classList.remove("active"); loadRecyclage(tutorial);}); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
       $recyclageOut.innerHTML = `
         <div class="tutorial-result recycle-result">
