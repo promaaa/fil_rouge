@@ -67,10 +67,14 @@ class TutorialHarmonizer:
         difficulte = project_data.get("difficulté", [""])[0].strip()
         duree = project_data.get("durée", [""])[0].strip()
         cout = project_data.get("coût", [""])[0].strip()
+        # récupérer la clé du projet (ex: 'vélo') pour heuristiques
+        project_key = list(data.keys())[0] if isinstance(data, dict) and data else ""
         
         # Introduction avec structure hiérarchique
         intro_items = project_data.get("introduction", [])
         intro_formatted = self.format_hierarchical_list(intro_items)
+        # keep a fallback single-line intro for older templates, but also provide
+        # the list of intro items to the template so each can render as a paragraph
         intro = " ".join(intro_formatted) if intro_formatted else f"Ce tutoriel explique comment {titre.lower()}."
         
         # Matériaux et outils avec structure hiérarchique
@@ -90,19 +94,28 @@ class TutorialHarmonizer:
                 if solutions:
                     # Traiter chaque solution
                     for sol in solutions:
-                        formatted = f"<strong>{titre_etape}</strong>"  
+                        # include step number if present (e.g. "1. Titre")
+                        num = e.get('numero', None)
+                        num_str = f"{num}. " if (num is not None and str(num).strip() != "") else ""
+                        formatted = f"<strong>{num_str}{titre_etape}</strong>"
                         
                         # Images (ajoutées juste après le titre)
                         images = sol.get("images", [])
                         if images:
-                            formatted += "<div class='step-images'>"
+                            # ajouter une classe count-N pour faciliter le rendu côté template
+                            try:
+                                count = len(images)
+                            except Exception:
+                                count = 0
+                            formatted += f"<div class='step-images count-{count}'>"
                             for img in images:
                                 url = img.get("url", "")
                                 alt = img.get("alt", "")
                                 description = img.get("description", "")
                                 if url:
                                     formatted += f"<figure>"
-                                    formatted += f"<img src='{url}' alt='{alt}'>"
+                                    # add lazy loading to thumbnails to improve performance
+                                    formatted += f"<img src='{url}' alt='{alt}' loading='lazy'>"
                                     if description:
                                         formatted += f"<figcaption>{description}</figcaption>"
                                     formatted += f"</figure>"
@@ -223,19 +236,52 @@ class TutorialHarmonizer:
             else:
                 remarques_list.append(str(a))
         remarques = "<br>".join(remarques_list).strip()
+        # Mentions légales (priorité à la clé française "mentions légales", fallback variants)
+        mentions_raw = []
+        if isinstance(project_data, dict):
+            mentions_raw = project_data.get("mentions légales", project_data.get("mentions_legales", []))
+        mentions_legales = unique_preserve_order(self.format_hierarchical_list(mentions_raw))
 
         # Rendu via Jinja
         template = self.env.get_template("tutoriel_universel.html.j2")
+        # Déterminer le lien source : priorité à la clé 'liens' (peut être une chaîne ou une liste),
+        # ensuite à 'source', enfin heuristique basée sur la clé/titre.
+        source_link = ""
+        if isinstance(project_data, dict):
+            # préférence : 'liens' (français)
+            liens = project_data.get("liens", None)
+            if isinstance(liens, str) and liens.strip():
+                source_link = liens.strip()
+            elif isinstance(liens, (list, tuple)) and len(liens) > 0:
+                first = liens[0]
+                if isinstance(first, str) and first.strip():
+                    source_link = first.strip()
+
+            # fallback sur 'source' si rien trouvé
+            if not source_link:
+                src = project_data.get("source", "")
+                if isinstance(src, str) and src.strip():
+                    source_link = src.strip()
+
+        # heuristique finale
+        if not source_link:
+            key_lower = project_key.lower() if isinstance(project_key, str) else ""
+            titre_lower = titre.lower() if isinstance(titre, str) else ""
+            if "vélo" in key_lower or "velo" in key_lower or "vélo" in titre_lower or "velo" in titre_lower:
+                source_link = "https://wiki.lowtechlab.org/wiki/V%C3%A9lo_%C3%A0_assistance_%C3%A9lectrique"
         html_output = template.render(
             titre=titre,
             difficulte=difficulte,
             duree=duree,
             cout=cout,
+            source_link=source_link,
             materiaux=materiaux,
             outils=outils,
             etapes=etapes,
             remarques=remarques,
-            intro=intro
+            intro=intro,
+            intro_items=intro_formatted,
+            mentions_legales=mentions_legales
         )
         return html_output
 

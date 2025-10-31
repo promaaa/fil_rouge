@@ -49,27 +49,131 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
     .step-images {
       margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
     }
 
     figure {
-      margin: 1em 0;
+      margin: 0;
       text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    figure img {
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
       max-width: 100%;
-      height: auto;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
       border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
     }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
 
     figcaption {
       font-size: 0.9em;
       color: #666;
       margin-top: 0.5em;
       font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
     }
 
     footer {
@@ -92,7 +196,15 @@
 
   <header>
     <h1>Vélo à assistance électrique</h1>
-    <p>Dans ce tutoriel nous allons vous expliquer comment modifier un vélo classique pour lui ajouter une assistance électrique. Celle-ci vous permettra de facilement franchir les pentes les plus raides et de rouler plus vite en fournissant moins d'effort. L'objectif est de récupérer un hoverboard en panne et d'utiliser ses composants pour créer une assistance électrique sur un vélo classique. Attention ! Les différentes étapes impliquent beaucoup d'électronique, de soudure et de mécanique. Nous vous conseillons donc de bien lire ce tutoriel et de vous renseigner de votre côté sur les différentes sources fournies avant de vous lancer dans la construction de ce vélo à assistance électrique. Ce projet permet de donner une seconde vie à un hoverboard tout en permettant une mobilité plus douce. Ce tutoriel s'inscrit dans une démarche de réemploi et de réduction des déchets électroniques.</p>
+    
+      
+        <p>Dans ce tutoriel nous allons vous expliquer comment modifier un vélo classique pour lui ajouter une assistance électrique. Celle-ci vous permettra de facilement franchir les pentes les plus raides et de rouler plus vite en fournissant moins d'effort. L'objectif est de récupérer un hoverboard en panne et d'utiliser ses composants pour créer une assistance électrique sur un vélo classique.</p>
+      
+        <p>Attention ! Les différentes étapes impliquent beaucoup d'électronique, de soudure et de mécanique. Nous vous conseillons donc de bien lire ce tutoriel et de vous renseigner de votre côté sur les différentes sources fournies avant de vous lancer dans la construction de ce vélo à assistance électrique.</p>
+      
+        <p>Ce projet permet de donner une seconde vie à un hoverboard tout en permettant une mobilité plus douce. Ce tutoriel s'inscrit dans une démarche de réemploi et de réduction des déchets électroniques.</p>
+      
+    
     
     <p style="color: #666; font-size: 0.95em;">
       <strong>Difficulté :</strong> Difficile &nbsp;&nbsp; 
@@ -100,13 +212,19 @@
       <strong>Coût :</strong> 50-100 EUR (€)
     </p>
     
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/V%C3%A9lo_%C3%A0_assistance_%C3%A9lectrique" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/V%C3%A9lo_%C3%A0_assistance_%C3%A9lectrique</a>
+    </p>
+    
+    
   </header>
 
-  <div class="section">
+  <div class="section materials">
     <h2>🛠️ Matériaux</h2>
     
       <ul>
-        <li>Moteur + roue de hoverboard 6" : 36v</li><li>Batterie 36V 4.4Ah</li><li>Chargeur 36V</li><li>Tous ces éléments se trouvent sur un hoverboard de récupération ou d'occasion. Un hoverboard d'occasion peut se trouver pour 50€ à 100€.</li><li>Contrôleur e-bike 24V/36V 250w : ~26€ (Disponible sur Aliexpress pour moins cher)</li><li>Capteur PAS (Attention : Vérifiez bien, avant de commencer/commander quoi que ce soit, que l'écart entre le cadre et la manivelle de pédalier est, au minimum, de 4.5mm sinon vous ne pourrez pas monter le capteur)</li><li>Capteur à monter sur le pédalier, à effet hall + disque avec aimants</li><li>2 options en fonction du boitier de pédalier du vélo :<ul><li>à axes carrés ("universel"): ~8€</li><li>à axes carrés dernières générations ("intégré") : ~8€</li></ul></li><li>Remarque : malheureusement pour les boitiers de pédaliers à roulements externes il n'existe pas de capteurs PAS vendus à l'unité, adaptés à notre tutoriel.</li><li>Capteur de frein Ebike (à monter au niveau des leviers de freins): ~4-7€ (peut être trouvé sur Ali express)</li><li>Transistor (permet d'obtenir le bon signal du capteur de pédalage si celui-ci envoie un signal inversé), peut ne pas être nécessaire suivant le capteur PAS, Référence : BS170 : ~3-5€ (par 10 pièces voir plus)</li><li>Connecteurs XT60 pour sécuriser le branchement de la batterie : ~10€ les 25 paires</li><li>Tube ouvert en métal</li><li>Équerre en métal</li><li>Colliers de serrages pour fixer les différents composants sur le vélo</li><li>Gaine thermo-rétractable (optionnel, pour isoler de l'eau)</li><li>Éléments de fixation pour le contrôleur, la batterie et la roue</li>
+        <li>Moteur + roue de hoverboard 6" : 36v</li><li>Batterie 36V 4.4Ah</li><li>Chargeur 36V</li><li>Tous ces éléments se trouvent sur un hoverboard de récupération ou d'occasion.<ul><li>Un hoverboard d'occasion peut se trouver pour 50€ à 100€.</li></ul></li><li>Contrôleur e-bike 24V/36V 250w<ul><li>26€ (Disponible sur Aliexpress pour moins cher)</li></ul></li><li>Capteur PAS<ul><li>Attention : Vérifiez bien, avant de commencer/commander quoi que ce soit, que l'écart entre le cadre et la manivelle de pédalier est, au minimum, de 4.5mm sinon vous ne pourrez pas monter le capteur</li></ul></li><li>Capteur à monter sur le pédalier, à effet hall + disque avec aimants</li><li>2 options en fonction du boitier de pédalier du vélo :<ul><li>à axes carrés ("universel"): 8€</li><li>à axes carrés dernières générations ("intégré") : 8€</li></ul></li><li>Remarque : malheureusement pour les boitiers de pédaliers à roulements externes il n'existe pas de capteurs PAS vendus à l'unité, adaptés à notre tutoriel.</li><li>Capteur de frein Ebike (à monter au niveau des leviers de freins)<ul><li>4-7€ (peut être trouvé sur Ali express)</li></ul></li><li>Transistor (permet d'obtenir le bon signal du capteur de pédalage si celui-ci envoie un signal inversé), peut ne pas être nécessaire suivant le capteur PAS<ul><li>Référence : BS170 : 3-5€ (par 10 pièces voir plus)</li></ul></li><li>Connecteurs XT60 pour sécuriser le branchement de la batterie<ul><li>10€ les 25 paires</li></ul></li><li>Tube ouvert en métal</li><li>Équerre en métal</li><li>Colliers de serrages pour fixer les différents composants sur le vélo</li><li>Gaine thermo-rétractable<ul><li>optionnel, pour isoler de l'eau</li></ul></li><li>Éléments de fixation pour le contrôleur, la batterie et la roue</li>
       </ul>
     
   </div>
@@ -120,14 +238,113 @@
     
   </div>
 
-  <div class="section">
+  <div class="section steps">
     <h2> Étapes</h2>
     
       <ol>
-        <li><strong>Démontage Hoverboard</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9e/V_lo_assistance_lectrique_demontage_hoverboard.png/800px-V_lo_assistance_lectrique_demontage_hoverboard.png' alt='Démontage de l'hoverboard'><figcaption>Vue du démontage de l'hoverboard avec identification des composants principaux</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a7/V_lo_assistance_lectrique_hoverboard_demont_.png/800px-V_lo_assistance_lectrique_hoverboard_demont_.png' alt='Hoverboard démonté'><figcaption>Vue détaillée des composants après démontage complet</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/V_lo_assistance_lectrique_base_hoverboard.png/800px-V_lo_assistance_lectrique_base_hoverboard.png' alt='Batterie et carte mère'><figcaption>Vue détaillée de la batterie et de la carte mère à conserver</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Enlever la coque plastique qui enferme tous les composants électroniques.</li><li>Faire attention aux fils possiblement connectés aux coques plastique.</li><li>Débrancher les câbles tout en repérant leur branchement.</li><li>Garder de côté le câble de charge et repérer sur la carte mère l'endroit où celui-ci est relié.</li><li>Démonter soigneusement la batterie après l'avoir débranchée.</li><li>Démonter les cartes "Capteur" pour accéder aux fixations des moteurs.</li><li>Dévisser avec une clef Allen pour obtenir la roue motorisée.</li></ol><p><strong>Remarques :</strong></p><ul><li>Attention : La batterie est l'élément le plus dangereux. Garder la carte mère pour permettre la recharge de la batterie.</li><li>Manipulez la batterie avec précaution et évitez tout court-circuit.</li></ul></li><li><strong>Installation du capteur PAS Situation 1 (vélo à boitier de pédalier à axe carrés capteur "universel")</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/7/7e/V_lo_assistance_lectrique_e21.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/3/31/V_lo_assistance_lectrique_e22.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d0/V_lo_assistance_lectrique_e23.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/3/32/V_lo_assistance_lectrique_e24.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ea/V_lo_assistance_lectrique_e25.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Démonter la manivelle avec les plateaux du côté de la transmission.</li><li>Dévisser le cache situé derrière (attention le pas de la vis peut être un pas à gauche).</li><li>Placer le capteur PAS sur cet axe et revisser le cache pour le caler.</li><li>La partie en plastique noir doit être orientée vers l'extérieur et la flêche indiquant le sens de rotation vers l'avant du vélo.</li><li>Placer le disque aimanté sur l'axe du pédalier.</li><li>Veillez à bien laisser un petit espace entre le capteur et le disque pour éviter les frottements.</li><li>Remonter le pédalier.</li></ol><p><strong>Remarques :</strong></p><ul><li>Attention à ne pas perdre les roulements du pédalier.</li></ul></li><li><strong>Installation du capteur PAS Situation 2 (vélo à boitier de pédalier à axe carrés nouvelle génération, capteur "intégré")</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/b/b8/V_lo_assistance_lectrique_e27.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/2/28/V_lo_assistance_lectrique_e28.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/3/38/V_lo_assistance_lectrique_e29.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/8/8f/V_lo_assistance_lectrique_e210.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure></div><p><strong>Matériaux et outils :</strong></p><ul><li>Clé allen</li><li>Arrache-manivelle</li><li>Clé de 15mm</li></ul><p><strong>Étapes :</strong></p><ol><li>Démonter la manivelle gauche avec l'arrache-manivelle.</li><li>Déboulonner la manivelle avec la clé allen.</li><li>Installer l'arrache-manivelle dans le filetage ainsi libéré.</li><li>Visser l'arrache-manivelle à l'aide de la clé de 15mm pour faire sortir la manivelle.</li><li>Nettoyer soigneusement les cannelures du boîtier.</li><li>Encastrer le capteur dans les cannelures du boîtier en respectant le sens de rotation.</li><li>Vérifier l'alignement du capteur par rapport au disque magnétique.</li><li>Remonter la manivelle en s'assurant de ne pas endommager le capteur.</li><li>Tester le capteur avec un multimètre pour vérifier qu'il détecte bien la rotation.</li></ol><p><strong>Remarques :</strong></p><ul><li>La distance entre le capteur et les aimants est critique - elle doit être de 1-2mm maximum.</li><li>Si le capteur est mal positionné, l'assistance ne fonctionnera pas correctement.</li><li>Vérifiez qu'il n'y a pas de frottement lors de la rotation du pédalier.</li></ul></li><li><strong>Isoler la petite caisse</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/e/e3/V_lo_assistance_lectrique_e31.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b5/V_lo_assistance_lectrique_e32.png' alt='Installation capteur PAS'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper 1 ou plusieurs couche(s) d'isolant en fonction de vos mesures et de la taille de vos couvertures.</li><li>Recouvrir la petite boite de couvertures à l'intérieur et à l'extérieur.</li></ol><p><strong>Remarques :</strong></p><ul><li>Conseil : Fixer les couvertures avec des clous et du scotch.</li></ul></li><li><strong>Fixation de la roue d'hoverboard</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/7/76/V_lo_assistance_lectrique_e41.png' alt='Fixation de la roue'><figcaption>Vue de la fixation de la roue d'hoverboard sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2c/V_lo_assistance_lectrique_e42.png' alt='Contact roue motrice'><figcaption>Vue du contact entre la roue motrice et la roue du vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b3/V_lo_assistance_lectrique_e43.png' alt='Fixation de la roue'><figcaption>Vue de la fixation de la roue d'hoverboard sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e4/V_lo_assistance_lectrique_e44.jpg' alt='Contact roue motrice'><figcaption>Vue du contact entre la roue motrice et la roue du vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/5/5b/V_lo_assistance_lectrique_e45.png' alt='Fixation de la roue'><figcaption>Vue de la fixation de la roue d'hoverboard sur le vélo</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Solution 1 (plus résistant et moins coûteux si vous disposez d'un poste de soudure à l'arc) : Souder l'axe sortant du moteur à une extrémité d'une barre de fixation (profilé ouvert).</li><li>Souder une équerre à la base du hauban, à la jointure avec le tube de selle, de manière légèrement inclinée.</li><li>Solution 2 (non permanente et réglable) : Fixer un tube en métal sur la tige de selle en l'écrasant contre celle-ci avec des plaquettes en métal et 4 boulons.</li></ol><p><strong>Remarques :</strong></p><ul><li>La roue du hoverboard doit bien appuyer sur la roue arrière du vélo.</li><li>Le réglage en hauteur de la selle permet d'appliquer plus ou moins de pression.</li></ul></li><li><strong>Installation de contrôleur - Câblage</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/a/a8/V_lo_assistance_lectrique_e51.png' alt='Câblage du contrôleur'><figcaption>Schéma de câblage du contrôleur avec les différentes connexions</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/9/96/V_lo_assistance_lectrique_e52.png' alt='Installation du contrôleur'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/d/df/V_lo_assistance_lectrique_e53.png' alt='Installation du contrôleur'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Repérer les pôles positifs et négatifs de l'alimentation sur la batterie.</li><li>Souder un connecteur XT60 femelle (câble noir à la borne -, câble rouge à la borne +) avec de la soudure de qualité.</li><li>Protéger chaque soudure avec de la gaine thermorétractable.</li><li>Brancher dans l'ordre :<ul><li>Le capteur PAS sur le connecteur approprié</li><li>Les trois lignes d'alimentation du moteur brushless</li><li>Le capteur à effet Hall du moteur</li><li>Les capteurs de frein sur les connecteurs dédiés</li></ul></li><li>Vérifier que le capteur PAS renvoie une tension lorsqu'un aimant passe devant avec le multimètre.</li><li>Dans le cas contraire, utiliser le transistor BS170 pour inverser le signal.</li><li>Tester le bon fonctionnement de tous les capteurs avant de finaliser l'installation.</li><li>Fixer solidement le contrôleur sur le cadre à l'abri des projections d'eau.</li></ol><p><strong>Remarques :</strong></p><ul><li>Les lignes d'auto réglage servent à synchroniser le moteur et si besoin, le sens de rotation.</li><li>Vérifiez l'étanchéité de toutes les connexions.</li><li>Le contrôleur doit être placé dans un endroit ventilé pour éviter la surchauffe.</li><li>Un fusible de protection est recommandé sur le circuit d'alimentation.</li></ul></li><li><strong>Installation de contrôleur - Isolation</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/a/a8/V_lo_assistance_lectrique_e54.jpg' alt='Installation du contrôleur'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/8/8e/V_lo_assistance_lectrique_e55.jpg' alt='Installation du contrôleur'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure></div><p><em>Isoler le contrôleur de l'humidité avec la batterie.</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Bouteille de 1,5L ou 2L</li><li>Éponge</li><li>Isolant (type silicone)</li><li>Colliers de serrage ou scotch</li></ul><p><strong>Étapes :</strong></p><ol><li>Découper le fond de la bouteille sur quelques centimètres (4-5cm), placer le goulot vers le pédalier pour y faire passer les câbles.</li><li>Les batteries LIPO sont sensibles aux vibrations, les recouvrir d'une couche d'éponge.</li><li>Fermer les ouvertures nécessaires pour les fils par un isolant (type silicone).</li><li>Fixer la bouteille au cadre avec des colliers de serrage ou du scotch.</li></ol><p><strong>Remarques :</strong></p><ul><li>Optionnel : Remplacer la bouteille par une boîte en plastique spécialement conçue pour contenir une batterie.</li></ul></li><li><strong>Recharge de la batterie</strong><div class='step-images'><figure><img src='https://wiki.lowtechlab.org/images/1/1a/V_lo_assistance_lectrique_e61.png' alt='Câblage du contrôleur'><figcaption>Schéma de câblage du contrôleur avec les différentes connexions</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e4/V_lo_assistance_lectrique_e62.png' alt='Installation du contrôleur'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Reprendre la carte mère de l'hoverboard ainsi que le câble de charge qui doit être reconnecté.</li><li>Fabriquer une boîte pour ranger la carte et ne laisser sortir que la fiche du câble de charge soigneusement rebranché sur la carte mère ainsi que le câble de la batterie.</li><li>Tous les autres câbles non utilisés doivent être inaccessibles et isolés.</li></ol><p><strong>Remarques :</strong></p><ul><li>La fiche jaune doit être de format XT60 et être compatible avec la fiche XT60 male du câble de la batterie.</li></ul></li><li><strong>Tests et Maintenance</strong><p><em>S'assurer du bon fonctionnement du vélo et maintenir le système en bon état</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Multimètre</li><li>Chiffon propre</li><li>Lubrifiant pour chaîne</li><li>Outils de base</li></ul><p><strong>Étapes :</strong></p><ol><li>Tests initiaux :<ul><li>Vérifier toutes les connexions électriques</li><li>Tester les freins avec le système coupé</li><li>Vérifier le bon fonctionnement du capteur PAS</li><li>Tester l'assistance progressivement</li></ul></li><li>Maintenance régulière :<ul><li>Nettoyer le système après chaque utilisation sous la pluie</li><li>Vérifier l'étanchéité des boîtiers</li><li>Contrôler la tension de la batterie</li><li>Vérifier le serrage de tous les composants</li><li>Lubrifier la chaîne et les parties mobiles</li></ul></li><li>Dépannage courant :<ul><li>Si pas d'assistance : vérifier la batterie et les connexions</li><li>Si assistance irrégulière : nettoyer et réaligner le capteur PAS</li><li>Si bruits anormaux : vérifier la fixation du moteur</li></ul></li></ol><p><strong>Remarques :</strong></p><ul><li>Gardez un journal des maintenances effectuées</li><li>Vérifiez régulièrement l'état de la batterie</li><li>En cas de doute, faites vérifier par un professionnel</li></ul></li><li><strong>Modification du moteur (gain de vitesse mais consommation électrique plus importante)</strong><p><em>Cette étape est nécessaire si il y a besoin de plus de vitesse. Pour que le moteur de hoverboard puisse correctement entraîner la roue, il faut changer son couplage, passer d'un couplage étoile à un couplage triangle.</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Multimètre</li><li>Gaine thermo-rétractable</li></ul><p><strong>Étapes :</strong></p><ol><li>Démonter le moteur pour séparer le stator et le rotor.</li><li>Retirer la gaine d'isolation, dessouder l'endroit où les bobinages se rejoignent et séparer les trois bornes principales.</li><li>Enlever les gaines isolantes au niveau du centre du moteur.</li><li>Identifier les paires de bornes internes et externes reliées avec un multimètre en mode ohmmètre.</li><li>Réaliser le couplage en triangle en soudant : borne interne 'a' avec borne externe 'B', 'b' avec 'C', 'c' avec 'A'.</li><li>Utiliser de la gaine thermo-rétractable pour isoler.</li><li>Bien ranger les fils à l'intérieur et remonter le moteur modifié.</li></ol><p><strong>Remarques :</strong></p><ul><li>L'opération est compliquée et il ne faut pas dépasser les limites réglementaires.</li></ul></li>
+        <li><strong>1. Démontage Hoverboard</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9e/V_lo_assistance_lectrique_demontage_hoverboard.png/800px-V_lo_assistance_lectrique_demontage_hoverboard.png' alt='Démontage de l'hoverboard' loading='lazy'><figcaption>Vue du démontage de l'hoverboard avec identification des composants principaux</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a7/V_lo_assistance_lectrique_hoverboard_demont_.png/800px-V_lo_assistance_lectrique_hoverboard_demont_.png' alt='Hoverboard démonté' loading='lazy'><figcaption>Vue détaillée des composants après démontage complet</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/V_lo_assistance_lectrique_base_hoverboard.png/800px-V_lo_assistance_lectrique_base_hoverboard.png' alt='Batterie et carte mère' loading='lazy'><figcaption>Vue détaillée de la batterie et de la carte mère à conserver</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Enlever la coque plastique qui enferme tous les composants électroniques.</li><li>Faire attention aux fils possiblement connectés aux coques plastique.</li><li>Débrancher les câbles tout en repérant leur branchement.</li><li>Garder de côté le câble de charge et repérer sur la carte mère l'endroit où celui-ci est relié.</li><li>Démonter soigneusement la batterie après l'avoir débranchée.</li><li>Démonter les cartes "Capteur" pour accéder aux fixations des moteurs.</li><li>Dévisser avec une clef Allen pour obtenir la roue motorisée.</li></ol><p><strong>Remarques :</strong></p><ul><li>Attention : La batterie est l'élément le plus dangereux. Garder la carte mère pour permettre la recharge de la batterie.</li><li>Manipulez la batterie avec précaution et évitez tout court-circuit.</li></ul></li><li><strong>2. Installation du capteur PAS Situation 1 (vélo à boitier de pédalier à axe carrés capteur "universel")</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/7/7e/V_lo_assistance_lectrique_e21.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/3/31/V_lo_assistance_lectrique_e22.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d0/V_lo_assistance_lectrique_e23.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/3/32/V_lo_assistance_lectrique_e24.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ea/V_lo_assistance_lectrique_e25.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Démonter la manivelle avec les plateaux du côté de la transmission.</li><li>Dévisser le cache situé derrière (attention le pas de la vis peut être un pas à gauche).</li><li>Placer le capteur PAS sur cet axe et revisser le cache pour le caler.</li><li>La partie en plastique noir doit être orientée vers l'extérieur et la flêche indiquant le sens de rotation vers l'avant du vélo.</li><li>Placer le disque aimanté sur l'axe du pédalier.</li><li>Veillez à bien laisser un petit espace entre le capteur et le disque pour éviter les frottements.</li><li>Remonter le pédalier.</li></ol><p><strong>Remarques :</strong></p><ul><li>Attention à ne pas perdre les roulements du pédalier.</li></ul></li><li><strong>3. Installation du capteur PAS Situation 2 (vélo à boitier de pédalier à axe carrés nouvelle génération, capteur "intégré")</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/b/b8/V_lo_assistance_lectrique_e27.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/2/28/V_lo_assistance_lectrique_e28.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/3/38/V_lo_assistance_lectrique_e29.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/8/8f/V_lo_assistance_lectrique_e210.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure></div><p><strong>Matériaux et outils :</strong></p><ul><li>Clé allen</li><li>Arrache-manivelle</li><li>Clé de 15mm</li></ul><p><strong>Étapes :</strong></p><ol><li>Démonter la manivelle gauche avec l'arrache-manivelle.</li><li>Déboulonner la manivelle avec la clé allen.</li><li>Installer l'arrache-manivelle dans le filetage ainsi libéré.</li><li>Visser l'arrache-manivelle à l'aide de la clé de 15mm pour faire sortir la manivelle.</li><li>Nettoyer soigneusement les cannelures du boîtier.</li><li>Encastrer le capteur dans les cannelures du boîtier en respectant le sens de rotation.</li><li>Vérifier l'alignement du capteur par rapport au disque magnétique.</li><li>Remonter la manivelle en s'assurant de ne pas endommager le capteur.</li><li>Tester le capteur avec un multimètre pour vérifier qu'il détecte bien la rotation.</li></ol><p><strong>Remarques :</strong></p><ul><li>La distance entre le capteur et les aimants est critique - elle doit être de 1-2mm maximum.</li><li>Si le capteur est mal positionné, l'assistance ne fonctionnera pas correctement.</li><li>Vérifiez qu'il n'y a pas de frottement lors de la rotation du pédalier.</li></ul></li><li><strong>4. Isoler la petite caisse</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/e/e3/V_lo_assistance_lectrique_e31.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b5/V_lo_assistance_lectrique_e32.png' alt='Installation capteur PAS' loading='lazy'><figcaption>Vue détaillée de l'installation du capteur PAS sur le pédalier</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper 1 ou plusieurs couche(s) d'isolant en fonction de vos mesures et de la taille de vos couvertures.</li><li>Recouvrir la petite boite de couvertures à l'intérieur et à l'extérieur.</li></ol><p><strong>Remarques :</strong></p><ul><li>Conseil : Fixer les couvertures avec des clous et du scotch.</li></ul></li><li><strong>5. Fixation de la roue d'hoverboard</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/7/76/V_lo_assistance_lectrique_e41.png' alt='Fixation de la roue' loading='lazy'><figcaption>Vue de la fixation de la roue d'hoverboard sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2c/V_lo_assistance_lectrique_e42.png' alt='Contact roue motrice' loading='lazy'><figcaption>Vue du contact entre la roue motrice et la roue du vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b3/V_lo_assistance_lectrique_e43.png' alt='Fixation de la roue' loading='lazy'><figcaption>Vue de la fixation de la roue d'hoverboard sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e4/V_lo_assistance_lectrique_e44.jpg' alt='Contact roue motrice' loading='lazy'><figcaption>Vue du contact entre la roue motrice et la roue du vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/5/5b/V_lo_assistance_lectrique_e45.png' alt='Fixation de la roue' loading='lazy'><figcaption>Vue de la fixation de la roue d'hoverboard sur le vélo</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Solution 1 (plus résistant et moins coûteux si vous disposez d'un poste de soudure à l'arc) : Souder l'axe sortant du moteur à une extrémité d'une barre de fixation (profilé ouvert).</li><li>Souder une équerre à la base du hauban, à la jointure avec le tube de selle, de manière légèrement inclinée.</li><li>Solution 2 (non permanente et réglable) : Fixer un tube en métal sur la tige de selle en l'écrasant contre celle-ci avec des plaquettes en métal et 4 boulons.</li></ol><p><strong>Remarques :</strong></p><ul><li>La roue du hoverboard doit bien appuyer sur la roue arrière du vélo.</li><li>Le réglage en hauteur de la selle permet d'appliquer plus ou moins de pression.</li></ul></li><li><strong>6. Installation de contrôleur - Câblage</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/a/a8/V_lo_assistance_lectrique_e51.png' alt='Câblage du contrôleur' loading='lazy'><figcaption>Schéma de câblage du contrôleur avec les différentes connexions</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/9/96/V_lo_assistance_lectrique_e52.png' alt='Installation du contrôleur' loading='lazy'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/d/df/V_lo_assistance_lectrique_e53.png' alt='Installation du contrôleur' loading='lazy'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Repérer les pôles positifs et négatifs de l'alimentation sur la batterie.</li><li>Souder un connecteur XT60 femelle (câble noir à la borne -, câble rouge à la borne +) avec de la soudure de qualité.</li><li>Protéger chaque soudure avec de la gaine thermorétractable.</li><li>Brancher dans l'ordre :<ul><li>Le capteur PAS sur le connecteur approprié</li><li>Les trois lignes d'alimentation du moteur brushless</li><li>Le capteur à effet Hall du moteur</li><li>Les capteurs de frein sur les connecteurs dédiés</li></ul></li><li>Vérifier que le capteur PAS renvoie une tension lorsqu'un aimant passe devant avec le multimètre.</li><li>Dans le cas contraire, utiliser le transistor BS170 pour inverser le signal.</li><li>Tester le bon fonctionnement de tous les capteurs avant de finaliser l'installation.</li><li>Fixer solidement le contrôleur sur le cadre à l'abri des projections d'eau.</li></ol><p><strong>Remarques :</strong></p><ul><li>Les lignes d'auto réglage servent à synchroniser le moteur et si besoin, le sens de rotation.</li><li>Vérifiez l'étanchéité de toutes les connexions.</li><li>Le contrôleur doit être placé dans un endroit ventilé pour éviter la surchauffe.</li><li>Un fusible de protection est recommandé sur le circuit d'alimentation.</li></ul></li><li><strong>7. Installation de contrôleur - Isolation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/a/a8/V_lo_assistance_lectrique_e54.jpg' alt='Installation du contrôleur' loading='lazy'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/8/8e/V_lo_assistance_lectrique_e55.jpg' alt='Installation du contrôleur' loading='lazy'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure></div><p><em>Isoler le contrôleur de l'humidité avec la batterie.</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Bouteille de 1,5L ou 2L</li><li>Éponge</li><li>Isolant (type silicone)</li><li>Colliers de serrage ou scotch</li></ul><p><strong>Étapes :</strong></p><ol><li>Découper le fond de la bouteille sur quelques centimètres (4-5cm), placer le goulot vers le pédalier pour y faire passer les câbles.</li><li>Les batteries LIPO sont sensibles aux vibrations, les recouvrir d'une couche d'éponge.</li><li>Fermer les ouvertures nécessaires pour les fils par un isolant (type silicone).</li><li>Fixer la bouteille au cadre avec des colliers de serrage ou du scotch.</li></ol><p><strong>Remarques :</strong></p><ul><li>Optionnel : Remplacer la bouteille par une boîte en plastique spécialement conçue pour contenir une batterie.</li></ul></li><li><strong>8. Recharge de la batterie</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/1/1a/V_lo_assistance_lectrique_e61.png' alt='Câblage du contrôleur' loading='lazy'><figcaption>Schéma de câblage du contrôleur avec les différentes connexions</figcaption></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e4/V_lo_assistance_lectrique_e62.png' alt='Installation du contrôleur' loading='lazy'><figcaption>Vue de l'installation du contrôleur sur le vélo</figcaption></figure></div><p><strong>Étapes :</strong></p><ol><li>Reprendre la carte mère de l'hoverboard ainsi que le câble de charge qui doit être reconnecté.</li><li>Fabriquer une boîte pour ranger la carte et ne laisser sortir que la fiche du câble de charge soigneusement rebranché sur la carte mère ainsi que le câble de la batterie.</li><li>Tous les autres câbles non utilisés doivent être inaccessibles et isolés.</li></ol><p><strong>Remarques :</strong></p><ul><li>La fiche jaune doit être de format XT60 et être compatible avec la fiche XT60 male du câble de la batterie.</li></ul></li><li><strong>9. Tests et Maintenance</strong><p><em>S'assurer du bon fonctionnement du vélo et maintenir le système en bon état</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Multimètre</li><li>Chiffon propre</li><li>Lubrifiant pour chaîne</li><li>Outils de base</li></ul><p><strong>Étapes :</strong></p><ol><li>Tests initiaux :<ul><li>Vérifier toutes les connexions électriques</li><li>Tester les freins avec le système coupé</li><li>Vérifier le bon fonctionnement du capteur PAS</li><li>Tester l'assistance progressivement</li></ul></li><li>Maintenance régulière :<ul><li>Nettoyer le système après chaque utilisation sous la pluie</li><li>Vérifier l'étanchéité des boîtiers</li><li>Contrôler la tension de la batterie</li><li>Vérifier le serrage de tous les composants</li><li>Lubrifier la chaîne et les parties mobiles</li></ul></li><li>Dépannage courant :<ul><li>Si pas d'assistance : vérifier la batterie et les connexions</li><li>Si assistance irrégulière : nettoyer et réaligner le capteur PAS</li><li>Si bruits anormaux : vérifier la fixation du moteur</li></ul></li></ol><p><strong>Remarques :</strong></p><ul><li>Gardez un journal des maintenances effectuées</li><li>Vérifiez régulièrement l'état de la batterie</li><li>En cas de doute, faites vérifier par un professionnel</li></ul></li><li><strong>10. Modification du moteur (gain de vitesse mais consommation électrique plus importante)</strong><p><em>Cette étape est nécessaire si il y a besoin de plus de vitesse. Pour que le moteur de hoverboard puisse correctement entraîner la roue, il faut changer son couplage, passer d'un couplage étoile à un couplage triangle.</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Multimètre</li><li>Gaine thermo-rétractable</li></ul><p><strong>Étapes :</strong></p><ol><li>Démonter le moteur pour séparer le stator et le rotor.</li><li>Retirer la gaine d'isolation, dessouder l'endroit où les bobinages se rejoignent et séparer les trois bornes principales.</li><li>Enlever les gaines isolantes au niveau du centre du moteur.</li><li>Identifier les paires de bornes internes et externes reliées avec un multimètre en mode ohmmètre.</li><li>Réaliser le couplage en triangle en soudant : borne interne 'a' avec borne externe 'B', 'b' avec 'C', 'c' avec 'A'.</li><li>Utiliser de la gaine thermo-rétractable pour isoler.</li><li>Bien ranger les fils à l'intérieur et remonter le moteur modifié.</li></ol><p><strong>Remarques :</strong></p><ul><li>L'opération est compliquée et il ne faut pas dépasser les limites réglementaires.</li></ul></li>
       </ol>
     
   </div>
+
+  
+  <div class="section">
+    <h2>📝 Mentions légales</h2>
+    <ul>
+      
+        <li>Avec les modifications qui vont être apportées, ce vélo respectera la réglementation européenne concernant les vélos à assistance électrique.</li>
+      
+        <li>Points importants de la réglementation :<ul><li>L'assistance ne doit fonctionner que jusqu'à une vitesse de 25 km/h (il est possible de pédaler plus vite, mais sans assistance)</li><li>La puissance du moteur ne doit pas excéder 250W</li><li>L'assistance doit être activée par le pédalage</li><li>Quand l'utilisateur arrête de pédaler le moteur se coupe</li><li>La modification ne doit pas altérer la sécurité et l'efficacité du freinage</li></ul></li>
+      
+        <li>Le vélo ne pourra cependant pas être homologué ce qui ne vous posera pas de problème concernant les forces de l'ordre mais vous ne serez pas assuré en cas d'accident.</li>
+      
+    </ul>
+  </div>
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
 
   
 
