@@ -60,13 +60,16 @@ class TutorialHarmonizer:
 
     def harmonize(self, data: dict):
         # On prend la première clé du dictionnaire (vélo, marmite, etc.)
-        project_data = list(data.values())[0]
+        project_data = list(data.values())[2]
         
         # Normalisation
         titre = project_data.get("titre", ["Projet maker"])[0].strip()
         difficulte = project_data.get("difficulté", [""])[0].strip()
         duree = project_data.get("durée", [""])[0].strip()
         cout = project_data.get("coût", [""])[0].strip()
+        image = project_data.get("image", [{}])[0]
+        main_image_url = image.get("url", "").strip()
+        main_image_caption = image.get("description", "").strip()
         # récupérer la clé du projet (ex: 'vélo') pour heuristiques
         project_key = list(data.keys())[0] if isinstance(data, dict) and data else ""
         
@@ -256,21 +259,11 @@ class TutorialHarmonizer:
                 first = liens[0]
                 if isinstance(first, str) and first.strip():
                     source_link = first.strip()
-
-            # fallback sur 'source' si rien trouvé
-            if not source_link:
-                src = project_data.get("source", "")
-                if isinstance(src, str) and src.strip():
-                    source_link = src.strip()
-
-        # heuristique finale
-        if not source_link:
-            key_lower = project_key.lower() if isinstance(project_key, str) else ""
-            titre_lower = titre.lower() if isinstance(titre, str) else ""
-            if "vélo" in key_lower or "velo" in key_lower or "vélo" in titre_lower or "velo" in titre_lower:
-                source_link = "https://wiki.lowtechlab.org/wiki/V%C3%A9lo_%C3%A0_assistance_%C3%A9lectrique"
+                    
         html_output = template.render(
             titre=titre,
+            main_image_url= main_image_url,
+            main_image_caption= main_image_caption,
             difficulte=difficulte,
             duree=duree,
             cout=cout,

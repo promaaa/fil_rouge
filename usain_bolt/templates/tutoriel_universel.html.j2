@@ -196,6 +196,14 @@
 
   <header>
     <h1>{{ titre }}</h1>
+    {% if main_image_url %}
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="{{ main_image_url }}" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        {% if main_image_caption %}
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">{{ main_image_caption }}</div>
+        {% endif %}
+      </div>
+    {% endif %}
     {% if intro_items %}
       {% for p in intro_items %}
         <p>{{ p|safe }}</p>
