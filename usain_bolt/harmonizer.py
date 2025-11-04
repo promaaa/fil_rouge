@@ -1,7 +1,7 @@
 import json
 import os
 from jinja2 import Environment, FileSystemLoader
-
+"""
 # Optionnel : pour créer le PDF 
 try:
     from weasyprint import HTML
@@ -9,7 +9,7 @@ try:
 except (ImportError, OSError) as e:
     PDF_ENABLED = False
     print(" WeasyPrint non disponible — génération PDF désactivée.")
-
+"""
 # permet de trouver le chemin de template sur nimporte quelle machine
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
@@ -60,7 +60,7 @@ class TutorialHarmonizer:
 
     def harmonize(self, data: dict):
         # On prend la première clé du dictionnaire (vélo, marmite, etc.)
-        project_data = list(data.values())[1]
+        project_data = list(data.values())[2]
         
         # Normalisation
         titre = project_data.get("titre", ["Projet maker"])[0].strip()
@@ -278,19 +278,19 @@ class TutorialHarmonizer:
         )
         return html_output
 
-    def save(self, html_output: str, output_html="output.html", output_pdf="output.pdf"):
+    def save(self, html_output: str, output_html="output.html" ):
         # Sauvegarde HTML
         with open(output_html, "w", encoding="utf-8") as f:
             f.write(html_output)
         print(f" HTML généré : {output_html}")
-
+"""
         # Génération PDF (si lib installée)
         if PDF_ENABLED:
             HTML(string=html_output).write_pdf(output_pdf)
             print(f" PDF généré : {output_pdf}")
         else:
             print(" WeasyPrint non installé — aucun PDF créé.")
-
+"""
 
 # Point d'entrée 
 if __name__ == "__main__":

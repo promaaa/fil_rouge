@@ -175,22 +175,6 @@ python harmonizer.py
 
 Produit : `output.html`
 
-### Génération PDF (optionnel)
-
-Installation des dépendances (macOS) :
-```bash
-brew install pango gdk-pixbuf libffi glib gobject-introspection cairo
-pip install weasyprint
-```
-
-Exécution :
-```bash
-export DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH
-python harmonizer.py
-```
-
-Produit : `output.html` + `output.pdf`
-
 ##  Bonnes pratiques
 
 ### Structure des données
