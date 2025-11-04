@@ -2,7 +2,7 @@ import json
 import os
 from jinja2 import Environment, FileSystemLoader
 
-# Optionnel : pour créer le PDF (installe avec `pip install weasyprint`)
+# Optionnel : pour créer le PDF 
 try:
     from weasyprint import HTML
     PDF_ENABLED = True
@@ -24,7 +24,7 @@ def unique_preserve_order(L):  # permet que chaque étape soit unique et dans l'
     return result
 
 
-# --- Classe principale ---
+# Classe principale 
 class TutorialHarmonizer:
     def __init__(self):
         self.env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
@@ -60,7 +60,7 @@ class TutorialHarmonizer:
 
     def harmonize(self, data: dict):
         # On prend la première clé du dictionnaire (vélo, marmite, etc.)
-        project_data = list(data.values())[2]
+        project_data = list(data.values())[1]
         
         # Normalisation
         titre = project_data.get("titre", ["Projet maker"])[0].strip()
@@ -292,7 +292,7 @@ class TutorialHarmonizer:
             print(" WeasyPrint non installé — aucun PDF créé.")
 
 
-# --- Exemple d'utilisation ---
+# Point d'entrée 
 if __name__ == "__main__":
     with open("data_exemple.json", "r", encoding="utf-8") as f:
         data = json.load(f)
