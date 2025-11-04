@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Station météo DIY - Tutoriel IoT</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .tutorial-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tutorial-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #0D2B45 0%, #1a4d7a 100%);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .tutorial-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tutorial-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tutorial-image {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 2rem auto;
+            display: block;
+        }
+
+        .tutorial-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tutorial-section h2 {
+            color: #0D2B45;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #06D6A0;
+            padding-bottom: 0.5rem;
+        }
+
+        .tutorial-section h3 {
+            color: #1a4d7a;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .materials-list, .tools-list, .steps-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .materials-list li, .tools-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-left: 4px solid #06D6A0;
+            border-radius: 5px;
+        }
+
+        .steps-list li {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 4rem;
+        }
+
+        .steps-list {
+            counter-reset: step-counter;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 1rem;
+            top: 1.5rem;
+            background: #0D2B45;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #06D6A0;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #0D2B45;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            margin-top: 2rem;
+        }
+
+        .back-button:hover {
+            background: #1a4d7a;
+            transform: translateY(-2px);
+        }
+
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .tutorial-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .tutorial-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .steps-list li {
+                padding-left: 1rem;
+            }
+
+            .steps-list li::before {
+                position: static;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tutorial-page">
+        <div class="tutorial-header">
+            <h1>🌤️ Station météo DIY</h1>
+            <p>Surveillez température, humidité et pression en temps réel</p>
+            <div class="tutorial-meta">
+                <div class="meta-item">
+                    <span>⏱️ Durée: 4-6 heures</span>
+                </div>
+                <div class="meta-item">
+                    <span class="difficulty-badge">Difficulté: Intermédiaire</span>
+                </div>
+                <div class="meta-item">
+                    <span>💰 Coût: 40-70€</span>
+                </div>
+            </div>
+        </div>
+
+        <img src="images/station_meteo.png" alt="Station météo DIY" class="tutorial-image">
+
+        <div class="tutorial-section">
+            <h2>📋 Introduction</h2>
+            <p>Dans ce tutoriel, vous apprendrez à créer votre propre station météorologique connectée. Elle vous permettra de mesurer la température, l'humidité et la pression atmosphérique, avec affichage en temps réel sur un écran LCD.</p>
+            <p>Ce projet IoT est parfait pour comprendre le fonctionnement des capteurs environnementaux et leur intégration dans un système autonome.</p>
+
+            <div class="info-box">
+                <strong>💡 Ce que vous apprendrez :</strong>
+                <ul>
+                    <li>Utilisation de capteurs BME280 ou DHT22</li>
+                    <li>Affichage sur écran LCD I2C</li>
+                    <li>Communication I2C entre composants</li>
+                    <li>Collecte et affichage de données environnementales</li>
+                    <li>Optionnel : Envoi de données vers le cloud</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🛠️ Matériel nécessaire</h2>
+            <h3>Composants électroniques</h3>
+            <ul class="materials-list">
+                <li>Arduino Uno, Nano ou ESP8266 (NodeMCU)</li>
+                <li>Capteur BME280 (température, humidité, pression) ou DHT22</li>
+                <li>Écran LCD 16x2 ou 20x4 avec module I2C</li>
+                <li>Breadboard (plaque d'essai)</li>
+                <li>Câbles de connexion Dupont</li>
+                <li>Alimentation 5V (USB ou adaptateur secteur)</li>
+                <li>Résistances pull-up 4.7kΩ (si non intégrées au capteur)</li>
+                <li>Boîtier de protection (optionnel)</li>
+            </ul>
+
+            <h3>Outils</h3>
+            <ul class="tools-list">
+                <li>Ordinateur avec Arduino IDE installé</li>
+                <li>Câble USB pour programmer l'Arduino</li>
+                <li>Multimètre (pour vérifier les connexions)</li>
+                <li>Fer à souder (optionnel, pour montage permanent)</li>
+            </ul>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🔧 Étapes de réalisation</h2>
+            <ol class="steps-list">
+                <li>
+                    <h3>Pré</h3>paration de l'environnement</h3>
+                    <p>Installez Arduino IDE si ce n'est pas déjà fait. Téléchargez et installez les bibliothèques nécessaires :</p>
+                    <ul>
+                        <li><strong>Adafruit BME280</strong> (ou DHT sensor library si vous utilisez un DHT22)</li>
+                        <li><strong>LiquidCrystal I2C</strong> pour l'écran LCD</li>
+                        <li><strong>Wire.h</strong> (incluse par défaut pour la communication I2C)</li>
+                    </ul>
+                    <div class="info-box">
+                        <strong>💡 Astuce :</strong> Utilisez le gestionnaire de bibliothèques Arduino (Croquis → Inclure une bibliothèque → Gérer les bibliothèques) pour installer facilement ces composants.
+                    </div>
+                </li>
+
+                <li>
+                    <h3>Câblage du capteur BME280</h3>
+                    <p>Connectez le capteur BME280 à l'Arduino via le protocole I2C :</p>
+                    <ul>
+                        <li><strong>VCC</strong> du BME280 → <strong>3.3V</strong> de l'Arduino</li>
+                        <li><strong>GND</strong> du BME280 → <strong>GND</strong> de l'Arduino</li>
+                        <li><strong>SCL</strong> du BME280 → <strong>A5</strong> (SCL) de l'Arduino Uno</li>
+                        <li><strong>SDA</strong> du BME280 → <strong>A4</strong> (SDA) de l'Arduino Uno</li>
+                    </ul>
+                    <div class="warning-box">
+                        <strong></strong>⚠️ Attention :</strong> Le BME280 fonctionne en 3.3V ! Ne le connectez pas au 5V sous peine de l'endommager.
+                    </div>
+                </li>
+
+                <li>
+                    <h3>Câblage de l'écran LCD I2C</h3>
+                    <p>Connectez l'écran LCD avec module I2C :</p>
+                    <ul>
+                        <li><strong>VCC</strong> du LCD → <strong>5V</strong> de l'Arduino</li>
+                        <li><strong>GND</strong> du LCD → <strong>GND</strong> de l'Arduino</li>
+                        <li><strong>SCL</strong> du LCD → <strong>A5</strong> (SCL) de l'Arduino</li>
+                        <li><strong>SDA</strong> du LCD → <strong>A4</strong> (SDA) de l'Arduino</li>
+                    </ul>
+                    <p>Le capteur et l'écran partagent le même bus I2C, ils peuvent être connectés en parallèle.</p>
+                </li>
+
+                <li>
+                    <h3>Test de communication I2C</h3>
+                    <p>Avant de coder le programme principal, vérifiez que les périphériques I2C sont correctement détectés. Utilisez un scanner I2C pour identifier les adresses :</p>
+                    <div class="code-block">
+// Scanner I2C simple
+#include &lt;Wire.h&gt;
+
+void setup() {
+  Wire.begin();
+  Serial.begin(9600);
+  Serial.println("Scan I2C...");
+
+  for(byte i = 1; i < 127; i++) {
+    Wire.beginTransmission(i);
+    if(Wire.endTransmission() == 0) {
+      Serial.print("Périphérique trouvé: 0x");
+      Serial.println(i, HEX);
+    }
+  }
+}
+                    </div>
+                    <p>Notez les adresses trouvées (généralement 0x76 ou 0x77 pour le BME280, et 0x27 ou 0x3F pour le LCD).</p>
+                </li>
+
+                <li>
+                    <h3>Programmation de base</h3>
+                    <p>Créez le programme principal pour lire les données du capteur et les afficher sur l'écran LCD. Le code doit :</p>
+                    <ul>
+                        <li>Initialiser le capteur BME280</li>
+                        <li>Initialiser l'écran LCD</li>
+                        <li>Lire température, humidité et pression toutes les 2 secondes</li>
+                        <li>Afficher les valeurs sur l'écran et le moniteur série</li>
+                    </ul>
+                </li>
+
+                <li>
+                    <h3>Calibration et tests</h3>
+                    <p>Vérifiez la précision des mesures en comparant avec une station météo de référence ou un thermomètre calibré. Le BME280 est généralement précis à ±1°C pour la température et ±3% pour l'humidité.</p>
+                    <div class="success-box">
+                        <strong>✅ Test réussi si</strong> :</strong>
+                        <ul>
+                            <li>Les valeurs s'affichent correctement sur l'écran</li>
+                            <li>La température est cohérente avec la pièce</li>
+                            <li>L'humidité varie entre 20% et 80% en intérieur</li>
+                            <li>La pression est autour de 1013 hPa (au niveau de la mer)</li>
+                        </ul>
+                    </div>
+                </li>
+
+                <li>
+                    <h3>Amélioration de l'affichage</h3>
+                    <p>Optimisez l'interface LCD pour une meilleure lisibilité :</p>
+                    <ul>
+                        <li>Ajoutez des symboles personnalisés (°C, %)</li>
+                        <li>Alternez entre différentes vues (toutes les 5 secondes)</li>
+                        <li>Ajoutez un rétroéclairage contrôlé</li>
+                        <li>Affichez min/max de la journée</li>
+                    </ul>
+                </li>
+
+                <li>
+                    <h3>Boîtier et montage final</h3>
+                    <p>Créez ou imprimez un boîtier pour protéger l'électronique :</p>
+                    <ul>
+                        <li>Prévoyez des ouvertures pour le capteur (pour mesurer l'air ambiant)</li>
+                        <li>Fixez l'écran LCD visible de face</li>
+                        <li>Laissez un accès au port USB pour la programmation</li>
+                        <li>Ajoutez des pieds ou un support mural</li>
+                    </ul>
+                    <div class="warning-box">
+                        <strong>⚠️ Important :</strong> N'enfermez pas complètement le capteur, il doit pouvoir mesurer l'air ambiant. Prévoyez une ventilation adéquate.
+                    </div>
+                </li>
+
+                <li>
+                    <h3>Calibration de l'altitude</h3>
+                    <p>Pour obtenir une pression précise au niveau de la mer, calibrez l'altitude de votre station. La pression diminue d'environ 12 hPa tous les 100 mètres d'altitude.</p>
+                    <div class="info-box">
+                        <strong>💡 Formule de correction :</strong> P₀ = P × (1 - 0.0065 × h / (T + 0.0065 × h + 273.15))^(-5.257)
+                        <br>où h = altitude en mètres, T = température en °C, P = pression mesurée
+                    </div>
+                </li>
+
+                <li>
+                    <h3>Tests longue durée</h3>
+                    <p>Laissez la station fonctionner pendant 24-48 heures pour vérifier sa stabilité. Observez les variations de température et d'humidité tout au long de la journée.</p>
+                </li>
+            </ol>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>💡 Conseils et astuces</h2>
+            <ul>
+                <li><strong>Emplacement :</strong> Placez la station loin des sources de chaleur (radiateurs, ordinateurs) et des courants d'air directs.</li>
+                <li><strong>Alimentation :</strong> Utilisez une alimentation stable. Les variations de tension peuvent affecter les mesures.</li>
+                <li><strong>Mise à jour :</strong> Rafraîchissez l'écran toutes les 2-5 secondes pour économiser l'énergie et prolonger sa durée de vie.</li>
+                <li><strong>Protection :</strong> Si vous placez la station en extérieur, utilisez un boîtier étanche IP65.</li>
+                <li><strong>Précision :</strong> Le BME280 est plus précis que le DHT22, surtout pour la pression atmosphérique.</li>
+            </ul>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🚀 Améliorations possibles</h2>
+            <ul>
+                <li><strong>Connectivité WiFi :</strong> Utilisez un ESP8266/ESP32 pour envoyer les données vers ThingSpeak, Blynk ou votre propre serveur</li>
+                <li><strong>Graphiques :</strong> Ajoutez un écran OLED pour afficher des graphiques de tendance</li>
+                <li><strong>Prévisions :</strong> Implémentez un algorithme de prévision basé sur la variation de pression</li>
+                <li><strong>Capteurs additionnels :</strong> Ajoutez un capteur de luminosité (LDR), de qualité d'air (MQ135), ou de UV</li>
+                <li><strong>Enregistrement :</strong> Sauvegardez les données sur carte SD pour analyse ultérieure</li>
+                <li><strong>Alimentation solaire :</strong> Rendez la station autonome avec un panneau solaire et une batterie</li>
+                <li><strong>Station extérieure :</strong> Ajoutez un capteur de pluie et un anémomètre (vitesse du vent)</li>
+                <li><strong>Application mobile :</strong> Créez une app pour consulter les données à distance</li>
+            </ul>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🔍 Dépannage</h2>
+            <h3>Problèmes courants et solutions</h3>
+
+            <h4>L'écran LCD ne s'allume pas</h4>
+            <ul>
+                <li>Vérifiez le contraste avec le potentiomètre à l'arrière du module I2C</li>
+                <li>Contrôlez l'alimentation 5V</li>
+                <li>Testez l'adresse I2C (0x27 ou 0x3F)</li>
+            </ul>
+
+            <h4>Pas de données du capteur</h4>
+            <ul>
+                <li>Vérifiez que le capteur est alimenté en 3.3V</li>
+                <li>Contrôlez les connexions SDA et SCL</li>
+                <li>Utilisez le scanner I2C pour détecter l'adresse</li>
+                <li>Vérifiez que la bibliothèque est bien installée</li>
+            </ul>
+
+            <h4>Valeurs incohérentes</h4>
+            <ul>
+                <li>Attendez 5-10 minutes après mise sous tension (temps de stabilisation)</li>
+                <li>Éloignez le capteur de sources de chaleur</li>
+                <li>Vérifiez qu'il n'y a pas de court-circuit</li>
+                <li>Recalibrez le capteur si nécessaire</li>
+            </ul>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>⚠️ Sécurité</h2>
+            <div class="warning-box">
+                <ul>
+                    <li>Ne jamais connecter le BME280 au 5V (fonctionne uniquement en 3.3V)</li>
+                    <li>Débrancher l'alimentation avant toute modification du câblage</li>
+                    <li>Utiliser une alimentation certifiée et stable</li>
+                    <li>En cas d'utilisation extérieure, protéger l'électronique de l'humidité</li>
+                    <li>Ne pas exposer directement aux intempéries sans protection IP65</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>📚 Ressources supplémentaires</h2>
+            <ul>
+                <li><strong>Datasheet BME280 :</strong> Spécifications techniques complètes du capteur</li>
+                <li><strong>Protocole I2C :</strong> Documentation sur la communication série I2C</li>
+                <li><strong>Arduino Reference :</strong> Guide de programmation Arduino officiel</li>
+                <li><strong>Forums Arduino :</strong> Communauté d'entraide pour résoudre vos problèmes</li>
+            </ul>
+        </div>
+
+        <a href="index.html" class="back-button">← Retour aux tutoriels</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lampe LED intelligente - Tutoriel DIY</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .tutorial-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .tutorial-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #0D2B45 0%, #1a4d7a 100%);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .tutorial-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tutorial-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tutorial-image {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 2rem auto;
+            display: block;
+        }
+
+        .tutorial-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tutorial-section h2 {
+            color: #0D2B45;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #FFD166;
+            padding-bottom: 0.5rem;
+        }
+
+        .tutorial-section h3 {
+            color: #1a4d7a;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .materials-list, .tools-list, .steps-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .materials-list li, .tools-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-left: 4px solid #FFD166;
+            border-radius: 5px;
+        }
+
+        .steps-list li {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            counter-increment: step-counter;
+            position: relative;
+            padding-left: 4rem;
+        }
+
+        .steps-list {
+            counter-reset: step-counter;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 1rem;
+            top: 1.5rem;
+            background: #0D2B45;
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #0c5460;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #FFD166;
+            color: #0D2B45;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: #0D2B45;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+            margin-top: 2rem;
+        }
+
+        .back-button:hover {
+            background: #1a4d7a;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .tutorial-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .tutorial-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .steps-list li {
+                padding-left: 1rem;
+            }
+
+            .steps-list li::before {
+                position: static;
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tutorial-page">
+        <div class="tutorial-header">
+            <h1>Lampe LED intelligente</h1>
+            <p>Créez une lampe connectée avec</p> contrôle RGB et effets lumineux</p>
+            <div class="tutorial-meta">
+                <div class="meta-item">
+                    <span>⏱️ Durée: 3-4 heures</span>
+                </div>
+                <div class="meta-item">
+                    <span class="difficulty-badge">Difficulté: Intermédiaire</span>
+                </div>
+                <div class="meta-item">
+                    <span>💰 Coût: 30-50€</span>
+                </div>
+            </div>
+        </div>
+
+        <img src="images/lampe_design.jpg" alt="Lampe LED intelligente" class="tutorial-image">
+
+        <div class="tutorial-section">
+            <h2>📋 Introduction</h2>
+            <p>Dans ce tutoriel, vous apprendrez à créer une lampe LED intelligente avec contrôle RGB. Cette lampe design vous permettra de personnaliser l'ambiance de votre pièce avec différentes couleurs et effets lumineux.</p>
+            <p>Que vous soyez débutant en électronique ou maker confirmé, ce projet est l'occasion parfaite de découvrir les composants LED RGB et leur programmation.</p>
+
+            <div class="info-box">
+                <strong></strong>💡 Ce que vous apprendrez :</strong>
+                <ul>
+                    <li>Câblage de bandes LED RGB</li>
+                    <li>Programmation Arduino de base</li>
+                    <li>Contrôle de couleurs avec PWM</li>
+                    <li>Création d'effets lumineux</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🛠️ Matériel nécessaire</h2>
+            <ul class="materials-list">
+                <li>Arduino Uno ou compatible</li>
+                <li>Bande LED RGB (WS2812B ou similaire) - 1 mètre</li>
+                <li>Alimentation 5V 2A minimum</li>
+                <li>Résistance 470Ω</li>
+                <li>Condensateur 1000µF</li>
+                <li>Câbles de connexion</li>
+                <li>Support ou structure pour lampe (bois, PVC, impression 3D)</li>
+                <li>Boutons poussoirs (optionnel pour contrôle manuel)</li>
+            </ul>
+
+            <h3>Outils</h3>
+            <ul class="tools-list">
+                <li>Fer à souder et étain</li>
+                <li>Pince coupante</li>
+                <li>Multimètre</li>
+                <li>Ordinateur avec Arduino IDE</li>
+                <li>Câble USB pour Arduino</li>
+            </ul>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🔧 Étapes de réalisation</h2>
+            <ol class="steps-list">
+                <li>
+                    <h3>Préparation du matériel</h3>
+                    <p>Commencez par rassembler tous les composants et vérifiez leur bon fonctionnement. Testez votre Arduino en uploadant un programme simple (blink) pour vous assurer qu'il fonctionne correctement.</p>
+                </li>
+
+                <li>
+                    <h3>Câblage de la bande LED</h3>
+                    <p>Connectez la bande LED à l'Arduino :</p>
+                    <ul>
+                        <li>VCC de la bande → 5V de l'alimentation externe</li>
+                        <li>GND de la bande → GND de l'Arduino et de l'alimentation</li>
+                        <li>DIN de la bande → Pin 6 de l'Arduino (avec résistance 470Ω en série)</li>
+                    </ul>
+                    <div class="warning-box">
+                        <strong>⚠️ Attention :</strong> Ne pas alimenter la bande LED directement par l'Arduino, utilisez une alimentation externe !
+                    </div>
+                </li>
+
+                <li>
+                    <h3>Installation de la bibliothèque</h3>
+                    <p>Ouvrez Arduino IDE et installez la bibliothèque "FastLED" ou "Adafruit NeoPixel" via le gestionnaire de bibliothèques (Croquis → Inclure une bibliothèque → Gérer les bibliothèques).</p>
+                </li>
+
+                <li>
+                    <h3>Programmation de base</h3>
+                    <p>Uploadez un code de test pour vérifier que les LEDs fonctionnent correctement. Commencez par un simple arc-en-ciel ou un effet de chenillard.</p>
+                </li>
+
+                <li>
+                    <h3>Création du support</h3>
+                    <p>Concevez et assemblez le support de votre lampe. Vous pouvez utiliser du bois, imprimer une structure en 3D, ou recycler un objet existant. Assurez-vous que la bande LED peut être fixée solidement.</p>
+                </li>
+
+                <li>
+                    <h3>Installation des LEDs</h3>
+                    <p>Fixez la bande LED sur le support en suivant votre design. Utilisez l'adhésif au dos de la bande ou du double-face supplémentaire si nécessaire.</p>
+                </li>
+
+                <li>
+                    <h3>Programmation avancée</h3>
+                    <p>Créez différents modes d'éclairage : couleur fixe, arc-en-ciel, respiration, stroboscope, etc. Ajoutez des boutons pour naviguer entre les modes si souhaité.</p>
+                </li>
+
+                <li>
+                    <h3>Assemblage final</h3>
+                    <p>Rangez proprement les câbles et l'électronique dans le support. Assurez-vous que tout est bien fixé et que rien ne peut bouger.</p>
+                    <div class="info-box">
+                        <strong>💡 Astuce :</strong> Prévoyez un accès facile à l'Arduino pour pouvoir modifier le programme ultérieurement.
+                    </div>
+                </li>
+
+                <li>
+                    <h3>Tests et calibration</h3>
+                    <p>Testez tous les modes, vérifiez la luminosité et ajustez les paramètres dans le code si nécessaire. Assurez-vous que l'alimentation ne chauffe pas excessivement.</p>
+                </li>
+            </ol>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>💡</h2> Conseils et astuces</h2>
+            <ul></ul>
+                <li><strong>Luminosité :</strong> Commencez avec une luminosité réduite (30-50%) pour économiser l'énergie et prolonger la durée de vie des LEDs.</li>
+                <li><strong>Alimentation :</strong> Calculez la consommation : environ 60mA par LED au maximum. Pour 30 LEDs : 30 × 0.06 = 1.8A minimum.</li>
+                <li><strong>Condensateur :</strong> Le condensateur protège les LEDs contre les pics de tension à l'allumage.</li>
+                <li><strong>Design :</strong> Utilisez un diffuseur (papier calque, plastique translucide) pour adoucir la lumière.</li>
+            </ul>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>🎯 Améliorations possibles</h2>
+            <ul>
+                <li>Ajouter un module Bluetooth pour contrôle via smartphone</li>
+                <li>Intégrer un capteur de son pour réagir à la musique</li>
+                <li>Utiliser un module WiFi (ESP8266) pour contrôle à distance</li>
+                <li>Ajouter un détecteur de mouvement pour allumage automatique</li>
+                <li>Créer une application mobile de contrôle personnalisée</li>
+            </ul>
+        </div>
+
+        <div class="tutorial-section">
+            <h2>⚠️ Sécurité</h2>
+            <div class="warning-box">
+                <ul>
+                    <li>Toujours débrancher l'alimentation avant de modifier le câblage</li>
+                    <li>Vérifier les polarités avant de brancher</li>
+                    <li>Ne pas regarder directement les LEDs à pleine puissance</li>
+                    <li>Assurer une ventilation adéquate si la lampe chauffe</li>
+                    <li>Utiliser une alimentation certifiée et adaptée</li>
+                </ul>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-button">← Retour aux tutoriels</a>
+    </div>
+</body>
+</html>
