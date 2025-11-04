@@ -1,0 +1,836 @@
+
+<!DOCTYPE html>
+
+<html class="client-nojs" dir="ltr" lang="fr">
+<head>
+<meta charset="utf-8"/>
+<title>Mesure de la vitesse de rotation de la terre avec un gyromètre BOSCH BNO055 — Wikifab</title>
+<script>document.documentElement.className = document.documentElement.className.replace( /(^|\s)client-nojs(\s|$)/, "$1client-js$2" );</script>
+<script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055","wgTitle":"Mesure de la vitesse de rotation de la terre avec un gyromètre BOSCH BNO055","wgCurRevisionId":168118,"wgRevisionId":168118,"wgArticleId":82060,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*","Dokit-read","Dokit-createaccount","Dokit-pdfexport"],"wgCategories":["Tutorials"],"wgBreakFrames":false,"wgPageContentLanguage":"fr","wgPageContentModel":"wikitext","wgSeparatorTransformTable":[",\t."," \t,"],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"],"wgMonthNamesShort":["","janv.","fév.","mars","avr.","mai","juin","juill.","août","sept.","oct.","nov.","déc."],"wgRelevantPageName":"Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055","wgRelevantArticleId":82060,"wgRequestId":"a9b65a4ca58fbd0cb08a8bd8","wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgPageFormsAutocompleteValues":[],"wgPageFormsAutocompleteOnAllChars":false,"wgPageFormsFieldProperties":[],"wgPageFormsCargoFields":[],"wgPageFormsDependentFields":[],"wgPageFormsGridValues":[],"wgPageFormsGridParams":[],"wgPageFormsContLangYes":null,"wgPageFormsContLangNo":null,"wgPageFormsContLangMonths":[],"wgPageFormsShowOnSelect":[],"wgPageFormsScriptPath":"/w/extensions/PageForms","edgValues":null,"wgPageFormsEDSettings":null,"wgAllowPipesInForms":true,"wgAmericanDates":false,"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgVisualEditor":{"pageLanguageCode":"fr","pageLanguageDir":"ltr","pageVariantFallbacks":"fr","usePageImages":false,"usePageDescriptions":false},"wgULSAcceptLanguageList":[],"wgULSCurrentAutonym":"français","wgCategoryTreePageCategoryOptions":"{\"mode\":0,\"hideprefix\":20,\"showcount\":true,\"namespaces\":false,\"hidebreadcrumb\":true}","wgTranslatePageTranslation":"source","ImageAnnotator":{"imageAnnotatorOldWgServers":["http://wikifab.org","https://wikifab.org","https://files-thumbs.wikifab.org"]},"CommentStreams":{"canComment":false,"moderatorEdit":false,"moderatorAccept":false,"showEditBoxOnPageLoad":1,"moderatorDelete":false,"moderatorFastDelete":0,"showLabels":1,"userDisplayName":"\u003Cspan class=\"cs-comment-author-anonymous\"\u003Eanonyme\u003C/span\u003E","userAvatar":null,"newestStreamsOnTop":1,"initiallyCollapsed":false,"enableVoting":1,"enableAccepting":1,"enableWatchlist":1,"comments":[]},"wgVisualEditorToolbarScrollOffset":0,"wgVisualEditorUnsupportedEditParams":["undo","undoafter","veswitched"],"wgEditSubmitButtonLabelPublish":false});mw.loader.state({"site.styles":"ready","noscript":"ready","user.styles":"ready","user":"ready","site":"ready","user.options":"loading","user.tokens":"loading","ext.imageannotator.editor.css":"ready","ext.translate":"ready","ext.socialprofile.responsive":"ready","ext.socialprofile.userinfo.css":"ready","ext.Wikifab.css":"ready","ext.groupspage.css":"ready","ext.checkpagetitle.css":"ready","ext.flowcountertalks.css":"ready","ext.simpleembedvideo.css":"ready","ext.userspageslinks.css":"ready","ext.wikifab.css":"ready","ext.dokitfooter.css":"ready","ext.EmbedTutorials.modal.css":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.wikifaborg.css":"ready","ext.uls.interlanguage":"ready","ext.simplelanguageselectorcss":"ready","ext.autosetpagelang":"ready","ext.smw.style":"ready","ext.smw.tooltip.styles":"ready","ext.bootstrap.styles":"ready","ext.EmbedTutorials.modal.js":"loading","ext.QRCodeGenerator.modal.js":"loading"});mw.loader.implement("user.options@1dpodri",function($,jQuery,require,module){/*@nomin*/mw.user.options.set({"variant":"fr"});
+});mw.loader.implement("user.tokens@1skqejg",function($,jQuery,require,module){/*@nomin*/mw.user.tokens.set({"editToken":"+\\","patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});
+});mw.loader.load(["ext.wikifab.wfexplore","ext.Tabber","ext.imageannotator.editor","ext.smw.style","ext.smw.tooltips","ext.carousel.js","mediawiki.page.startup","mediawiki.user","mediawiki.page.ready","mediawiki.toc","mediawiki.searchSuggest","ext.socialprofile.userinfo.js","ext.userswatchbutton.js","ext.groupspage.js","ext.checkpagetitle.js","ext.inputBox","mmv.head","mmv.bootstrap.autostart","ext.simpleembedvideo.js","ext.userspageslinks.js","ext.3d","ext.cssforcategories.common","ext.CommentStreams","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.uls.interface","ext.simplelanguageselector","ext.bootstrap.scripts","ext.Wikifab.js"]);mw.loader.load("/w/load.php?debug=false\u0026lang=fr\u0026modules=ext.EmbedTutorials.modal.js%7Cext.QRCodeGenerator.modal.js\u0026only=scripts\u0026skin=chameleon");});</script>
+<link href="/w/load.php?debug=false&amp;lang=fr&amp;modules=ext.EmbedTutorials.modal.css%7Cext.Wikifab.css%7Cext.autosetpagelang%2Csimplelanguageselectorcss%2Ctranslate%7Cext.bootstrap.styles%7Cext.checkpagetitle.css%7Cext.dokitfooter.css%7Cext.flowcountertalks.css%7Cext.groupspage.css%7Cext.imageannotator.editor.css%7Cext.simpleembedvideo.css%7Cext.socialprofile.responsive%7Cext.socialprofile.userinfo.css%7Cext.uls.interlanguage%7Cext.userspageslinks.css%7Cext.visualEditor.desktopArticleTarget.noscript%7Cext.wikifab.css%7Cext.wikifaborg.css&amp;only=styles&amp;skin=chameleon" rel="stylesheet"/>
+<link href="/w/load.php?debug=false&amp;lang=fr&amp;modules=ext.smw.style%7Cext.smw.tooltip.styles&amp;only=styles&amp;skin=chameleon" rel="stylesheet"/>
+<script async="" src="/w/load.php?debug=false&amp;lang=fr&amp;modules=startup&amp;only=scripts&amp;skin=chameleon"></script>
+<style>
+			:root{
+				--main-btn-color: #52BAD5;
+			}
+			</style><style>
+			:root{
+				--main-hover-color: #2C9AB7;
+			}
+			</style>
+<meta content="" name="ResourceLoaderDynamicStyles"/>
+<link href="/w/load.php?debug=false&amp;lang=fr&amp;modules=site.styles&amp;only=styles&amp;skin=chameleon" rel="stylesheet"/>
+<meta content="MediaWiki 1.31.3" name="generator"/>
+<meta content="" name="google-site-verification"/>
+<meta content="" name="keywords"/>
+<meta content="Mesurer la vitesse de rotation de la terre sur elle-même avec un gyromètre, comme ceux qui se trouvent dans les manettes de jeux, est un vrai petit ..." name="description"/>
+<meta content="Mesurer la vitesse de rotation de la terre sur elle-même avec un gyromètre, comme ceux qui se trouvent dans les manettes de jeux, est un vrai petit ..." name="twitter:description"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="/w/index.php?title=Sp%C3%A9cial:Export_RDF/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055&amp;xmlmime=rdf" rel="alternate" title="Mesure de la vitesse de rotation de la terre avec un gyromètre BOSCH BNO055" type="application/rdf+xml"/>
+<link href="/images/favicon/favicon.png" rel="shortcut icon"/>
+<link href="/w/opensearch_desc.php" rel="search" title="Wikifab (fr)" type="application/opensearchdescription+xml"/>
+<link href="https://wikifab.org/w/api.php?action=rsd" rel="EditURI" type="application/rsd+xml"/>
+<meta content="Mesurer la vitesse de rotation de la terre sur elle-même avec un gyromètre, comme ceux qui se trouvent dans les manettes de jeux, est un vrai petit ..." property="og:description"/>
+<script type="application/ld+json">{"@context" : "http://schema.org","description":"Mesurer la vitesse de rotation de la terre sur elle-même avec un gyromètre, comme ceux qui se trouvent dans les manettes de jeux, est un vrai petit ...",}</script>
+<meta content="" property="fb:app_id"/>
+<meta content="" property="fb:admins"/>
+<!--[if lt IE 9]><script src="/w/load.php?debug=false&amp;lang=fr&amp;modules=html5shiv&amp;only=scripts&amp;skin=chameleon&amp;sync=1"></script><![endif]-->
+</head>
+<body class="mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055 rootpage-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055 layout-layout-dokit skin-chameleon action-view bodyTranslateSourcePage bodyPageInUserLanguage">
+<!-- navigation bar -->
+<nav class="navbar navbar-default p-navbar" id="mw-navigation" role="navigation">
+<div class="container">
+<div class="navbar-header">
+<button class="navbar-toggle collapsed" data-target="#mw-navigation-collapse" data-toggle="collapse" type="button">
+<span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span>
+</button>
+<!-- logo and main page link -->
+<div class="p-logo navbar-brand" id="p-logo" role="banner">
+<a href="https://wikifab.org/images/logo/logo-white.png" rel="noopener noreferrer" target="_blank" title="Visiter la page d’accueil"><img alt="Wikifab" src="https://wikifab.org/images/logo/logo-white.png"/></a>
+</div>
+</div>
+<div class="collapse navbar-collapse" id="mw-navigation-collapse">
+<!-- search form -->
+<div class="p-search navbar-form" id="p-search" role="search">
+<form action="/w/index.php" class="mw-search form-inline" id="searchform">
+<input name="title" type="hidden" value="Spécial:Recherche"/>
+<div class="input-group"><input accesskey="f" autocomplete="off" class="form-control" id="searchInput" name="search" placeholder="Rechercher" title="Rechercher"/>
+<div class="input-group-btn">
+<button class="mw-searchButton btn btn-default" id="mw-searchButton" name="fulltext" title="Rechercher les pages comportant ce texte." type="submit" value="Rechercher"><span class="glyphicon glyphicon-search"></span></button>
+</div>
+</div>
+</form>
+</div>
+<ul class="nav navbar-nav">
+<!-- navigation -->
+<li id="n-Explorer"><a href="/wiki/Explore">Explorer</a></li>
+<li id="n-Groupes"><a href="/wiki/Groups">Groupes</a></li>
+<li id="n-Communauté"><a href="/wiki/Sp%C3%A9cial:AllDiscussions">Communauté</a></li></ul>
+<div class="navbar-right-aligned"><ul class="nav navbar-nav MessageContent"><div class="wf-top-button askButton" data-target="#CreateNewPage" data-toggle="modal"><span class="btn webfonts-changed"><span class="glyphicon glyphicon-pencil"></span> Créer une page</span></div>
+<div aria-labelledby="myModalLabel" class="modal fade" id="CreateNewPage" role="dialog">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h4 class="modal-title" id="myModalLabel"><span id="Vous_n'avez_pas_la_permission"></span><span class="mw-headline" id="Vous_n_avez_pas_la_permission">Vous n'avez pas la permission</span></h4>
+</div>
+<div class="modal-body NewPageTabs">
+<div class="alert alert-warning" role="alert"><strong>Oups !</strong> Vous n'avez pas la permission de modifier ce tutoriel car vous n'êtes pas connecté. Pour modifier ce tutoriel, <a class="external text" href="https://wikifab.org/w/index.php?title=Sp%C3%A9cial:UserLogin/signup&amp;returnto=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055" rel="nofollow">créez un compte</a> ou <a class="external text" href="https://wikifab.org/w/index.php?title=Sp%C3%A9cial:UserLogin&amp;returnto=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055" rel="nofollow">connectez-vous</a>.</div>
+</div>
+</div>
+</div>
+</div>
+</ul>
+<ul class="nav navbar-nav MessageContent"></ul>
+<!-- personal widgets uls -->
+<ul class="navbar-personaltools navbar-nav navbar-personaltoolwidgets navbar-nav-widgets"><li class="active" id="pt-language"><a class="sls-trigger lang-fr" href="#" sort_order="0">français</a></li>
+</ul>
+<!-- personal tools -->
+<ul class="navbar-tools navbar-nav">
+<li class="dropdown navbar-tools-tools">
+<a class="dropdown-toggle navbar-usernotloggedin" data-toggle="dropdown" href="#" title="Vous n’êtes pas connecté."><span class="glyphicon glyphicon-user"></span></a>
+<ul class="p-personal-tools dropdown-menu dropdown-menu-right">
+<li id="pt-createaccount"><a href="/w/index.php?title=Sp%C3%A9cial:Cr%C3%A9er_un_compte&amp;returnto=Mesure+de+la+vitesse+de+rotation+de+la+terre+avec+un+gyrom%C3%A8tre+BOSCH+BNO055" sort_order="1" title="Nous vous encourageons à créer un compte utilisateur et vous connecter; ce n’est cependant pas obligatoire">Créer un compte</a></li>
+<li id="pt-login-private"><a accesskey="o" href="/w/index.php?title=Sp%C3%A9cial:Connexion&amp;returnto=Mesure+de+la+vitesse+de+rotation+de+la+terre+avec+un+gyrom%C3%A8tre+BOSCH+BNO055" sort_order="2" title="Vous devez vous connecter pour utiliser ce wiki [o]">Se connecter</a></li> <hr style="border-bottom-style: solid;margin-top: 2px;margin-bottom: 2px"/>
+<li id="pt-help-target"><a href="https://help.dokit.app/wiki/Main_Page" menu="user-sub-menu" sort_order="3" target="_blanck">Aide</a></li>
+</ul>
+</li>
+</ul>
+</div> <!-- navbar-right-aligned -->
+</div><!-- /.navbar-collapse -->
+</div>
+</nav>
+<!-- additionnal page header -->
+<div id="additionnal-page-header">
+<div class="container">
+</div>
+</div>
+<!-- main content header -->
+<div id="main-content-header">
+<div class="container">
+<div class="maincontent-header-head">
+<h1 class="firstHeading" id="firstHeading">Mesure de la vitesse de rotation de la terre avec un gyromètre BOSCH BNO055</h1>
+</div>
+<div class="maincontent-header-tail">
+<!-- Page Tools Tabs -->
+<div class="page-tools-tabs smooth-scroll"><ul class="list-inline">
+<li class="selected" id="ca-nstab-main"><a accesskey="c" class="selected" href="/wiki/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055" title="Voir le contenu de la page [c]">Page</a></li>
+<li><a count="0" href="#cs-comments">Commentaires</a><span class="counterTalk">0</span></li>
+<li id="ca-history"><a accesskey="h" href="/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055&amp;action=history" title="Historique des versions de cette page [h]">Historique</a></li></ul>
+</div>
+<div class="header-right-aligned">
+<div class="PageNetworkLinks">
+<a class="UsersPagesLinksButton addAction" data-linkstype="star" data-page="Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055"><button class="doActionLabel"><span class=""><i class="fa fa-heart upl_icon"></i> <i class="fa fa-spinner fa-spin upl_loading" style="display:none"></i> Favoris</span></button></a><div class="dropdownParent"><a class="UsersPagesLinksButtonCounter addAction" data-linkstype="star" data-listid="1" data-page="Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055" href="#"><button>0</button></a><div class="UsersListContent" id="boutonContent1"> <div class="usersPageLinksUsers row"></div></div></div>
+<a class="UsersPagesLinksButton addAction" data-linkstype="ididit" data-page="Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055"><button class="doActionLabel"><span class=""><i class="fa fa-hand-peace-o upl_icon"></i> <i class="fa fa-spinner fa-spin upl_loading" style="display:none"></i> Je l'ai fait !</span></button></a><div class="dropdownParent"><a class="UsersPagesLinksButtonCounter addAction" data-linkstype="ididit" data-listid="2" data-page="Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055" href="https://wikifab.org/w/index.php?title=Sp%C3%A9cial:DisplayUsersList&amp;pageName=Mesure+de+la+vitesse+de+rotation+de+la+terre+avec+un+gyrom%C3%A8tre+BOSCH+BNO055&amp;typeButton=ididit&amp;numPage=1"><button>1</button></a><div class="UsersListContent" id="boutonContent2"> <div class="usersPageLinksUsers row"><div class="col-md-4 col-sm-6 col-xs-12 UserListcard"><a href="/wiki/Utilisateur:Occitan"><div class="avatar"><a href="https://wikifab.org/images/avatars/default_ml.gif" rel="noopener noreferrer" target="_blank"><img alt="avatar" border="0" src="https://wikifab.org/images/avatars/default_ml.gif"/></a></div><span class="name">Occitan</span></a></div></div></div></div>
+</div>
+<!-- page tools -->
+<ul class="page-tools-dropdown">
+<li class="page-tools-dropdown-tools" id="ca-formedit"><a accesskey="&amp;" href="/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055&amp;action=formedit" title="Modifier cette page avec un formulaire [&amp;]"><span class="glyphicon glyphicon-pencil"></span></a></li>
+<li class="page-tools-dropdown-tools dropdown">
+<a class="dropdown-toggle" data-toggle="dropdown" href="#" title="Outils pour les pages"><span>...</span></a>
+<!-- Content navigation -->
+<ul class="p-contentnavigation dropdown-menu" id="p-contentnavigation">
+<!-- namespaces -->
+<!-- views -->
+<li id="ca-pdfexport"><a href="/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055&amp;action=pdfexport&amp;format=single">Export PDF</a></li>
+<li class="embed-button" id="ca-embed"><a class="embed-button" href="/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055&amp;embed=true">Intégrer ce tutoriel</a></li>
+<li class="qrcode-button" id="ca-qrcode"><a class="qrcode-button" data-target="#qrcodeModal" data-toggle="modal" href="#">Générer un QR code</a></li>
+<!-- NetworksLinks -->
+</ul>
+</li>
+</ul>
+</div> <!-- header-right-aligned -->
+</div>
+</div>
+</div>
+<div>
+<div class="container">
+<div class="siteNoticeArea row">
+<div class="col-lg-12">
+</div>
+</div>
+<div class="row">
+<div class="col-lg-12">
+<!-- start the content area -->
+<div class="mw-body" id="content"><a id="top"></a>
+<div class="mw-indicators" id="mw-indicators"></div>
+<div id="mw-js-message" style="display:none;"></div>
+<div id="bodyContent">
+<!-- body text -->
+<div class="mw-content-ltr" dir="ltr" id="mw-content-text" lang="fr"><div class="mw-pt-translate-header noprint nomobile" dir="ltr" lang="fr">Cette page contient <span class="plainlinks"><a class="external text" href="https://wikifab.org/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055&amp;diff=168118" rel="nofollow">des modifications</a></span> qui ne sont pas marquées pour la traduction.</div><hr><div class="mw-parser-output"><div class="print-description print-only">Mesurer la vitesse de rotation de la terre sur elle-même avec un gyromètre, comme ceux qui se trouvent dans les manettes de jeux, est un vrai petit défi. Ces gyromètres en effet, sont faits pour mesurer des vitesses de rotation imprimées aux manettes de jeux par des joueurs très réactifs… vitesses qui sont bien supérieures à la vitesse de rotation de notre vieille terre de 360° en 24H, soit 0.00417 °/s  !</div>
+<p class="tuto-details-autor-revision noprint hideInTranslatedPage">Auteur <span class="tuto-details-author-box"><a class="name" href="/wiki/Utilisateur:Occitan"><span class="tuto-details-author-name">Occitan</span></a></span> | <a class="external text" href="https://wikifab.org/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom%C3%A8tre_BOSCH_BNO055&amp;action=history" rel="nofollow">Dernière modification</a> 31/12/2023 par <a href="/wiki/Utilisateur:Occitan" title="Utilisateur:Occitan">Occitan</a></p>
+<div class="row firstPage">
+<div class="col-md-5 col-sm-5 col-xs-12 fullWidthPrint">
+<div class="tuto-main-image noprint"><a class="image" data-thumbsrc="/images/thumb/3/35/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Banc_2_.jpg/ia-fd66bfea724c9f68bb4de52f30721d1b-px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Banc_2_.jpg.png" href="https://wikifab.org/images/thumb/3/35/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Banc_2_.jpg/ia-fd66bfea724c9f68bb4de52f30721d1b-px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Banc_2_.jpg.png" rel="noopener noreferrer" target="_blank"><img class="annotationlayer" data-file-height="450" data-file-width="600" src="https://wikifab.org/images/thumb/3/35/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Banc_2_.jpg/ia-fd66bfea724c9f68bb4de52f30721d1b-px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Banc_2_.jpg.png" style="filter: blur(5px)"/></a>
+</div>
+<div class="tuto-details-box print-only">
+<div class="tuto-items-container">
+<div class="tuto-items-details-container">
+<div class="tuto-items-details-container-left"><i class="fa fa-tachometer"></i> Difficulté</div>
+<div class="tuto-items-details-container-right"><span class="propertyKey" style="display:none">Hard</span> Difficile</div>
+</div>
+<div class="tuto-items-details-container">
+<div class="tuto-items-details-container-left"><i class="fa fa-clock-o"></i> Durée</div>
+<div class="tuto-items-details-container-right">7 <span class="propertyKey" style="display:none">day(s)</span> jour(s)</div>
+</div>
+<div class="tuto-items-details-container">
+<div class="tuto-items-details-container-left"><i class="fa fa-tag"></i> Catégories</div>
+<div class="tuto-items-details-container-right">Science &amp; Biologie</div>
+</div>
+<div class="tuto-items-details-container">
+<div class="tuto-items-details-container-left"><i class="fa fa-money"></i> Coût</div>
+<div class="tuto-items-details-container-right">100 EUR (€)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-md-7 col-sm-7 col-xs-12 fullWidthPrint no-print-book">
+<div class="tuto-details-box">
+<div class="tuto-details-about-title noprint">Mesurer la vitesse de rotation de la terre sur elle-même avec un gyromètre, comme ceux qui se trouvent dans les manettes de jeux, est un vrai petit défi. Ces gyromètres en effet, sont faits pour mesurer des vitesses de rotation imprimées aux manettes de jeux par des joueurs très réactifs… vitesses qui sont bien supérieures à la vitesse de rotation de notre vieille terre de 360° en 24H, soit 0.00417 °/s  !</div>
+<div class="tuto-items-container"><div class="tuto-items-details-container noprint">
+<div class="tuto-items-details-container-left"><i class="fa fa-tachometer"></i> Difficulté</div> <div class="tuto-items-details-container-right"><span class="propertyKey" style="display:none">Hard</span> Difficile</div> </div><div class="tuto-items-details-container noprint"> <div class="tuto-items-details-container-left"><i class="fa fa-clock-o"></i> Durée</div> <div class="tuto-items-details-container-right">7 <span class="propertyKey" style="display:none">day(s)</span> jour(s)</div></div>
+<div class="tuto-items-details-container noprint"><div class="tuto-items-details-container-left"><i class="fa fa-tag"></i> Catégories</div> <div class="tuto-items-details-container-right">Science &amp; Biologie</div></div><div class="tuto-items-details-container noprint"><div class="tuto-items-details-container-left"><i class="fa fa-money"></i> Coût</div> <div class="tuto-items-details-container-right">100 EUR (€)</div></div>
+<div class="tuto-items-languages noprint"></div>
+<div class="tuto-items-details-container printTOC"><div class="tuto-items-details-container-left"><i class="fa fa-list-ol"></i></div><div class="toc" id="toc"><div class="toctitle" dir="ltr" lang="fr"><h2>Sommaire</h2></div>
+<ul>
+<li class="toclevel-1"><a href="#Introduction"><span class="tocnumber">1</span> <span class="toctext">Introduction</span></a></li>
+<li class="toclevel-1"><a href="#Video_d_introduction"><span class="tocnumber">2</span> <span class="toctext">Video d'introduction</span></a></li>
+<li class="toclevel-1"><a href="#Étape_1_-_Le_défi"><span class="tocnumber">3</span> <span class="toctext">Étape 1 - Le défi</span></a></li>
+<li class="toclevel-1"><a href="#Étape_2_-_Principes_des_mesures_de_rotation_de_la_terre"><span class="tocnumber">4</span> <span class="toctext">Étape 2 - Principes des mesures de rotation de la terre</span></a></li>
+<li class="toclevel-1"><a href="#Étape_3_-_Le_banc_de_mesure"><span class="tocnumber">5</span> <span class="toctext">Étape 3 - Le banc de mesure</span></a></li>
+<li class="toclevel-1"><a href="#Étape_4_-_Configuration_et_acquisition_des_mesures_avec_le_BNO055"><span class="tocnumber">6</span> <span class="toctext">Étape 4 - Configuration et acquisition des mesures avec le BNO055</span></a></li>
+<li class="toclevel-1"><a href="#Étape_5_-_Mise_au_point_des_conditions_de_mesure_(1/2)"><span class="tocnumber">7</span> <span class="toctext">Étape 5 - Mise au point des conditions de mesure (1/2)</span></a></li>
+<li class="toclevel-1"><a href="#Étape_6_-_Mise_au_point_des_conditions_de_mesure_(2/2)"><span class="tocnumber">8</span> <span class="toctext">Étape 6 - Mise au point des conditions de mesure (2/2)</span></a></li>
+<li class="toclevel-1"><a href="#Étape_7_-_Résultats_des_mesures_par_différences_entre_deux_positions_(1/2)"><span class="tocnumber">9</span> <span class="toctext">Étape 7 - Résultats des mesures par différences entre deux positions (1/2)</span></a></li>
+<li class="toclevel-1"><a href="#Étape_8_-_Résultats_des_mesures_par_différences_entre_deux_positions_(2/2)"><span class="tocnumber">10</span> <span class="toctext">Étape 8 - Résultats des mesures par différences entre deux positions (2/2)</span></a></li>
+<li class="toclevel-1"><a href="#Étape_9_-_Résultats_des_mesures_par_modulation"><span class="tocnumber">11</span> <span class="toctext">Étape 9 - Résultats des mesures par modulation</span></a></li>
+<li class="toclevel-1"><a href="#Étape_10_-_Conclusion_et_prolongements"><span class="tocnumber">12</span> <span class="toctext">Étape 10 - Conclusion et prolongements</span></a></li>
+<li class="toclevel-1"><a href="#Commentaires"><span class="tocnumber">13</span> <span class="toctext">Commentaires</span></a></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><span class="propertyKey" style="display:none"></span>
+<span class="propertyKey" style="display:none">Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Banc_2_.jpg</span>
+<span class="propertyKey" style="display:none"></span>
+<span class="propertyKey" style="display:none"></span>
+<span class="propertyKey" style="display:none">Technique</span>
+<span class="propertyKey" style="display:none"></span>
+<span class="noprint"></span>
+</p>
+<h2><span class="mw-headline" id="Introduction">Introduction</span></h2>
+<div class="wf-intro">
+<p>D’abord, rendons à Cesar ce qui est à Cesar !  L’idée de cette mesure vient d’un site internet qui publie des ressources pédagogiques dans le domaine de la science et de la technologie (<a class="external text" href="http://www.pabr.org" rel="nofollow">www.pabr.org</a>). La description de l’expérience initiale vaut le détour !  Cette expérience en effet part d’une manette de jeux posée sur un plateau de tourne-disques … (<a class="external free" href="http://www.pabr.org/copernitron/copernitron.fr.html" rel="nofollow">http://www.pabr.org/copernitron/copernitron.fr.html</a>).
+</p><p><br/>
+De plus l’article rappelle les différentes tentatives de mesures qui se sont déroulées principalement au XIXème siècle et dont le point d’orgue a été la célèbre expérience de Foucault avec son célèbre pendule ( <a class="external free" href="https://fr.wikipedia.org/wiki/Pendule_de_Foucault" rel="nofollow">https://fr.wikipedia.org/wiki/Pendule_de_Foucault</a> ). On en retient que mettre en évidence directement la rotation de la terre par une mesure inertielle, n'est pas chose facile.
+</p><p><br/>
+À la suite de cette intéressante lecture j’ai eu envie d’expérimenter à mon tour en partant d’un circuit élémentaire de mesure inertielle BNO055 et d’un banc de test de ma fabrication, afin de pouvoir tester plusieurs principes de mesure.
+</p><p><br/>
+<b>Vidéo d'introduction:</b>
+</p><p>On y voit fonctionner le matériel qui a servi à enregistrer le signal très faible produit par la rotation terrestre sur le circuit de mesure inertielle posé sur un plateau tournant. 
+</p><p>Le signal utile est prélevé à chaque fois que la rotation s'arrête pendant quelques secondes: A ce moment, la seule rotation "vue" par le circuit est la rotation terrestre (environ 4 millièmes de degrés par seconde). Ce n'est qu'après l'enregistrement de milliers d'échantillons que le signal utile sortira du bruit.
+</p>
+Ce que je trouve fascinant, c'est qu'un signal aussi faible peut être détecté avec un dispositif qui semble sorti d'un roman de Jules Verne....</div>
+<div class="row noprint">
+<div class="col-xs-12">
+<h2 class="VideoTitle"><span id="Video_d'introduction"></span><span class="mw-headline" id="Video_d_introduction">Video d'introduction</span></h2>
+<div class="allSizeScreenButton">
+<p><span class="resizeButton smallButton"></span>
+<span class="resizeButton mediumButton"></span>
+<span class="resizeButton largeButton"></span>
+</p>
+</div>
+<div class="videoMainContainer">
+<div class="videoContainer"><video controls="" src="https://wikifab.org/images/4/48/VideoBanc_.mp4" width="100%"><a href="https://wikifab.org/wiki/Fichier:VideoBanc_.mp4">https://wikifab.org/wiki/Fichier:VideoBanc_.mp4</a></video></div>
+</div>
+</div>
+</div>
+<div class="display-none">
+<p>Mp4
+</p><p><br/>
+</p><p><br/>
+</p><p><br/>
+VideoBanc .mp4
+</p>
+</div>
+<div class="Input-tabs Grey-Input-tabs">
+<div class="tabber" id="tabber-658055e142588898fe1889d9f001eb50">
+<div class="tabbertab" title="Outils &amp; Matériaux">
+<p class="mw-empty-elt">
+</p><div class="wf-nav-tabs-inner"><div class="row">
+<div class="col-xs-12 col-md-6 step-instructions">
+<h3><span class="mw-headline" id="Matériaux">Matériaux</span></h3>
+</div>
+<div class="col-xs-12 col-md-6 step-instructions">
+<h3><span class="mw-headline" id="Outils">Outils</span></h3>
+</div>
+</div>
+</div><p class="mw-empty-elt"></p>
+</div></div>
+</div>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-manyimage">
+<h2><span class="mw-headline" id="Étape_1_-_Le_défi">Étape 1 - Le défi</span></h2>
+<p>La vitesse de rotation de la terre sur elle-même est de 360 / 24 / 3600 = 0.00417 °/s.
+</p><p><br/>
+Pour faire cette mesure, on va utiliser le circuit intégré BNO055 de Bosch qui est un capteur inertiel réalisé en Technologie MEMS (Micro Electro-Mechanical System).  Dans la partie gyromètre qui nous intéresse ici, une masse d’épreuve est mise en vibration et réagit aux rotations grâce à la force de Coriolis (<a class="external free" href="https://www.youtube.com/watch?v=KiJ9xr8_GSI" rel="nofollow">https://www.youtube.com/watch?v=KiJ9xr8_GSI</a>), comme le pendule de Foucault. En quelque sorte c’est un pendule de Foucault dans un circuit intégré…. Mais les dimensions ont été fantastiquement réduites, comme on peut le voir sur la figure 1....
+</p><p><br/>
+Le défi réside dans l'utilisation de ce type de circuit à bas coût conçu pour les manettes de jeux. La plage de mesure la plus sensible est en effet de +/- 125 °/s, codée sur 16 bits (figure 2).
+</p><p><br/>
+Dans ces conditions le pas de quantification est de 250 / 2^16 = 0.0038 °/s, très proche de la vitesse de rotation que l'on cherche à mesurer....
+</p><p><br/>
+Heureusement il y a du bruit !  C'est ce qui va nous permettre de sortir du pas de quantification ...... sinon ce serait sans espoir de pouvoir faire une mesure de la rotation terrestre avec un minimum de précision !
+</p><p>La figure 3 montre un enregistrement du bruit qui oscille sur près de 70 pas de quantification (LSB) en crête à crête, soit plus de 60 fois la valeur de la rotation terrestre !  On sent bien que la stratégie va être de moyenner de nombreuses mesures.... tout en évitant les dérives long terme et les biais...
+</p><p><br/>
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel1"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/0/0f/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_PenduleDeFoucault.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_PenduleDeFoucault.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 PenduleDeFoucault.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/0/0f/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_PenduleDeFoucault.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_PenduleDeFoucault.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/6/6d/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Gyrometre.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Gyrometre.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Gyrometre.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/6/6d/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Gyrometre.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Gyrometre.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/9/9e/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Bruit.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Bruit.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation Bruit.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/9/9e/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Bruit.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Bruit.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div><ol class="carousel-indicators"><li class="carousel-thumb active" data-slide-to="0" data-target="#myCarousel1"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="1" data-target="#myCarousel1"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="2" data-target="#myCarousel1"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li></ol></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-manyimage">
+<h2><span class="mw-headline" id="Étape_2_-_Principes_des_mesures_de_rotation_de_la_terre">Étape 2 - Principes des mesures de rotation de la terre</span></h2>
+<p><b>Le BNO055 en Occitanie....</b>
+</p><p>Les 4 premières figures indiquent l'orientation du circuit lorsque l'expérience se déroule dans un coin d'Occitanie où la latitude est très proche de 45° Nord.
+</p><p><br/>
+<b>Mesures par différence entre deux positions</b>
+</p><p>On ne peut pas mesurer directement des valeurs de la projection de Omega _terre car la réponse du capteur comporte toujours un offset inconnu. Par contre en faisant la différence entre deux mesures à deux positions différentes, on s'affranchit de cet offset. Par exemple la différence entre la position Z // Omega et Z antiparallèle à Omega nous donne deux fois la vitesse de rotation de la terre tout en annulant l'offset. De même la différence entre deux positions perpendiculaires à l'axe de rotation terre doit être égale à zéro.
+</p><p><br/>
+</p><p><b>Mesures par modulation sinusoïdale et analyse spectrale</b>
+</p><p>Si maintenant au lieu de se contenter de deux positions, on prélève une dizaine d'échantillons par tour, on va réaliser une modulation sinusoïdale de la valeur à mesurer. On obtiendra typiquement la sinusoïde de la figure 5.
+</p><p>Cette modulation ne sera pas visible car elle sera largement noyée dans le bruit. Heureusement la technique d'analyse spectrale par transformée de Fourier permettra de retrouver son amplitude (valeur de omega_terre) et même sa phase (position en latitude), comme nous le verrons plus bas.
+</p><p><br/>
+<b>Simulation des séquences d'acquisition</b>
+</p><p>La dernière animation illustre la séquence de mesures par différence et par modulation sinusoïdale. Noter que chaque fois le changement entre deux positions stables se fait rapidement afin de ne pas perdre de temps.
+</p><p><br/>
+<b>Toutes les mesures se font en statique</b>
+</p><p>En effet toutes les acquisitions utiles se font uniquement sur les positions stables. La rotation du BNO055 autour de son axe Y avec une vitesse angulaire bien plus importante que celle de la terre "polluerait" notre mesure de façon importante à cause de couplages entre les axes. Par exemple celui généré par le non parallélisme entre l'axe Y et l'axe de rotation. En prenant les mesures pendant les périodes stables élimine totalement ce problème. La seule rotation qui existe alors est celle de la terre. 
+</p><p><br/>
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel2"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/2/20/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_horizontal.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_horizontal.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation horizontal.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/2/20/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_horizontal.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_horizontal.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/9/9d/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_45.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_45.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation 45.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/9/9d/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_45.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_45.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/e/e9/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_135.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_135.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation 135.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/e/e9/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_135.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_135.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/9/94/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_225.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_225.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation 225.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/9/94/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_225.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_225.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/8/84/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_modulation.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_modulation.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation modulation.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/8/84/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_modulation.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_modulation.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><video controls="" src="https://wikifab.org/images/a/ad/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4" width="100%"><a href="https://wikifab.org/wiki/Fichier:Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4">https://wikifab.org/wiki/Fichier:Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4</a></video><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div><ol class="carousel-indicators"><li class="carousel-thumb active" data-slide-to="0" data-target="#myCarousel2"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="1" data-target="#myCarousel2"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="2" data-target="#myCarousel2"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="3" data-target="#myCarousel2"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="4" data-target="#myCarousel2"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="5" data-target="#myCarousel2"><div class="annotatedImageContainer"><video src="https://wikifab.org/images/a/ad/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4" width="100%"><a href="https://wikifab.org/wiki/Fichier:Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4">https://wikifab.org/wiki/Fichier:Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4</a></video><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li></ol></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><video controls="" src="https://wikifab.org/images/a/ad/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4" width="100%"><a href="https://wikifab.org/wiki/Fichier:Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4">https://wikifab.org/wiki/Fichier:Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Sequence_acquisition.mp4</a></video><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-oneimage">
+<h2><span class="mw-headline" id="Étape_3_-_Le_banc_de_mesure">Étape 3 - Le banc de mesure</span></h2>
+<p><b>Constitution</b>
+</p><p>Le banc de mesures est constitué par une planchette support qui tourne autour d’un axe horizontal, mu par un moteur pas à pas. Sur la planchette support se trouve une carte Arduino UNO avec un shield carte SD pour stocker les mesures de vitesse de rotation. A côté on a fixé le petit circuit supportant le gyromètre BNO055. Une pile pour l’alimentation et un interrupteur complètent le montage. Le moteur pas à pas est contrôlé par une autre carte Arduino UNO et un shield moteurs.
+</p><p><br/>
+On peut trouver facilement tous ces composants, par exemple ici :
+</p><p>Shield SD : <a class="external free" href="https://www.gotronic.fr/art-shield-carte-sd-v4-103030005-21518.htm" rel="nofollow">https://www.gotronic.fr/art-shield-carte-sd-v4-103030005-21518.htm</a>
+</p><p>Moteur pas à pas : <a class="external free" href="https://www.gotronic.fr/art-moteur-14hm11-0404s-23048.htm" rel="nofollow">https://www.gotronic.fr/art-moteur-14hm11-0404s-23048.htm</a>
+</p><p>Shield moteurs : <a class="external free" href="https://www.gotronic.fr/art-commande-i2c-de-2-moteurs-cc-grove-108020103-29016.htm" rel="nofollow">https://www.gotronic.fr/art-commande-i2c-de-2-moteurs-cc-grove-108020103-29016.htm</a>
+</p><p>Module Boussole BNO055 : <a class="external free" href="https://www.gotronic.fr/art-module-boussole-bno055-27795.htm" rel="nofollow">https://www.gotronic.fr/art-module-boussole-bno055-27795.htm</a>
+</p><p><br/>
+<b>Utilisation</b>
+</p><p>Avec ce banc il est très facile de reproduire les séquences de mesure décrites au  paragraphe précédent. Comme les rotations en effet se font autour de l'axe Y du BNO055, il suffit d'orienter le plan de rotation des vecteurs Z et X dans la direction  Nord-Sud. Cette orientation étant faite, on déclenche l'enregistrement continu sur la carte des vitesses de rotation sur les 3 axes. Enfin on lance le programme de commande du moteur pas à pas pour balayer soit deux positions (mesure par différence de deux positions), soit pour échantillonner un certain nombre de positions par tour pendant plusieurs tours (analyse spectrale). 
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel3"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/0/0b/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_banc_2.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_banc_2.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation banc 2.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/0/0b/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_banc_2.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_banc_2.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p><p><br/>
+</p><p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-oneimage">
+<h2><span class="mw-headline" id="Étape_4_-_Configuration_et_acquisition_des_mesures_avec_le_BNO055">Étape 4 - Configuration et acquisition des mesures avec le BNO055</span></h2>
+<p>Tout d'abord le circuit BNO055 peut être exploité avec une interface I2C, après avoir fermé le pontet de sélection LK1  (<a class="external free" href="http://www.robot-electronics.co.uk/files/BNO055-schematic.pdf" rel="nofollow">http://www.robot-electronics.co.uk/files/BNO055-schematic.pdf</a>).
+</p><p><br/>
+De façon pratique, pour configurer et acquérir les mesures à partir d'une carte Arduino UNO, on a besoin d'un exemple type et de la notice du BNO055.
+</p><p><br/>
+Cette notice peut être téléchargée ici:
+</p><p><a class="external free" href="https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bno055-ds000.pdf" rel="nofollow">https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bno055-ds000.pdf</a>
+</p><p><br/>
+D'autre part, le vendeur du circuit m'a fourni un exemple de programme pour acquérir les angles d'Euler, sans bibliothèque particulière, juste en s'aidant de la notice:
+</p><p><a class="external free" href="https://wikifab.org/images/7/76/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_BNO055.ino" rel="nofollow">https://wikifab.org/images/7/76/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_BNO055.ino</a>
+</p><p><br/>
+A l'aide de la notice Bosch et d'un minimum de concentration on peut configurer le circuit pour acquérir les vitesses de rotation autour des 3 axes, sur la plage de mesure la plus sensible +/- 125 °/s et avec la bande passante la plus réduite de 12 Hz:
+</p><p><a class="external free" href="https://wikifab.org/images/0/09/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Enregistrement_Gyro.ino" rel="nofollow">https://wikifab.org/images/0/09/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Enregistrement_Gyro.ino</a>
+</p><p>Ce dernier fichier INO est documenté et renvoie aux pages utiles de la notice  BOSCH pour les explications. Noter que ce programme permet d'enregistrer soit les angles d'Euler (clé = 0), soit les vitesses angulaires (clé = 1). 
+</p><p><br/>
+</p><p><br/>
+Je ne détaille pas plus mais je peux fournir des explications si besoin.<br/>
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel4"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/8/8e/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_GardeBNO.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_GardeBNO.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation GardeBNO.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/8/8e/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_GardeBNO.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_GardeBNO.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p><p><br/>
+</p><p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-manyimage">
+<h2><span class="mw-headline" id="Étape_5_-_Mise_au_point_des_conditions_de_mesure_(1/2)">Étape 5 - Mise au point des conditions de mesure (1/2)</span></h2>
+<p><b>Choix de la sensibilité, de la bande passante</b> <b>et de la fréquence d'échantillonnage</b>
+</p><p>Évidemment le choix du maximum de sensibilité s'impose afin de ne pas noyer le signal utile trop à l'intérieur du pas de quantification. Pour le gyromètre on choisira donc la plage +/- 125 °/s
+</p><p>Pour la bande passante, on choisit la plus basse, soit 12 Hz. En effet le signal de rotation terrestre ne varie pas très rapidement....
+</p><p>Ces deux paramètres sont décrits dans le tableau 3-9 de la notice (Gyroscope configurations).
+</p><p>La période d'échantillonnage est fixée à 0.1 seconde, de l'ordre de grandeur de la constante de temps du filtre (BP = 12 Hz). Une période plus petite ne permettrait pas de recueillir des échantillons indépendants car ils seraient corrélés avec ceux qui sont à l'intérieur d'une constante de temps du filtre. Une période d'échantillonnage plus grande ferait perdre des échantillons utiles pour le calcul de valeur moyenne de la mesure. En effet le rapport signal / bruit de la mesure s'améliore comme la racine carrée du nombre d'échantillons indépendants.
+</p><p><br/>
+<b>Choix de l'axe</b>
+</p><p>D'après le principe de mesure, sur les 3 axes, seuls X et Z sont utilisables, Y étant réservé à la rotation. Pour faire ce choix, il y a plusieurs critères: 
+</p><p>- le niveau de bruit: Pas très différent entre X et Z...(figure 1)
+</p><p>-  la sensibilité au champ magnétique: Suite à un test avec un aimant, l'axe Z est le moins sensible. L'aimant utilisé produisant un champ magnétique beaucoup plus intense que le champ magnétique terrestre
+</p><p>-  la sensibilité à la gravité: Ce point sera testé en utilisant deux configurations de mesure et sera discuté plus bas.
+</p><p><br/>
+<b>Mesure statique requise !</b>
+</p><p>La figure 2 montre un enregistrement de vitesse de rotation sur les 3 axes, lorsque Y seul tourne, dans un sens puis dans l'autre. On y voit clairement que les mesures sur X et Z sont influencées par la rotation sur Y. Cette perturbation disparaît totalement lorsque la rotation autour de Y est arrêtée.
+</p><p><br/>
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel5"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/c/ca/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_enreg_bruit.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_enreg_bruit.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation enreg bruit.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/c/ca/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_enreg_bruit.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_enreg_bruit.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/9/97/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_couplage_axes.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_couplage_axes.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation couplage axes.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/9/97/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_couplage_axes.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_couplage_axes.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div><ol class="carousel-indicators"><li class="carousel-thumb active" data-slide-to="0" data-target="#myCarousel5"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="1" data-target="#myCarousel5"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li></ol></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p><p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-manyimage">
+<h2><span class="mw-headline" id="Étape_6_-_Mise_au_point_des_conditions_de_mesure_(2/2)">Étape 6 - Mise au point des conditions de mesure (2/2)</span></h2>
+<p><b>Optimisation de la durée d'intégration par échantillon</b>
+</p><p><br/>
+On va considérer une durée totale de mesure de 1Heure (figure 1).
+</p><p>Pendant cette heure on alterne entre deux positions stables (position 1 et position 2). A chaque position, on acquiert un certain nombre d’échantillons à la fréquence de 10 échantillons par seconde pendant un temps d’intégration Ti. Ces échantillons seront moyennés et constitueront un ensemble de mesures sur les positions stables.
+</p><p><br/>
+La soustraction deux à deux de ces mesures (figure 1) donnera un ensemble de N valeurs de Omega_terre. En final, on fera la moyenne de ces N valeurs, sachant que l’écart type sur cette moyenne devrait s’améliorer comme la racine carrée de N. Ce sera notre valeur finale de Omega_terre pour 1H d’observation.
+</p><p><br/>
+Cependant l’amélioration globale du signal à bruit en racine de N dépend de la caractéristique du bruit. Si le bruit comporte des variations lentes importantes plutôt que des variations plus rapides, le choix du temps d’intégration par échantillon Ti sera important. On imagine en effet que si Ti est important, la différence entre les deux positions sera largement influencée par ces dérives lentes.
+</p><p><br/>
+Aussi on a réalisé un enregistrement de 1 Heure de bruit, en l’absence de tout mouvement, et on a fait un découpage en temps Ti de valeurs différentes avant d’appliquer le traitement prévu pour les vrais échantillons.
+</p><p><br/>
+Le résultat est donné sur le graphe de la figure 2, pour deux axes X et Z. Pour les deux axes, on constate que lorsque Ti dépasse 60 secondes on commence à voir une augmentation du bruit de mesure, ce qui traduit l’influence de dérives lentes. Ces dérives sont d’ailleurs plus importantes sur l’axe X que sur l’axe Z.
+</p><p><br/>
+En résumé, pour nos mesures, on adoptera une Temps par position inférieur à 60 secondes.<br/>
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel6"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/1/1c/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_optim_bruit.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_optim_bruit.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation optim bruit.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/1/1c/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_optim_bruit.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_optim_bruit.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/6/63/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Ti.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Ti.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation Ti.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/6/63/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Ti.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Ti.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div><ol class="carousel-indicators"><li class="carousel-thumb active" data-slide-to="0" data-target="#myCarousel6"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="1" data-target="#myCarousel6"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li></ol></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p><p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-oneimage">
+<h2><span class="mw-headline" id="Étape_7_-_Résultats_des_mesures_par_différences_entre_deux_positions_(1/2)">Étape 7 - Résultats des mesures par différences entre deux positions (1/2)</span></h2>
+<p>Comme expliqué plus haut, vu le niveau très faible du signal recherché (environ 1 LSB) il se pourrait que certains biais soient bien plus importants que le signal recherché, en particulier l’effet de la gravité qui n’a pu être vérifié (voir Etape 5, Choix de l’axe).
+</p><p>Entre la position 1 et la position 2, la gravité n’agit pas de la même façon sur le BNO055. 
+</p><p><br/>
+</p><p>Afin d’estimer si la gravité a un effet sur la mesure de rotation de la terre, la procédure d’acquisition est la suivante (voir figure 1):
+</p><p>-         Mesure entre deux positions, configuration 1
+</p><p>-         Mesure entre les mêmes positions, configuration 2
+</p><p><br/>
+</p><p>Du point de vue de la gravité, les configurations 1 et 2 sont identiques. Du point de vue du signal à mesurer entre les deux positions, on doit avoir deux signaux de même valeur mais de signe opposé.  On peut donc écrire:
+</p><p><br/>
+[Pos 2 – Pos 1]<sub>Conf1</sub> = G + 2 * Omega_terre * Cos(45°)     (G = contribution gravité)
+</p><p>[Pos 2 – Pos 1]<sub>Conf2</sub> = G - 2 * Omega_terre * Cos(45°)       (G = contribution gravité)
+</p><p><br/>
+Si la gravité n’a aucun effet, entre Conf 1 et Conf 2, on doit obtenir deux mesures de même amplitude mais de signe opposé. 
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel7"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/3/3d/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_mesure_2Pos.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_mesure_2Pos.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation mesure 2Pos.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/3/3d/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_mesure_2Pos.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_mesure_2Pos.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p><p><br/>
+</p><p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-oneimage">
+<h2><span class="mw-headline" id="Étape_8_-_Résultats_des_mesures_par_différences_entre_deux_positions_(2/2)">Étape 8 - Résultats des mesures par différences entre deux positions (2/2)</span></h2>
+<p><b>Haut , Gauche:</b>
+</p><p>Enregistement sur 1000 secondes du signal Omega_z brut. On note des "spikes" de signal de plusieurs centaines de LSB. Ces spikes correspondent au couplage de Omega_z avec la rotation Omega_y qui permet de faire la navette entre une position stable et une autre. On ne retient bien sûr que les valeurs Omega_z enregistrées sur les positions après stabilisation.
+</p><p><br/>
+<b>Haut, Droite:</b>
+</p><p>Omega_z est enregistré et moyenné pendant 30 secondes sur chacune des deux positions, ce qui donne des paires (Pos1, Pos2, Pos1, Pos2....).
+</p><p><br/>
+<b>Bas, Gauche:</b>
+</p><p>On a tracé ici l'évolution des valeurs des différences entre paires en fonction de leur rang d'acquisition, pour la <u>configuration 1</u>. Ces différences devraient être identiques, au bruit près. La moyenne des 95 valeurs est de 1.48 LSB.
+</p><p><br/>
+<b>Bas, Droite:</b>
+</p><p>On a tracé ici l'évolution des valeurs des différences entre paires en fonction de leur rang d'acquisition, pour la <u>configuration 2</u>. Ces différences devraient être identiques, au bruit près. La moyenne des 95 valeurs est de -1.38   LSB.
+</p><p><br/>
+Conclusion 1: Les valeurs mesurées sont très proches en valeur absolue et bien de signe opposé. La gravité n'a donc pas d'influence majeure.
+</p><p><br/>
+Conclusion 2: Les valeurs absolues trouvées sont très proches des prédictions de 1.54 LSB 
+</p><p><br/>
+<u>Nota</u>:  Tous les traitements ont été réalisés avec EXCEL. Me laisser un commentaire auquel je répondrai si vous êtes intéressés par les détails. 
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel8"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/5/55/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Differences.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Differences.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation Differences.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/5/55/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Differences.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_Differences.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p><p><br/>
+</p><p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-xs-12 col-md-6 step-instructions col-md-push-6 step-instructions-manyimage">
+<h2><span class="mw-headline" id="Étape_9_-_Résultats_des_mesures_par_modulation">Étape 9 - Résultats des mesures par modulation</span></h2>
+<p><b>Haut , Gauche:</b>
+</p><p>Enregistement sur 1000 secondes du signal Omega_z brut. On note des "spikes" de signal de plusieurs centaines de LSB. Ces spikes correspondent au couplage de Omega_z avec la rotation Omega_y qui permet de passer d'une position stable à une autre. On ne retient bien sûr que les valeurs Omega_z enregistrées sur les positions après stabilisation. 
+</p><p><br/>
+<b>Haut, Droite:</b>
+</p><p>Omega_z est enregistré et moyenné pendant 20 secondes sur chaque position stable, ce qui donne un échantillon de signal (E1, E2...) pour chacune des 10 positions stables pour chaque tour autour de Y (voir les principes à Étape 2).
+</p><p><br/>
+<b>Bas, Gauche:</b>
+</p><p>On a tracé ici l'évolution des valeurs des échantillons en fonction des tours autour de l'axe Y. On devine une modulation de période 1 Tour noyée dans pas mal de bruit. On a ainsi enregistré au total 18 tours autour de Y, soit 18 * 20 * 10 = 3600 secondes de mesure effective.
+</p><p><br/>
+<b>Bas, Droite:</b>
+</p><p>Le graphe donne le spectre de l'évolution précédente, obtenu par Transformée de Fourier. Ce spectre se réduit à un pic se détachant nettement sur un fond bruité. Ce pic correspond à notre signal rotation terrestre modulé à la fréquence de 1 période par Tour, soit à la fréquence de 1 Tour <sup>-1</sup>. La hauteur du pic représente la valeur de Oméga_terre. On trouve une valeur de presque 1.1 LSB, soit 0.0042 °/seconde pour une valeur recherchée de 0.00417 °/s. Mais il aura fallu 1H de mesure....
+</p><p><br/>
+<b>Sur la figure 2:</b>
+</p><p>Une autre  mesure est représentée où l'on peut voir des dérives lentes des échantillons, en plus du bruit habituel. Sur le spectre correspondant on voit apparaître ces perturbations à des fréquences inférieures à 0.5 Tour<sup>-1</sup>, ce qui ne perturbe pas la hauteur du pic utile à la fréquence de 1 Tour<sup>-1</sup>. C'est tout l'intérêt des méthodes de modulation et d'analyse spectrale pour séparer le signal utile de la majorité du bruit.
+</p><p><br/>
+<br/><u>Nota</u>:  Tous les traitements ont été réalisés avec EXCEL. Me laisser un commentaire auquel je répondrai si vous êtes intéressés par les détails. 
+</p>
+</div>
+<div class="col-xs-12 col-md-6 tuto-step-image noprint col-md-pull-6">
+<div class="carousel" data-interval="false" data-ride="carousel" id="myCarousel9"><div class="carousel-inner"><div class="carousel-item item active"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/4/44/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation FFT.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/4/44/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div><div class="carousel-item item"><div class="annotatedImageContainer"><a class="image" href="https://wikifab.org/images/thumb/b/b1/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT2.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT2.jpg" rel="noopener noreferrer" target="_blank"><img alt="Mesure de la vitesse de rotation de la terre avec un gyrom tre BOSCH BNO055 Dessins EarthRotation FFT2.jpg" data-file-height="794" data-file-width="1123" height="566" src="https://wikifab.org/images/thumb/b/b1/Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT2.jpg/800px-Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyrom_tre_BOSCH_BNO055_Dessins_EarthRotation_FFT2.jpg" width="800"/></a><div class="annotatedcontent" data-annotatedcontent=""> </div></div></div></div><ol class="carousel-indicators"><li class="carousel-thumb active" data-slide-to="0" data-target="#myCarousel9"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li><li class="carousel-thumb" data-slide-to="1" data-target="#myCarousel9"><div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div></li></ol></div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<div class="col-md-6 step-image-print print-only">
+<div class="tuto-step-image">
+<div class="annotatedImageContainer"><div class="annotatedcontent" data-annotatedcontent=""> </div></div>
+</div>
+</div>
+<p><br/>
+</p><p><br/>
+</p>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="row">
+<div class="col-md-12 step-instructions">
+<h2><span class="mw-headline" id="Étape_10_-_Conclusion_et_prolongements">Étape 10 - Conclusion et prolongements</span></h2>
+<p>Quand j’ai commencé à me frotter à ce défi, je doutais sérieusement d’arriver à mesurer la vitesse de rotation de la terre avec une précision aussi bonne, même après 1 heure de mesure. C’est du niveau de ce que l’on pouvait obtenir avec un bon pendule de Foucault dans les années 1850… mais infiniment plus encombrant que ce petit circuit de quelques millimètres …. C’est une bonne surprise ! Et surtout j’ai pris beaucoup de plaisir à le faire !
+</p><p><br/>
+J’espère que cela donnera l’envie à des lycéens et étudiants en sciences de reproduire ces mesures mais aussi d’aller plus loin. Ça pourrait être un beau sujet de traitement de signal que l'on peut traiter avec toute la rigueur mathématique (<a class="external free" href="https://www.dunod.com/sciences-techniques/methodes-et-techniques-traitement-du-signal" rel="nofollow">https://www.dunod.com/sciences-techniques/methodes-et-techniques-traitement-du-signal</a>). Personnellement j'ai surtout cherché à donner envie.... Place aux jeunes !
+</p><p><br/>
+Pour la suite on pourrait par exemple se donner l’objectif de repérer la direction du Nord géographique ainsi que sa position en latitude, tout cela en moins d’une heure. C’est typiquement le genre d’instrument dont aurait rêvé le capitaine Nemo dans son Nautilus tapi au fond des océans….
+</p><p><br/>
+Bien sûr actuellement on dispose de gyromètres laser qui permettent de le faire beaucoup plus rapidement, mais totalement hors de portée d’un bricoleur…et extrêmement chers…
+</p><p><br/>
+Bon courage et réussite à ceux qui voudront se lancer !
+</p>
+</div>
+</div>
+<div class="hrContentMinor"></div>
+<p><span class="propertyKey" style="display:none"></span>
+</p>
+<div class="noprint"><h2 class="cs-title"><span class="mw-headline" id="Commentaires">Commentaires</span></h2>
+<div id="cs-comments"></div></div>
+<p><span class="propertyKey" style="display:none">fr</span>
+<span class="propertyKey" style="display:none">none</span>
+<span class="propertyKey" style="display:none">0</span>
+<span class="hide">Published</span>
+</p>
+<!-- 
+NewPP limit report
+Cached time: 20251104125635
+Cache expiry: 0
+Dynamic content: true
+[SMW] In‐text annotation parser time: 0.166 seconds
+CPU time usage: 0.169 seconds
+Real time usage: 1.083 seconds
+Preprocessor visited node count: 1630/1000000
+Preprocessor generated node count: 4770/1000000
+Post‐expand include size: 195717/2097152 bytes
+Template argument size: 51181/2097152 bytes
+Highest expansion depth: 10/40
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 2296/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%  442.216      1 -total
+ 41.25%  182.420     10 Modèle:Tuto_Step
+ 33.01%  145.971      1 Modèle:Tuto_Details
+ 32.97%  145.805      9 Modèle:Tuto_StepImage
+ 11.92%   52.703      1 Modèle:Materials
+  7.79%   34.452      1 Modèle:Introduction
+  4.13%   18.272      1 Modèle:MaterialsNoImage
+  3.85%   17.009      1 Modèle:Notes
+  1.50%    6.631      1 Modèle:TutoVideo
+  0.44%    1.958      1 Modèle:Tuto_StepNoImage
+-->
+</div>
+<div aria-labelledby="myModalError" class="modal fade" id="ModalError" role="dialog" tabindex="-1">
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<span aria-hidden="true" aria-label="Close" class="close" data-dismiss="modal">×</span>
+<h4 class="modal-title">Erreur de saisie dans le nom du tutoriel</h4>
+</div>
+<div class="modal-body">
+<p>Vous avez entré un nom de page invalide, avec un ou plusieurs caractères suivants : </p>
+<p class="checkPageTitle-modalInvalidsCharslist"> &lt; &gt; @ ~ : * € £ ` + = / \ | [  ] { } ; ? # </p>
+</div>
+<div class="modal-footer">
+</div>
+</div>
+</div>
+</div>
+<div aria-labelledby="myModalLabel" class="modal fade" id="connectionRequiredModal" role="dialog" tabindex="-1">
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<button aria-label="Close" class="close" data-dismiss="modal" type="button"><span aria-hidden="true">×</span></button>
+<h4 class="modal-title" id="myModalLabel">Connexion</h4>
+</div>
+<div class="modal-body">
+				Pas encore enregistré ? Créez un compte pour profiter de toutes les fonctionnalités du service !
+				</div>
+<div class="modal-footer">
+<a href="/w/index.php?title=Sp%C3%A9cial:Connexion&amp;returnto=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055"><button class="btn btn-default" type="button">Se connecter</button></a>
+<a href="/w/index.php?title=Sp%C3%A9cial:Connexion&amp;returnto=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055&amp;type=signup"><button class="btn btn-primary" type="button">Créer un compte</button></a>
+</div>
+</div>
+</div>
+</div>
+<div aria-labelledby="myModalEmbed" class="modal fade" id="ModalEmbed" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-lg" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<span aria-hidden="true" aria-label="Close" class="close" data-dismiss="modal">×</span>
+<h4 class="modal-title">Intégrer ce tutoriel sur votre site</h4>
+</div>
+<div class="modal-body">
+<form action="#" id="embed-form">
+<div class="row">
+<div class="form-group col-md-6">
+<label for="embed-size">Taille du lecteur</label>
+<select class="embed-size form-control" name="embed-size">
+<option data-height="580" data-width="640" selected="" value="1">Large</option>
+<option data-height="540" data-width="530" value="2">Medium</option>
+<option data-height="480" data-width="320" value="3">Small</option>
+</select>
+</div>
+<div class="form-group col-md-6">
+<label for="embed-color">Couleur</label>
+<input class="embed-color jscolor form-control" name="embed-color" type="text"/>
+</div>
+</div>
+</form>
+<hr/>
+<div class="form-group">
+<label for="embed-code">Copiez-collez le code ci-dessous à intégrer sur votre page</label>
+<textarea class="embed-code form-control" cols="30" name="embed-code" rows="3">
+                                </textarea>
+</div>
+<div class="embed-player-preview">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="modal fade" id="sls-language-selection-modal" role="dialog">
+<div class="modal-dialog">
+<!-- Modal content-->
+<div class="modal-content">
+<div class="modal-header">
+<button class="close" data-dismiss="modal" type="button">×</button>
+<h4 class="modal-title">Sélectionnez une langue</h4>
+</div>
+<div class="modal-body">
+<ul class="sls-language-list row">
+<li class="col-md-6 col-xs-12 sls-changeLanguageLink sls-lang-link sls-lang-link-fr" data-code="fr"><a><a href="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/fr.png" rel="noopener noreferrer" target="_blank"><img alt="fr/" class="sls-flagimage" src="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/fr.png"/></a>
+						Français</a></li><li class="col-md-6 col-xs-12 sls-changeLanguageLink sls-lang-link sls-lang-link-en" data-code="en"><a><a href="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/en.png" rel="noopener noreferrer" target="_blank"><img alt="en/" class="sls-flagimage" src="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/en.png"/></a>
+						English</a></li><li class="col-md-6 col-xs-12 sls-changeLanguageLink sls-lang-link sls-lang-link-de" data-code="de"><a><a href="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/de.png" rel="noopener noreferrer" target="_blank"><img alt="de/" class="sls-flagimage" src="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/de.png"/></a>
+						Deutsch</a></li><li class="col-md-6 col-xs-12 sls-changeLanguageLink sls-lang-link sls-lang-link-es" data-code="es"><a><a href="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/es.png" rel="noopener noreferrer" target="_blank"><img alt="es/" class="sls-flagimage" src="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/es.png"/></a>
+						Español</a></li><li class="col-md-6 col-xs-12 sls-changeLanguageLink sls-lang-link sls-lang-link-it" data-code="it"><a><a href="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/it.png" rel="noopener noreferrer" target="_blank"><img alt="it/" class="sls-flagimage" src="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/it.png"/></a>
+						Italiano</a></li><li class="col-md-6 col-xs-12 sls-changeLanguageLink sls-lang-link sls-lang-link-pt" data-code="pt"><a><a href="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/pt.png" rel="noopener noreferrer" target="_blank"><img alt="pt/" class="sls-flagimage" src="https://wikifab.org/w/extensions/SimpleLanguageSelector/resources/flags/pt.png"/></a>
+						Português</a></li>
+</ul>
+</div>
+<div class="modal-footer">
+<button class="btn btn-default" data-dismiss="modal" type="button">Annuler</button>
+</div>
+</div>
+</div>
+</div></hr></div><div class="printfooter">
+Récupérée de « <a dir="ltr" href="https://wikifab.org/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055&amp;oldid=168118">https://wikifab.org/w/index.php?title=Mesure_de_la_vitesse_de_rotation_de_la_terre_avec_un_gyromètre_BOSCH_BNO055&amp;oldid=168118</a> »</div>
+<!-- end body text -->
+</div>
+<!-- category links -->
+<div class="catlinks" data-mw="interface" id="catlinks"><div class="mw-normal-catlinks" id="mw-normal-catlinks"><a href="/wiki/Sp%C3%A9cial:Cat%C3%A9gories" title="Spécial:Catégories">Catégorie</a> : <ul><li><a href="/wiki/Cat%C3%A9gorie:Tutorials" title="Catégorie:Tutorials">Tutorials</a></li></ul></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="footer-dokit-main footer-main">
+<div class="container">
+<div class="footer-dokit">
+<div class="row">
+<div class="col-md-4 col-sm-4 col-xs-12">
+						© 2017 - 2025 Dokit, SAS.
+					</div>
+<div class="col-md-8 col-sm-8 col-xs-12">
+<ul class="list-unstyled">
+<li><a href="https://wikifab.org/wiki/Dokit:Terms">Conditions générales</a></li>
+<li><a href="https://wikifab.org/wiki/Dokit:Privacy">Politique de confidentialité</a></li>
+<li><a href="https://wikifab.org/wiki/Sp%C3%A9cial:DokitRecentChanges">Modifications récentes</a></li>
+<li><a href="https://help.dokit.app" target="_blank">Aide</a></li>
+<li><a href="https://dokit.io" target="_blank">À propos</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="footer-dokit-mobile">
+<a href="https://wikifab.org/wiki/Formulaire:Tutorial"><span class="glyphicon glyphicon-pencil"></span></a>
+</div>
+</div>
+</div><script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgPageParseReport":{"smw":{"limitreport-intext-parsertime":0.166},"limitreport":{"cputime":"0.169","walltime":"1.083","ppvisitednodes":{"value":1630,"limit":1000000},"ppgeneratednodes":{"value":4770,"limit":1000000},"postexpandincludesize":{"value":195717,"limit":2097152},"templateargumentsize":{"value":51181,"limit":2097152},"expansiondepth":{"value":10,"limit":40},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":2296,"limit":5000000},"timingprofile":["100.00%  442.216      1 -total"," 41.25%  182.420     10 Modèle:Tuto_Step"," 33.01%  145.971      1 Modèle:Tuto_Details"," 32.97%  145.805      9 Modèle:Tuto_StepImage"," 11.92%   52.703      1 Modèle:Materials","  7.79%   34.452      1 Modèle:Introduction","  4.13%   18.272      1 Modèle:MaterialsNoImage","  3.85%   17.009      1 Modèle:Notes","  1.50%    6.631      1 Modèle:TutoVideo","  0.44%    1.958      1 Modèle:Tuto_StepNoImage"]},"cachereport":{"timestamp":"20251104125635","ttl":0,"transientcontent":true}}});});</script><!-- Matomo -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u = (("https:" == document.location.protocol) ? "https" : "http") + "://"+"matomo.dokit.io/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "38"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+<!-- Matomo Image Tracker -->
+<noscript><a href="https://matomo.dokit.io/piwik.php" rel="noopener noreferrer" target="_blank"><img alt="" src="https://matomo.dokit.io/piwik.php" style="border:0"/></a></noscript>
+<!-- End Matomo --><script>(window.RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":1563});});</script></body>
+</html>
