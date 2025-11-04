@@ -252,7 +252,51 @@
     <h2> Étapes</h2>
     {% if etapes %}
       <ol>
-        {% for e in etapes %}<li>{{ e|safe }}</li>{% endfor %}
+        {% for e in etapes %}
+          <li>
+            {# e peut être soit une string HTML (ancien format), soit un dict {html, fichiers} #}
+            {% if e.html is defined %}
+              {{ e.html|safe }}
+            {% else %}
+              {{ e|safe }}
+            {% endif %}
+
+            {# Afficher la liste des fichiers si fournie #}
+            {# Show files only when at least one file has a name or a link #}
+            {% if e.fichiers is defined %}
+              {% set ns = namespace(show=false) %}
+              {% for f in e.fichiers %}
+                {% set has_nom = (f.nom is defined and f.nom)|default(false) %}
+                {% set has_lien = (f.lien is defined and f.lien)|default(false) %}
+                {% if has_nom or has_lien %}
+                  {% set ns.show = true %}
+                {% endif %}
+              {% endfor %}
+
+              {% if ns.show %}
+                <p><strong>Fichiers :</strong></p>
+                <ul class="fichiers-list">
+                  {% for f in e.fichiers %}
+                    {% set nom = (f.nom if f.nom is defined else (f['nom'] if 'nom' in f else '')) %}
+                    {% set lien = (f.lien if f.lien is defined else (f['lien'] if 'lien' in f else '')) %}
+                    {% set ftype = (f.type if f.type is defined else (f['type'] if 'type' in f else '')) %}
+                    {% set desc = (f.description if f.description is defined else (f['description'] if 'description' in f else '')) %}
+                    {% if nom or lien %}
+                      <li>
+                        {% if lien %}
+                          <a href="{{ lien }}" target="_blank" rel="noopener">{{ nom or lien }}</a>
+                        {% else %}
+                          {{ nom }}
+                        {% endif %}
+                        {% if ftype or desc %} — <span class="meta">{{ [ftype, desc]|select('!=', '')|join(' / ') }}</span>{% endif %}
+                      </li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            {% endif %}
+          </li>
+        {% endfor %}
       </ol>
     {% else %}
       <p><em>Pas encore d'étapes définies</em></p>
