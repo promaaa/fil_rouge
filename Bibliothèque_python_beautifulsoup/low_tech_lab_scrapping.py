@@ -1,48 +1,67 @@
-import requests
 import os
+import time
+import requests
 from urllib.parse import urljoin, unquote, urlsplit, urlunsplit
 from bs4 import BeautifulSoup
 
 # ------------------ CONFIG ------------------
-OUTPUT_DIR = "pages"      # HTML local
-IMAGES_ROOT = "images"    # images locales
+OUTPUT_DIR = "pages"
 BASE = "https://wiki.lowtechlab.org/wiki/"
 LIST_URL = "https://wiki.lowtechlab.org/wiki/Group:Low-tech_Lab#Tutoriels"
 
-# Contrôle des images
-ALLOWED_EXT = (".jpg", ".jpeg", ".png", ".gif", ".webp")  # ajoute ".svg" si tu veux les SVG
-MAX_IMG_PER_PAGE = 20  # limite d'images téléchargées par page
+# HTTP session avec user-agent
+SESSION = requests.Session()
+SESSION.headers.update({
+    "User-Agent": "MakerLensScraper/1.0 (+https://github.com/divinebanon1-art/Scraping_part)"
+})
 
-# ------------------ 1) récup liens ------------------
-response = requests.get(LIST_URL)
-response.encoding = response.apparent_encoding
-
-if response.status_code == 200:
-    print("Requête réussie")
-else:
-    print("Erreur lors de la requête:", response.status_code)
-
-numero = 0
-soup = BeautifulSoup(response.text, "html.parser")
-
-with open("low_tech_lab_tuto_liens.txt", "w", encoding="utf-8") as f:
-    div_cards = soup.find_all("div", class_="project-card")
-    for div in div_cards:
-        lien = div.find("a", href=True)
-        if lien:
-            numero += 1
-            f.write(f"{numero}: {lien['href']}\n")
-
-print("Nombre de liens trouvés :", numero)
-
-# ------------------ 2) dossiers ------------------
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-os.makedirs(IMAGES_ROOT, exist_ok=True)
+# ------------------ UTILS ------------------
+def get_html(url: str, tries: int = 3, pause: float = 1.5) -> str | None:
+    for i in range(tries):
+        try:
+            r = SESSION.get(url, timeout=25)
+            r.encoding = r.apparent_encoding
+            if r.status_code == 200:
+                return r.text
+            print(f"[try {i+1}/{tries}] HTTP {r.status_code} sur {url}")
+        except Exception as e:
+            print(f"[try {i+1}/{tries}] ERR {e}")
+        time.sleep(pause)
+    return None
 
 def safe_name(s: str) -> str:
     return "".join(c if c.isalnum() or c in ("-", "_", ".") else "_" for c in s)
 
-# ------------------ 3) pages + images ------------------
+# ------------------ 1) Récupération des liens ------------------
+html = get_html(LIST_URL)
+if not html:
+    print("Erreur lors de la requête de la page liste.")
+soup = BeautifulSoup(html or "", "html.parser")
+
+links = []
+div_cards = soup.find_all("div", class_="project-card")
+for div in div_cards:
+    a = div.find("a", href=True)
+    if a and a["href"].startswith("/wiki/"):
+        links.append(a["href"])
+
+
+# Dédoublonnage
+seen = set()
+unique_links = []
+for u in links:
+    if u not in seen:
+        seen.add(u)
+        unique_links.append(u)
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+with open("low_tech_lab_tuto_liens.txt", "w", encoding="utf-8") as f:
+    for i, u in enumerate(unique_links, 1):
+        f.write(f"{i}: {u}\n")
+
+print("Nombre de liens trouvés :", len(unique_links))
+
+# ------------------ 2) Récupération des pages ------------------
 with open("low_tech_lab_tuto_liens.txt", "r", encoding="utf-8") as f:
     for line in f:
         line = line.strip()
@@ -56,97 +75,66 @@ with open("low_tech_lab_tuto_liens.txt", "r", encoding="utf-8") as f:
             path = line
 
         if not path.startswith("/wiki/"):
-            print("Ignoré (non-wiki):", line)
+            print("Ignoré:", line)
             continue
 
         page_url = urljoin(BASE, path)
         print(f"\nTéléchargement : {page_url}")
 
-        try:
-            r = requests.get(page_url, timeout=25)
-            if r.status_code != 200:
-                print("  -> Erreur HTTP", r.status_code)
+        page_html = get_html(page_url)
+        if not page_html:
+            print("  -> Erreur : impossible de charger la page")
+            continue
+
+        page_key_raw = unquote(path.rsplit("/", 1)[-1]) or "index"
+        page_key = safe_name(page_key_raw)
+
+        soup_page = BeautifulSoup(page_html, "html.parser")
+
+        # -------- Images cliquables SANS doublons --------
+        imgs = soup_page.find_all("img")
+        seen_imgs = set()
+
+        for img in imgs:
+            raw = (img.get("srcset") or "").strip()
+            if raw:
+                src = raw.split(",")[0].strip().split(" ")[0]
+            else:
+                src = (img.get("data-src") or img.get("src") or "").strip()
+
+            if not src:
                 continue
 
-            page_key_raw = unquote(path.rsplit("/", 1)[-1]) or "index"
-            page_key = safe_name(page_key_raw)
+            img_url = urljoin(BASE, str(src))
 
-            soup = BeautifulSoup(r.text, "html.parser")
+            parts = list(urlsplit(img_url))
+            parts[3] = ""  # retirer query
+            parts[4] = ""  # retirer fragment
+            norm_url = urlunsplit(parts)
 
-            page_img_dir = os.path.join(IMAGES_ROOT, page_key)
-            os.makedirs(page_img_dir, exist_ok=True)
-
-            # --------- PATCH anti-doublons / limite / normalisation ---------
-            imgs = soup.find_all("img")
-            seen = set()
-            count = 0
-
-            for img in imgs:
-                if count >= MAX_IMG_PER_PAGE:
-                    break
-
-                # srcset > data-src > src
-                raw = (img.get("srcset") or "").strip()
-                if raw:
-                    src = raw.split(",")[0].strip().split(" ")[0]
+            if norm_url in seen_imgs:
+                if img.parent and img.parent.name == "a" and len(img.parent.contents) == 1:
+                    img.parent.decompose()
                 else:
-                    src = (img.get("data-src") or img.get("src") or "").strip()
+                    img.decompose()
+                continue
 
-                if not src:
-                    continue
+            seen_imgs.add(norm_url)
 
-                # URL absolue
-                img_url = urljoin(BASE, str(src))
+            img["src"] = norm_url
 
-                # normaliser: enlever query/fragment (meilleure déduplication)
-                parts = list(urlsplit(img_url))
-                parts[3] = ""  # query
-                parts[4] = ""  # fragment
-                norm_url = urlunsplit(parts)
+            parent = img.parent
+            if parent and parent.name == "a" and parent.get("href"):
+                parent["href"] = norm_url
+            else:
+                a = soup_page.new_tag("a", href=norm_url, target="_blank", rel="noopener noreferrer")
+                img.replace_with(a)
+                a.append(img)
+        # -------------------------------------------------
 
-                # filtrer extensions
-                name_guess = unquote(norm_url.rsplit("/", 1)[-1]) or "image"
-                lower_name = name_guess.lower()
-                if not lower_name.endswith(ALLOWED_EXT):
-                    continue
+        out_path = os.path.join(OUTPUT_DIR, f"{page_key}.html")
+        with open(out_path, "w", encoding="utf-8") as out:
+            out.write(str(soup_page))
+        print(f"  ✅ Page enregistrée : {out_path}")
 
-                # dédoublonner
-                if norm_url in seen:
-                    continue
-                seen.add(norm_url)
-
-                img_name = safe_name(name_guess)
-                img_path = os.path.join(page_img_dir, img_name)
-
-                # skip si déjà téléchargée
-                if os.path.exists(img_path) and os.path.getsize(img_path) > 0:
-                    rel_src = os.path.relpath(img_path, start=OUTPUT_DIR).replace("\\", "/")
-                    img["src"] = rel_src
-                    count += 1
-                    continue
-
-                # téléchargement
-                try:
-                    ir = requests.get(norm_url, timeout=20)
-                    if ir.status_code == 200:
-                        with open(img_path, "wb") as fout:
-                            fout.write(ir.content)
-                        rel_src = os.path.relpath(img_path, start=OUTPUT_DIR).replace("\\", "/")
-                        img["src"] = rel_src
-                        print("📸", img_name)
-                        count += 1
-                    else:
-                        print(f"  (image HTTP {ir.status_code}) {norm_url}")
-                except Exception as e:
-                    print(f"  ⚠️ Erreur image : {norm_url} -> {e}")
-            # ----------------------------------------------------------------
-
-            out_path = os.path.join(OUTPUT_DIR, f"{page_key}.html")
-            with open(out_path, "w", encoding="utf-8") as out:
-                out.write(str(soup))
-            print(f"  ✅ Page enregistrée : {out_path}")
-
-        except Exception as e:
-            print("  -> Échec:", e)
-
-print("\nTéléchargement terminé !")
+print("\n✅ Traitement terminé sans doublons d'images")
