@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Système d'éclairage vélo Arduino avec clignotants et odomètre</title>
+  <link rel="stylesheet" href="output.css">
+</head>
+<body>
+
+  <header>
+    <h1>Système d'éclairage vélo Arduino avec clignotants et odomètre</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FGO/6FB0/LY2ZW52N/FGO6FB0LY2ZW52N.jpg?auto=webp&frame=1&width=1024&height=1024&fit=bounds&md=MjAyNC0wNy0wMiAwNToyODo1Ni4w&_gl=1*1kjzeg4*_ga*NzIwNjQzNDAyLjE3NjEwNTU1NDM.*_ga_NZSJ72N6RX*czE3NjIwMTIyNzUkbzMkZzEkdDE3NjIwMTIyNzUkajYwJGwwJGgw" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Ce tutoriel présente la construction d'un système d'éclairage intelligent pour vélo comprenant des feux avant et arrière, des clignotants directionnels, et un odomètre affichant la vitesse, le temps et la distance totale parcourue.</p>
+      
+        <p>Le système améliore considérablement la sécurité à vélo, particulièrement la nuit, en rendant le cycliste plus visible et en communiquant ses intentions aux autres usagers de la route.</p>
+      
+        <p>Caractéristiques principales :<ul><li>Feux avant blancs et arrière rouges très lumineux</li><li>Clignotants jaunes gauche et droite</li><li>Écran OLED affichant vitesse, temps, kilométrage</li><li>Contrôle par boutons sur le guidon</li><li>Capteur magnétique de vitesse sur la roue</li><li>Alimentation par batterie 18650 rechargeable USB-C</li><li>Électronique cachée dans une gourde pour éviter le vol</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50-80 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/This-Project-Reduces-Bike-Crashes-DIY-Arduino-Bike/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/This-Project-Reduces-Bike-Crashes-DIY-Arduino-Bike/</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Composants électroniques principaux :</li><li>Carte Arduino Nano</li><li>Écran OLED 0.96" 128x64 monochrome avec communication i2c</li><li>3 boutons tactiles 12x12 mm</li><li>2 capteurs à effet Hall US5881 (un optionnel)</li><li>Module horloge temps réel DS3231</li><li>4 MOSFETs IRFZ44N</li><li>Cellule de batterie lithium-ion 18650</li><li>Module chargeur TP4056 avec port USB-C</li><li>Module boost 5V 500mA (ou plus)</li><li>Interrupteur à bascule</li><li>Câble 4 conducteurs 26 AWG (~5 mètres)</li><li>Plaque à trous (perfboard)</li><li>Résistances :<ul><li>4 résistances 220 Ohm</li><li>6 résistances 10K Ohm</li><li>2 résistances 2.2K Ohm</li><li>1 résistance 100K Ohm</li><li>1 résistance 20K Ohm</li><li>27 résistances 47 Ohm</li><li>6 résistances 130 Ohm</li><li>1 résistance 330 Ohm</li></ul></li><li>LEDs :<ul><li>15 LEDs rouges transparentes 5 mm</li><li>40 LEDs jaunes transparentes 5 mm</li><li>6 LEDs blanches transparentes 5 mm</li><li>1 LED rouge transparente 3 mm et 1 LED bleue transparente 3 mm</li></ul></li><li>Connecteurs :<ul><li>5 connecteurs JST XH 2.54 mm 4 broches (mâle et femelle)</li><li>2 connecteurs JST XH 2.54 mm 3 broches (mâle et femelle)</li></ul></li><li>Visserie :<ul><li>2 inserts filetés M3 en laiton</li><li>Vis M3 de 12 mm</li><li>Vis M3 de 20 mm</li><li>Écrous auto-freinés M3</li></ul></li><li>Gaines thermorétractables de différentes tailles</li><li>Gourde de vélo</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li>Imprimante 3D avec filament PLA noir</li><li>Fer à souder</li><li>Pistolet à colle chaude</li><li>Tournevis</li><li>Pinces</li><li>Scie</li><li>Perceuse</li><li>Multimètre</li><li>Colliers de serrage</li><li>Outils de base</li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        <li><strong>1. Vue d'ensemble du projet</strong><p><em>Comprendre l'architecture globale du système</em></p><p><strong>Étapes :</strong></p><ol><li>Le projet se compose de plusieurs parties : les feux avant et arrière avec clignotants, un écran sur le guidon, trois boutons de contrôle, un capteur magnétique de vitesse sur la roue.</li><li>Tous les composants sont connectés à un circuit comprenant un Arduino, un module horloge temps réel, et quatre MOSFETs pour contrôler les LEDs.</li><li>Le système est alimenté par une batterie lithium-ion rechargeable via USB-C.</li><li>Toute l'électronique est cachée dans une gourde de vélo pour éviter le vol.</li></ol><p><strong>Remarques :</strong></p><ul><li>Le projet a été conçu par parties pour simplifier la complexité globale.</li></ul></li><li><strong>2. Feu arrière</strong><p><em>Construire le feu arrière avec clignotants</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>15 LEDs rouges 5mm</li><li>28 LEDs jaunes 5mm (14 par clignotant)</li><li>Résistances 47 Ohm</li><li>1 résistance 330 Ohm</li><li>Câble 4 conducteurs</li><li>Connecteur JST 4 broches</li><li>Pièces imprimées en 3D</li><li>2 inserts filetés M3</li><li>2 vis M5</li><li>Colle chaude</li></ul><p><strong>Étapes :</strong></p><ol><li>Concevoir et imprimer en 3D le boîtier du feu et la plaque de montage des LEDs.</li><li>Insérer deux inserts filetés M3 dans la plaque de montage à l'aide d'un fer à souder.</li><li>Monter les LEDs : rouges au centre, jaunes sur les côtés.</li><li>Connecter les LEDs en séries de deux avec une résistance de 47 Ohm chacune, puis connecter toutes les séries en parallèle.</li><li>Les LEDs sont séparées en trois groupes : feu rouge central et clignotants gauche et droite.</li><li>Pour le feu rouge qui a 15 LEDs (nombre impair), connecter une résistance de 330 Ohm à la LED supplémentaire.</li><li>Insérer un câble 4 conducteurs dans le boîtier et souder : un fil au +5V commun, trois fils aux masses des trois groupes de LEDs.</li><li>Tester toutes les LEDs avec une alimentation de laboratoire.</li><li>Protéger les connexions avec de la colle chaude.</li><li>Insérer deux vis M5 dans les trous hexagonaux à l'arrière du boîtier pour la fixation au vélo.</li><li>Fermer le feu avec deux vis M3 vissées dans les inserts filetés.</li><li>Connecter un connecteur JST 4 broches à l'autre extrémité du câble.</li></ol><p><strong>Remarques :</strong></p><ul><li>Les LEDs doivent être très lumineuses pour être visibles en plein jour.</li><li>Suivre le schéma de câblage fourni (page 4 du document).</li></ul></li><li><strong>3. Écran d'affichage</strong><p><em>Installer l'écran OLED sur le guidon</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Écran OLED 0.96" 128x64</li><li>Câble 4 conducteurs</li><li>Connecteur JST 4 broches</li><li>Pièces imprimées en 3D</li><li>2 écrous auto-freinés M3</li><li>Colle</li></ul><p><strong>Étapes :</strong></p><ol><li>Retirer les connecteurs à broches soudés sur le PCB de l'écran pour le rendre plus compact.</li><li>Souder les quatre fils du câble aux quatre pads de l'écran : +5V, GND, SDA, SCL.</li><li>Concevoir et imprimer en 3D un support de guidon et un boîtier pour l'écran.</li><li>Coller l'écran dans le boîtier en l'alignant avec l'ouverture.</li><li>Faire passer le câble par le trou dans la base.</li><li>Assembler le boîtier au support par emboîtement.</li><li>Insérer deux écrous auto-freinés M3 dans les ouvertures du support pour fixer l'écran au guidon.</li><li>Connecter un connecteur JST 4 broches à l'autre extrémité du câble.</li></ol><p><strong>Remarques :</strong></p><ul><li>La communication i2c permet de connecter l'écran avec seulement 4 fils.</li></ul></li><li><strong>4. Boutons de contrôle</strong><p><em>Installer les trois boutons de commande sur le guidon</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>3 boutons tactiles 12x12 mm</li><li>Câble 4 conducteurs</li><li>Connecteur JST 4 broches</li><li>Pièces imprimées en 3D (gris pour les capuchons)</li><li>2 écrous auto-freinés M3</li><li>Colle chaude</li><li>Ruban adhésif double face</li></ul><p><strong>Étapes :</strong></p><ol><li>Imprimer en 3D un support similaire à celui de l'écran avec un boîtier.</li><li>Redresser les broches des boutons et les couper à ras d'un côté.</li><li>Placer les boutons dans le support imprimé et les maintenir temporairement avec du ruban adhésif double face.</li><li>Souder un fil du câble à la masse commune des trois boutons.</li><li>Souder les trois autres fils aux broches libres de chaque bouton (gauche, droite, SET).</li><li>Vérifier les connexions puis fixer les boutons avec de la colle chaude.</li><li>Imprimer en 3D avec du PLA gris trois petits capuchons et les placer sur les boutons.</li><li>Assembler le boîtier au support par emboîtement.</li><li>Insérer deux écrous auto-freinés M3 dans le support.</li><li>Connecter un connecteur JST 4 broches à l'autre extrémité du câble.</li></ol><p><strong>Remarques :</strong></p><ul><li>Les trois boutons servent à : activer les clignotants gauche/droite et naviguer dans les menus (SET).</li></ul></li><li><strong>5. Feux avant</strong><p><em>Construire les deux feux avant avec clignotants</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>6 LEDs blanches 5mm (3 par feu)</li><li>12 LEDs jaunes 5mm (6 par feu)</li><li>Résistances 47 Ohm</li><li>Résistances 130 Ohm</li><li>Câble 4 conducteurs</li><li>Connecteur JST 4 broches</li><li>Pièces imprimées en 3D</li><li>4 écrous auto-freinés M3</li><li>Colle chaude</li></ul><p><strong>Étapes :</strong></p><ol><li>Imprimer en 3D deux boîtiers avec supports de guidon et deux plaques de montage de LEDs.</li><li>Pour chaque feu, insérer les LEDs : une colonne de blanches et deux colonnes de jaunes.</li><li>Connecter les LEDs jaunes en séries de deux avec une résistance de 47 Ohm chacune, puis en parallèle.</li><li>Pour les LEDs blanches, mettre une résistance de 130 Ohm sur chacune puis les connecter en parallèle.</li><li>Créer deux circuits identiques avec les couleurs de LEDs en miroir (blanches à l'intérieur, jaunes à l'extérieur).</li><li>Insérer le câble principal dans le boîtier qui a deux trous pour câbles.</li><li>Connecter les deux boîtiers entre eux avec un court morceau de câble.</li><li>Souder les connexions : +5V commun aux deux feux, masse des blanches commune, masse clignotant droit au premier feu, masse clignotant gauche au second feu.</li><li>Tester les LEDs puis protéger les connexions avec de la colle chaude.</li><li>Assembler les plaques de LEDs dans leurs boîtiers par emboîtement.</li><li>Insérer deux écrous auto-freinés M3 dans chaque support.</li><li>Connecter un connecteur JST 4 broches à l'autre extrémité du câble.</li></ol><p><strong>Remarques :</strong></p><ul><li>Un boîtier a deux trous pour câbles, l'autre un seul.</li><li>Toutes les LEDs partagent un +5V commun, les masses servent au contrôle.</li></ul></li><li><strong>6. Capteur de vitesse</strong><p><em>Installer le capteur magnétique pour mesurer la vitesse</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Capteur à effet Hall US5881</li><li>Câble 4 conducteurs (3 fils utilisés)</li><li>Connecteur JST 3 broches</li><li>Gaines thermorétractables</li><li>Support imprimé en 3D</li><li>Colliers de serrage</li><li>Aimant</li></ul><p><strong>Étapes :</strong></p><ol><li>Souder trois fils du câble aux trois broches du capteur : +5V, GND, signal de sortie.</li><li>Protéger le capteur et les connexions avec des gaines thermorétractables.</li><li>Connecter un connecteur JST 3 broches à l'autre extrémité du câble.</li><li>Imprimer en 3D un petit support pour le capteur.</li><li>Insérer le câble du capteur dans le trou du support.</li><li>Fixer le capteur avec deux colliers de serrage.</li><li>Fixer l'aimant sur le rayon de la roue.</li><li>Monter le support avec le capteur près de la roue arrière avec des colliers de serrage.</li><li>Positionner le capteur à environ 1 cm de l'aimant pour qu'il soit déclenché à chaque tour de roue.</li></ol><p><strong>Remarques :</strong></p><ul><li>Le capteur détecte l'aimant à chaque tour de roue.</li><li>L'Arduino calcule la vitesse en comptant les déclenchements toutes les 5 secondes et en connaissant la circonférence de la roue.</li><li>Tout aimant suffisamment fort peut être utilisé.</li></ul></li><li><strong>7. Carte de contrôle - Arduino et RTC</strong><p><em>Assembler la carte principale avec l'Arduino et l'horloge temps réel</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Plaque à trous (perfboard) 55x90 mm</li><li>Arduino Nano</li><li>Connecteurs à broches</li><li>Module DS3231 RTC</li><li>Fil</li><li>Fer à souder</li></ul><p><strong>Étapes :</strong></p><ol><li>Préparer une plaque à trous d'environ 55x90 mm.</li><li>Souder l'Arduino Nano sur la plaque en utilisant des connecteurs à broches.</li><li>Modifier le module RTC DS3231 pour l'alimenter depuis la batterie principale au lieu d'une pile bouton :<ul><li>Retirer la petite résistance au-dessus de la broche SCL</li><li>Dessouder le support de pile bouton</li><li>Souder un fil au pad qui était connecté au + de la pile</li></ul></li><li>Souder le module RTC sur la plaque.</li><li>Ce fil sera connecté au + de la batterie 18650 pour maintenir l'heure même quand le système est éteint.</li></ol><p><strong>Remarques :</strong></p><ul><li>La modification du RTC permet d'éviter d'avoir une pile bouton supplémentaire à changer.</li><li>Vérifier avec un multimètre le pad correct pour le + de la pile.</li></ul></li><li><strong>8. Carte de contrôle - MOSFETs, I2C et diviseur de tension</strong><p><em>Compléter le câblage de la carte de contrôle</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>4 MOSFETs IRFZ44N</li><li>Résistances diverses</li><li>Connecteurs JST</li><li>Fil de cuivre et fil sous gaine silicone</li><li>Fer à souder</li></ul><p><strong>Étapes :</strong></p><ol><li>Souder deux connecteurs JST 4 broches pour l'écran et les boutons.</li><li>Souder deux connecteurs JST pour les capteurs magnétiques (roue et frein optionnel).</li><li>Installer des résistances pull-up de 10K Ohm entre la broche de signal et +5V pour les deux capteurs magnétiques.</li><li>Installer quatre MOSFETs IRFZ44N : deux pour les clignotants gauche/droite, deux pour les feux avant/arrière.</li><li>Pour chaque MOSFET, placer une résistance de 10K Ohm entre la grille et GND.</li><li>Connecter la grille de chaque MOSFET à une broche Arduino avec une résistance de 220 Ohm.</li><li>Souder deux connecteurs JST 4 broches pour les feux avant et arrière, en amenant le +5V et les masses des drains des MOSFETs.</li><li>Connecter l'écran et le RTC via i2c sur les broches A4 et A5 de l'Arduino.</li><li>Placer des résistances pull-up de 2.2K Ohm sur les deux lignes i2c entre chaque ligne et +5V.</li><li>Créer un diviseur de tension avec une résistance de 100K Ohm et une de 20K Ohm pour mesurer la tension de batterie.</li><li>Connecter ce diviseur à une broche analogique de l'Arduino.</li><li>Réaliser toutes les connexions sous la plaque en suivant le schéma de câblage fourni.</li></ol><p><strong>Remarques :</strong></p><ul><li>Les connexions prennent du temps mais sont répétitives.</li><li>Suivre attentivement le schéma de câblage.</li><li>Vous pouvez concevoir votre propre PCB si vous préférez.</li></ul></li><li><strong>9. Code Arduino</strong><p><em>Programmer l'Arduino avec le code de contrôle</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Arduino IDE</li><li>Bibliothèque Adafruit_SSD1306</li><li>Bibliothèque RTClib</li></ul><p><strong>Étapes :</strong></p><ol><li>Débrancher l'Arduino de la carte de contrôle.</li><li>Installer les bibliothèques Adafruit_SSD1306 et RTClib dans l'Arduino IDE.</li><li>Télécharger le code Arduino depuis les fichiers joints.</li><li>Compiler et téléverser le code dans l'Arduino.</li><li>Reconnecter l'Arduino à la carte de contrôle.</li></ol><p><strong>Remarques :</strong></p><ul><li>Le code gère : la mesure de vitesse, la lecture de l'heure depuis le RTC, le contrôle des feux et clignotants, l'affichage de l'interface.</li><li>Tous les paramètres peuvent être configurés depuis l'interface de l'écran.</li><li>Les réglages sont sauvegardés dans l'EEPROM.</li></ul></li><li><strong>10. Circuit de batterie</strong><p><em>Assembler le système d'alimentation et de charge</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Batterie 18650</li><li>Support de batterie imprimé en 3D</li><li>Module TP4056</li><li>Module boost 5V</li><li>Interrupteur à bascule</li><li>2 LEDs 3mm (rouge et bleue)</li><li>Contacts ressort et plat</li><li>Colle</li></ul><p><strong>Étapes :</strong></p><ol><li>Imprimer en 3D un support de batterie simple.</li><li>Récupérer un contact ressort et un contact plat depuis un ancien support de piles.</li><li>Souder deux fils aux deux contacts.</li><li>Coller les contacts aux deux extrémités du support imprimé.</li><li>Connecter les fils du support aux pads B+ et B- du module TP4056.</li><li>Dessouder les LEDs d'indication du module TP4056.</li><li>Souder deux LEDs 3mm (rouge et bleue) avec de courts fils aux pads des LEDs pour indiquer l'état de charge.</li><li>Connecter un module boost aux bornes de sortie du circuit de charge pour obtenir 5V.</li><li>Si le module boost a un port USB, le dessouder et le remplacer par deux fils connectés aux broches de sortie + et -.</li><li>Installer un interrupteur à bascule sur le fil positif entre le module de charge et le module boost.</li></ol><p><strong>Remarques :</strong></p><ul><li>Le module boost doit avoir une sortie d'au moins 500mA.</li><li>IMPORTANT : Le négatif de l'entrée du module boost doit être directement connecté au négatif de sortie.</li><li>Les LEDs seront placées près du port USB.</li></ul></li><li><strong>11. Cacher l'électronique dans le vélo</strong><p><em>Installer tout le système dans une gourde pour éviter le vol</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Gourde de vélo</li><li>Scie</li><li>Support imprimé en 3D</li><li>Vis M3x12mm</li><li>Vis M3x20mm</li><li>Écrous auto-freinés M3</li><li>Entretoises imprimées en 3D</li><li>Colle chaude</li><li>Perceuse</li></ul><p><strong>Étapes :</strong></p><ol><li>Découper le fond de la gourde avec une scie.</li><li>Faire une ouverture sur le côté pour faire passer les câbles.</li><li>Imprimer en 3D un support pour monter la gourde sur le vélo.</li><li>Imprimer en 3D une plateforme pour monter le support de batterie, le circuit de charge, l'interrupteur et la carte Arduino.</li><li>Fixer le module de charge TP4056 sur le côté prévu pour le port de charge avec de la colle chaude.</li><li>Monter le support de batterie avec quatre vis M3x12mm et écrous auto-freinés.</li><li>Monter la carte Arduino de l'autre côté avec des vis M3x12mm, des écrous auto-freinés et des entretoises imprimées en 3D.</li><li>Percer les trous de montage pour la carte à l'emplacement qui correspond à votre carte.</li><li>Connecter l'alimentation +5V et GND du module boost à la carte.</li><li>Connecter un fil directement depuis le + de la batterie au RTC.</li><li>Connecter un fil depuis l'entrée du module boost au diviseur de tension sur la carte pour mesurer la tension de batterie.</li></ol><p><strong>Remarques :</strong></p><ul><li>La gourde protège l'électronique de la pluie.</li><li>Personne ne peut deviner ce qui se trouve à l'intérieur.</li><li>Les trous de montage de la carte ne sont pas inclus dans le fichier 3D pour permettre l'adaptation.</li></ul></li><li><strong>12. Installation du système sur le vélo</strong><p><em>Monter et connecter tous les composants sur le vélo</em></p><p><strong>Matériaux et outils :</strong></p><ul><li>Vis M3x20mm</li><li>Vis M5</li><li>Écrous auto-freinés M3</li><li>Écrous auto-freinés M5</li><li>Colliers de serrage</li><li>Perceuse</li></ul><p><strong>Étapes :</strong></p><ol><li>Installer le feu arrière sur le vélo en utilisant les deux vis M5 avec des écrous auto-freinés.</li><li>Fixer les boutons et l'écran sur le guidon avec leurs supports imprimés et des vis M3x20mm.</li><li>Monter les deux feux avant près du centre du guidon de la même manière.</li><li>Ranger les câbles avec des colliers de serrage en les amenant vers l'emplacement de la gourde.</li><li>Monter le capteur magnétique de vitesse avec son support imprimé près de la roue arrière.</li><li>Positionner le capteur à environ 1cm de l'aimant fixé sur la roue.</li><li>Monter le support de gourde sur les filetages du vélo en faisant passer les câbles par le trou du bas.</li><li>Connecter tous les connecteurs JST des différents composants à la carte de contrôle.</li><li>Fixer la plateforme avec l'électronique et la batterie dans le support de gourde avec deux vis M3 et écrous auto-freinés.</li><li>Glisser la gourde sur la plateforme avec l'électronique.</li><li>Percer deux trous dans la gourde et la fixer avec des vis.</li></ol><p><strong>Remarques :</strong></p><ul><li>La gourde ressemble presque à une gourde normale, sauf pour l'interrupteur.</li><li>Tous les câbles doivent être bien rangés et sécurisés.</li></ul></li><li><strong>13. Configuration initiale</strong><p><em>Paramétrer le système lors de la première utilisation</em></p><p><strong>Étapes :</strong></p><ol><li>Allumer le système en maintenant le bouton SET enfoncé pour entrer dans les paramètres.</li><li>Utiliser les boutons gauche et droite pour naviguer dans les menus.</li><li>Réglage de l'heure :<ul><li>Sélectionner 'Time' et appuyer sur SET</li><li>Appuyer sur SET pour sélectionner les heures</li><li>Utiliser gauche/droite pour ajuster</li><li>Appuyer sur SET pour sélectionner les minutes</li><li>Ajuster avec gauche/droite</li><li>Appuyer sur SET puis gauche ou droite pour valider</li></ul></li><li>Réglage de la roue :<ul><li>Sélectionner 'Wheel' et appuyer sur SET</li><li>Entrer la circonférence de la roue en mètres (pas le diamètre)</li><li>Ajuster avec les boutons gauche/droite par incréments de 1cm</li><li>Valider en sortant du menu</li></ul></li><li>Vérification des capteurs :<ul><li>Sélectionner 'Sensors'</li><li>Vérifier que le capteur de roue détecte l'aimant (ON/OFF)</li><li>Ajuster l'alignement si nécessaire</li></ul></li><li>Si votre aimant contient plusieurs aimants et que le capteur se déclenche plusieurs fois par passage, diviser la circonférence de roue par le nombre d'aimants.</li><li>Sélectionner 'Exit' pour quitter les paramètres.</li></ol><p><strong>Remarques :</strong></p><ul><li>L'heure entrée est considérée comme l'heure actuelle au moment de sortir des paramètres.</li><li>L'heure est maintenue par le module RTC même quand le système est éteint.</li><li>La circonférence de roue est sauvegardée dans l'EEPROM.</li><li>Tous les paramètres sont conservés après extinction.</li></ul></li><li><strong>14. Utilisation du système</strong><p><em>Utiliser le système au quotidien</em></p><p><strong>Étapes :</strong></p><ol><li>Page principale de l'écran :<ul><li>Vitesse actuelle en km/h</li><li>Heure</li><li>Distance totale parcourue en km</li><li>Indicateurs de clignotants actifs</li><li>Indicateur de niveau de batterie</li></ul></li><li>Appuyer sur SET pour accéder à la page d'informations détaillées :<ul><li>Temps total d'utilisation</li><li>Temps actif (en mouvement)</li><li>Vitesse maximale atteinte</li><li>Vitesse moyenne</li></ul></li><li>Appuyer à nouveau sur SET pour accéder à la page de contrôle des feux :<ul><li>Utiliser le bouton gauche pour sélectionner : All (tous), Front (avant), Back (arrière)</li><li>Utiliser le bouton droit pour allumer/éteindre les feux sélectionnés</li><li>L'écran retourne automatiquement à la page principale après 10 secondes</li></ul></li><li>Activation des clignotants (uniquement depuis la page principale) :<ul><li>Appuyer sur le bouton gauche ou droit pour activer le clignotant correspondant</li><li>L'indicateur apparaît sur l'écran</li><li>Appuyer sur n'importe quel bouton pour désactiver les clignotants</li><li>Les clignotants s'éteignent automatiquement après 12 clignotements</li></ul></li><li>Charge de la batterie :<ul><li>Brancher un câble USB-C au port de charge</li><li>La LED rouge indique la charge en cours</li><li>La LED bleue indique la charge terminée</li><li>La batterie dure plusieurs heures d'utilisation</li></ul></li></ol><p><strong>Remarques :</strong></p><ul><li>Les feux sont très lumineux et visibles de jour comme de nuit.</li><li>L'écran affiche des données très intéressantes sur vos trajets.</li><li>Les clignotants améliorent grandement la sécurité.</li></ul></li><li><strong>15. Projet terminé !</strong><p><strong>Étapes :</strong></p><ol><li>Le projet est maintenant terminé et fonctionnel.</li><li>Le système a été utilisé avec succès pendant plusieurs semaines.</li><li>Les données affichées sur l'écran sont très intéressantes.</li><li>Les feux sont essentiels pour rouler en sécurité la nuit.</li></ol><p><strong>Remarques :</strong></p><ul><li>Une vidéo complète avec plus de détails est disponible sur la chaîne YouTube de Giovanni Aggiustatutto (avec sous-titres anglais).</li><li>Ce projet réduit significativement les risques d'accidents à vélo.</li></ul></li>
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+  <footer>
+    <strong>💡 Remarques :</strong> <strong>Vidéo du projet</strong><br>Vidéo complète montrant la construction et le fonctionnement du système<br><strong>Fichiers à télécharger</strong><br>Tous les fichiers STL pour l'impression 3D, le code Arduino et les schémas électriques sont disponibles dans la section 'Attachments' du tutoriel original
+  </footer>
+  
+
+</body>
+</html>
