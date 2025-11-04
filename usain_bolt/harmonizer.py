@@ -88,12 +88,14 @@ class TutorialHarmonizer:
         outils = unique_preserve_order(self.format_hierarchical_list(outils_raw))
         
         # Les étapes avec la nouvelle structure "solutions"
+        # Nous passerons chaque élément d'étape au template comme un dictionnaire
+        # {'html': ..., 'fichiers': [...] } pour permettre l'affichage des fichiers côté template.
         etapes = []
         for e in project_data.get("étapes", []):
             if isinstance(e, dict):
                 titre_etape = e.get('titre', '').strip()
                 solutions = e.get("solutions", [])
-                
+
                 if solutions:
                     # Traiter chaque solution
                     for sol in solutions:
@@ -101,11 +103,10 @@ class TutorialHarmonizer:
                         num = e.get('numero', None)
                         num_str = f"{num}. " if (num is not None and str(num).strip() != "") else ""
                         formatted = f"<strong>{num_str}{titre_etape}</strong>"
-                        
+
                         # Images (ajoutées juste après le titre)
                         images = sol.get("images", [])
                         if images:
-                            # ajouter une classe count-N pour faciliter le rendu côté template
                             try:
                                 count = len(images)
                             except Exception:
@@ -117,18 +118,17 @@ class TutorialHarmonizer:
                                 description = img.get("description", "")
                                 if url:
                                     formatted += f"<figure>"
-                                    # add lazy loading to thumbnails to improve performance
                                     formatted += f"<img src='{url}' alt='{alt}' loading='lazy'>"
                                     if description:
                                         formatted += f"<figcaption>{description}</figcaption>"
                                     formatted += f"</figure>"
                             formatted += "</div>"
-                        
+
                         # Objectif
                         objectif = sol.get("objectif", "").strip()
                         if objectif:
                             formatted += f"<p><em>{objectif}</em></p>"
-                        
+
                         # Matériaux et outils
                         materiaux_outils = sol.get("materiaux_outils", [])
                         if materiaux_outils:
@@ -137,7 +137,7 @@ class TutorialHarmonizer:
                                 if item.strip():
                                     formatted += f"<li>{item.strip()}</li>"
                             formatted += "</ul>"
-                        
+
                         # Étapes
                         etapes_solution = sol.get("etapes", [])
                         if etapes_solution:
@@ -158,7 +158,7 @@ class TutorialHarmonizer:
                                 elif isinstance(step, str) and step.strip():
                                     formatted += f"<li>{step.strip()}</li>"
                             formatted += "</ol>"
-                        
+
                         # Remarques
                         remarques_solution = sol.get("remarques", [])
                         if remarques_solution:
@@ -167,16 +167,26 @@ class TutorialHarmonizer:
                                 if rem.strip():
                                     formatted += f"<li>{rem.strip()}</li>"
                             formatted += "</ul>"
-                        
-                        etapes.append(formatted)
+
+                        # fichiers: transférer la liste telle quelle au template
+                        fichiers = sol.get("fichiers", []) if isinstance(sol, dict) else []
+
+                        etapes.append({"html": formatted, "fichiers": fichiers})
                 else:
                     # Fallback si pas de solutions (ancienne structure)
-                    etapes.append(f"<strong>{titre_etape}</strong>")
+                    etapes.append({"html": f"<strong>{titre_etape}</strong>", "fichiers": []})
             else:
-                etapes.append(str(e).strip())
-        
-        # Appliquer unique_preserve_order pour éviter les doublons
-        etapes = unique_preserve_order(etapes)
+                etapes.append({"html": str(e).strip(), "fichiers": []})
+
+        # Enlever doublons en utilisant la clé HTML (préserver l'ordre)
+        seen = set()
+        unique_etapes = []
+        for item in etapes:
+            key = item.get('html') if isinstance(item, dict) else str(item)
+            if key not in seen:
+                seen.add(key)
+                unique_etapes.append(item)
+        etapes = unique_etapes
         
         # Annexes avec la nouvelle structure "solutions"
         annexes = project_data.get("annexes", [])
