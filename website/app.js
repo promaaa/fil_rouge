@@ -1553,6 +1553,34 @@ function findBestMatch(input, database) {
   return null;
 }
 
+// Fonction pour obtenir le chemin de l'image d'un tutoriel
+function getTutorialImage(titre) {
+  const imageMap = {
+    // Création
+    "Lampe de Bureau Design": "images/lampe_design.jpg",
+    "Enceinte Bluetooth DIY": "images/enceinte_bluetooth.jpg",
+    "Chargeur Solaire Portable": "images/chargeur_solaire.jpg",
+    "Station Météo Connectée": "images/station_meteo.png",
+    "Horloge LED Personnalisée": "images/horloge.jpg",
+    "Support de Téléphone Ajustable": "images/support_telephone.jpg",
+    "Mangeoire à Oiseaux Intelligente": "images/mangeoire_oiseaux.jpg",
+    "Pot de Fleurs Auto-Arrosant": "images/pot_fleur.jpg",
+    "Organisateur de Bureau Modulaire": "images/organisateur_bureau.jpg",
+
+    // Recyclage
+    "Recyclage de Smartphone": "images/smartphone.jpg",
+    "Recyclage de Bouteilles Plastique": "images/bouteille_plastique.jpg",
+    "Recyclage d'Ordinateur": "images/ordinateur.jpg",
+    "Recyclage de CD/DVD": "images/cd.jpg",
+    "Recyclage de Pneus Usagés": "images/pneu.jpg",
+  };
+
+  return (
+    imageMap[titre] ||
+    "https://via.placeholder.com/300x200/0D2B45/FFD166?text=Image+bientot+disponible"
+  );
+}
+
 const $tutorialPage = document.getElementById("outputPage");
 const $tutorialContent = document.getElementById("outputContent");
 
@@ -1664,8 +1692,11 @@ $btnCreation.addEventListener("click", () => {
     const tutorial = findBestMatch(objet, creationTutorials);
 
     if (tutorial) {
+      const imageSrc = getTutorialImage(tutorial.titre);
       $creationOut.innerHTML = `
         <div class="tutorial-result">
+          <img src="${imageSrc}" alt="${tutorial.titre}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 16px;">
+
           <div class="result-header">
             <span style="">
               <h3>${tutorial.titre}</h3>
@@ -1682,28 +1713,33 @@ $btnCreation.addEventListener("click", () => {
 
           <div class="section">
             <span>
-              <strong>Matériaux nécessaires :</strong> 
-              ${tutorial.materiaux.toString()
-                  .replaceAll(",", ", ")
-                  .replace("[", "")
-                  .replace("]", "")
-              }
+              <strong>Matériaux nécessaires :</strong>
+              ${tutorial.materiaux
+                .toString()
+                .replaceAll(",", ", ")
+                .replace("[", "")
+                .replace("]", "")}
             </span>
           </div>
 
           <div class="section">
             <span>
-              <strong>Outils requis :</strong> 
-              ${tutorial.outils.toString()
-                  .replaceAll(",", ", ")
-                  .replace("[", "")
-                  .replace("]", "")
-              }
+              <strong>Outils requis :</strong>
+              ${tutorial.outils
+                .toString()
+                .replaceAll(",", ", ")
+                .replace("[", "")
+                .replace("]", "")}
             </span>
           </div>
         </div>
       `;
-      document.getElementById("btnSeeTutorialCreation").addEventListener("click", () => {document.getElementById("creation").classList.remove("active"); loadCreation(tutorial);}); // note to self: this won't work when we start searching for multiple results. fix later.
+      document
+        .getElementById("btnSeeTutorialCreation")
+        .addEventListener("click", () => {
+          document.getElementById("creation").classList.remove("active");
+          loadCreation(tutorial);
+        }); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
       $creationOut.innerHTML = `
         <div class="tutorial-result">
@@ -1855,8 +1891,11 @@ $btnRecyclage.addEventListener("click", () => {
     const tutorial = findBestMatch(objet, recyclageTutorials);
 
     if (tutorial) {
+      const imageSrc = getTutorialImage(tutorial.titre);
       $recyclageOut.innerHTML = `
         <div class="tutorial-result recycle-result">
+          <img src="${imageSrc}" alt="${tutorial.titre}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 16px;">
+
           <div class="result-header">
             <span>
               <h3>${tutorial.titre}</h3>
@@ -1894,7 +1933,12 @@ $btnRecyclage.addEventListener("click", () => {
             </div>
           </div>
       `;
-      document.getElementById("btnSeeTutorialRecyclage").addEventListener("click", () => {document.getElementById("recyclage").classList.remove("active"); loadRecyclage(tutorial);}); // note to self: this won't work when we start searching for multiple results. fix later.
+      document
+        .getElementById("btnSeeTutorialRecyclage")
+        .addEventListener("click", () => {
+          document.getElementById("recyclage").classList.remove("active");
+          loadRecyclage(tutorial);
+        }); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
       $recyclageOut.innerHTML = `
         <div class="tutorial-result recycle-result">
@@ -1920,4 +1964,26 @@ $btnRecyclage.addEventListener("click", () => {
       `;
     }
   }, 1500);
+});
+
+// ===== TUTORIELS TENDANCE =====
+// Gérer les clics sur les boutons des tutoriels tendance
+document.querySelectorAll(".btn-tutorial").forEach((btn, index) => {
+  btn.addEventListener("click", () => {
+    // Mapping des index de cartes aux tutoriels
+    const tutorialMap = [
+      creationTutorials["lampe design"],
+      creationTutorials["station météo"],
+      creationTutorials["chargeur solaire"],
+      creationTutorials["enceinte bluetooth"],
+    ];
+
+    const tutorial = tutorialMap[index];
+    if (tutorial) {
+      // Fermer la page navigate
+      document.getElementById("navigate").classList.remove("active");
+      // Ouvrir la page de tutoriel
+      loadCreation(tutorial);
+    }
+  });
 });
