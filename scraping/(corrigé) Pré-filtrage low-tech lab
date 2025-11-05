@@ -1,24 +1,8 @@
-#⚙️ 1. Principe général du pré-filtrage
-#HTML brut
-#   ↓
-#Nettoyage (scripts, pubs, menus)
-#   ↓
-#Segmentation en blocs (headings, sections, cartes)
-#   ↓
-#Filtrage par critères structurels (longueur, type, position, densité texte)
-#   ↓
-#Classification heuristique (titre, matériaux, outils, étapes, etc.)
-#   ↓
-#Sortie filtrée (JSON intermédiaire ou HTML simplifié)
+import os
+import re
+from bs4 import BeautifulSoup
 
-
-#🧰 2. Outils de base
-#a) Supprimer les balises inutiles
-
-for tag in soup(["script", "style", "nav", "footer", "header", "iframe", "svg"]):
-    tag.decompose()
-
-#b) Segmenter par headings
+# --- FONCTION 1 : segmentation simple par titres ---
 def segment_by_headings(soup):
     sections = []
     current = {"title": "Introduction", "content": []}
@@ -31,19 +15,15 @@ def segment_by_headings(soup):
     sections.append(current)
     return sections
 
-#🔍 4. Exemple complet (extrait générique)
-
-import re
-from bs4 import BeautifulSoup
-
+# --- FONCTION 2 : nettoyage + segmentation + labellisation ---
 def clean_and_segment(html):
     soup = BeautifulSoup(html, "html.parser")
 
-    # Supprimer scripts / styles / menus
-    for tag in soup(["script", "style", "nav", "footer", "header", "iframe"]):
+    # Nettoyage de base (menus, scripts, etc.)
+    for tag in soup(["script", "style", "nav", "footer", "header", "iframe", "svg"]):
         tag.decompose()
 
-    # Rassembler les sections
+    # Segmentation en sections
     sections = []
     current = {"title": "Introduction", "blocks": []}
     for elem in soup.find_all(["h1","h2","h3","p","ul","ol","img"]):
@@ -54,7 +34,7 @@ def clean_and_segment(html):
             current["blocks"].append(elem)
     sections.append(current)
 
-    # Heuristique simple : labellisation par titre
+    # Labellisation heuristique selon les titres
     for s in sections:
         title = s["title"].lower()
         if any(k in title for k in ["matériaux","materials","supplies"]):
@@ -69,16 +49,41 @@ def clean_and_segment(html):
             s["label"] = "INTRO"
     return sections
 
-
-#🧮 5. Densité et scoring
-
+# --- FONCTION 3 (optionnelle) : évaluation densité texte ---
 def score_section(section):
-    text = " ".join(b.get_text(" ", strip=True) for b in section["blocks"])
+    text = " ".join(b.get_text(" ", strip=True) for b in section.get("blocks", []))
     n_chars = len(text)
-    n_imgs = sum(1 for b in section["blocks"] if b.name == "img")
+    n_imgs = sum(1 for b in section.get("blocks", []) if b.name == "img")
     density = n_chars / max(len(str(section)), 1)
     score = n_chars + 50 * n_imgs + 200 * density
     return score
 
 
 
+# --- PIPELINE PRINCIPAL ---
+pages_dir = "pages/lowtechlab"
+
+for filename in os.listdir(pages_dir):
+    if not filename.endswith(".html"):
+        continue
+
+    path = os.path.join(pages_dir, filename)
+    with open(path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    # A) Nettoyage de base
+    for tag in soup(["script", "style", "nav", "footer", "header", "iframe", "svg"]):
+        tag.decompose()
+    print(f"✅ 'Débruité' : {filename} ({len(soup.text)} caractères de texte)")
+
+    # B) Segmentation + labellisation
+    sections = clean_and_segment(str(soup))
+    print(f"→ {len(sections)} sections détectées dans {filename}")
+
+    # C) (Optionnel) : afficher aperçu des titres et labels
+    # for i, s in enumerate(sections, 1):
+    #     title = s["title"]
+    #     label = s.get("label", "?")
+    #     print(f"   {i:02d}. [{label}] {title}")
