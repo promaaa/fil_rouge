@@ -14,7 +14,7 @@ except (ImportError, OSError) as e:
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
 
 
-def unique_preserve_order(L):  # permet que chaque étape soit unique et dans l'ordre gràce à l'ensemble seen
+def unique_preserve_order(L):  # permet que chaque étape soit unique et dans l'ordre grâce à l'ensemble seen
     seen = set()
     result = []
     for x in L:
