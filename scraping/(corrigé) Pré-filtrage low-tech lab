@@ -61,27 +61,36 @@ def score_section(section):
 
 
 # --- PIPELINE PRINCIPAL ---
-pages_dir = "pages/lowtechlab"
 
-for filename in os.listdir(pages_dir):
+in_dir  = "pages/lowtechlab"
+out_dir = "pages_clean/lowtechlab"
+os.makedirs(out_dir, exist_ok=True)
+
+for filename in os.listdir(in_dir):
     if not filename.endswith(".html"):
         continue
 
-    path = os.path.join(pages_dir, filename)
-    with open(path, "r", encoding="utf-8") as f:
+    in_path  = os.path.join(in_dir, filename)
+    out_path = os.path.join(out_dir, filename)
+    with open(in_path, "r", encoding="utf-8") as f:
         html = f.read()
 
     soup = BeautifulSoup(html, "html.parser")
 
     # A) Nettoyage de base
+    soup = BeautifulSoup(html, "html.parser")
     for tag in soup(["script", "style", "nav", "footer", "header", "iframe", "svg"]):
         tag.decompose()
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(str(soup))  # ou soup.prettify()
+
     print(f"✅ 'Débruité' : {filename} ({len(soup.text)} caractères de texte)")
 
     # B) Segmentation + labellisation
     sections = clean_and_segment(str(soup))
     print(f"→ {len(sections)} sections détectées dans {filename}")
-    
+
     # C) (Optionnel) : afficher aperçu des titres et labels
     # for i, s in enumerate(sections, 1):
     #     title = s["title"]
