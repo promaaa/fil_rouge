@@ -1737,7 +1737,7 @@ $btnCreation.addEventListener("click", () => {
       document
         .getElementById("btnSeeTutorialCreation")
         .addEventListener("click", () => {
-          document.getElementById("creation").classList.remove("active");
+          // document.getElementById("creation").classList.remove("active");
           loadCreation(tutorial);
         }); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
