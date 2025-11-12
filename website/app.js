@@ -1593,7 +1593,28 @@ function loadCreation(tutorial) {
   $tutorialContent.innerHTML = `
     <div class="tutorial-page">
       <div class="result-header">
-        <h3>${tutorial.titre}</h3>
+        <section>
+          <button class="close-btn">
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+              >
+                  <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 19
+                      L5 5
+                      M5 19
+                      L19 5"
+                  />
+              </svg>
+              Fermer
+          </button>
+          <h3>${tutorial.titre}</h3>
+        </section>
         <div class="badges">
           <span class="badge badge-difficulty">${tutorial.difficulté}</span>
           <span class="badge badge-time">${tutorial.temps}</span>
@@ -1654,6 +1675,7 @@ function loadCreation(tutorial) {
       </div>
     </div>
   `;
+  document.querySelector(".close-btn").addEventListener("click", () => $tutorialPage.classList.remove('active'));
   $tutorialPage.classList.add("active");
 }
 
@@ -1711,25 +1733,29 @@ $btnCreation.addEventListener("click", () => {
             <span>
           </div>
 
-          <div class="section">
-            <span>
-              <strong>Matériaux nécessaires :</strong>
-              ${tutorial.materiaux
-                .toString()
-                .replaceAll(",", ", ")
-                .replace("[", "")
-                .replace("]", "")}
+          <div class="tooltip">
+            <strong>Matériaux nécessaires</strong>
+            <span class="tooltiptext">
+              <ul>
+                ${tutorial.materiaux.map(
+                  (v) => {
+                    return "<li>" + v + "</li>"
+                  }
+                ).toString().replaceAll(",", "")}
+              </ul>
             </span>
           </div>
 
-          <div class="section">
-            <span>
-              <strong>Outils requis :</strong>
-              ${tutorial.outils
-                .toString()
-                .replaceAll(",", ", ")
-                .replace("[", "")
-                .replace("]", "")}
+          <div class="tooltip">
+            <strong>Outils requis</strong>
+            <span class="tooltiptext">
+              <ul>
+                ${tutorial.outils.map(
+                  (v) => {
+                    return "<li>" + v + "</li>"
+                  }
+                ).toString().replaceAll(",", "")}
+              </ul>
             </span>
           </div>
         </div>
