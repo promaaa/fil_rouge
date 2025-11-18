@@ -1,73 +1,25 @@
-# MakerLens
+# Projet Fil Rouge - MakerLens
 
-**Plateforme web pour transformer vos idées et objets en projets maker concrets**
+Ce dépôt contient le code source du projet MakerLens, une application web pour aider les makers à créer et recycler des objets.
 
-## Concept
+## Structure du Projet
 
-MakerLens est la plateforme conçue pour aider la communauté des makers à :
+- **`interface_utilisateur/`** : Interface principale de l'application (Feature 1).
+- **`interface_navigation_images/`** : Interface alternative / Feature 2 (Navigation par images).
+- **`donnees/`** : Contient les fichiers de données (JSON) utilisés par l'application.
+- **`scripts_recuperation/`** : Contient les scripts Python pour récupérer et analyser les données (scraping).
+- **`documentation/`** : Contient la documentation du projet, y compris les tutoriels générés.
 
-  - **Créer** : Générer des tutoriels pour fabriquer de nouveaux objets.
-  - **Recycler** : Trouver comment réutiliser des objets existants (upcycling).
-  - **Naviguer** : Découvrir des tutoriels tendance de la communauté.
+## Comment lancer le projet
 
------
+### Interface Principale
+1.  Ouvrez le fichier `interface_utilisateur/index.html` dans votre navigateur web.
 
-## Structure des Dossiers
+### Interface Navigation Images
+1.  Accédez au dossier `interface_navigation_images`.
+2.  Lancez le script `./start-server.sh` (nécessite Python, PHP ou Node.js).
+3.  Ou ouvrez `interface_navigation_images/index.html` dans votre navigateur.
 
-Chaque dossier principal est accompagné d'un fichier **`STRUCTURE.md`** adapté, détaillant son contenu et les instructions d'utilisation spécifiques.
+## Auteurs
 
-```
-fil_rouge/
-├── IHM/              # Interface web (HTML/CSS/JS)
-├── json/             # Base de données temporaire (Format JSON)
-├── prototype_1/      # Premier prototype fonctionnel du site
-└── scraping/         # Algorithme de récupération des tutoriels
-```
-
-### Détail des Sous-Dossiers
-
-  * **`IHM/`** (Interface Homme-Machine)
-
-    > Ce dossier contient l'ensemble du **code front-end** avec **HTML**, **JavaScript** et **CSS** pour un visuel optimisé pour ordinateur et téléphone.
-
-  * **`json/`**
-
-    > Sur ce dossier, vous trouverez le travail sur la mise en forme de la base de données en format **JSON**. Par souci de visibilité, ce dossier sera sûrement amené à disparaître dans la version finale du projet, mais la documentation sur la méthodologie apparaitra toujours.
-
-  * **`prototype_1/`**
-
-    > Sur ce dossier, vous trouverez le **premier prototype fonctionnel** de notre site web avec la fusion de notre base de données et l'IHM que nous avons effectué au premier sprint.
-
-  * **`scraping/`**
-
-    > Vous y trouverez l'algorithme qui récupère les fichiers **HTML** des différents sites de tutoriel que nous avons trouvés.
-
------
-
-## Design
-
-  - **Style** : Blueprint technique moderne.
-  - **Couleurs** : **Vert** (`#00DB21`) et **Marron** (`#502800`).
-  - **Interface** : Responsive avec animations fluides.
-
------
-
-## Démarrage
-
-1.  Cloner le repository.
-2.  Ouvrir `IHM/index.html` (ou l'équivalent dans `IHM/`) dans un navigateur.
-3.  Choisir un mode (Création, Recyclage ou Navigation).
-
------
-
-## Technologies
-
-  - **Frontend** : **HTML**, **CSS**, **JavaScript**.
-  - Logo personnalisé intégré.
-  - **Base de données** : Tutoriels en **JSON**.
-
------
-
-## Licence
-
-Voir le fichier **`LICENSE`** pour les détails.
+- Équipe MakerLens
