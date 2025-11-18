@@ -1,0 +1,260 @@
+{
+    "Mesure de l ensoleillement-luminosité avec un ordinateur monocarte  raspberry-orangepi ": {
+        "titre": [
+            "Mesure de l'ensoleillement-luminosité avec un ordinateur monocarte (raspberry-orangepi)"
+        ],
+        "image": [
+            {
+                "url": "https://wiki.lowtechlab.org/images/thumb/0/08/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_IMG_20240109_123457_400.jpg/800px-Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_IMG_20240109_123457_400.jpg",
+                "alt": "Mesure de l ensoleillement-luminosit avec un ordinateur monocarte raspberry-orangepi IMG 20240109 123457 400.jpg",
+                "description": "Comme vous ne le savez peut être pas, les données météorologiques d'observations issues des messages internationaux d’observation en surface (SYNOP, disponibles ici: https://donneespubliques.meteofrance.fr/?fond=produit&id_produit=90&id_rubrique=32) ne prennent pas en compte l'ensoleillement/la luminosité. Les données d'ensoleillement/luminosité peuvent être intéressantes à recueillir pour divers usages (confort interieur, mesures de production photovoltaïque, soin des plantes,...). Pour le photovoltaïque, malgré la vieillesse de la technologie, mes recherches ne m'ont pas permis de trouver des mesures fiables de la production par temps nuageux. On trouve des vidéos de mesures, telle que celle-ci : https://www.youtube.com/watch?v=H_Aow78MFmQ&ab_channel=TopeSosanya qui laissent à penser que les panneaux produisent à 50% de leur valeurs nominales. Mes instruments de mesure faisant l'objet d'interférences ne me permettant pas de faire des mesures fiables, j'ai pensé à produire un code simple que d'autres utilisateurs moins sujets à interférences pourraient réutiliser à leur convenance. Ce tutoriel vous permettra donc, avec seulement deux commandes (apres installation de l'os et de docker), d'utiliser votre ordinateur monocarte comme une station météo qui enregistre l'ensoleilement/la luminosité toutes les minutes dans une base de données et produit une page web où on peut récupérer les résultats avec la possibilité de requeter par date. démo visible ici: https://vpn.matangi.dev/lum Note: ne vous fiez pas à mes mesures affichées sur la démo visible au lien ci-dessus : comme indiqué précedemment à demi mots, la doctrine de l'Interieur contre les \"ecoterroristes\" détruit la possibilité de faire de la science convenablement en France avec des ordinateurs. Je n'ai pas les moyens financiers, techniques ni l'envie de passer du temps a déjouer des attaques et entraves informatiques récurrentes. L'intégrité logique du code est bonne. Si le système change ou si vous n'êtes pas trop ciblé, ça pourra toujours être utile. Et publier sur lowtechlab, c'est un signal pour t'inciter a faire tes mesures avec un multimetre et une vieille caméra pas connectée et l'uploader sur youtube ou peertube. Si tu lis ce tuto et que tu n'es pas encore une cible éco terroriste, tu as un superpouvoir : la cape d'invisibilité"
+            }
+        ],
+        "difficulté": [
+            "Medium Moyen"
+        ],
+        "durée": [
+            "1 hour(s) heure(s)"
+        ],
+        "coût": [
+            "140 EUR (€)"
+        ],
+        "liens": [
+            "https://wiki.lowtechlab.org/wiki/Mesure_de_l_ensoleillement-luminosité_avec_un_ordinateur_monocarte__raspberry-orangepi_"
+        ],
+        "introduction": [],
+        "mentions légales": [],
+        "matériaux": [
+            {
+                "titre": "ordinateur monocarte (raspberry ou autre) : environ 100€",
+                "sous_items": []
+            },
+            {
+                "titre": "clé usb: 10€",
+                "sous_items": []
+            },
+            {
+                "titre": "capteur de luminosité yoctopuce yoctolight v4: environ 30€",
+                "sous_items": []
+            },
+            {
+                "titre": "vidéo : mesure accréditant l'hypothèse d'une production à 50% de la puissance nominale par temps nuageux (https://www.youtube.com/watch?v=H_Aow78MFmQ)",
+                "sous_items": []
+            }
+        ],
+        "outils": [],
+        "étapes": [
+            {
+                "numero": 1,
+                "titre": "Étape 1 - installation de l'ordinateur monocarte",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Installer dietpi",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Pour l'installation, je vous conseille d'utiliser dietpi. L'interet de dietpi est notamment la legereté du systeme pour des ordinateurs monocartes, mais aussi l'installation automatique de logiciels libres par un menu relativement \"user friendly\". On peut mentionner parmis tous les logiciels installables automatiquement au démarrage du systeme (https://dietpi.com/dietpi-software.html) des applis de domotique, interessante pour économiser de l'énergie en fonction de la meteo, mais aussi les relais \"tor\" pour contribuer au réseau relativement anonymisant tor, interessant pour les \"éco terroristes\" que nous sommes.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "https://dietpi.com/#download",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Selectionner votre ordinateur monocarte (orange pi dans le cas présent) puis telecharger",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Dezipper l'archive obtenue.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Utiliser ensuite balena etcher pour créer une clé usb bootable pour installer dietpi sur votre ordinateur monocarte (orange pi 5 dans le cas présent mais ca fonctionne pareil sur d'autres ordinateurs monocartes).",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "https://etcher.balena.io/#download-etcher",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Double cliquer sur le fichier téléchargé",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Selectionner l'image de dietpi téléchargée, selectionner votre clé usb, cliquer sur flash.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Il ne vous reste plus qu'à brancher la clé usb sur le orangepi et il bootera automatiquement sur la clé usb.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Pour un raspberry pi, on utilise une carte sd mais on peut configurer le boot usb également (voir ici : https://makerhelp.fr/booter-un-raspberry-pi-4-sur-un-disque-dur-ou-un-ssd-en-usb/).",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Allumer votre orangepi/raspberrypi avec la clé usb branchée.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Suivre les menus que vous propose dietpi au premier démarrage pour installer le dietpi sans autre logiciel. C'es très facile, c'est en anglais et tout est automatisé.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Vous pouvez vous déplacer dans les menus au clavier avec les fleches et la touche tab.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Selectionner avec espace et valider avec entree.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Ne pas installer de logiciels optionnels tels que nextcloud.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 2,
+                "titre": "Étape 2 - brancher le capteur de luminosité yoctopuce yoctolight v4",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "La led bleu du capteur clignote lentement lorsque le capteur est branché",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Attention à ne pas débrancher le capteur lors des mesures, sinon, il faut",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "relancer le serveur (docker compose down && docker compose up)",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 3,
+                "titre": "Étape 3 - installer le serveur django",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "1.installer docker:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "taper dans votre terminal :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "2.suivre les étapes du dépot https://gitlab.com/aurelpere/lux (logiciel libre que j'ai codé pour faciliter l'utilisation de la yoctolight):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "taper dans votre terminal",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "taper dans votre terminal",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "C'est prêt, votre ordinateur monocarte enregistre les mesures de luminosité",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "mesurées en lux toutes les minutes et fait tourner un site internet",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "accessible sur le port 4000 qui permet d'afficher les mesures enregistrées dans une",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "base de données toutes les minutes et sélectionner les mesures en fonction des",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "dates entrées par l'utilisateur (avec export excel possible).",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Pour rendre le site internet accessible à d'autres ordinateurs, se réferrer",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "aux étapes 6 à 11 de ce tutoriel :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Serveur orangepi-raspberry nextcloud en photovoltaïque autonome",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Le serveur est accessible aux adresses http://adresse_ip:4000 en local et http://adresse_ip_publique sur internet",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Ce tutoriel sera mis à jour avec les capteurs yoctopuce de tension et d'intensité lorsque j'aurai le temps, la motivation et le budget :)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "A noter que si vous préférez utiliser les stats d'ensoleillement du modele jrc,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "vous pouvez vous reporter à mon autre tuto sur le dimensionnement photovoltaïque en site isolé-autonome ici: Dimensionner une installation photovoltaïque autonome",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            }
+        ],
+        "annexes": []
+    }
+}
