@@ -1802,7 +1802,28 @@ function loadRecyclage(tutorial) {
   $tutorialContent.innerHTML = `
     <div class="tutorial-page">
       <div class="result-header">
-        <h3>${tutorial.titre}</h3>
+        <section>
+          <button class="close-btn">
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+              >
+                  <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 19
+                      L5 5
+                      M5 19
+                      L19 5"
+                  />
+              </svg>
+              Fermer
+          </button>
+          <h3>${tutorial.titre}</h3>
+        </section>
         <div class="badges">
           <span class="badge badge-difficulty">${tutorial.difficulté}</span>
           <span class="badge badge-eco">Économie: ${tutorial.economie}</span>
@@ -1879,6 +1900,7 @@ function loadRecyclage(tutorial) {
       </div>
     </div>
   `;
+  document.querySelector(".close-btn").addEventListener("click", () => $tutorialPage.classList.remove('active'));
   $tutorialPage.classList.add("active");
 }
 
@@ -1962,7 +1984,7 @@ $btnRecyclage.addEventListener("click", () => {
       document
         .getElementById("btnSeeTutorialRecyclage")
         .addEventListener("click", () => {
-          document.getElementById("recyclage").classList.remove("active");
+          // document.getElementById("recyclage").classList.remove("active");
           loadRecyclage(tutorial);
         }); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
@@ -2007,7 +2029,7 @@ document.querySelectorAll(".btn-tutorial").forEach((btn, index) => {
     const tutorial = tutorialMap[index];
     if (tutorial) {
       // Fermer la page navigate
-      document.getElementById("navigate").classList.remove("active");
+      // document.getElementById("navigate").classList.remove("active");
       // Ouvrir la page de tutoriel
       loadCreation(tutorial);
     }
