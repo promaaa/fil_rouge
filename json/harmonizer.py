@@ -11,8 +11,10 @@ except (ImportError, OSError) as e:
     print(" WeasyPrint non disponible — génération PDF désactivée.")
 """
 # permet de trouver le chemin de template sur nimporte quelle machine
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
-
+CURRENT_DIR = os.path.dirname(__file__)
+DATA_FILE_PATH = os.path.join(CURRENT_DIR, "data_exemple.json")
+# NOUVELLE LIGNE : Définit le chemin absolu du fichier JSON
+DATA_FILE_PATH = os.path.join(os.path.dirname(__file__), "data_exemple.json")
 
 def unique_preserve_order(L):  # permet que chaque étape soit unique et dans l'ordre gràce à l'ensemble seen
     seen = set()
@@ -27,7 +29,7 @@ def unique_preserve_order(L):  # permet que chaque étape soit unique et dans l'
 # Classe principale 
 class TutorialHarmonizer:
     def __init__(self):
-        self.env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+        self.env = Environment(loader=FileSystemLoader(CURRENT_DIR))
 
     def format_hierarchical_list(self, items):
         """Formate une liste d'items avec structure titre/sous_items en HTML"""
@@ -302,9 +304,9 @@ class TutorialHarmonizer:
             print(" WeasyPrint non installé — aucun PDF créé.")
 """
 
-# Point d'entrée 
 if __name__ == "__main__":
-    with open("data_exemple.json", "r", encoding="utf-8") as f:
+    # MODIFICATION : Utilise le chemin DATA_FILE_PATH
+    with open(DATA_FILE_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     harmonizer = TutorialHarmonizer()
