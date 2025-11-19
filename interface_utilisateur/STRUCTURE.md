@@ -14,7 +14,7 @@ Voici les fichiers et dossiers composant cette interface :
 | :--- | :--- | :--- |
 | **`index.html`** | **Page Principale** | Le point d'entrée du site. Contient la structure HTML de la page d'accueil (choix du mode : Création, Recyclage, Navigation) et des pages de résultats/tutoriels. |
 | **`about.html`** | **Page À Propos** | Contient les informations contextuelles, la vision et la mission du projet MakerLens. |
-| **`styles.css`** | **Feuilles de Style** | Définit l'intégralité du style visuel (couleurs, polices, mise en page) en utilisant les variables CSS pour le thème **Vert (#00DB21)** et **Marron (#502800)**. |
+| **`main.css`** | **Feuille de Style Principale** | Contient l'intégralité du style visuel importé des fichiers auxiliaires au dossier `css/style` (couleurs, polices, mise en page) en utilisant les variables CSS pour le thème **Vert (#00DB21)** et **Marron (#502800)**. |
 | **`app.js`** | **Logique Frontend** | Contient le **JavaScript vanilla** pour gérer les interactions utilisateur : navigation entre les pages (vues), gestion des formulaires, affichage des tutoriels et des notifications (toasts). |
 | **`images/`** | **Ressources Graphiques** | Contient le logo (`logo-no-text.png`), les icônes et les autres ressources visuelles utilisées par le frontend. |
 
