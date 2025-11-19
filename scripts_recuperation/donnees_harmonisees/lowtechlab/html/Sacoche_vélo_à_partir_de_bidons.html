@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sacoche vélo à partir de bidons</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sacoche vélo à partir de bidons</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/2/2b/Sacoche_v_lo_partir_de_bidons_Capture_d_cran_du_2021-01-28_08-18-26.png/ia-d966d8bf32e73ff50e9c6e29d386e6b6-px-Sacoche_v_lo_partir_de_bidons_Capture_d_cran_du_2021-01-28_08-18-26.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Sacoche vélo s'accrochant au porte bagage arrière ou avant d'un vélo. Réalisée à partir de bidons, cette sacoche résiste à l'eau. Possibilité de la transformer en sac/sacoche.</div>
+        
+      </div>
+    
+    
+      
+        <p>Edit de SolarPunk73: ajout des options charnières + loquet, ainsi que sangle pour sac à dos, pour un usage très pratique au quotidien. A noter: la rigidité des sacoches implique que l'on peut s'asseoir dessus.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Sacoche_vélo_à_partir_de_bidons" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Sacoche_vélo_à_partir_de_bidons</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour réaliser 2 sacoches (tout est en double du coup)</li><li>- 3 bidons 20L (4 si l'on veut deux couvercles identiques).</li><li>- 6 crochets. Peuvent être faits à partir de plaquettes de métal tordues)</li><li>- 10 boulons 5 mm par 30 mm (5 par sacoche) (ou 1 tige filetée à découper + d'autre boulons)</li><li>- au moins 10 écrous</li><li>- rondelles petite et grande</li><li>- morceaux de caoutchouc (ex: chambre à air de récup)</li><li>En options:</li><li>Attache basse:</li><li>Option A (base) : attache basse fixe</li><li>rien à ajouter</li><li>Option B : attache basse réglable:</li><li>- 2 à 6 boulons en + pour "écarter" la plaque</li><li>- 2 plaquettes de métal pas tordues (remplacent deux crochets)</li><li>Fermeture du couvercle : Option 1 : fermeture sanglée</li><li>- 2 ou 4 attaches "clips" (ça a un nom ça?) ou scratch</li><li>- sangles de la largeur des attaches-clic</li><li>- 2 ou 4 plaquettes de métal</li><li>- éventuellement de quoi coudre</li><li>Option 2 : fermeture chaîne</li><li>- Bouts de chaîne de vélo</li><li>- autres boulons</li><li>- autres bouts de tôle</li><li>(éventuellement corde élastique ou sangle)</li><li>Bonus : sangle de transport</li><li>- sangle</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Cutter/sécateur/scie à métaux</li><li>perceuse (ou gros clou+marteau)</li><li>EPI : gants</li><li>Pour le couvercle - option 1 - charnières et loquet en chaîne de vélo, il faudra un dérive-chaîne pour adapter la longueur des maillons (ou un marteau pour les défoncer...).</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparation des matériaux</strong><p><strong>Étapes :</strong></p><ol><li>Bidons</li><li>Récupérer des bidons standard de 20L. J'en trouve souvent dans les fossés, les décharges sauvages, ou dans les bennes-poubelles des aires d'accueil de nomades (bidons de "démoussant", de javel...). Sinon, ça se trouve facilement sur leboncoin...</li><li>Bien laver les bidons, surtout s'ils ont contenu des produits chimiques. Au moins au premier lavage, récupérer l'eau du lavage et l'emmener en déchetterie (l'évier n'est pas une poubelle!).</li><li>Pour les bidons de javel, l'odeur de chlore peut rester même après le lavage. Ce n'est pas grave, cela partira en quelques semaines (possible de le laisser dehors, sinon ça partira à l'usage).</li><li>Crochets</li><li>Vous pouvez acheter des crochets, ou les fabriquer à partir de plaquettes de métal trouées, trouvables en recyclerie des matériaux. Choisir des plaquettes inox pour une plus grande durée de vie. Si elles sont épaisses, il peut être difficile de les plier : les coincer dans un étau, ou avec un serre-joint, ou dans un tube de métal long, et plier avec une pince forte (une clef anglaise peut faire l'affaire). L'objectif est d'obtenir si possible un "U" plutôt qu'un "V", au moins aussi large que le tube du porte bagages du vélo.</li><li>Sangles</li><li>A récupérer sur un vieux sac à dos par exemple, un tour de cou porte-clef, etc... Il y a des sangles un peu partout! Pour la fermeture sanglée, acheter ou récupérer des attaches-"clips" de la largeur des sangles (en tout cas, pas plus étroites) pour que ça se règle bien.</li><li>Rondelles de caoutchouc</li><li>Les rondelles servent pour l'étanchéité, mais aussi à mettre sous les écrous pour qu'ils restent serrés malgré les vibrations répétées (effet "écrou autobloquant"), ce qui évite de devoir poser un "contre-écrou" qui dépasserait.</li><li>A découper dans une vieille chambre à air par exemple. percer un trou au milieu, plus petit que le boulon pour qu'elle soit forcée sur celui-ci. Pour découper le petit trou, plier la rondelle en deux et attaquer le pli à angle droit. Ainsi, on évite d'avoir une entaille dans la rondelle qui la fragiliserait. (notez qui vous pouvez faire cette technique pour tous vos joints : plomberie et autres bricolages...)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Découpe des bidons</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/5/55/Sacoche_v_lo_partir_de_bidons_d_coupe_bidon_1.png' alt='Sacoche v lo partir de bidons d coupe bidon 1.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e3/Sacoche_v_lo_partir_de_bidons_d_coupe_bidon_3.png' alt='Sacoche v lo partir de bidons d coupe bidon 3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0d/Sacoche_v_lo_partir_de_bidons_d_coupe_bidon_10.png' alt='Sacoche v lo partir de bidons d coupe bidon 10.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/72/Sacoche_v_lo_partir_de_bidons_d_coupe_bidon_21.png' alt='Sacoche v lo partir de bidons d coupe bidon 21.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/9d/Sacoche_v_lo_partir_de_bidons_d_coupe_bidon_23.png' alt='Sacoche v lo partir de bidons d coupe bidon 23.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/72/Sacoche_v_lo_partir_de_bidons_d_coupe_bidon_24.png' alt='Sacoche v lo partir de bidons d coupe bidon 24.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper les bidons avec un cutter, un sécateur ou une scie à métaux selon ce qui est le plus pratique (pour ma part j'ai préféré le sécateur).</li><li>Sacoche : La partie supérieur du premier bidon est découpée sans aller jusqu'aux bords, ainsi une fois fermé le bidon restera rigide.</li><li>Couvercle : Découper dans un deuxième bidon la partie inférieure ou supérieure, en laissant une marge d'une dizaine de centimètres, qui débordera à la fermeture pour empêcher la pluie de pénétrer. Attention notamment à un débord trop court qui ne couvrirait pas le côté "bouchon" du bidon sacoche, coupée plus bas que le reste.</li><li>Conseils:</li><li>Le choix de découper le haut ou le bas du bidon pour le couvercle est principalement esthétique, et on pourra garder les deux pour faire deux sacoches avec seulement 3 bidons. Le bidon est plus confortable pour s'asseoir si l'on choisit la partie inférieure, tandis que la partie supérieur procure généralement une poignée, très pratique pour le transport si on ne fait pas une attache type "sangle-clips" (option 2).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Perçage du bidon inférieur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/2/26/Sacoche_v_lo_partir_de_bidons_per_age_bidon_0.png' alt='Sacoche v lo partir de bidons per age bidon 0.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/8/82/Sacoche_v_lo_partir_de_bidons_per_age_bidon_1.png' alt='Sacoche v lo partir de bidons per age bidon 1.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Percer le bidon inférieur, de façon à insérer les 3 crochets :</li><li>- 2 crochets s'attachant à partie supérieure du porte bagage. Ils supporteront le poids de la sacoche</li><li>- 1 crochet s'attachant à la partie inférieure du porte bagage, ce crochet va d'empêcher le balancement de la sacoche dans les virages et en terrain accidenté.</li><li>Conseils:</li><li>- Contrairement aux sacoches du commerce, celle-ci ne sera pas "réglable". Pour choisir les emplacements des crochets, placer le bidon sur le porte-bagages qui les accueillera. Positionner d'abord les deux crochets supérieurs et vérifier qu'ils ne soient pas gênés par un élément de la structure, puis positionner le crochet stabilisateur.</li><li>- Essayez de les positionner le plus bas possible (plus stable à l'usage). Si vous réussissez à positionner les bidons de telle sorte que la hauteur du couvercle soit au niveau du porte-bagage (cas des porte-bagages rabaissés), vous disposer ensuite d'un super plateau pour fixer plein d'autres trucs (photo).</li><li>- Il est conseillé de marquer au préalable les trous avec un feutre.</li><li>- Pour percer le bidon, choisir une mèche exactement de la taille du boulon (ici 5mm). Le boulon devra ainsi être vissé en forçant un peu dans l'orifice percé, ce qui participera à une bonne étanchéité.</li><li>- Pour les crochets hauts, deux boulons par crochet sont conseillés pour la solidité. En bas, un seul peut suffire car les efforts sont moindres.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Pose des crochets et sangles, option A : crochets fixes</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/5/51/Sacoche_v_lo_partir_de_bidons_bidon_d_coupe_sangle_5.png' alt='Sacoche v lo partir de bidons bidon d coupe sangle 5.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/91/Sacoche_v_lo_partir_de_bidons_bidon_sangle.png' alt='Sacoche v lo partir de bidons bidon sangle.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0a/Sacoche_v_lo_partir_de_bidons_bidon_sangle2.png' alt='Sacoche v lo partir de bidons bidon sangle2.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/bb/Sacoche_v_lo_partir_de_bidons_bidon_sangle_3.png' alt='Sacoche v lo partir de bidons bidon sangle 3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/11/Sacoche_v_lo_partir_de_bidons_pose_vis.png' alt='Sacoche v lo partir de bidons pose vis.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>(voir l'option B pour un crochet bas réglable)</li><li>On pose la sangle avec les crochets, afin qu'elle soit pincée entre le plastique et la plaque de métal.</li><li>Pour les trois crochets, vous pouvez placer les éléments dans l'ordre suivant (depuis l'intérieur du bidon):</li><li>/!\ sur l'image, l'ordre est inversé (voir plus bas)</li><li>- tête du boulon (ou tige filetée + écrou + rondelle caoutchouc)</li><li>- rondelle métal (ou plaque de métal intérieure)</li><li>- rondelle de caoutchouc (étanchéité)</li><li>- [bidon]</li><li>- rondelle de caoutchouc (étanchéité)</li><li>- sangle</li><li>- plaque-crochet métallique</li><li>- rondelle de caoutchouc (pour que l'écrou ne se dévisse pas)</li><li>- écrou</li><li>(- 2ème écrou, si pas de rondelles de caoutchouc)</li><li>Pour la sangle, c'est le moment de choisir l'option de fermeture:</li><li>- soit on passe une simple sangle dans les deux crochets hauts, mais quand on portera le bidon il sera toujours "penché".</li><li>- soit on passe deux sangles longues pour qu'elles passent au dessus du couvercle (voir option 2)</li><li>Conseils</li><li>Après découpe ou trou dans une sangle, ne pas hésiter à la passer à la flamme pour éviter effilochement.</li><li>Pour éviter d'abîmer nos affaires à l'intérieur avec les mouvements répétés, on préférera mettre les têtes des boulons à l'intérieur du bidon afin qu'il dépassent le moins possible. Sur l'image (premier tuto), ils sont dans l'autre sens.</li><li>Si l'on utilise des rondelles à l'intérieur et non une plaque, on peut doubler les petites rondelles par des grandes pour augmenter la surface pincée et solidifier l'attache.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Pose des crochets et sangles, option B : crochet bas pivotable</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/6/6b/Sacoche_v_lo_partir_de_bidons_photo_2024-01-09_15-31-49.jpg' alt='Sacoche v lo partir de bidons photo 2024-01-09 15-31-49.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Afin que mon bidon puisse s'adapter à mes deux vélos, j'ai changé le crochet bas fixe pour une version un peu plus adaptable.</li><li>Au lieu d'utiliser un crochet comme en haut, j'ai fixé une plaque par un seul boulon, avec deux boulons entre la plaque et le bidon. Ainsi, la plaque peut pivoter et s'adapter à plusieurs architectures de porte bagages. La suite d'éléments est donc la suivante :</li><li>- tête du boulon (ou tige filetée + écrou + rondelle caoutchouc)</li><li>- rondelle métal (ou plaque de métal intérieure)</li><li>- rondelle de caoutchouc (étanchéité)</li><li>- [bidon]</li><li>- rondelle de caoutchouc (étanchéité)</li><li>- écrous (1 à 3 selon l'épaisseur désirée)</li><li>- plaque métallique</li><li>- écrou</li><li>- rondelle de caoutchouc (pour que le deuxième écrou ne se dévisse pas)</li><li>- écrou</li><li>Ne pas trop serrer l'écrou 2 afin que la plaque puisse pivoter (mais serrer quand même pour qu'elle garde naturellement son angle)</li><li>La plaque du bas que j'ai trouvée avait naturellement une légère forme de crochet, ce qui fait qu'elle se coince bien contre la tige du porte bagage.</li><li>De manière générale, je conseille de un tout petit peu moins d'épaisseur d'écrous que la largeur de la tige du porte bagages (+morceaux de tuyaux, cf. plus bas), afin que la tige du porte bagage soit bien "serrée" entre la plaque et le bidon.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Ajustement et adaptation du porte bagage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ec/Sacoche_v_lo_partir_de_bidons_310759908_1240123346832187_8132692076700521192_n.jpg/800px-Sacoche_v_lo_partir_de_bidons_310759908_1240123346832187_8132692076700521192_n.jpg' alt='Sacoche v lo partir de bidons 310759908 1240123346832187 8132692076700521192 n.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Lorsque le vélo en mouvement, les sacoches doivent être immobiles. Un léger mouvement se répétant 1000 fois va détériorer la sacoche et le porte bagages.</li><li>Plusieurs options sont possibles et peuvent se cumuler:</li><li>- découper des bouts de tuyau d'arrosage dans la longueur et les enrouler sur le porte bagage. Les fixer à l'aide de gros scotch ou de chutes de tissu noué.</li><li>OU enrouler du tissu autour de la tige du porte bagage.</li><li>Cette option permet de protéger le porte bagage et la sacoche, et assure une attache "souple" qui amortit les secousses. Si c'est assez large, ça peut vraiment bien caler/coincer les crochets, notamment le crochet bas.</li><li>- Attacher un scratch entre les crochets pour assurer le maintien de la sacoche. Bien étanchéifier l'attache comme pour les crochets.</li><li>En pratique, si la sacoche est bien "calée" par des tuyaux, pas besoin de la sécuriser ainsi, et c'est d'autant plus pratique à l'usage de pouvoir l'enlever/remettre sans système de fixation. En plus, ça demande de faire encore des trous-boulons-machin...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Verrouillage du couvercle : Option 1 - charnières et loquet</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bb/Sacoche_v_lo_partir_de_bidons_Bidon_7.jpg/800px-Sacoche_v_lo_partir_de_bidons_Bidon_7.jpg' alt='Sacoche v lo partir de bidons Bidon 7.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4c/Sacoche_v_lo_partir_de_bidons_Bidon_3.jpg/800px-Sacoche_v_lo_partir_de_bidons_Bidon_3.jpg' alt='Sacoche v lo partir de bidons Bidon 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On peut tout à fait utiliser la sacoche sans bloquer le couvercle. Souvent je ne les ferme pas et le couvercle est assez lourd et emboité pour tenir tout seul même avec des secousses. En revanche, par grand vent ou après un choc, mieux vaut pouvoir fermer le bidon.</li><li>L'ajout de 2 charnières, ainsi que d'un loquet, le tout composé à partir de chaînes de vélo et de bouts de tôle, permet de fixer définitivement le couvercle à la sacoche et d'avoir une "ouverture facile".</li><li>2 bouts de chaînes de vélo, boulonnées à 4 endroits, permettent de faire une charnière. La mise en place doit être faite in situ, afin de permettre une ouverture facile.</li><li>Une fois les charnières installées, il faut ajouter le loquet, composé de deux bouts de tôles pliées et boulonnées, ainsi que d'un bout de chaîne de vélo en cercle assurant la fermeture. Pour ouvrir, il faut appuyer sur le couvercle ce qui permet de débloquer la chaîne en cercle.</li><li>Conseils</li><li>On pourra positionner la charnière sur l'avant (photo) ou l'arrière du couvercle, ou alors sur les côtés, mais attention côté porte bagage ça peut gêner l'ouverture.</li><li>On pourra également fixer la chaîne en cercle au couvercle de la même manière que l'autre côté pour économiser une tôle-crochet.</li><li>Cette option est mieux adaptée avec un couvercle de "haut de bidon", car celui-ci apporte la poignée.</li><li>Cette option nécessite de nouveaux perçages, avec leur lot d'incertitudes sur l'étanchéité. Le crochet s'avère très pratique à l'usage s'il est bien ajusté!</li><li>Cette option ne permet pas d'utiliser facilement le couvercle pour autre chose (lessive, vaisselle, voir "astuces"), mais elle évite qu'on ne sache pas trop quoi en faire quand on l'enlève... a vous de voir à l'usage! C'est des détails mais à la longue...!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Verrouillage du couvercle : Option 2 - sangles et "clips"</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/b7/Sacoche_v_lo_partir_de_bidons_photo_2024-01-09_15-31-54.jpg' alt='Sacoche v lo partir de bidons photo 2024-01-09 15-31-54.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'option 2 consiste en l'attache de sangles dans les plaques des crochets (voir plus haut), passant au dessus du couvercle, et clipsée du côté extérieur (l'autre côté ne permettrait pas de les ouvrir une fois sur le vélo). On peut serrer la fermeture à souhait en réglant le serrage des sangles au niveau du clips.</li><li>Il y a deux possibilités :</li><li>- deux clips (photo) : attacher une sangle à chaque crochet (2 sangles), les faire passer par dessus et attacher les deux clips à deux petites sangles attachées au bidon par deux plaques, symétriquement aux crochets. On pourra raccorder les deux sangles par couture au milieu du couvercle, entre elles ou avec un morceau perpendiculaire, pour faire une vraie poignée.</li><li>- un seul clips (en cours de réalisation): les deux sangles partant des crochets se rejoignent en cours de route (nouage, couture) pour n'en former qu'une, qui débouche sur un seul clips fixé à une seule plaque boulonnée. Dans ce cas, il faudra un plus gros "clips" que sur la photo (2,5cm) (et potentiellement une plus grosse sangle), car il faut que le clipsage ne saute pas lorsqu'on porte la sacoche pleine.</li><li>Conseils</li><li>- Cette option procure une poignée sur le dessus de la sacoche même s'il on utilise le "bas" du bidon découpé pour faire un couvercle.</li><li>- Les sangles passant au dessus du couvercle permettent d'y glisser des choses (veste, sac) ou de "sur-remplir" la sacoche en dé-serrant les sangles.</li><li>- A l'usage de la version "deux clips", les sangles glissent parfois sur les côtés, et la prise en main par les deux sangles est pas hyper pratique. Aussi, il faut toujours attacher les deux, sinon celle attachée glisse et/ou l'autre se prend dans la roue! Il m'est arrivé de prendre une sangle et la clipser au "mauvais" côté, pour tenir le chapeau avec une seule sangle "en biais". Le couvercle tient mieux et la sangle ne glisse pas à l'épaule de la sacoche, mais l'autre se balade. Ca pourrait être une option pour une sacoche vite fabriquée : ne poser qu'une seule plaque côté extérieur et une seule sangle côté intérieur, et fixer en biais.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Bonus : lanières de sac à dos</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Sacoche_v_lo_partir_de_bidons_Bidon_2.jpg/800px-Sacoche_v_lo_partir_de_bidons_Bidon_2.jpg' alt='Sacoche v lo partir de bidons Bidon 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pouvoir utiliser sa sacoche en sac à dos est particulièrement pratique pour se déplacer avec. Attention néanmoins aux autres personnes avec les crochets qui dépassent de votre dos!</li><li>De nombreuses techniques sont possibles, et des sangles d'un vieux sac à dos seraient sûrement les plus agréables (possibilité de les régler, mousse, ..).</li><li>Quelques idées :- (photo) faire passer une sangle par 2 fentes (faites au couteau) en haut et en bas du sac, puis couture à la main de la sangle afin d'en faire un cercle. Il est possible de tirer les sangles à l'intérieur du bidon. Pour cette solution, l'étanchéité n'est plus parfaite...</li><li>- (à tester) faire des bretelles à partir des sangles clipsées de la fermeture n°2. Dans ce cas, on portera la sacoche "côté extérieur" sur le dos pour éviter les crochets, et on devra poser la tête des boulons à l'extérieur plutôt qu'à l'intérieur (privilégier des boulons plats cruciformes plutôt qu'hexagonaux en relief...)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Conseils et astuces d'utilisation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6d/Sacoche_v_lo_partir_de_bidons_photo_2024-01-09_15-31-46.jpg/ia-d1d71b2d25c8c4a601291ac04d2a9742-px-Sacoche_v_lo_partir_de_bidons_photo_2024-01-09_15-31-46.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Idéalement, deux sacoches doivent être réalisées pour le porte bagage d'un vélo, afin d'équilibrer le poids; mais on peut aussi l'utiliser seule si elle n'est pas trop chargée.</li><li>Avec joints en chambre à air, elles sont parfaitement étanches à la pluie tant qu'elles sont verticales (testé et approuvé en conditions extrêmes en Bretagne). On peut les laisser la nuit dehors pour gagner de la place dans la tente</li><li>Ces sacoches sont vraiment top, on peut les utiliser pour plein de choses en rando-vélo:</li><li>- le bidon fermé fait un tabouret décent. Je m'en sers même au quotidien, quand il manque une chaise au bar, etc. (réflexion en cours pour y rajouter un dossier...)</li><li>- le couvercle peut servir de bac vaisselle/lessive ou de plan de travail de cuisine (/!\ attention si c'était un bidon de produits chimiques)</li><li>- le bidon peut transporter de l'eau (/!\ attention si c'était un bidon de produits chimiques)</li><li>Vous pouvez y ajouter des trucs réfléchissants :</li><li>- autocollants réfléchissants, notez que ça existe en feuille à découper soi-même (si vous en trouvez en très grand format, par ex. en rouleau je suis intéressé) (ici, fait en france)</li><li>- des catadioptres de récup, fixées dans les boulons</li><li>Pour ma part j'avais une petite pochette en tissu léger et je l'ai ajoutée dans la fixation par boulon, à l'intérieur du bidon: ça fait un "rangement rapide" pour ranger les petits trucs (clefs...) et qu'ils ne tombent pas tout au fond du bidon.</li><li>Par rapport à une sacoche souple,au delà du prix de bonnes sacoches du commerce (encore plus si faites dans de bonnes conditions de travail et recyclées...) comparé à la facilité de fabriquer des sacoches bidon :</li><li>Avantages:</li><li>- on peut s'asseoir dessus, et autres bonus</li><li>- ça protège bien ce qu'on met dedans des chocs latéraux et chutes</li><li>- ça fait un bon volume étanche</li><li>- on se la fait probablement moins voler parce que ça se vend pas (on saura pas tant que ça sera pas le cas...)</li><li>- les mettre et enlever est vraiment très pratique. Les sacoche du commerce et leurs "clips" n'ont rien de mieux que nos crochets et tuyau d'arrosage!</li><li>- si les sacoches sont assez basses on a un super plateau arrière (sacoche-porte bagage - sacoche) pour poser plein de trucs (autre sacoche bidon?)</li><li>Inconvénients :</li><li>- comme c'est rigide, ça ne s'adapte pas à nos affaires (un ordi portable passe dedans quand même)</li><li>- c'est un peu volumineux, et ça prend le vent pour rien quand c'est vide car on ne peut pas les "écraser"</li><li>- ça s'adapte pas toujours à un nouveau vélo car les crochets sont fixes. Un poil plus d'adaptabilité si on met un crochet bas mobile.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

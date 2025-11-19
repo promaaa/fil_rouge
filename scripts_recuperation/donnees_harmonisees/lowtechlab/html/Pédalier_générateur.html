@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Pédalier générateur</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Pédalier générateur</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/d/d3/P_dalier_g_n_rateur_power_arduino_IMG_8161.JPG/ia-5ca1e1e3e5a8b73600a8f44db4a3be59-px-P_dalier_g_n_rateur_power_arduino_IMG_8161.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel présente les étapes de fabrication d'un pédalier générateur d'électricité, conçu et fabriqué dans le cadre du projet expérimental "Biosphère, capsule en milieu aride" porté par Corentin de Chatelperron et Caroline Pultz du Low-tech Lab. Ce pédalier permet à la fois d'alimenter directement des équipements électroniques ou de stocker l'énergie dans une batterie pour répondre à une partie des besoins énergétiques de l'habitat autonome expérimenté. Dans le but de varier les sollicitations musculaires, nous avons prévu 3 modes d’utilisation : maindelier, vélo et rameur. La dernière partie du tutoriel est dédiée aux retours d'expérience du binome ayant utilisé ce système low-tech durant les 4 mois d'expérimentation.</div>
+        
+      </div>
+    
+    
+      
+        <p>Contexte</p>
+      
+        <p>Démarche</p>
+      
+        <p>Avant de débuter le dimensionnement d'un système, il est important de questionner ses besoins et d'identifier les moyens peu impactants pour les satisfaire (cf. Etape 1). Ce travail, effectué pour chacun des systèmes low-tech composant la Biosphère, a permis de privilégier l'utilisation d'un panneau solaire de 30W pour les journées ensoleillées et un pédalier générateur en "back-up" ou par temps nuageux (cf. Etape 2).</p>
+      
+        <p>Pédalier générateur</p>
+      
+        <p>Le pédalage transforme l'énergie mécanique en courant électrique directement acheminé vers les équipements ou bien stocké dans une batterie. Les pédales entrainent le plateau à une vitesse de 60 tours par minute. Ce dernier est relié à un pignon plus petit permettant de multiplier par 5 la vitesse de rotation. Sur le même axe est encastré une roue d’inertie atteignant ainsi une vitesse de 300 tours par minute qui est elle-même reliée à un alternateur allant à 3000 tours par minute. En seulement 2 transmissions, la vitesse de rotation est multipliée par environ 50 !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 400 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Pédalier_générateur" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Pédalier_générateur</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pédalier<ul><li>615 mm de tube carré creux inox de 10 mm, d’épaisseur 1,5 mm</li><li>315 mm de tube carré creux inox de 25 mm, d’épaisseur 1,5 mm</li><li>450 mm de tube carré creux inox de 45 mm, d’épaisseur 1,5 mm</li><li>68 mm de tube rond creux inox de ⌀ 40 mm, d’épaisseur 1 mm</li><li>60 mm de tube rond creux inox de ⌀ 42,4 mm, d’épaisseur 1,5 mm</li><li>150 mm de tube rond plein inox de ⌀ 20 mm</li><li>plaque inox de 90 x 800 mm, d'épaisseur 3 mm</li><li>2 manivelles avec pédales</li><li>chaine de vélo, 118 maillons</li><li>plateau vélo de ⌀ 280 mm (extérieur), minimum 44 dents</li><li>tendeur de chaîne de vélo mono vitesse</li><li>patte de dérailleur</li><li>boitier de pédalier à souder bsa, à extrémité carré</li><li>poulie à courroie trapézoïdale, de largeur 13mm et longueur 1050 mm (extérieure)</li><li>alternateur à aimant permanent 12v (type agri)</li><li>pignon inox de 9 dents, déssiné avec Freecad et découpé par les soins de l'association Véloma avec le fichier de Farming soul</li><li>2 roulements 20 - 40 mm</li><li>2 colliers de serrage</li></ul></li><li>Système électrique<ul><li>cadran voltmètre</li><li>cadran ampèremètre</li><li>pont diode</li><li>condensateur 300 µF 50V</li><li>régulateur de charge solaire SHS-10</li><li>cables et cosses</li><li>visserie</li></ul></li><li>Fonction rameur (facultatif)<ul><li>1050 mm de tasseau de bois rectangulaire de 20 mm x 40 mm</li><li>450 mm de tasseau de bois rond de ⌀ 20 mm</li><li>400 mm de tube carré creux inox de 50 mm, d’épaisseur 3 mm</li><li>2 poulies de ⌀ 10 mm (intérieur)</li><li>roue libre à visser, 1 vitesse</li><li>adaptateur de roue libre</li><li>2 équerres</li><li>chaine de vélo, 118 maillons</li><li>1000 mm de corde de chanvre</li><li>assise sur roulette</li><li>vis, écrous et rondelles de ⌀ 10 mm et ⌀ 8 mm</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>visseuse, perceuse</li><li>scie sauteuse</li><li>scie à métaux (à main ou à ruban)</li><li>poste à souder</li><li>lime à métal</li><li>serre joint</li><li>mètre</li><li>règle, rapporteur</li><li>casque et lunettes de protection</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Questionner ses besoins</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/82/P_dalier_g_n_rateur_Capture_d_e_cran_2023-07-19_a_17.25.15.png/800px-P_dalier_g_n_rateur_Capture_d_e_cran_2023-07-19_a_17.25.15.png' alt='P dalier g n rateur Capture d e cran 2023-07-19 a 17.25.15.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'énergie la moins chère et la plus propre est celle qu'on ne produit ou ne consomme pas !</li><li>Pour arriver à nos solutions techniques, nous avons adopté la démarche négaWatt qui propose de repenser notre vision de l’énergie en trois étapes: Sobriété, Efficacité puis Énergies Renouvelables.</li><li>Notamment, il est essentiel de se poser plusieurs questions:<ul><li>Quels sont mes besoins ?</li><li>Lesquels sont essentiels et incompressibles ?</li><li>L'électricité est-elle la façon la plus efficace de répondre à tous ces besoins ?</li></ul></li><li>Nous entendons chaque jour qu’il est urgent de réduire notre consommation d’énergie. Comment faire lorsqu’on ne réalise pas exactement ce que l’on consomme ?</li><li>Pour matérialiser les consommations électriques des équipements du quotidien et pouvoir éventuellement prioriser certains, le jeu open-source REVOLT traduit ces consommations en temps de pédalage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Calculer les besoins énergétiques et identifier les sources d'énergie les plus adapatées</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fe/P_dalier_g_n_rateur_Capture_d_e_cran_2023-07-20_a_10.29.07.png/800px-P_dalier_g_n_rateur_Capture_d_e_cran_2023-07-20_a_10.29.07.png' alt='P dalier g n rateur Capture d e cran 2023-07-20 a 10.29.07.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans le but de limiter la consommation énergétique de l'habitat, seuls les équipements indispensables au bon fonctionnement de l'écosystème ont été conservé :<ul><li>une pompe qui achemine l'eau salée en entrée des dessalinisateurs</li><li>une pompe permettant la circulation de l’eau douce, en circuit fermé, vers les systèmes de culture de bioponie et de champignons</li><li>une pompe à air installée dans le bac de spiruline pour assurer une agitation régulière du bassin de culture</li><li>un microcontroleur Arduino permettant de piloter les systèmes électroniques</li><li>une guirlande</li><li>2 lampes frontales</li><li>2 téléphones portables pouvant être convertis en ordinateurs portables</li></ul></li><li>Comment connaitre la consommation énergétique de ces équipements ?</li><li>L’estimation de la consommation électrique totale (73 Wh/j) dépend d’un certain nombre de facteurs comme les durées et fréquences d'utilisation. Pour éviter de sous-estimer les besoins, on considère une consommation journalière de 100 Wh.</li><li>Comment satisfaire efficacement et dans une démarche low-tech nos besoins énergétiques?</li><li>En journée, il semble pertinent d’utiliser l’énergie la plus abondante sur place, à savoir le soleil. De fait, nous utilisons un panneau solaire de 30W qui alimente alternativement les pompes et la batterie grâce à un microcontrôleur Arduino. Pour en connaitre davantage sur les étapes de dimensionnement d'une installation électrique, rendez-vous sur le tutoriel "Remorque génératrice solaire - Système électrique" du wiki.</li><li>La nuit ou par temps couvert, il faudra compter sur nos muscles pour actionner le pédalier générateur d’électricité. C'est ce qu'on appelle le fitness utile !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Réalisation de la structure</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d7/P_dalier_g_n_rateur_Capture_d_e_cran_2023-08-10_a_10.00.38.png/ia-a0e89ae7ff7f5d5ac3f19288bf16bebd-px-P_dalier_g_n_rateur_Capture_d_e_cran_2023-08-10_a_10.00.38.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a1/P_dalier_g_n_rateur_Capture_d_e_cran_2023-08-10_a_14.50.17.png/800px-P_dalier_g_n_rateur_Capture_d_e_cran_2023-08-10_a_14.50.17.png' alt='P dalier g n rateur Capture d e cran 2023-08-10 a 14.50.17.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/P_dalier_g_n_rateur_e_tpe_2.28.jpg/ia-45c4778141a99970106ad013fad35419-px-P_dalier_g_n_rateur_e_tpe_2.28.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8a/P_dalier_g_n_rateur_etape_6.3.jpg/ia-bbdcac08a9f3aac59a8b710ae7c5630c-px-P_dalier_g_n_rateur_etape_6.3.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0a/P_dalier_g_n_rateur_etape_5.4.jpg/ia-76c78beef9f42e7c9d89b8f72bf65566-px-P_dalier_g_n_rateur_etape_5.4.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a3/P_dalier_g_n_rateur_e_tape_4.41.jpg/ia-da9ace082ff8f2512f5ab41dcf02a33c-px-P_dalier_g_n_rateur_e_tape_4.41.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tube carré (1), support de l'axe du pédalier</li><li>L'axe du pédalier s'insère dans le tube rond (7). Ce dernier est soudé à l'une des extrémités du tube carré (1).<ul><li>Couper un tube carré creux inox de 25 mm, d’épaisseur 1,5 mm, de 440 mm de longueur (1)</li><li>A l'aide d'une meuleuse, réaliser l'encoche permettant d'accuellir la courbure du tube rond (7)</li></ul></li><li>Tube carré (4), support de l'axe de la roue d'inertie</li><li>L'axe de la roue d'inertie s'insère dans le tube rond (8). Ce dernier est soudé à l'une des extrémités du tube carré (4).<ul><li>Couper un tube carré creux inox de 25 mm, d’épaisseur 1,5 mm, de 175 mm de longueur (4)</li><li>A l'aide d'une meuleuse, réaliser l'encoche permettant d'accuellir la courbure du tube rond (8)</li></ul></li><li>Assemblage de la structure<ul><li>Couper un tube carré creux inox de 45 mm, d’épaisseur 1,5 mm, de 450 mm de longueur (5)</li><li>Couper un tube carré creux inox de 10 mm, d’épaisseur 1,5 mm, de 315 mm de longueur (2)</li><li>A l'aide d'une meuleuse, couper les 2 extrémités du tube (2) à 45°</li><li>Couper un tube rond plein inox de Ø 5 mm, de 155 mm de longueur (3) (renfort de structure)</li><li>Couper 2 plaques inox de 35 x 370 mm, d’épaisseur 3 mm (6). Des percages ont été réalisé sur chacune des plaques, dans le but de fixer le pédalier</li><li>Mise en place de la structure avant soudure : Positionner les 2 plaques (6) sous le tube carré (5), à 270 mm d'écart (côte intérieure). Placer les tubes carrés (1) et (4) à 280 mm d'écart (côte intérieure) sur le tube carré (5). Placer le tube carré (2) entre les tubes carrés (1) et (4) (cf. photo). Pointer puis souder. Positionner le renfort (3), pointer puis souder (cf. photo)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fixation du pédalier</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e9/P_dalier_g_n_rateur_e_tape_7.jpg/ia-1f2fc27f518f3c39dbb35ba3fec08e26-px-P_dalier_g_n_rateur_e_tape_7.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3c/P_dalier_g_n_rateur_e_tpes_2.77.jpg/800px-P_dalier_g_n_rateur_e_tpes_2.77.jpg' alt='P dalier g n rateur e tpes 2.77.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/P_dalier_g_n_rateur_e_tpe_2.9.jpg/800px-P_dalier_g_n_rateur_e_tpe_2.9.jpg' alt='P dalier g n rateur e tpe 2.9.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les manivelles sont fixées à l'axe du boitier de pédalier avec des vis de ⌀ 13 mm. Ce dernier est inséré dans le tube rond (7) pour le maintenir en position.<ul><li>Couper un tube rond creux inox de ⌀ 40 mm, d’épaisseur 1 mm, de 68 mm de longueur (7). Les dimensions du tube dépendent de celles du boitier de pédalier utilisé</li><li>Souder le tube rond (7), de manière centrée, sur le tube carré (1) de la structure</li><li>Insérer le boitier de pédalier à l'intérieur du tube rond (7), de manière centrée</li><li>Positionner et fixer l'ensemble plateau et manivelle à l'une des extrémitiés de l'axe du boitier de pédalier avec une vis de ⌀ 13 mm</li><li>De la même manière, fixer la seconde manivelle à l'autre extrémité de l'axe</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Fixation du pignon, de la roue d'inertie et du tendeur de chaine</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e5/P_dalier_g_n_rateur_e_tpe_3.12.jpg/ia-944afff8f9d8f1f5da7023b83fa6e3e1-px-P_dalier_g_n_rateur_e_tpe_3.12.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dc/P_dalier_g_n_rateur_e_tpe_2.13.jpg/ia-e6977ad583c2a604e50931383e684f07-px-P_dalier_g_n_rateur_e_tpe_2.13.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6b/P_dalier_g_n_rateur_e_tpe_2.15.jpg/800px-P_dalier_g_n_rateur_e_tpe_2.15.jpg' alt='P dalier g n rateur e tpe 2.15.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/95/P_dalier_g_n_rateur_e_tpe_2.1772.jpg/800px-P_dalier_g_n_rateur_e_tpe_2.1772.jpg' alt='P dalier g n rateur e tpe 2.1772.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/39/P_dalier_g_n_rateur_e_tpe_2.26.jpg/800px-P_dalier_g_n_rateur_e_tpe_2.26.jpg' alt='P dalier g n rateur e tpe 2.26.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/P_dalier_g_n_rateur_e_tpe_2.18.jpg/800px-P_dalier_g_n_rateur_e_tpe_2.18.jpg' alt='P dalier g n rateur e tpe 2.18.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le plateau du pédalier entraine un pignon soudé à l'axe de la roue d'inertie. Pour supporter et guider la rotation de cet axe, 2 roulements à bille sont insérés et maintenus en place dans le tube rond (8).<ul><li>Couper un tube rond creux inox de ⌀ 42,4 mm, d’épaisseur 1,5 mm, de 60 mm de longueur (8). Il est conseillé de le couper au niveau de la soudure interne du tube afin de faciliter l'insertion des roulements.</li><li>Pour faciliter l'insertion des roulements, réaliser une fente en coupant le tube rond (8) dans sa longueur à l'aide d'une meuleuse</li><li>Souder le tube rond (8), de manière centrée, sur le tube carré (4) de la structure. S'assurer que la fente, réalisée auparavant, est orientée vers le haut</li><li>Couper un tube rond plein inox de ⌀ 20 mm, de 150 mm de longueur (9). Il sera utilisé comme axe de la roue d'inertie</li><li>Positionner les roulements sur l'axe puis insérer l'ensemble à l'intérieur du tube rond (8), de manière centrée</li><li>Le serrage du tube rond (8) autour des bagues extérieurs des roulements est réalisé avec 2 colliers de serrage</li><li>Positionner le pignon sur l'axe, en s'assurant qu'il soit aligné avec le plateau. Pointer puis souder</li></ul></li><li>La roue d'inertie est un disque métallique lourd qui, entrainé par le pédalage, permet de fluidifier le mouvement et ainsi améliorer les performances. Plus elle est lourde, plus le pédalage sera régulier, confortable et fluide.<ul><li>Positionner la roue d'inertie sur l'autre extrémité de l'axe. Pointer puis souder</li></ul></li><li>Le tendeur de chaine permet d'ajuster la tension de la chaine de vélo<ul><li>Mettre en place la chaine sur le plateau et le galet</li><li>Fixer la patte de dérailleur au tendeur de chaine avec une vis de ⌀ 9 mm</li><li>Positionner l'ensemble sur le tube rond (8) puis souder la patte de dérailleur au tube</li><li>Vérifier l'alignement du galet tendeur avec le plateau et le pignon. Si besoin, ajouter des rondelles pour régler l'alignement du galet tendeur</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Fixation de l'alternateur</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/P_dalier_g_n_rateur_courroie.jpg/800px-P_dalier_g_n_rateur_courroie.jpg' alt='P dalier g n rateur courroie.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/05/P_dalier_g_n_rateur_e_tpe_4.19.jpg/800px-P_dalier_g_n_rateur_e_tpe_4.19.jpg' alt='P dalier g n rateur e tpe 4.19.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2c/P_dalier_g_n_rateur_e_tpe_2.23.jpg/800px-P_dalier_g_n_rateur_e_tpe_2.23.jpg' alt='P dalier g n rateur e tpe 2.23.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2a/P_dalier_g_n_rateur_e_tpe_2.20.jpg/800px-P_dalier_g_n_rateur_e_tpe_2.20.jpg' alt='P dalier g n rateur e tpe 2.20.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/81/P_dalier_g_n_rateur_Capture_d_e_cran_2023-08-10_a_14.41.50.png/800px-P_dalier_g_n_rateur_Capture_d_e_cran_2023-08-10_a_14.41.50.png' alt='P dalier g n rateur Capture d e cran 2023-08-10 a 14.41.50.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'alternateur transforme l'énergie mécanique en électricité et alimente les différents équipements de la Biosphère. Il est relié à la roue d'inertie via une courroie trapézoïdale.</li><li>Fixation de l'alternateur sur le tube carré (1)<ul><li>Souder un écrou de ⌀ 15 mm au tube carré (1). Le diamètre de l'écrou dépend du diamètre du trou de fixation de l'alternateur</li><li>Fixer ce côté de l'alternateur à l'aide d'une vis de ⌀ 15 mm. L'alignement de la roue d'inertie avec la poulie de l'alternateur peut se régler en ajoutant des rondelles</li></ul></li><li>Fixation de l'alternateur sur le tube carré (2)<ul><li>A partir d'une plaque inox d'épaisseur 3 mm, réaliser le système de tension de la courroie en suivant le plan (cf. photo).</li><li>Percer un trou de ⌀ 6 mm dans le tube carré (2)</li><li>Fixer le système de tension de la courroie au tube carré (2) à l'aide d'une vis de ⌀ 6 mm</li><li>Positionner la courroie trapézoïdale sur la roue d'inertie et la poulie de l'alternateur</li><li>Fixer l'alternateur au système de tension de la courroie à l'aide d'une vis de ⌀ 6 mm. De la même manière, l'alignement de la roue d'inertie avec la poulie de l'alternateur peut se régler en ajoutant des rondelles</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Système électrique</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/P_dalier_g_n_rateur_schemaaa_elec.jpg/800px-P_dalier_g_n_rateur_schemaaa_elec.jpg' alt='P dalier g n rateur schemaaa elec.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'électricité générée par le pédalier passe par un pont diode qui permet de transformer une tension alternative en tension continue. Un condensateur, connecté au pont diode, emmagasine l'énergie puis la restitue en lissant et stabilisant l'alimentation électrique. En sortie, un voltmètre et un ampèremètre permettent de controler l'énergie fournie. Le courant électrique passe enfin par le régulateur de charge avant d'être réparti dans les différents équipements électriques.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Mode rameur (facultatif)</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/15/P_dalier_g_n_rateur_r_manivelle11.jpg/800px-P_dalier_g_n_rateur_r_manivelle11.jpg' alt='P dalier g n rateur r manivelle11.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/P_dalier_g_n_rateur_r_manivelle77.jpg/ia-0600ab9fe791649e68db40036909a826-px-P_dalier_g_n_rateur_r_manivelle77.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ad/P_dalier_g_n_rateur_r_manivelle8.jpg/800px-P_dalier_g_n_rateur_r_manivelle8.jpg' alt='P dalier g n rateur r manivelle8.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/de/P_dalier_g_n_rateur_r_manivelle9.jpg/ia-0157982268cf92888469e3fef3503cfd-px-P_dalier_g_n_rateur_r_manivelle9.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le design du pédalier a été pensé pour adapter facilement le mode rameur.</li><li>Fixation de la roue libre à la manivelle (côté opposé au plateau)<ul><li>Positionner l'adaptateur de roue libre contre la manivelle. Contrôler la planéité et le centrage de l'adaptateur. Pointer puis souder ce dernier à la manivelle.</li><li>Visser la roue libre à l'adaptateur</li><li>Fixer l'ensemble au boitier du pédalier à l'aide du vis</li></ul></li><li>Réalisation de la structure & assemblage<ul><li>Perçer 2 trous de ⌀ 8 mm sur le tube carré (1) du pédalier</li><li>Fixer les équerres au pédalier avec des vis et écrous de ⌀ 8 mm</li><li>Couper un tasseau de bois rectangulaire de 20 mm x 40 mm de 1050 mm de longueur (10). La longueur de ce dernier dépend de celle de la chaine de vélo utilisée (voir photo).</li><li>Positionner ce dernier contre le tube carré (1). Repérer l'emplacement des perçages des équerres sur le tasseau. Perçer puis fixer le tasseau aux équerres avec des vis et écrous de ⌀ 8 mm</li><li>Répérer les emplacements des 2 poulies. Perçer 2 trous de ⌀ 10 mm sur le tasseau de bois puis fixer les poulies avec des vis et écrous de ⌀ 10 mm. Si besoin, ajouter des rondelles pour régler l'alignement des poulies avec la roue libre</li><li>Couper un tube carré creux inox de 50 mm, d’épaisseur 3 mm, de 400 mm de longueur (11). Les dimensions du tube dépendent du tasseau utilisé.</li><li>Perçer un trou de ⌀ 8 mm sur le tube carré (11) et accrocher la corde de chanvre. A l'autre extrémité, fixer la chaine de vélo</li><li>Couper un tasseau de bois rond de ⌀ 20 mm, de 450 mm de longueur (12). Perçer un trou de ⌀ 8 mm au milieu du tasseau</li><li>Fixer ce dernier à la chaine de vélo avec un bout de corde de chanvre</li><li>Enfiler le tube carré (11) dans le tasseau de bois rectangulaire (10). Passer la corde en chanvre et la chaine dans les poulies et la roue libre</li><li>Fixer le pédalier et placer l'assise par dessus</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Retours d'expérience</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/df/P_dalier_g_n_rateur_power_manelier_caro_DSCF3920.JPG/800px-P_dalier_g_n_rateur_power_manelier_caro_DSCF3920.JPG' alt='P dalier g n rateur power manelier caro DSCF3920.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/78/P_dalier_g_n_rateur_power_rameur_coco_DSCF3915.JPG/800px-P_dalier_g_n_rateur_power_rameur_coco_DSCF3915.JPG' alt='P dalier g n rateur power rameur coco DSCF3915.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce pédalier n'a pas été conçu comme principale source d’énergie de l'habitat mais plutôt dans le but d’avoir une activité physique régulière et utile tout en variant les sollicitations musculaires. Durant l'expérimentation de Biosphère, ce dernier était principalement utilisé le matin pour alimenter les pompes et la batterie, en générant environ 100W de puissance. Si son utilisation était quotidienne et agréable, certaines améliorations pourraient être apportées.</li><li>Mode pédalier</li><li>Le plateau du pédalier n'était pas adapté à ce mode d'utilisation, c'est pourquoi il a très peu été testé durant l'expérimentation. En effet, il aurait fallu pouvoir changer de vitesse en passant à un plateau plus grand pour rendre l'exercice plus difficile.</li><li>Mode maindelier</li><li>Afin de rendre l'exercice plus confortable, il faudrait privilégier d'autres types de pédales, moins douloureuses pour les mains.</li><li>Mode rameur</li><li>Le principal changement a apporté est l'inertie du pédalier sous ce mode d'utilisation. En effet, le lancement de la machine demande beaucoup d'énergie et la roue d'inertie a tendance à s'arrêter entre deux coups de rameur. En rajoutant du poids au niveau de la roue d'inertie, le mouvement du rameur serait plus fluide et agréable.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

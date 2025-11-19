@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Compost Bokashi de cuisine</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Compost Bokashi de cuisine</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/ba/Bokashi_de_cuisine_pour_le_compostage_NIKON_-_2017.06.28_-10_logo_.jpg/800px-Bokashi_de_cuisine_pour_le_compostage_NIKON_-_2017.06.28_-10_logo_.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Seau à bokashi de cuisine pour obtenir un engrais riche à partir des déchets organiques.</div>
+        
+      </div>
+    
+    
+      
+        <p>Chaque année, un français produit 320kg (soit environ 90 sacs) de déchets dont 120kg sont des déchets organiques potentiellement valorisables. Ils peuvent notamment servir d’engrais pour les cultures. En campagne, il est simple de composter ses déchets organiques. En ville, c’est plus problématique. Pourtant plus des ¾ des français vivent en milieu urbain, le potentiel de valorisation est donc très important. La production de compost via les déchets organiques ouvre les portes de la culture de plantes et légumes chez soi. En milieu urbain, les objectifs sont variés :<ul><li>Se réapproprier les méthodes de culture</li><li>Tendre vers la souveraineté alimentaire</li><li>Dépolluer l’air environnant</li><li>Manger des produits de qualité et de proximité</li></ul></p>
+      
+        <p>Le bokashi (« matière organique fermentée » en japonais) est une méthode de compostage très efficiente, pouvant être adaptée au contexte urbain. Le bokashi met en œuvre ce qu’on appelle les micro-organismes efficaces (dit EM).</p>
+      
+        <p>Que sont les Micro-organismes Efficaces (EM) ?</p>
+      
+        <p>Dans la nature, il a été observé que la dégradation de la matière organique en bel humus se fait par une faune et une flore composées de champignons et de bactéries. Ces micro-organismes « effectifs » représentent environ 10% de la population de micro-organismes naturellement présents. Les EM sont un mélange de 80 souches sélectionnées de ces micro-organismes effectifs. Leur utilisation pour le compost permet d’imiter le fonctionnement d’un humus très sain et d’optimiser la bonne dégradation de la matière organique.</p>
+      
+        <p>Le compost utilisant ces micro-organismes est appelé « Bokashi ».</p>
+      
+        <p>A noté que les EM peuvent être utilisés sur des cultures en terre pour ramener de la vie dans un sol pauvre cependant il peut être néfaste de l’utiliser sur des terres où la vie est déjà bien présente car l’équilibre du lieu peut être déréglé par leur action.</p>
+      
+        <p>Il est possible de récupérer soi-même des souches locales pour faire ses propres « micro-organismes efficaces », cela nécessite tout de même une bonne maîtrise. Le plus simple est de se procurer des souches sur internet, en France notamment auprès de Bertrand Grevet, spécialiste du sujet. Les Micro-organismes Efficaces se présentent sous 2 formes :<ul><li>Les EM 1 : ce sont des souches concentrées qui nécessitent une étape avant utilisation : il faut les « activer » avec de la mélasse.</li><li>Les EM A (pour micro-organismes efficaces activés ou fermentés) : le mélange avec la mélasse a été réalisé en amont, cependant la durée de conservation est courte (de l’ordre d’un mois). Il est tout de même préférable de se fournir directement des EM A.</li></ul></p>
+      
+        <p>Fonctionnement du Bokashi ?</p>
+      
+        <p>Le bokashi est le produit obtenu par la fermentation des déchets organiques inséminé par des EM A. Il faut le fermer hermétiquement après chaque utilisation pour que les bactéries se développent au mieux, avec une température de 20°C à 25°C. Le résultat du compostage est :<ul><li>Un jus très nutritif pour les plantes (à diluer à 1% avec de l’eau)</li><li>Un compost solide riche en minéraux et micro-organismes</li></ul></p>
+      
+        <p>Par l’utilisation d’un contenant étanche et hermétique, le bokashi est particulièrement adapté au contexte urbain, hors sol : Il est fermé, ne sent pas, le compostage est rapide permettant un bac de petite taille et le jus est directement utilisable pour de la culture hors sol (en pot de terre ou sur substrat). Ce tutoriel est réalisé en collaboration avec Léon-Hugo Bonte, paysagiste décorateur, adepte de la culture d’intérieur hors sol, utilisateur régulier du bokashi et des EM depuis de nombreuses années.</p>
+      
+        <p>Retrouvez ICI la vidéo tuto.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Compost_Bokashi_de_cuisine" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Compost_Bokashi_de_cuisine</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>3 seaux alimentaires de 5L (récupérables dans la restauration) et un couvercle permettant une fermeture étanche.</li></ul></li><li>1 seau est le « bac compost ».</li><li>1 seau est « le réhausseur ».</li><li>1 seau est le « bac réceptacle ».<ul><li>1 robinet adaptable pour fûts plastiques (fourni avec joint et écrou de serrage).</li><li>1L de pierres ponces ou graviers d’environ 3mm de diamètre.</li><li>Déchets organiques.</li><li>1 flacon de micro-organismes efficaces activés (EM A) (disponible par exemple ici, auprès de Bertrand Grevet, Synbiovie, spécialiste français) et/ou 1 sachet de son de blé inséminé par des EM (disponible ici)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>1 perceuse et 1 foret de 3 mm.</li><li>1 crayon.</li><li>1 cutter.</li><li>1 pulvérisateur (contenance d’environ 1L).</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparer le bac compost</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9d/Bokashi_de_cuisine_pour_le_compostage_Etape_1.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_Etape_1.JPG' alt='Bokashi de cuisine pour le compostage Etape 1.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Percer de nombreux trous dans le fond du bac compost à l’aide de la perceuse et du foret de 3 mm.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparer le bac réhausseur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/54/Bokashi_de_cuisine_pour_le_compostage_Etape_2.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_Etape_2.JPG' alt='Bokashi de cuisine pour le compostage Etape 2.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Couper le fond du bac rehausseur sur 7 cm.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Préparer le bac réceptacle</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c0/Bokashi_de_cuisine_pour_le_compostage_etape_3_1_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_3_1_.JPG' alt='Bokashi de cuisine pour le compostage etape 3 1 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4d/Bokashi_de_cuisine_pour_le_compostage_etape_3_2_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_3_2_.JPG' alt='Bokashi de cuisine pour le compostage etape 3 2 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f6/Bokashi_de_cuisine_pour_le_compostage_etape_3_3_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_3_3_.JPG' alt='Bokashi de cuisine pour le compostage etape 3 3 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Bokashi_de_cuisine_pour_le_compostage_etape_3_4_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_3_4_.JPG' alt='Bokashi de cuisine pour le compostage etape 3 4 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Tracer le diamètre intérieur du joint du robinet sur le bac réceptacle.</li></ul></li><li>Remarque : Le robinet doit être placé le plus bas possible sur le bac réceptacle afin de récupérer le maximum de jus. Prévoir cependant la hauteur nécessaire pour l’écrou de serrage.<ul><li>Découper le cercle à l’aide du cutter.</li></ul></li><li>Remarque : le plastique du bac étant mince, cette tâche demande de la minutie.<ul><li>Visser le robinet sur le bac réceptacle en prenant soin d’intercaler correctement le joint entre le robinet et le bac, puis serrer grâce à l’écrou.</li><li>Tester l’étanchéité du système en versant de l’eau dans le bac réceptacle: aucune goutte ne doit apparaître sur la jointure bac réceptacle /robinet fermé. Puis vider.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/9/92/Bokashi_de_cuisine_pour_le_compostage_assemblage.jpg' alt='Bokashi de cuisine pour le compostage assemblage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Empiler le bac compost sur le bac rehausseur, lui même emboîté sur le bac réceptacle.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Remplissage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2e/Bokashi_de_cuisine_pour_le_compostage_Etape_5_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_Etape_5_.JPG' alt='Bokashi de cuisine pour le compostage Etape 5 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f1/Bokashi_de_cuisine_pour_le_compostage_Etape_6_1_.jpg/800px-Bokashi_de_cuisine_pour_le_compostage_Etape_6_1_.jpg' alt='Bokashi de cuisine pour le compostage Etape 6 1 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/80/Bokashi_de_cuisine_pour_le_compostage_etape_6_2_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_6_2_.JPG' alt='Bokashi de cuisine pour le compostage etape 6 2 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/31/Bokashi_de_cuisine_pour_le_compostage_Etape_6_3_.jpg' alt='Bokashi de cuisine pour le compostage Etape 6 3 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Disposer une couche de pierre ponce dans le fond du bac compost sur environ 1 cm.</li></ul></li><li>Remarque: Cette couche sert de drain pour le composteur, afin que les trous ne se bouchent pas.<ul><li>Disposer des déchets organiques dans le bac compost.</li></ul></li><li>Remarque: Le compostage se fait plus rapidement si la matière organique est coupée en petits morceaux.<ul><li>Pulvériser 4 ou 5 doses de micro-organismes efficaces activés (EMA) ou du son de blé inséminé aux EM afin d’inséminer le composteur. La solution d'EM peut ensuite être conservée au réfrigérateur.</li><li>Fermer hermétiquement le composteur.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 7 - Recolte et utilisation du jus engrais</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/42/Bokashi_de_cuisine_pour_le_compostage_etape_8_1_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_8_1_.JPG' alt='Bokashi de cuisine pour le compostage etape 8 1 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/78/Bokashi_de_cuisine_pour_le_compostage_etape_8_2_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_8_2_.JPG' alt='Bokashi de cuisine pour le compostage etape 8 2 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Bokashi_de_cuisine_pour_le_compostage_etape_8_3_.JPG/800px-Bokashi_de_cuisine_pour_le_compostage_etape_8_3_.JPG' alt='Bokashi de cuisine pour le compostage etape 8 3 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Récoltez le jus de bokashi à l'aide du robinet</li></ul></li><li>Remarque: Une fois le compost bien lancé (2 à 3 semaines), une petite quantité de jus de bokashi peut être prélevée quotidiennement.<ul><li>Diluez à 1% avec de l’eau.</li><li>Arrosez les plantes avec ce mélange tous les 2 jours ou selon le besoin.</li></ul></li><li>Remarque: L’état et la couleur des feuilles sont de bons indicateurs des besoins nutritionnels d’une plante.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 8 - Utilisation du compost en rempotage</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Bokashi_de_cuisine_pour_le_compostage_etape_9_retourne_1_.jpg/800px-Bokashi_de_cuisine_pour_le_compostage_etape_9_retourne_1_.jpg' alt='Bokashi de cuisine pour le compostage etape 9 retourne 1 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/61/Bokashi_de_cuisine_pour_le_compostage_Etape_9_2_.jpg/800px-Bokashi_de_cuisine_pour_le_compostage_Etape_9_2_.jpg' alt='Bokashi de cuisine pour le compostage Etape 9 2 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque : Quand le bac compost est plein (au bout de quelques semaines ou quelques mois), on peut observer une dégradation plus importante dans le fond du bac qu’au dessus.<ul><li>Pour favoriser la dégradation de la matière organique la plus récemment ajoutée, retournez le composteur durant 15 jours : le jus riche en micro-organismes va imprégner ces déchets et activer le compostage.</li><li>Au bout de 15 jours : plantez vos légumes en superposant dans un pot : une mince couche de terreau, une couche de votre compost (1 cm) et remplissez le reste de terreau.</li></ul></li><li>Remarque : Votre compost est maintenant très riche en minéraux mais également en micro-organismes. Le mélange de minéraux est un excellent aliment pour les plantes. La flore bactérienne va coloniser le terreau développant un milieu de vie riche pour les racines.</li><li>Cependant, le bokashi est acide: Il est donc important de le placer au fond du pot pour éviter que les racines ne soient en contact avec celui-ci au moment du rempotage.<ul><li>Arrosez vos légumes régulièrement à l’aide du jus de compost.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 9 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/d/d8/Compost_Bokashi_de_cuisine_1_ForumClimat_Bokashi_VF2.JPG' alt='Compost Bokashi de cuisine 1 ForumClimat Bokashi VF2.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab à l'occasion de l'exposition "En Quête d'un Habitat Durable" dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux").</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 10 -</strong><p><strong>Étapes :</strong></p><ol><li>Vous avez une minute ? Que vous souhaitiez ou non réaliser cette low-tech, votre réponse à ce formulaire nous aiderait à améliorer nos tutos. Merci d'avance pour votre aide !</li><li>Comme tout le travail du Low-tech Lab, ce tutoriel est participatif, n'hésitez pas à ajouter les modifications qui vous semblent importantes, et à partager vos réalisations en commentaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

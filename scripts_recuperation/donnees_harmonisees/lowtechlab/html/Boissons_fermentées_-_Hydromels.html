@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Boissons fermentées - Hydromels</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Boissons fermentées - Hydromels</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/6/6a/Hydromels_hydromel.jpg/ia-f3da755f9b01904df9489eb55ef6e941-px-Hydromels_hydromel.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Plusieurs recettes de boissons fermentées simples, saines et anti-gaspi à base de miel et de fermentations spontanées (levures naturellement présentes).</div>
+        
+      </div>
+    
+    
+      
+        <p>Les aliments fermentés sont des aliments qui ont été transformés par des micro-organismes: bactéries, levures, champignons. Ce processus s'effectue souvent sans oxygène, en milieu anaérobique. Les microbes se multiplient normalement en présence d'oxygène. Mais lorsqu'ils en sont privés, ils luttent en fabriquant des molécules pour prendre l'avantage sur les microbes concurrents: alcool, acide lactique, acide acétique. Cela donne lieu à divers types de fermentation: lactique, alcoolique, acétique, etc... Même si nous avons parfois tendance à l'oublier, de nombreux aliments du quotidien sont en réalité fermentés : pain, fromages, yaourts, choucroute, saucisson, vin, bière... La liste est longue. Et cela tombe bien puisque leurs effets sont bénéfiques pour la santé ! Elles facilitent la digestion, participent au bon fonctionnement de l’intestin, sont sources de vitamines et de minéraux, renforcent notre système immunitaire...</p>
+      
+        <p>Enfin comme le rappelle Virginie Geres avec son site HappyBiote, sans microorganismes nous serions morts ! Tout simplement ! Nous ne pourrions pas fonctionner sans la présence de milliards de bactéries, levures et autres microbes (non pathogènes) qui tapissent notre corps. Ils assurent d’importantes tâches comme nous protéger des agressions d’autres microbes (pathogènes), nous permettent de nous alimenter, d’avoir une odeur distincte des autres individus (et donc facilite de tomber amoureux quand on n’est pas trop crade), ils participent à notre système immunitaire… Et dans chacune de nos cellules se trouve un microorganisme que nous avons incorporé au fil des millénaires : la mitochondrie, qui permet la respiration cellulaire ! Cette super vidéo pour en savoir plus.</p>
+      
+        <p>Donc, non seulement les microorganismes sont nécessaires à notre survie mais en en apportant une grande diversité par une alimentation saine et variée (notamment avec des aliments riches en fibres -prébiotiques- et microorganismes -probiotiques-) nous améliorons notre santé immunitaire et psychique. Ceci est aux antipodes des standards occidentaux modernes, rendant les gens littéralement malades, entre autres par un microbiote faible. Pour plus d’informations je vous conseille ce reportage d’Arte, ou celui-ci un peu plus ancien sur le même thème.</p>
+      
+        <p>Autant de bonnes raisons d'en consommer de manière régulière (attention à ne pas manger que ça pour autant!)</p>
+      
+        <p>Nous vous donnons ici plusieurs recettes de boissons fermentées, zéro gaspi, élaborées à partir de miel, pour vous essayer à la fabrication de ces sodas maison !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 15 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 3 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Boissons_fermentées_-_Hydromels" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Boissons_fermentées_-_Hydromels</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Miel (liquide ou solide)</li><li>Eau non chlorée (laissée aérée quelques heures)</li><li>Aromates de votre choix (fleurs, feuilles, épices, sirops...)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Bocal en verre large</li><li>Bouteille en verre à fermeture mécanique (type limonade)</li><li>Balance (optionnel)</li><li>Cuillère à soupe</li><li>Tissu</li><li>Etamine ou passoire fine</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Règles d'hygiène</strong><p><strong>Étapes :</strong></p><ol><li>Il n'est pas nécessaire de travailler dans un champ stérile lorsqu'il s'agit de fermentation mais il est crucial d'être le plus propre possible.</li><li>Travaillez sur un plan de travail nettoyé (si besoin/possible aseptisé au vinaigre blanc ou à l'alcool). Utilisez des ustensiles et récipients propres, lavés à l'eau chaude (ou passés au lave-vaisselle), manipulez avec des mains propres et essuyez-les avec un torchon PROPRE... bien entendu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Les étapes de fermentation</strong><p><strong>Étapes :</strong></p><ol><li>1ère phase de fermentation (F1) : Cette phase de fermentation est appelée respiration car elle fonctionne en aérobie (avec de l'oxygène), c'est à ce moment que les levures et bactéries se multiplient et développent des arômes. Mélanger tous les ingrédients dans un bocal en verre à large ouverture. Refermer sans visser le couvercle ou poser un linge serré par un élastique. Laisser entre 3-5j fermenter dans un endroit chaud (autour de 20°C) en mélangeant régulièrement. Vous saurez que la première phase est terminée quand vous verrez le liquide frémir généreusement lorsque vous le remuez.</li><li>2ème phase de fermentation (F2) : Cette phase est appelée carbonatation car l'objectif est que le CO2 produit par les microorganismes soint forcé de réintégré le liquide (par pression) et donc faire pétiller le liquide. C'est dans cette phase que les microorganismes sont en anaérobie (sans oxygène) et produisent donc une fermentation acétique (acide type vinaigre) et/ou alcoolique. Lorsque'ils consomment les sucre de la boisson les microorganismes produisent cet acide ou alcool et rejettent du CO2. Si le goût vous plait en fin de F1 vous pouvez déjà la boire. Filtrer le liquide et le verser dans une bouteille type limonade, mais ça marche aussi avec des bouteilles de soda en plastique. Au début de cette deuxième phase, le liquide doit être encore un peu sucré. En effet, la fermentation va se poursuivre encore quelques jours et les levures ont besoin de nourriture. Si ce n’est pas le cas, rajoutez du sucre. Ouvrir chaque jour la bouteille pour dégazer et goûter pour voir si le goût vous convient.</li><li>Cette phase peut durer entre 2 et 5 jours, en fonction du goût et du taux de bulles que vous souhaitez. Vous pouvez la goûter de temps à autre.<ul><li>Trop sucré : patientez encore deux ou trois jours.</li><li>Pas assez pétillant : rajoutez du sucre et patientez encore un jour ou deux.</li><li>Trop vinaigré : rajoutez du sucre et patientez encore un jour.</li></ul></li><li>Lorsque le goût vous convient, vous pouvez déguster votre boisson pétillante fermentée à partir de fleurs! Vous pourrez la conserver quelques jours à température ambiante, avant qu’elle ne tourne au vinaigre (ce qui est délicieux aussi). Vous pouvez aussi la conserver plus longtemps au frigo, car cela ralentit le processus de fermentation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Recette d'hydromel léger (peu alcoolisé)</strong><p><strong>Étapes :</strong></p><ol><li>Recette adaptée de celle de Ferment'Nation et Atelier Cultures Paris (dont la recette en vidéo live Instagram est ici)</li><li>Normalement les proportions traditionnelles pour produire de l'hydromel sont 300g de miel pour 1L d'eau et le résultat donne une boisson assez fortement alcoolisée et très sucrée.</li><li>Ici l'idée est plutôt de chercher à produire une boisson fermentée ressemblant à une limonade, fraiche et peu sucrée. Suivant ce que vous utilisez pour aromatiser votre hydromel vous pouvez réaliser un hydromel médicinal (avec des plantes aromatiques et médicinales de votre choix). Pour aromatiser un hydromel il y a plusieurs possibilités.<ul><li>Faire infuser à chaud les aromates avant d'y ajouter le miel (le miel est ajouté lorsque le liquide est tiède ou froids pour ne pas tuer les microorganismes)</li><li>Faire macérer à froid en ajoutant les éléments directement dans le bocal après avoir dilué le miel dans l'eau.</li></ul></li><li>Les deux possibilités peuvent être utilisées pour une même boisson suivant la facilité de la plante à diffuser son gout et ses principes actifs dans l'eau. Par exemple on peut faire infuser à chaud du gingembre et de la sauge et faire macérer ensuite du basilic.</li><li>Recette :<ul><li>100g de miel (environ 3-4 cuillères à soupe) ou jusqu'à 300g pour la version traditionnelle</li><li>1L d'eau déchlorée</li><li>Aromates de votre choix</li></ul></li><li>Pour libérer le chlore de l'eau du robinet laissez-la s'aérer quelques heures. Ensuite dissoudre le miel dans l'eau dans le bocal en mélangeant avec une cuillère. Ajoutez les aromates de votre choix.</li><li>Fermentation F1, respiration : suivant votre préférence par rapport à la force du gout de l'hydromel final vous pouvez faire une respiration très courte (en laissant juste un peu d'air dans le haut d'un bocal fermé) ou longue (en laissant 24h le bocal juste couvert d'un linge). La F1 est lancée en quelques heures lorsque vous pouvez voir des petites bulles se former sur les aromates et les paroies du bocal.</li><li>Fermentation F2, carbonatation : Une fois les bulles formées vous pouvez transférer le liquide (en laissant ou non les aromates dedans) dans une bouteille ou un bocal avec fermeture mécanique type limonade. Laissez fermenter encore 3-5 jours suivant la température pour former la quantité de bulle que vous aimez. Il est important de dégazer doucement tous les jours pour éviter une trop forte pression qui pourrait faire éclater la bouteille, vous pouvez en profiter pour gouter un petit peu et ainsi décider si vous laissez fermenter encore un peu (pour plus d'acidité et de bulles) ou si votre hydromel est prêt.</li><li>Conservation : Une fois l'hydromel à votre gout vous pouvez le boire et le stocker au frigo quelques jours. Le frigo permet de ralentir très fortement la fermentation sans toute-fois l'arrêter. Si vous mettez du temps à le consommer il se peut que le gout acide devienne très fort, pas de panique cela donne un excellent vinaigre!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

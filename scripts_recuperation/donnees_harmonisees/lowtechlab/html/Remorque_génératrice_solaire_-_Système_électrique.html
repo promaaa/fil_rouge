@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Remorque génératrice solaire - Système électrique</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Remorque génératrice solaire - Système électrique</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/1e/Remorque_g_n_rateur_solaire_DSC_0363.JPG/ia-6a6d0d398e0624d1a729548daa8e52a2-px-Remorque_g_n_rateur_solaire_DSC_0363.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel présente le dimensionnement et la construction du système électrique d'un générateur solaire (1kWc) déplaçable à vélo. Cette structure a été conçue pour s'adapter sur la CHARRETTE, une remorque assistée conçue par l'association Véloma et dont les plans sont disponibles librement.</div>
+        
+      </div>
+    
+    
+      
+        <p>Cette remorque est un démonstrateur fonctionnel conçu dans le cadre du projet Scholar Grid.</p>
+      
+        <p>Soutenu et piloté par la Fondation Schneider Electric en partenariat avec les associations Low-tech Lab, Énergies sans Frontières et Atelier 21, ce projet a pour ambition d'investiguer des solutions innovantes pour fournir de l’énergie électrique abordable et propre à des centres de formation qui forment de futurs électriciens. Les systèmes énergétiques imaginés par les experts techniques et les professeurs des centres de formation, seront mises en œuvre par des étudiants et serviront de base pédagogique.</p>
+      
+        <p>Les champs d'investigation de ce projet ont été les suivants :<ul><li>La récupération et la réparation de panneaux photovoltaïques endommagés.</li><li>La récupération et la régénération de batteries au plomb d'occasion.</li><li>Les micro-réseaux en courant continu.</li></ul></p>
+      
+        <p>Pour tester ces techniques en conditions réelles, le Low-tech Lab a construit une remorque génératrice mobile. D’une puissance de 1kW, elle combine des panneaux solaires de seconde main réparés et des batteries plomb régénérées. Elle a été conçue sur la base de besoins concrets: fournir l'électricité du Festival Low-tech organisé à Concarneau en juillet 2022.</p>
+      
+        <p>En partant de ce cas concret, le tutoriel détaille les étapes générales de dimensionnement d'une installation photovoltaïque en autoconsommation. Le contexte, la démarche préalable d'évaluation des besoins et le choix de sources d'énergie adaptées sont expliquées en détails dans le document "Un Festival autonome en énergie ?" dans la partie "Fichiers".</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 3000 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Remorque_génératrice_solaire_-_Système_électrique" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Remorque_génératrice_solaire_-_Système_électrique</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- Tournevis</li><li>- Pince coupante</li><li>- Clés à pipes</li><li>- Clés plates</li><li>- Multimètre</li><li>- Perceuse</li><li>- Pince à sertir pour les cosses de batterie (idéalement)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Questionner ses besoins et identifier les sources d'énergies les plus adapatées</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/61/Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_Demarche-nW_detail.png/800px-Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_Demarche-nW_detail.png' alt='Remorque g n ratrice solaire - Syst me lectrique Demarche-nW detail.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'énergie la moins chère et la plus propre est celle qu'on ne produit / consomme pas !</li><li>Partant de ce principe, la démarche négaWatt propose de repenser notre vision de l’énergie en s’appuyant sur une démarche en trois étapes: Sobriété, Efficacité puis Énergies Renouvelables. Avant de dimensionner une installation électrique photovoltaïque, il est essentiel de se poser plusieurs questions:<ul><li>Quels sont mes besoins ?</li><li>Lesquels sont essentiels et incompressibles ?</li><li>L'électricité est-elle la façon la plus efficace de répondre à tous ces besoins ?</li></ul></li><li>Le détail de ces questionnements appliqués au cas de notre Festival est disponible dans l'onglet "Fichiers" ci-dessus.</li><li>Pour matérialiser les consommations électriques des équipements du quotidien et pourvoir éventuellement prioriser, le jeu open-source REVOLT traduit ces consommations en temps de pédalage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Calculer ses besoins électriques journaliers</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9a/Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_Screenshot_2022-08-31_at_10-41-01_CalcPvAutonome_Calculer_dimensionner_son_installation_photovolta_que_isol_e_autonome_.png/800px-Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_Screenshot_2022-08-31_at_10-41-01_CalcPvAutonome_Calculer_dimensionner_son_installation_photovolta_que_isol_e_autonome_.png' alt='Remorque g n ratrice solaire - Syst me lectrique Screenshot 2022-08-31 at 10-41-01 CalcPvAutonome Calculer dimensionner son installation photovolta que isol e autonome .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette étape est la plus importante d'un dimensionnement photovoltaïque autonome. Elle aura une grande influence sur le prix, l'autonomie et la durabilité de l'installation.</li><li>Cette étape vous permettra également de voir où se trouvent vos gros postes de consommation électriques et de faire des choix en conséquence (Ex: Un four électrique demande 5000W de puissance. L'énergie électrique est-elle la plus pertinente pour répondre à ce besoin ?)</li><li>Exemple: Une journée pluvieuse, pendant un week-end, en hiver. Toute la famille est présente. Les lumières sont allumées 9h par jour. On a envie de manger chaud. Beaucoup d'activités se passent en intérieur.</li><li>Plusieurs logiciels peuvent vous aider au dimensionnement d'une installation solaire. Nous avons utilisé le logiciel libre CalcPvAutonome développé par David Mercereau. Une interface dédiée vous permet de calculer vos besoins électriques journaliers. On réalise ce qu'on appelle un audit énergétique (simplifié).</li><li>Le principe est simple :<ul><li>On détaille tous les équipements utilisés</li><li>On indique leur puissance (en Watt, W)</li><li>On indique leur durée d'utilisation quotidienne(en heure/jour, h/j)</li><li>On précise si certains équipements sont susceptibles de fonctionner simultanément.</li><li>L'outil nous sort une consommation d'énergie quotidienne (en watt heure par jour, W.h/j)</li><li>Regarder sur la notice ou sur l'étiquette de l'appareil lui même. Si vous avez seulement la tension U (en Volt, V) et l'intensité I (en Ampère, A), vous pouvez la calculer: P=U x I</li><li>Se procurer un Wattmètre (~10€). Il se branche entre la prise et votre appareil et vous indique précisément sa puissance instantanée</li><li>Besoins électriques journaliers: 4080Wh/j</li><li>Besoin en puissance électrique maximum: 177W</li></ul></li><li>Nous avons volontairement choisi de ne pas alimenté des appareils électriques gourmands en énergie par de l'électricité !</li><li>>La cuisine (pour 100 personnes) a été réalisé à l'aide d'un réchaud à bois.</li><li>> Pour servir des boissons fraiches, nous avons convenu d'un partenariat avec la criée de Concarneau qui produit de la glace en permanence et l'avons stocké dans un congélateur débranché (vs 4800Wh/j). De même, les tireuses à bières sont gelés directement avec de la glace et restent débranchées (vs 5600Wh/j).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Paramétrages des éléments principaux</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b0/Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_Screenshot_2022-09-02_at_21-19-51_CalcPvAutonome_Calculer_dimensionner_son_installation_photovolta_que_isol_e_autonome_.png/800px-Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_Screenshot_2022-09-02_at_21-19-51_CalcPvAutonome_Calculer_dimensionner_son_installation_photovolta_que_isol_e_autonome_.png' alt='Remorque g n ratrice solaire - Syst me lectrique Screenshot 2022-09-02 at 21-19-51 CalcPvAutonome Calculer dimensionner son installation photovolta que isol e autonome .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/36/Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_orientation.gif' alt='Remorque g n ratrice solaire - Syst me lectrique orientation.gif' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois les besoins énergétiques entrés dans CalcPVAutonome, il va falloir entrer quelques paramètres importants pour le dimensionnement.<ul><li>L'inclinaison des PV: La position du Soleil dans le ciel varie en fonction des saisons (haut l'été, bas l'hiver). Il est donc recommandé d'adapter la positions de ses PV pour être perpendiculaire aux rayons. En France, on recommande 30° d'inclinaison en été et 60° en hiver. Si les PV sont fixes sur le toit, on recommande la position pendant la période la plus défavorable en production, l'hiver, donc 60°. Pour la remorque, nous avons choisi 30° car son utilisation est plutôt prévue pendant la saison estivale. Mais de toute façon l'angle d'inclinaison est modifiable sur la remorque.</li><li>Si les PV sont fixes sur le toit, on recommande la position pendant la période la plus défavorable en production, l'hiver, donc 60°.</li><li>Pour la remorque, nous avons choisi 30° car son utilisation est plutôt prévue pendant la saison estivale. Mais de toute façon l'angle d'inclinaison est modifiable sur la remorque.</li><li>L'orientation des PV: Il s'agit de déterminer l'angle des PV avec le Soleil. S'ils font face au Sud, on entre 0°. Sinon, voir image.</li><li>Autonomie souhaitée: Vais-je utiliser mes PV toute l'année ou ponctuellement ? Pour la remorque, l'utilisation sera "saisonnière", de Juin à Septembre globalement.</li><li>Technologie de PV: Même si les différences sont minimes entre poly et monocristallin (voir comparatif), nous avons choisi "Monocristallin" qui sont les plus récents.</li><li>Si les PV sont fixes sur le toit, on recommande la position pendant la période la plus défavorable en production, l'hiver, donc 60°.</li><li>Pour la remorque, nous avons choisi 30° car son utilisation est plutôt prévue pendant la saison estivale. Mais de toute façon l'angle d'inclinaison est modifiable sur la remorque.</li><li>Nombre de jours d'autonomie souhaités: Cela représente le nombre de jours consécutifs sans soleil auquel vous pouvez faire face. Ce paramètre a une grande influence sur la capacité du parc batterie et donc sur le coût de l'installation. Pour la remorque, nous avons choisi la durée moyenne d'un Festival sur une journée, c'est-à-dire 8 heures. Cela permet d'avoir un bloc batterie qui reste mobile.</li><li>Technologie de batterie: Pour choisir se référer au tutoriel "Fonctionnement, entretien et régénération de batteries au plomb". Sinon, laisser "Auto." par défaut.</li><li>Si vous avez une idée de l'emplacement des panneaux PV par rapport au local technique, préciser ces distances. Dans le doute, surestimer un peu.</li><li>Préciser votre emplacement. Les données de rayonnement moyen par mois sont calculées via la base de données PVGIS.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Dimensionnement des élèments principaux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8b/Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_schema-systeme-photovoltaique-autonome-avec-batterie.jpg/800px-Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_schema-systeme-photovoltaique-autonome-avec-batterie.jpg' alt='Remorque g n ratrice solaire - Syst me lectrique schema-systeme-photovoltaique-autonome-avec-batterie.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois les paramètres entrés, on lance le calcul !</li><li>CalcPVAutonome propose un dimensionnement du matériel nécessaire en accord avec ces paramètres. Celui-ci est donné à titre indicatif et demande à être analysé. Dans notre cas, nous avons réajuster en fonction du matériel déjà disponible dont nous disposions.</li><li>Pour satisfaire nos besoins journaliers de 4080Wh/j, une puissance minimale de PV de 937W est nécessaire (calcul détaillé par le logiciel). Le logiciel nous indique que 5 panneaux monocristallins de 190W pourraient convenir.</li><li>Mais 5 panneaux étant trop encombrants pour notre remorque + nous avions déjà 1 panneau solaire de 330W. Nous avons choisi 3 panneaux de 330W pour une puissance totale de 990W.</li><li>Généralement, la tension d'un parc batterie est déterminée en fonction de la puissance des PV:<ul><li><500W: 12V</li><li>500 -1500W: 24V</li><li>>1500W: 48V</li></ul></li><li>Dans notre cas, nous avons 990W de PV, donc la tension finale de notre parc batterie sera de 24V.</li><li>Pour permettre une autonomie de 8h (~0,3j), le logiciel calcule la capacité nominale des batteries de 170Ah en C10. (Voir détail calcul en image)</li><li>Or, pour assurer la longévité du parc batteries, le courant de charge de celui-ci ne doit pas dépasser 20% de sa capacité nominale. (Voir Fonctionnement, entretien et régénération de batteries au plomb)<ul><li>Soit: 170 x 20% = 34A. Or avec 990W de PV le courant de charge est de 990 / 24 = 41,25A.</li><li>On peut choisir de brider la production des PV grâce au régulateur de charge, mais généralement on conseille d'augmenter la capacité du parc batteries en conséquence. Donc ici, 41,25 x 100 / 20 = 206Ah.</li></ul></li><li>Ayant trouvé une bonne occasion, nous avons finalement opté pour l'achat d'un parc de batteries de traction régénérées de 240Ah. Il consiste en 12 batteries de 240Ah-2V assemblées en série pour avoir une tension de 24V. Cela fait augmenter notre autonomie à 10h.</li><li>Les caractéristiques du régulateur de charge sont déterminées en fonction des caractéristiques de courant maximum sortant des PV. Nous avons donc besoin des caractéristiques des PV données par leur fiche technique ou à l'arrière des panneaux. Il faut connaître la "Tension en Circuit Ouvert" (Voc) et l' "Intensité de Court-Circuit" (Isc) des PV.<ul><li>Dans notre cas, pour chaque panneau : Voc= 40,49V et Isc= 10,25A</li><li>Lorsqu'on ajoute les panneaux en série: Voc_tot= 121,5V et Isc_tot= 10,25A</li></ul></li><li>En prenant des marges de sécurité de 20%, un régulateur MPPT 150V 20A aurait pu convenir.</li><li>Ayant eu l'occasion de récupérer un régulateur Conext MPPT 150V/60A, nous avons opté pour ce modèle.</li><li>Le choix du convertisseur s'effectue en fonction de la puissance que doit délivrée l'installation (en AC) et en fonction de la tension du parc batterie.</li><li>Nous souhaitions pouvoir ponctuellement alimenter des appareils allant jusqu'à 1000W.</li><li>Nous avons opté pour un convertisseur Victron 24V/1200VA qui monte en puissance maximum de sortie à 1200W avec des pointes possibles à 2400W.</li><li>Pour connaitre l'état de charge de nos batteries et en prolonger la durée de vie, nous avons choisi d'utiliser un contrôleur batterie (fortement conseillé).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Dimensionnement des protections électriques</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1b/Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_disjoncteur-et-coupe-circuit-fusible-1222x569.jpg/800px-Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_disjoncteur-et-coupe-circuit-fusible-1222x569.jpg' alt='Remorque g n ratrice solaire - Syst me lectrique disjoncteur-et-coupe-circuit-fusible-1222x569.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Des dispositifs de sectionnement et de coupure (disjoncteurs et/ou interrupteur-sectionneur) doivent être installés à différents endroits pour installer et maintenir le système en sécurité : Entre les PV et le régulateur de charge Entre le régulateur de charge et les batteries Entre les batteries et le convertisseur Entre les batteries et les charges DC</li><li>Entre les PV et le régulateur de charge</li><li>Entre le régulateur de charge et les batteries</li><li>Entre les batteries et le convertisseur</li><li>Entre les batteries et les charges DC</li><li>Entre les PV et le régulateur de charge</li><li>Entre le régulateur de charge et les batteries</li><li>Entre les batteries et le convertisseur</li><li>Entre les batteries et les charges DC</li></ul></li><li>Ces dispositifs se placent sur les 2 polarités (+ et -)<ul><li>Des dispositifs de protection contre les surintensités (fusibles ou disjoncteurs) doivent être installés pour protéger le matériel de conditions de très forts courants : En sortie de PV, sur les deux polarités (+ et -), contre les risques de surintensité sous la forme de courant retour. Pas nécessaire, si on a seulement une seule chaine de PV en série. En sortie de batterie, sur le +, contre les forts courants de décharge.</li><li>En sortie de PV, sur les deux polarités (+ et -), contre les risques de surintensité sous la forme de courant retour. Pas nécessaire, si on a seulement une seule chaine de PV en série.</li><li>En sortie de batterie, sur le +, contre les forts courants de décharge.</li><li>En sortie de PV, sur les deux polarités (+ et -), contre les risques de surintensité sous la forme de courant retour. Pas nécessaire, si on a seulement une seule chaine de PV en série.</li><li>En sortie de batterie, sur le +, contre les forts courants de décharge.</li></ul></li><li>Entre les PV et le régulateur de charge :<ul><li>Fusibles en sortie de chaque string de PV en série (obligatoire seulement si on a plus d'une string/chaîne de PV, ce qui n'est pas le cas sur la remorque): 1,5 Isc_tot< Ifuse < 2,4 Isc_tot 1,1Voc_tot < Vfuse</li><li>1,5 Isc_tot< Ifuse < 2,4 Isc_tot</li><li>1,1Voc_tot < Vfuse</li><li>1,5 Isc_tot< Ifuse < 2,4 Isc_tot</li><li>1,1Voc_tot < Vfuse</li><li>Disjoncteur ou interrupteur-sectionneur entre les PV et le régulateur de charge I> 1,25 Isc V >1,15 Voc_tot Donc pour la remorque, nous avons choisi un disjoncteur respectant ces conditions : I > 12,8A V > 140V</li><li>I> 1,25 Isc</li><li>V >1,15 Voc_tot Donc pour la remorque, nous avons choisi un disjoncteur respectant ces conditions :</li><li>I > 12,8A</li><li>V > 140V</li><li>I> 1,25 Isc</li><li>V >1,15 Voc_tot Donc pour la remorque, nous avons choisi un disjoncteur respectant ces conditions :</li><li>I > 12,8A</li><li>V > 140V</li></ul></li><li>Entre le régulateur de charge, l'onduleur et les batteries:<ul><li>Fusible, à placer sur le câble positif, en entrée de la batterie: Ifuse > Iop</li><li>Ifuse > Iop</li><li>Ifuse > Iop</li></ul></li><li>Iop étant le courant en opération. Il diffère si on est en mode charge ou décharge des batteries :<ul><li>En mode charge, il est équivalent au courant maximum fourni par le Régulateur de Charge. Soit, Iop= 60A dans notre cas.</li><li>En mode décharge, il est équivalent au courant maximum tiré par l'onduleur. Soit, Iop= Pmax_inv/ (rendement de l'onduleur *Vbat )= 2400W / (0,97*24V) = 104A</li></ul></li><li>On choisit la valeur maximale donc Ifuse>104 A. Nous avons choisi un fusible MEGA 125A 32V de chez Victron Energy.<ul><li>Disjoncteur ou interrupteur-sectionneur: Idis > Iop Vdis>1,15 Voc_tot Donc pour la remorque, nous avons choisi un disjoncteur de 125A respectant ces conditions : I > 104 A V > 140 V</li><li>Idis > Iop</li><li>Vdis>1,15 Voc_tot Donc pour la remorque, nous avons choisi un disjoncteur de 125A respectant ces conditions :</li><li>I > 104 A</li><li>V > 140 V</li><li>Idis > Iop</li><li>Vdis>1,15 Voc_tot Donc pour la remorque, nous avons choisi un disjoncteur de 125A respectant ces conditions :</li><li>I > 104 A</li><li>V > 140 V</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Dimensionnement du câblage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/6/67/Remorque_g_n_ratrice_solaire_-_Syst_me_lectrique_Screenshot_2022-09-12_at_17-37-36_Dimensionnent_des_c_bles_photovolta_ques.png' alt='Remorque g n ratrice solaire - Syst me lectrique Screenshot 2022-09-12 at 17-37-36 Dimensionnent des c bles photovolta ques.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour éviter des pertes par échauffement, voire des risques d'incendie, il est important de bien dimensionner tous les câbles de l'installation. C'est-à-dire, calculer la section minimale (en mm²) du câble.</li><li>La formule est la suivante :</li><li>Pour cela il faut connaître:<ul><li>Le courant maximal qui va traverser le câble sur le tronçon étudié ( I, en Ampères)</li><li>La tension sur le tronçon étudié (U, en Volt)</li><li>La longueur du câble sur le tronçon étudié (L, en mètres)</li><li>Son matériau et donc sa résistivité (ρ, en Ohm.mm²/m). Pour le cuivre, on prend généralement ρ=0,023 Ω.mm²/m</li><li>Chute de tension maximale autorisée ε. On choisit souvent 1% soit ε=0,01</li><li>Des panneaux solaires au régulateur de charge</li><li>Du régulateur aux batteries</li><li>Du régulateur à l'onduleur</li></ul></li><li>A partir des sections calculées, il convient ensuite de choisir la section commerciale supérieure :</li><li>On peut vérifier les valeurs d'intensité maximale admissible correspondant à ces sections dans des abaques (voir image).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

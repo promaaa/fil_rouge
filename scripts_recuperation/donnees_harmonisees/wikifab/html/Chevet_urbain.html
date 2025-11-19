@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chevet urbain</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Chevet urbain</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/e/e5/Chevet_urbain_Photopage2.1_.jpg/ia-7f84a95c7a12937feada4d40eb7a1392-px-Chevet_urbain_Photopage2.1_.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Cette petite lampe solaire déplaçable, inspirée de la lampe de chevet domestique, réinvente le banc public ! Pensée pour favoriser l’appropriation individuelle, venant renforcer la convivialité d’un simple banc de parc, cette lampe douce et ronde peut être librement positionnée sur le banc par les usagers, leur offrant ainsi un moment d’intimité partagée, comme une bulle de confort à ciel ouvert. Autonome grâce à l’énergie solaire, cet objet invite à repenser la lumière comme un outil poétique, durable et relationnel, au cœur de l’espace urbain.</div>
+        
+      </div>
+    
+    
+      
+        <p>A travers cette notice, vous découvrirez toutes les étapes de fabrication de cette lampe au design responsable : des plans de conception à l'assemblage final, en passant par le choix des matériaux et le fonctionnement du système lumineux.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Chevet_urbain" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Chevet_urbain</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>1 plaque de Precious Plastic</li><li>1 plaque de métal 3 mm</li><li>Lampe solaire ronde diamètre 9 (Action)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Machine Precious Plastic : broyeuse, presse à chaud, presse hydraulique</li><li>Scie à chantourner</li><li>Scie à métaux</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récolte du plastique</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/9/9c/Chevet_urbain_Symboles22.png' alt='Chevet urbain Symboles22.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/49/Chevet_urbain_de_chets1.png/800px-Chevet_urbain_de_chets1.png' alt='Chevet urbain de chets1.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c2/Chevet_urbain_PP.png/800px-Chevet_urbain_PP.png' alt='Chevet urbain PP.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette lampe s’inscrit dans une démarche écoresponsable puisqu’elle est en partie fabriquée à partir de plastique recyclé.</li><li>Cette première étape consiste donc à collecter des déchets plastiques (bouteilles, contenants, bouchons, etc.) qui serviront de matière première.</li><li>Privilégiez des plastiques de type PP ( numéro 5), facilement recyclables et très présent dans notre quotidien. Cette collecte peut se faire chez vous, dans votre entourage ou dans des points de tri locaux.</li><li>Pour une plaque de Precious Plastic, environ 300g de plastique .</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Broyage du plastique</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/2/26/Chevet_urbain_1.png/800px-Chevet_urbain_1.png' alt='Chevet urbain 1.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/65/Chevet_urbain_3.png/800px-Chevet_urbain_3.png' alt='Chevet urbain 3.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b5/Chevet_urbain_2.png/800px-Chevet_urbain_2.png' alt='Chevet urbain 2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Lors de cette étape, nous allons venir former des paillettes de déchets de plastique. Pour cela, nous allons utiliser la broyeuse, machine Precious Plastic.</li><li>Casser des bouts de déchets plastiques de la taille de la paume de la main.</li><li>Vérifier que la machine est éteinte.</li><li>Ouvrir la cheminée de la machine puis y introduire les bouts de plastique.</li><li>Refermer le couvercle de la cheminée et démarrer la machine.</li><li>Vérifier que la machine est éteinte.</li><li>Récupérer les paillettes par le bac receveur situé en dessous de la machine.</li><li>Broyer une seconde fois dans la machine si besoin.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Préparation de la plaque</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/8/82/Chevet_urbain_7.png/ia-1d660fe622d915b65ede7c56c6b38749-px-Chevet_urbain_7.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de venir fondre le plastique, il faut préparer la plaque à cet effet.</li><li>Prendre une feuille de métal.</li><li>Venir y placer le plastique sur cette feuille de métal.</li><li>Mettre plus ou moins de plastique en fonction de l'épaisseur voulue.</li><li>Placer une seconde feuille de métal sur les paillettes de plastique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fonte du plastique</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/3/37/Chevet_urbain_8.png/800px-Chevet_urbain_8.png' alt='Chevet urbain 8.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans cette étape, nous allons fondre le plastique, à l'aide de la presse à chaud.</li><li>Attention - presse à chaud : 200°C</li><li>Utiliser des gants de protection</li><li>Ouvrir la presse à chaud.</li><li>Placer la préparation au centre de la presse.</li><li>Déposer sur les côtés des cales qui serviront à définir l'épaisseur de la plaque.</li><li>Refermer la presse à chaud.</li><li>Attendre 200 secondes.</li><li>Ouvrir la presse à chaud.</li><li>Retourner la plaque puis la repositionner dans la machine.</li><li>Attendre 200 secondes.</li><li>Sortir la plaque de la machine.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Refroidissement du plastique</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/b/bb/Chevet_urbain_9.png/ia-07bcce3d5b4053b40bba248ec1e66747-px-Chevet_urbain_9.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir retiré la plaque de la presse à chaud, il est important de la placer sous une presse hydraulique le temps du refroidissement, afin qu'elle ne se déforme pas.</li><li>Déposer l'ensemble sur une plaque en bois.</li><li>Déposer une seconde plaque en bois sur le haut.</li><li>Placer le tout dans le compartiment de la presse hydraulique.</li><li>Venir abaisser le plateau du haut en pompant de haut en bas.</li><li>Pomper jusqu'à ce que l'aiguille du manomètre augmente.</li><li>Laisser la plaque au minimum 15 minutes dans la presse hydraulique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Découpe de la plaque</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/b/be/Chevet_urbain_6.png/800px-Chevet_urbain_6.png' alt='Chevet urbain 6.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir récupéré la plaque, il faut maintenant la découper. Pour cela, on utiliser une scie à chantourner, mais il est également possible de découper la plaque avec une scie à main.</li><li>Dessiner sur la plaque les formes souhaitées.</li><li>Fichier disponible en pièce jointe.</li><li>Placer la plaque sur le plateau de la scie à chantourner.</li><li>Faire tourner la plaque en suivant les traits de découpe.</li><li>Après avoir découpé, il est possible de poncer les découpes pour un rendu plus propre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Découpe des éléments métalliques</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/2/28/Chevet_urbain_Adobe_Scan_9_mai_2025_3_.png/800px-Chevet_urbain_Adobe_Scan_9_mai_2025_3_.png' alt='Chevet urbain Adobe Scan 9 mai 2025 3 .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, il faut vous munir de la plaque d'acier 3mm afin d'y découper les pièces souhaitées. Pour Clea, on peut utiliser la scie à chantourner, ou tout simplement une scie à métaux.</li><li>Dessiner les formes souhaitées sur la plaque d'acier.</li><li>Fichier en pièce jointe.</li><li>Possibilité de poncer les angles pour un rendu plus propre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Assemblage du plastique</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/9/9f/Chevet_urbain_3D1A85981.jpg/800px-Chevet_urbain_3D1A85981.jpg' alt='Chevet urbain 3D1A85981.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8b/Chevet_urbain_3D1A86021.jpg/800px-Chevet_urbain_3D1A86021.jpg' alt='Chevet urbain 3D1A86021.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b4/Chevet_urbain_3D1A86031.jpg/800px-Chevet_urbain_3D1A86031.jpg' alt='Chevet urbain 3D1A86031.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, nous allons assembler la partie principale de la lampe. Munissez-vous de l'ensemble des pièces en Precious Plastic.</li><li>Prendre la pièce 1 et la 2.</li><li>Introduire la pièce 2 dans la fente dans la pièce 1 prévue à cet effet.</li><li>Placer ensuite la pièce 3 dans la fente dans la pièce 2 prévue à cet effet.</li><li>Attention au sens de la mise en place de la pièce 2</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Assemblage du métal</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/d/dc/Chevet_urbain_3D1A86061.jpg/800px-Chevet_urbain_3D1A86061.jpg' alt='Chevet urbain 3D1A86061.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/19/Chevet_urbain_3D1A86081.jpg/800px-Chevet_urbain_3D1A86081.jpg' alt='Chevet urbain 3D1A86081.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette seconde étape d'assemblage de la lampe, munissez-vous des deux pièces en acier découpées préalablement.</li><li>Prendre les deux plaques et les enfiler sur la languette basse de la pièce n°1.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Assemblage lampe</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/2/29/Chevet_urbain_3D1A8608111.jpg/800px-Chevet_urbain_3D1A8608111.jpg' alt='Chevet urbain 3D1A8608111.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette dernière étape, prenez la lampe solaire.</li><li>Placer la lampe dans le rond percé à cet effet dans la pièce n°3.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

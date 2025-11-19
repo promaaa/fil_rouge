@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Matières 100% co-produits organiques et biodégradables par thermo-compression</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Matières 100% co-produits organiques et biodégradables par thermo-compression</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/2/21/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_14-Palette-matieres-etiquetees-web.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel présente la préparation de matières premières rigides en utilisant des co-produits de notre alimentation, sans aucun ajout de liant ou d'additif. On utilise pour cela une haute pression et température, avec un procédé appelé thermo-compression.</div>
+        
+      </div>
+    
+    
+      
+        <p>Nos matériaux et matières premières ont des impacts négatifs sur l’environnement tout au long de leur cycle de vie, de leur extraction à leur fin de vie.</p>
+      
+        <p>Leurs impacts sont divers:<ul><li>ils dépendent de l’exploitation de pétrole et de charbon, que ce soit comme composante ou comme énergie</li><li>ils voyagent énormément de leur synthèse à leur fin de vie</li><li>ils polluent en fin de vie</li></ul></p>
+      
+        <p>L’association Atelier CIRCULR a été créée en novembre 2022 et a pour objet de favoriser localement l’émergence de matériaux et matières premières respectueuses du Vivant, et d’accompagner à leurs usages.</p>
+      
+        <p>On présente ici la production de matériaux rigides avec des déchets organiques, par thermo-compression, sans aucun ajout de liant ou d’additif [1].</p>
+      
+        <p>La transformation de co-produits issus de notre alimentation se fait par thermo-compression, c’est-à-dire que la matière est compressée sous fortes pressions (15 tonnes minimum), à une température au-dessus de 100C. La combinaison de plusieurs facteurs:<ul><li>taux d’humidité de la matière,</li><li>pression,</li><li>et chaleur</li></ul></p>
+      
+        <p>va permettre de donner de la cohésion à une large gamme de déchets organiques, sans besoin d’ajouter de liant. La matière obtenue va donc être compostable, et par conséquent ne pas résister à un contact prolongé avec l’eau.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 100 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Matières_100__co-produits_organiques_et_biodégradables_par_thermo-compression" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Matières_100__co-produits_organiques_et_biodégradables_par_thermo-compression</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>déchets co-produits organiques (cf Etape 1)</li><li>eau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>presse chauffante: Bio-presse auto-construite, presse avec des moules chauffants, ou presse à plateaux chauffants (modèle utilisé pour ce tutoriel: LabTech Scientific LP-S-20)</li><li>four ou étuve de séchage</li><li>mixer, moulin à farine, ou broyeur à couteau</li><li>moule et contre-moule en alu (pour des objets 3D) OU plaques et empreintes métalliques [2]</li><li>film anti-adhésif découpé aux dimensions du moule / des plaques (ici, film Mylar, du papier sulfurisé peut possiblement suffire), en laissant plusieurs cm de marge</li><li>balance précise (à 0,01g ou 0,1g)</li><li>bol</li><li>bouteille ou pissette d’eau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récupération des co-produits organiques</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_3-MosaiqueMatieresCoProduits-web.jpg/800px-Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_3-MosaiqueMatieresCoProduits-web.jpg' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 3-MosaiqueMatieresCoProduits-web.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une vaste gamme de co-produits issus de la transformation de nos aliments peut être utilisée pour fabriquer des objets et matériaux. Nous présentons ici ceux que nous avons utilisé avant la rédaction de ce tutoriel (en novembre 2022).</li><li>D’autres co-produits probablement utilisables incluent: le marc de raisin, les pépins et autres restes de gelées de fruit, le pain rassis, les cheveux et autres poils d’animaux, les peaux d’agrumes.</li><li>Ces co-produits peuvent être produits domestiquement, ou à l’échelle d’une communauté. Cependant, il peut être contraignant de trier séparément chaque source, et il peut être long d’obtenir une quantité suffisante pour expérimenter. Nous avons donc fait le choix de nous concentrer sur les déchets obtenus par des petites entreprises de l’agroalimentaire à Strasbourg.</li><li>Ces entreprises accueillent bien la demande de récupérer une partie de leurs déchets, pour lesquels ils paient un moyen de traitement (collecte pour méthanisation ou compostage). Nous ne nous sommes pas intéressés aux nombreux co-produits déjà valorisés pour l’alimentation (humaine ou animale), car nous considérons que l’alimentation est un besoin plus important que la production d’objets.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Séchage des co-produits</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/7/77/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_4-SechageDrechesBalcon-web.jpg' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 4-SechageDrechesBalcon-web.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tous les co-produits à taux d’humidité moyen ou fort doivent être séchés. Ce séchage est nécessaire pour deux raisons: d’abord, assurer leur conservation, puis pour permettre leur transformation.</li><li>En effet, l’activité des micro-organismes qui dégradent la matière organique est directement liée au taux d’humidité de celle-ci. Il est donc essentiel de sécher les co-produits humides le plus tôt possible après leur récupération, pour limiter leur dégradation. De plus, le taux d’hydratation étant un paramètre important de la thermo-compression, le séchage permet de contrôler celui-ci en rajoutant une quantité connue d’eau.</li><li>Si la saison le permet, et si une surface suffisante et bien orientée est disponible, le séchage peut intervenir en étendant le co-produit sur des plaques au soleil. Des caisses de légumes (récupérables en fin de marché) recouvertes de papier ou de tissu peuvent être utiles pour minimiser la surface encombrée. Le séchage prend de 1 à 4 jours selon degré d’humidité. Il peut être nécessaire de remuer les co-produits pour qu’ils sèchent uniformément.</li><li>Sinon, un séchage en étuve est plus rapide et plus compact. Dans ce cas, on ventile de l’air chaud (maximum 50C) sur les plaques de déchets.</li><li>Ici, les deux méthodes ont été utilisées. Le taux d’hydratation final n’a pas été mesuré, mais cela pourrait être une donnée intéressante (dans ce cas, il faudrait peser avant et après séchage supplémentaire le co-produit).</li><li>Afin de minimiser la dépense énergétique sur cette phase, un de nos projets en cours est la conception d’un séchoir à tambour low-tech, qui peut s’adapter à différentes sources d’air chaud (chaleur fatale, capteur solaire, chauffage d’appoint).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Broyage des co-produits</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/9/9f/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_5-FeuillesTheBroyees-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 5-FeuillesTheBroyees-web.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les co-produits sont ensuite broyés (à part la laine de mouton, les frasses d’insecte, le son de blé et le marc de café, qui sont déjà dispersés).</li><li>Ici, les co-produits ont été broyés avec un simple mixer plongeant de 600W. Le broyage peut prendre jusqu’à 2min, par à-coups pour éviter surchauffe du mixer. Certains déchets durs comme les pépins de fruit ne sont pas facilement broyés au mixer plongeant, il faudrait donc idéalement utiliser un moulin à farine ou un broyeur à couteaux.</li><li>Une poudre hétérogène est obtenue (certains morceaux font plusieurs mm, mais la majeure partie de la poudre fait moins de 1 mm).</li><li>La taille des particules obtenues, ainsi que leur distribution, est sans doute un paramètre important de la thermo-compression, mais nous n’avons pas encore étudié son influence.</li><li>Les Étapes 1 à 3 peuvent se faire en avance. Les co-produits secs et broyés peuvent ensuite être conservés pendant des années à l’abri de l’humidité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Paramètres pour la thermo-compression</strong><p><strong>Étapes :</strong></p><ol><li>Commence ensuite le procédé de thermo-compression à proprement parler.</li><li>Les éléments chauffants de la presse sont pré-chauffés à la température voulue (indiquée dans le tableau 2). Si la presse est automatique, les temps de cycle sont réglés en avance sur la machine.</li><li>Cas spécial: la matière en café est un mélange de pellicules et de marc de café</li><li>Les pellicules semblent assurer la cohésion. La proportion de marc de café a été variée entre 0 et 80 % du poids total de poudre, un optimal de résistance a été trouvé à 20 % de marc de café.</li><li>Nota Bene : Les conditions qui figurent dans le tableau 2 sont des conditions qui ont fonctionné dans nos essais, car elles ont permis de produire des échantillons homogènes et solides de matières rigides. Ce ne sont pas les seules conditions qui permettent ce résultat. En effet, il y a probablement des plages de valeurs qui fonctionnent, et des arbitrages à faire en fonction de ce que l’on recherche (production rapide, ou température basse, ou grande résistance, etc).</li><li>Une étude préliminaire sur le café laisse à penser que :</li><li>- diminuer température (de 160C à 140C) diminue la résistance mécanique</li><li>- diminuer temps de presse (de 200s à 20s) diminue la résistance mécanique</li><li>- augmenter la proportion de marc de café (de 0% à 80%) augmente la résistance mécanique jusqu’à 20 % puis la diminue</li><li>Dans tous les cas, si le matériau obtenu semblait d’aspect assez similaire aux autres, des essais mécaniques de flexion ont permis d’établir la différence entre les différents échantillons.</li><li>Une étude plus extensive de ces paramètres sur un autre co-produit sera effectuée dans un projet de recherche en collaboration avec l’Institut Charles Sadron au premier semestre 2023.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Hydratation et mélange</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/1/11/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_6-AjoutEau-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 6-AjoutEau-web.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_7-Melange-web.JPG/800px-Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_7-Melange-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 7-Melange-web.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une masse donnée de co-produit broyé est pesée dans un bol ou une coupelle en plastique, en fonction du moule ou de l’empreinte choisie.</li><li>Pour trouver la bonne quantité de poudre, on procède par itération. Il doit y avoir un surplus après thermo-compression pour assurer un bon remplissage et un bon tassage du moule. Si la matière reste poudreuse et avec une faible cohésion à la surface, il est possible qu’il faille ajouter plus de co-produit. A titre indicatif, la densité des matières obtenues est d’environ 1 g/cm3.</li><li>De l’eau est ensuite ajoutée au co-produit dans les proportions indiquées dans le tableau 2.</li><li>Un peu d’eau est nécessaire pour donner de la cohésion à la matière, mais trop d’eau cause une déformation au séchage de la matière. Il y a là un équilibre assez fin à trouver.</li><li>Le co-produit broyé et l’eau sont ensuite mélangés (avec une cuiller, ou en fermant le récipient et en le secouant), fortement pour éviter la formation de grumeaux. Ceux-ci causeraient une hétérogénéité dans la matière et donc des défauts.</li><li>Le mélange doit avoir un aspect de poudre humide mais bien dispersée. Si on obtient un mélange pâteux, c’est qu’il y a trop d’eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Remplissage du moule</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a5/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_8-RemplissageMoule-web.JPG/800px-Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_8-RemplissageMoule-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 8-RemplissageMoule-web.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f2/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_9-SandwichThermocompression-web.png' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 9-SandwichThermocompression-web.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On prépare ensuite un « sandwich » pour le passage à la presse.</li><li>Si une empreinte métallique est utilisée, on place, dans cet ordre :<ul><li>une plaque en fonte</li><li>un film anti-adhésif (ici, un film Mylar, peut-être que du papier sulfurisé suffit)</li><li>l’empreinte métallique (en alu, fonte, ou cuivre, peu importe)</li><li>le mélange co-produit en poudre + eau</li><li>un film anti-adhésif</li><li>une plaque en fonte</li></ul></li><li>Si un moule et contre-moule sont utilisés, on place, dans cet ordre :<ul><li>le moule</li><li>un film anti-adhésif (ici, un film Mylar, peut-être que du papier sulfurisé suffit), thermoformé au préalable sur le moule</li><li>le mélange co-produit en poudre + eau</li><li>un film anti-adhésif thermoformé sur le contre-moule</li><li>le contre-moule</li></ul></li><li>Il n’y a pas besoin de tasser le mélange co-produit + eau, il semble même que ne pas tasser donne de meilleurs résultats. Comme le mélange est peu dense, il va former une grande montagne dans l’empreinte ou le moule. Il faut se débrouiller pour que le dessus soit assez plat en ramenant ce qu’il y a sur les côtés (haut-plateau plutôt qu’un pic). Pour le moule, on peut grossièrement préparer la forme du contre-moule, mais sans chercher à tout refermer.</li><li>A ce stade, le « sandwich » ne se referme pas, cela ne pose aucun problème. La presse permettra de le refermer sans désaxage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Phase de chauffe sous pression</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/c3/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_10-CompressionChauffe-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 10-CompressionChauffe-web.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C’est là que la magie opère.</li><li>Avec des gants de protection, on place le sandwich sous les plateaux chauffants de la presse, on referme les plateaux et on fait démarrer le cycle de chauffe, avec les paramètres indiqués dans le Tableau 2 (Etape 4).</li><li>La pression utilisée ici pour tous les essais est de 160 bars.</li><li>N.B: L’influence de la pression sur la matière obtenue n’a pas encore été explorée. Nos essais préliminaires de thermo-compression du thé à 90 bars ont donné des bons résultats, ce qui semble indiquer que des pressions plus basses peuvent être utilisées.</li><li>Selon le fonctionnement de la presse, il peut être judicieux de faire des cycles de dégazage pour tasser la matière (on presse, la pression baisse au tassage, au bout de 4s on ouvre et on referme) jusqu’à ce que la pression se maintienne à son maximum dès le début. On a observé ici que 2 ou 3 fermetures-ouvertures sont suffisantes avec notre presse.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Refroidissement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/b5/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_11-CompressionFroid-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 11-CompressionFroid-web.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A la fin du cycle de chauffe, on relâche la pression en ouvrant les plaques chauffantes.</li><li>Attention, de la vapeur d’eau se forme dans le moule au moment de la chauffe, et est relâchée à la baisse de pression. Il est nécessaire de se protéger des projections de vapeur d’eau avec un écran en plastique placé entre la presse et l’opérateur, ou a minima avec un masque et une blouse.</li><li>Avec des gants de protection, puisque tout est à haute température, on passe le “sandwich” dans les plaques réfrigérantes. Ici, nos plaques sont refroidies par un circuit d’eau courante.</li><li>On remet sous pression les plaques réfrigérantes pendant le temps indiqué dans le Tableau 2 (Etape 4).</li><li>Plusieurs sources indiquent que cette étape est essentielle pour la cohésion de la matière et pour son aspect de surface. Dans l’idéal, il faudrait refroidir le moule ou l’empreinte sans relâcher la pression pour pouvoir garder toute la vapeur d’eau. Cela permettrait de limiter l’ajout d’eau au début, et donc de limiter la déformation de l’échantillon ou objet, et d’améliorer ses propriétés.</li><li>Ce refroidissement sous pression est une spécificité de ces matériaux. Notre presse est conçue pour la mise en forme de matières plastiques, pour lesquelles cette contrainte est moins forte, bien que présente. Ainsi, les plateaux chauffants et réfrigérants sont séparés.</li><li>Nous avons pour projet de concevoir une presse chauffante adaptée aux co-produits organiques, qui permettrait de faire des cycles de chauffe/refroidissement sous pression.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Démoulage</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9f/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_12-OuvertureMoule-web.JPG/800px-Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_12-OuvertureMoule-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 12-OuvertureMoule-web.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d3/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_13-Demoulage-web.JPG/800px-Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_13-Demoulage-web.JPG' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 13-Demoulage-web.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A l’issue du refroidissement, on ressort le “sandwich” de la presse et on procède à son ouverture. Le démoulage peut être laborieux, mais est grandement facilité par l’utilisation d’un film anti-adhésif.</li><li>Peut-être que des huiles de démoulage peuvent également fonctionner, mais elles ont le désavantage de rester présentes sur la matière.</li><li>La matière peut à ce stade encore présenter une certaine fragilité ou souplesse, qui disparaîtra au séchage. Il faut donc la démouler avec délicatesse. Si la géométrie est celle d’une plaque ou d’un barreau, il faut appuyer légèrement sur tout le matériau, et mettre une pression progressive pour sortir la pièce du moule.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Séchage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/f/ff/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_15-DemispherePalette-annote-fr-web.png' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 15-DemispherePalette-annote-fr-web.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il ne faut pas directement stocker les pièces dans un récipient hermétique, car il y a un risque de formation de légères moisissures, malgré le faible taux d’humidité. Cette étape de séchage peut se faire à l’air libre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Travail des matériaux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/d/d0/Mati_res_100_co-produits_organiques_et_biod_gradables_par_thermo-compression_16-DecoupeLaser-Ble-web.jpg' alt='Mati res 100 co-produits organiques et biod gradables par thermo-compression 16-DecoupeLaser-Ble-web.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour les plaques, des essais sont en cours pour le perçage, la découpe, et le ponçage. Les matières semblent se comporter de façon assez similaire à des panneaux de particules.</li><li>Les plaques peuvent également se découper et se graver au laser.</li><li>De plus, des essais sont en cours pour faire de l’assemblage (colles de poisson, de farine, d’os, etc) et des finitions (huile de lin) avec des produits naturels pour maintenir la biodégradabilité des pièces.</li><li>En fin de vie, ces matières sont compostables. Pour l’instant, seuls des petits objets ont été mis dans un compost domestique, et cela semble fonctionner. Il serait intéressant de faire des études plus poussées de décomposition, et de voir si ces matières broyées peuvent jouer le rôle de structurant dans un compost.</li><li>Une perspective qui semble intéressante pour ces matières est la production de panneaux et de planches de grande taille, qui pourraient ensuite être travaillés pour du mobilier ou de l’aménagement intérieur. Il y a encore beaucoup d’effort de recherche et développement avant d’y parvenir, mais cela semble faisable a priori. Nous procéderons à des essais de thermo-compression sur une presse à plaquer à bois prochainement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

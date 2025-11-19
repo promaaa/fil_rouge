@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>REMOTE CONTROL WHEELCHAIR / REMOTE CONTROL POWERCHAIR</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>REMOTE CONTROL WHEELCHAIR / REMOTE CONTROL POWERCHAIR</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F37/LBVO/L7BX042G/F37LBVOL7BX042G.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>BACKGROUND I am not an electrical engineer nor a mechanical engineer or an engineer in any field. I’m just an average guy who fixes things around the house as best I can. I’m a tinkerer and a maker. But because I’m in a wheelchair, being a handyman is a bit more challenging for me, however, I’m still able to do almost anything, albeit, not always in the most conventional ways.</p>
+      
+        <p>One such challenge is, what to do with my powerchair when I transfer myself to the rider mower or my moped trike.</p>
+      
+        <p>The solution has always been to have someone else ride the wheelchair “out of the way”. This wasn’t a problem, but still not self-sufficient for me.</p>
+      
+        <p>I wanted the ability of NOT having to depend on someone to move my wheelchair out of the way for me and then bring it back to me later.</p>
+      
+        <p>SOLUTION The remote wheelchair design I made, is a rather crude prototype and since I’m not an engineer, was done in a simple mechanical fashion with just the tiniest knowledge of electronics.</p>
+      
+        <p>I can now get close to the mower, transfer myself onto it, and remotely move the powerchair out of the way.</p>
+      
+        <p>Before starting, it’s important to know that this project was not to create a remotely controlled RACER wheelchair, but rather an aid for people in the same position (and attitude) as myself.</p>
+      
+        <p>I know people are reading this with hundreds of other ideas of how to accomplish this, so this is mine, of many.</p>
+      
+        <p>CHALLENGES One of the biggest challenges was the joystick controller. I wanted the joystick on the chair to react perfectly in sync with the remote I used.</p>
+      
+        <p>This was difficult because if the push-pull servo wasn’t in perfect alignment with the joystick, pushing forward on the remotes Y-Axis would not always push the chair’s remote perfectly forward, drifting a few degrees and causing the X-Axis to also move a bit either left or right. Although not a big problem since it could be easily compensated for by pushing forward AND left/right to compensate for the difference, I still wanted to be as precise as possible – using the method in this project.</p>
+      
+        <p>I'd also like to point out that because I lack knowledge of circuit boards, I chose to use a switch to toggle between the "regular" joystick controls and the remote controlled joystick. Perhaps it would have been ok to splice the remote controlled directly into the existing one BUT power chairs have so many electronics built in that I did not want to take the chance of possibly burning out any components.</p>
+      
+        <p>STARTING This project was created out of a need for a solution to a problem few people are aware of. It isn’t for racing a wheelchair, so the servos I used here and the way I use them, don’t push the XY axis on the wheelchair to its maximum speed. I modified some 3D printed parts and used an RC controller and receiver, springs, screws, servos, wood, glue, Dremel, and tools.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>VR2 Joystick (donor) – I was lucky enough to find one on eBay for $80</li><li>Flysky FS-i6X 2.4GHz 10CH $70</li><li>Lever Momentary Micro Switch $7</li><li>2 Position 3PDT 9 Terminal ON/ON $9</li><li>M3 Bolts and Nuts Assortment $30</li><li>Assorted Pan Head Screws $29</li><li>Carburetor Spring Kit $10</li><li>Basswood Unpainted Plywood $21 [5-pack]</li><li>MG996R servo motor (2 needed) $18 [4-pack]</li><li>SG90 servo motor (3 needed) $21 [12-pack]</li><li>Rechargeable Battery Pack $12</li><li>Charger for Battery Pack $11</li><li>Step Drill Bit Set $12</li><li>Tweezers</li><li>Rotary Tool</li><li>Step Drill Bits $11 [Set of 3]</li><li>20 AWG Silicone Wire Set $14 [5-pack]</li><li>18 AWG Silicone Wire Set $14 [5-pack]</li><li>Hot Glue gun</li><li>3D printer</li><li>Miscellaneous 3D parts from thingerverse.com printed with PETG and 100% infill:</li><li>Servo Turnout Motor for Model Railroads</li><li>Servo Holder for MG995 (I doubled this for extra stability)</li><li>Servo Slider Demo 2 (MG995)</li><li>Small project box for toggle switch and cable connector</li><li>These are MY parts list. I already had accumulated most of the items over the years. I listed them here for the sole purpose of knowing what was needed. These are NOT affiliate links, just an easy way of finding the parts.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: What's Inside....</strong><div class='step-images count-16'><figure><img src='https://content.instructables.com/F5F/G2R3/L6KRLZQU/F5FG2R3L6KRLZQU.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXK/OM6Z/L6KRLZQV/FXKOM6ZL6KRLZQV.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/F12/MC1P/L6KRLZQW/F12MC1PL6KRLZQW.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEE/ACQT/L6KRLZQX/FEEACQTL6KRLZQX.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVC/5EDL/L6KRLZQY/FVC5EDLL6KRLZQY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVF/ZKLF/L6KRLZQZ/FVFZKLFL6KRLZQZ.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEN/QCDP/L6KRLZR0/FENQCDPL6KRLZR0.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKE/AKXT/L6KRLZR1/FKEAKXTL6KRLZR1.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5F/G2R3/L6KRLZQU/F5FG2R3L6KRLZQU.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXK/OM6Z/L6KRLZQV/FXKOM6ZL6KRLZQV.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/F12/MC1P/L6KRLZQW/F12MC1PL6KRLZQW.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEE/ACQT/L6KRLZQX/FEEACQTL6KRLZQX.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVC/5EDL/L6KRLZQY/FVC5EDLL6KRLZQY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVF/ZKLF/L6KRLZQZ/FVFZKLFL6KRLZQZ.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEN/QCDP/L6KRLZR0/FENQCDPL6KRLZR0.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKE/AKXT/L6KRLZR1/FKEAKXTL6KRLZR1.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What's Inside....' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Removed T10 screws holding the 2 halves together.</li><li>I needed to know the internals of the joystick to determine the best and easiest way (for me!) of going about this project with zero knowledge of electronics.</li><li>Disassembled the halves and disconnected ribbon cable and a 3-pin connector.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Determine Contact Points</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FDI/4U8T/L6KRLZSY/FDI4U8TL6KRLZSY.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7C/YSKU/L6KRLZSZ/F7CYSKUL6KRLZSZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTL/8H9Y/L6KRLZT0/FTL8H9YL6KRLZT0.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHF/FTFP/L6KRLZT1/FHFFTFPL6KRLZT1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDI/4U8T/L6KRLZSY/FDI4U8TL6KRLZSY.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7C/YSKU/L6KRLZSZ/F7CYSKUL6KRLZSZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTL/8H9Y/L6KRLZT0/FTL8H9YL6KRLZT0.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHF/FTFP/L6KRLZT1/FHFFTFPL6KRLZT1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Determine Contact Points' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Decoding the touchpad was easy. Each pad functions as a momentary switch. Looking at the board, I noted what each touch pad was used for. I then used a continuity tester to determine which pad on the PC board corresponded to each pin.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Some Wiring and Soldering</strong><div class='step-images count-10'><figure><img src='https://content.instructables.com/F5I/2V1U/L6KRLZYJ/F5I2V1UL6KRLZYJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAG/1FDN/L6KRLZYK/FAG1FDNL6KRLZYK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FV3/U0WA/L6KRM06G/FV3U0WAL6KRM06G.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7C/IGKZ/L6KRM06H/F7CIGKZL6KRM06H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMK/J1HV/L6KRM06I/FMKJ1HVL6KRM06I.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5I/2V1U/L6KRLZYJ/F5I2V1UL6KRLZYJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAG/1FDN/L6KRLZYK/FAG1FDNL6KRLZYK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FV3/U0WA/L6KRM06G/FV3U0WAL6KRM06G.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7C/IGKZ/L6KRM06H/F7CIGKZL6KRM06H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMK/J1HV/L6KRM06I/FMKJ1HVL6KRM06I.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Some Wiring and Soldering' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I drew a chart with color scheme for wires and solder them to the corresponding pins on the PC board.</li><li>Soldered the wires on the revers and then hot glued to keep wires together and out of the way.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Mount PC Board</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F7A/XVXL/L6KRM0BH/F7AXVXLL6KRM0BH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount PC Board' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWY/X5IO/L6KRM0BI/FWYX5IOL6KRM0BI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount PC Board' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7A/XVXL/L6KRM0BH/F7AXVXLL6KRM0BH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount PC Board' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWY/X5IO/L6KRM0BI/FWYX5IOL6KRM0BI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount PC Board' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I mounted the circuit board on the wood using plastic spacers from a pegboard.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Altering Springs</strong><div class='step-images count-14'><figure><img src='https://content.instructables.com/FA6/2EJP/L6KRM0HS/FA62EJPL6KRM0HS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHU/5U7W/L6KRM0HT/FHU5U7WL6KRM0HT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYB/XIYM/L6KRM0HU/FYBXIYML6KRM0HU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FF5/PFV9/L6KRM0HV/FF5PFV9L6KRM0HV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBT/Y1EU/L6KRM0HW/FBTY1EUL6KRM0HW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVU/BMA7/L6KRM0HX/FVUBMA7L6KRM0HX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGE/FVYH/L6KRM0HY/FGEFVYHL6KRM0HY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FA6/2EJP/L6KRM0HS/FA62EJPL6KRM0HS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHU/5U7W/L6KRM0HT/FHU5U7WL6KRM0HT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYB/XIYM/L6KRM0HU/FYBXIYML6KRM0HU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FF5/PFV9/L6KRM0HV/FF5PFV9L6KRM0HV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBT/Y1EU/L6KRM0HW/FBTY1EUL6KRM0HW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVU/BMA7/L6KRM0HX/FVUBMA7L6KRM0HX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGE/FVYH/L6KRM0HY/FGEFVYHL6KRM0HY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Altering Springs' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>It was a bit hard manipulating spring ends into the needed shapes. I made a rig with nails in a vice and was able to end the ends easier. Spring bending is difficult so bending around the nail gave me better leverage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Mount Joysticks Components</strong><div class='step-images count-16'><figure><img src='https://content.instructables.com/FZQ/EJC1/L6KRM1CH/FZQEJC1L6KRM1CH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNL/QSA1/L6KRM1CI/FNLQSA1L6KRM1CI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQD/F8CQ/L6KRM1CJ/FQDF8CQL6KRM1CJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLY/AL19/L6KRM1CK/FLYAL19L6KRM1CK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDF/QD0Y/L6KRM1CL/FDFQD0YL6KRM1CL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDS/U352/L6KRM1CM/FDSU352L6KRM1CM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWE/0HGB/L6KRM1CN/FWE0HGBL6KRM1CN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1A/HHXS/L6KRM1CO/F1AHHXSL6KRM1CO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZQ/EJC1/L6KRM1CH/FZQEJC1L6KRM1CH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNL/QSA1/L6KRM1CI/FNLQSA1L6KRM1CI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQD/F8CQ/L6KRM1CJ/FQDF8CQL6KRM1CJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLY/AL19/L6KRM1CK/FLYAL19L6KRM1CK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDF/QD0Y/L6KRM1CL/FDFQD0YL6KRM1CL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDS/U352/L6KRM1CM/FDSU352L6KRM1CM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWE/0HGB/L6KRM1CN/FWE0HGBL6KRM1CN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1A/HHXS/L6KRM1CO/F1AHHXSL6KRM1CO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount Joysticks Components' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Using assorted screws, washers, springs, and nuts, the first thing to mount is the joystick because mounting the remaining parts will depend on the initial position of the mounted joystick.</li><li>Positioned the double servo motor mount and screwed it in place.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Microswitch</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FAG/22TY/L6M71T1V/FAG22TYL6M71T1V.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Microswitch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKW/8165/L6M71T1T/FKW8165L6M71T1T.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Microswitch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1S/Z49K/L6M71T1U/F1SZ49KL6M71T1U.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Microswitch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAG/22TY/L6M71T1V/FAG22TYL6M71T1V.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Microswitch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKW/8165/L6M71T1T/FKW8165L6M71T1T.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Microswitch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1S/Z49K/L6M71T1U/F1SZ49KL6M71T1U.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Microswitch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Using the 3D printed servo holder (link up top), I mounted two micro switches for each servo. I made 3 sets of these each with a servo controlling 2 micro switch.</li><li>These will be used to control:<ul><li>Servo 1: Micro SW 1 = On/Off Micro / SW 2 = Horn</li><li>Servo 2: Micro SW 1 = Speed Increase / Micro SW 2 = Decrease Speed</li><li>Servo 3: Micro SW 1 = Seat Elevation SW 2 = Redundant Seat Elevation</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Project Box</strong><div class='step-images count-22'><figure><img src='https://content.instructables.com/FYM/FVSZ/L6M720BP/FYMFVSZL6M720BP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHQ/PW1I/L6M720DY/FHQPW1IL6M720DY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBC/6RUO/L6M720G8/FBC6RUOL6M720G8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FST/C6C2/L6M720IQ/FSTC6C2L6M720IQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAI/GSH7/L6M720L6/FAIGSH7L6M720L6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FCO/BFVF/L6M720NL/FCOBFVFL6M720NL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPO/SLOH/L6M720PY/FPOSLOHL6M720PY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN1/TUC3/L6M720SB/FN1TUC3L6M720SB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWL/P6FY/L6M720UR/FWLP6FYL6M720UR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRE/ROTG/L6M720XA/FREROTGL6M720XA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHQ/D36Z/L6M720ZQ/FHQD36ZL6M720ZQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYM/FVSZ/L6M720BP/FYMFVSZL6M720BP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHQ/PW1I/L6M720DY/FHQPW1IL6M720DY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBC/6RUO/L6M720G8/FBC6RUOL6M720G8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FST/C6C2/L6M720IQ/FSTC6C2L6M720IQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAI/GSH7/L6M720L6/FAIGSH7L6M720L6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FCO/BFVF/L6M720NL/FCOBFVFL6M720NL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPO/SLOH/L6M720PY/FPOSLOHL6M720PY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN1/TUC3/L6M720SB/FN1TUC3L6M720SB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWL/P6FY/L6M720UR/FWLP6FYL6M720UR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRE/ROTG/L6M720XA/FREROTGL6M720XA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHQ/D36Z/L6M720ZQ/FHQD36ZL6M720ZQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Project Box' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>As part of the project, I needed a way to switch the on-board powerchair between the existing joystick controller so the powerchair could be used normally, and a way to connect and switch to the remote control function</li><li>After taking measurements, I drilled drilled holes to house the switch and connector for the remote control setup.</li><li>I also made holes for nylon ties to be used to attach the switchbox to the chair.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Assembly</strong><div class='step-images count-20'><figure><img src='https://content.instructables.com/FQ6/J2P8/L6M7239B/FQ6J2P8L6M7239B.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7N/FTNB/L6M7239C/F7NFTNBL6M7239C.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FCM/ZO08/L6M7239D/FCMZO08L6M7239D.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3S/G4LZ/L6M7239E/F3SG4LZL6M7239E.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F60/A3XB/L6M7239H/F60A3XBL6M7239H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0A/ZN9Q/L6M723C5/F0AZN9QL6M723C5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWT/QZO6/L6M723EU/FWTQZO6L6M723EU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZT/XOH7/L6M7270S/FZTXOH7L6M7270S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FI9/V7PK/L6M723HK/FI9V7PKL6M723HK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBT/4S4V/L6M723KB/FBT4S4VL6M723KB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQ6/J2P8/L6M7239B/FQ6J2P8L6M7239B.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7N/FTNB/L6M7239C/F7NFTNBL6M7239C.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FCM/ZO08/L6M7239D/FCMZO08L6M7239D.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3S/G4LZ/L6M7239E/F3SG4LZL6M7239E.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F60/A3XB/L6M7239H/F60A3XBL6M7239H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0A/ZN9Q/L6M723C5/F0AZN9QL6M723C5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWT/QZO6/L6M723EU/FWTQZO6L6M723EU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZT/XOH7/L6M7270S/FZTXOH7L6M7270S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FI9/V7PK/L6M723HK/FI9V7PKL6M723HK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBT/4S4V/L6M723KB/FBT4S4VL6M723KB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I made sure to write down what each pin is on the 9-pin switch and decided on color wires to be used to avoid confusion.</li><li>Before continuing to install the switch between REMOTE and LOCAL control of the chair, I disconnected the battery and soldered it all together to complete the box.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Calibration</strong><p><strong>Étapes :</strong></p><ol><li>It was absolutely necessary to calibrate all the servos to work properly with the joystick an the six micro switch.</li><li>I have zero experience in RC and during a test and breaking a servo and switch, I discovered the need to calibrate. It was done via the transmitter.</li><li>Also due any RC experience (like mine!), it's a bit confusing in the beginning to control Left/Right when the chair is coming towards you.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Conclusion</strong><p><strong>Étapes :</strong></p><ol><li>It does the job it was set out to accomplish.</li><li>Would I do anything differently Absolutely. Even on this crude project, I should have used something like plexiglass instead of 3D printed PETG and wood.</li><li>I would prefer being able to control it with a smartphone so if anyone has knowledge on that , please let me know.</li><li>You can view a comprehensive UNEDITED video of this project here: https://youtu.be/YBFTf1CG6zE</li><li>If you read this far, I would also like to publish on Instructables, a wheelchair LED project shown in the following link but first I need some encouragement from you guys: https://youtu.be/KCXkN-vAknU</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

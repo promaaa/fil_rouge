@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Spoon Holder</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Spoon Holder</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F6H/O2Z2/M8ISILIK/F6HO2Z2M8ISILIK.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Hi! My name is Harshita Vohra, and I am excited to share my project with you! I am in Mr.Fung's IED class at Irvington High School, working on a side project, just like previous students did.</p>
+      
+        <p>This Epic Design Challenge focuses on making everyone feel like they belong. Sometimes, children and even adults face difficulties with the disabilities they have, often making them feel less included in their environment. That is why I created this 3D-printed Spoon Holder! Its versatile design will help improve motor skills, making meal times much easier for folks with these problems.</p>
+      
+        <p>In this project guide, I will walk you through all of the steps and supplies needed for this. It may seem tricky, but it is much easier than you think it is.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Fusion 360</li><li>Mini Prusa Printer (Organic Tree Support)</li><li>PLA Filament</li><li>Prusa Slicer</li><li>Plastic Spoon</li><li>Adhesive Patches</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Start a Sketch on Front Face</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FI4/Z6MS/M8N2V33I/FI4Z6MSM8N2V33I.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Start a Sketch on Front Face' loading='lazy'></figure><figure><img src='https://content.instructables.com/FI4/Z6MS/M8N2V33I/FI4Z6MSM8N2V33I.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Start a Sketch on Front Face' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Open the Fusion 360 App and make a new sketch on the Front Face. Sketch a rectangle 30 mm in width and 45 mm in width and then round the corners with the filet tool to about 5 mm for each of the four corners.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Extrude the Profile</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FGY/97HG/M8N2V3LV/FGY97HGM8N2V3LV.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude the Profile' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGY/97HG/M8N2V3LV/FGY97HGM8N2V3LV.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude the Profile' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Once the first sketch is done, extrude the profile about 80 mm in each direction. Make sure to select the direction to be Two Sides so that each side as an equal extrude on both sides. The direction can be changed to be Symmetric as well with the same 80 mm dimension.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Make Hole for Spoon Holder</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F2H/047O/M8N2V3VS/F2H047OM8N2V3VS.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Make Hole for Spoon Holder' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2H/047O/M8N2V3VS/F2H047OM8N2V3VS.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Make Hole for Spoon Holder' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Start a new sketch on the front face of the extruded profile. Make a center rectangle coincident to two midpoints added to two sides of the original profile. Horizontally and vertically constrain it to the center. Dimension the rectangle is be 8 mm in length and 6.5 mm in width then round the corners with a 1 mm filet. Finish the sketch.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Extrude Inner Profile</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FQG/C55H/M8PXQV9N/FQGC55HM8PXQV9N.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude Inner Profile' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQG/C55H/M8PXQV9N/FQGC55HM8PXQV9N.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude Inner Profile' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Extrude this profile -100 mm to make a slot for the spoon. This can vary in length based on how long your spoon is. Make sure the operation is set to cut and not join.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Adding Filets</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F32/0YS7/M8PXQVDC/F320YS7M8PXQVDC.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Filets' loading='lazy'></figure><figure><img src='https://content.instructables.com/F32/0YS7/M8PXQVDC/F320YS7M8PXQVDC.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Filets' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Highlight the entire body and add a 3 mm filet. There should be a total of about 19 faces when doing this step.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Adding Braille Alphabet</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F51/V62U/M8PXQVIG/F51V62UM8PXQVIG.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Braille Alphabet' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGA/SVCU/M8PXQVZJ/FGASVCUM8PXQVZJ.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Braille Alphabet' loading='lazy'></figure><figure><img src='https://content.instructables.com/F51/V62U/M8PXQVIG/F51V62UM8PXQVIG.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Braille Alphabet' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGA/SVCU/M8PXQVZJ/FGASVCUM8PXQVZJ.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Braille Alphabet' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Start a new sketch on the top face. Add circles in the form of braille letters to say "Spoon Holder". Attached is the image of how the braille letters should look like. Make the the circles 3.5 in diameter and add an equal constraint to all of them. Then add the fix/unfix constraint to make sure they don't move from this position.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Extrude and Add Filets to Braille Letters</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FYU/LJPE/M8PXQVZZ/FYULJPEM8PXQVZZ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude and Add Filets to Braille Letters' loading='lazy'></figure><figure><img src='https://content.instructables.com/F31/O7F2/M8PXQW00/F31O7F2M8PXQW00.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude and Add Filets to Braille Letters' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYU/LJPE/M8PXQVZZ/FYULJPEM8PXQVZZ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude and Add Filets to Braille Letters' loading='lazy'></figure><figure><img src='https://content.instructables.com/F31/O7F2/M8PXQW00/F31O7F2M8PXQW00.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude and Add Filets to Braille Letters' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Finish the sketch and extrude it 2 mm upwards then add a 1.75 mm filet to all of the letters. This way they look more like braille rather than cylinders.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Adding Spoon Holder As Text</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FJ7/UQS3/M8PXQW7U/FJ7UQS3M8PXQW7U.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Spoon Holder As Text' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ7/UQS3/M8PXQW7U/FJ7UQS3M8PXQW7U.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Spoon Holder As Text' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Make a new sketch on the front face one again. Use the text box tool to make it as long as the spoon holder's top profile. Add the words "Spoon Holder". The font used for this is Arial Black that is bolded and has a height of 10 mm. Additionally, move the text into the middle. Then, finish the sketch.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Extrude Text Profile</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FLR/VJDX/M8PXQWOT/FLRVJDXM8PXQWOT.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude Text Profile' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLR/VJDX/M8PXQWOT/FLRVJDXM8PXQWOT.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrude Text Profile' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Highlight over the sketch and extrude it upwards 2 mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Completed Project</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F7T/R9AU/M8PXQWZL/F7TR9AUM8PXQWZL.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Completed Project' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7T/R9AU/M8PXQWZL/F7TR9AUM8PXQWZL.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Completed Project' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>By following all of these steps, your Spoon Holder should look something like this. Now you are ready to print and can export the project as an STL file!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Getting Ready to Print!</strong><p><strong>Étapes :</strong></p><ol><li>Open Prusa Slicer and import the STL file of the Spoon Holder.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: Final Product</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FP4/PDWK/M92SOTT9/FP4PDWKM92SOTT9.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Product' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP4/PDWK/M92SOTT9/FP4PDWKM92SOTT9.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Product' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TonUINO</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>TonUINO</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/f/ff/TonUINO_F4EA90EC-0C1B-4943-8E12-4FFA8A45305A.JPG/800px-TonUINO_F4EA90EC-0C1B-4943-8E12-4FFA8A45305A.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">TonUINO est un projet de boîte à musique et histoires développé par Thorsten Voss, qui a laissé à disposition le code en open source, soutenu par une communauté plutôt active… et germanophone ! Je me propose donc ici de faire un petit récapitulatif en français de son montage et son installation.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le principe de TonUINO est simple : il suffit de poser une puce RFID préalablement configurée sur le dessus de la boîte pour que le contenu audio (histoires, musique) stocké sur une carte MicroSD soit diffusé. Les contenus sont enregistrés par l’utilisateur avec la possibilité d’enregistrer ses propres histoires.</p>
+      
+        <p>Une fois le montage fait, il n’y a plus qu’à l’embarquer dans un contenant de votre choix, que vous pouvez fabriquer, détourner à partir d’un autre objet, ou acheter.</p>
+      
+        <p>En suivant tout à la lettre il n’y a pas de raison que vous n’arriviez pas à fabriquer votre TonUINO, cependant quelques connaissances en Arduino seront nécessaires. Si besoin, n’hésitez pas à faire des recherches internet supplémentaires pour savoir comment effectuer telle ou telle opération (par exemple : installer une librairie Arduino ou dévoiler les fichiers cachés sous Windows…).</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/TonUINO" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/TonUINO</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Il existe différentes variantes pour pouvoir composer son kit TonUINO et vous pouvez tout à fait choisir des composants équivalents. La liste que vous trouverez ci-dessous est celle du matériel que j’ai utilisé.<ul><li>Un kit TonUINO du fournisseur allemand AZDelivery</li><li>Des jumpers femelle / femelle</li><li>Un support de pile 9V</li><li>Un câble mini USB vers USB pour transférer les données sur la carte Arduino</li><li>Un interrupteur on/off</li><li>Un petit haut-parleur</li><li>Une carte MicroSD</li><li>Des boutons d’arcade</li><li>Une pile 9V</li><li>Une résistance 1kOhm</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Fer à souder</li><li>Étain (flux)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Montage</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/6/6c/TonUINO_sche_ma_AZDelivery_lowdef.png/800px-TonUINO_sche_ma_AZDelivery_lowdef.png' alt='TonUINO sche ma AZDelivery lowdef.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/f/f1/TonUINO_Capture_d_e_cran_2024-01-10_a_11.31.30.png' alt='TonUINO Capture d e cran 2024-01-10 a 11.31.30.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/73/TonUINO_Capture_d_e_cran_2024-01-10_a_11.31.38.png/800px-TonUINO_Capture_d_e_cran_2024-01-10_a_11.31.38.png' alt='TonUINO Capture d e cran 2024-01-10 a 11.31.38.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/4/44/TonUINO_Capture_d_e_cran_2024-01-10_a_11.31.43.png' alt='TonUINO Capture d e cran 2024-01-10 a 11.31.43.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Un schéma de montage très clair est à disposition directement sur le site du projet : https://i0.wp.com/www.voss.earth/wp-content/uploads/2018/09/TonUINO_Schaltplan.png?ssl=1</li></ul></li><li>Vous trouverez également ci-contre un schéma valable lorsqu'on utilise les composants AZDelivery.<ul><li>Si vous avez un doute sur les broches des différents composants, vous pouvez télécharger le guide fourni par AZDelivery correspondant au kit TonUINO qu’ils vendent : https://www.az-delivery.de/fr/products/tonuino-set-1?variant=32580690477152</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Télécharger le code</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/3/3d/TonUINO_github_1.png/800px-TonUINO_github_1.png' alt='TonUINO github 1.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/b/b8/TonUINO_github_2.png' alt='TonUINO github 2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous allez devoir aller télécharger l’archive TonUINO sur Github. Pour ce faire, cliquez sur le bouton « code », puis « Download zip ».</li><li>De base, tout est en allemand. Pour que l’utilisation de votre TonUINO soit plus simple à terme, je vous recommande de télécharger les fichiers audio en français à partir de ce lien. Vous pourrez utiliser le contenu du dossier «sdcard_fr» pour mettre sur votre MicroSD.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Préparer la carte SD</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/f/f8/TonUINO_arbo_sdcard1.png' alt='TonUINO arbo sdcard1.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/3/35/TonUINO_arbo_sdcard2.png' alt='TonUINO arbo sdcard2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il y a régulièrement des problèmes de fonctionnement de TonUINO à cause de cartes SD mal formatées. Pour prévenir ce souci, je vous invite à télécharger SD card formatter et à formater votre carte SD avec l’option « overwrite format ». C’est un peu long, mais ça permet de gagner du temps et de ne pas avoir envie de tout passer par la fenêtre plus tard.</li><li>Allez dans le dossier des audios en français que vous avez téléchargé précédemment. Ouvrez le dossier « sdcard_fr » pour pouvoir accéder aux dossiers « advert » et « mp3 ». Copiez les dans votre carte SD.</li><li>Vous allez maintenant pouvoir mettre les fichiers mp3 que vous voulez lire sur votre TonUINO, mais attention il faut respecter une arborescence précise. Vos fichiers mp3 doivent être rangés dans des dossiers numérotés. Pour commencer, vous pouvez donc créer un dossier simplement nommé « 1 ». Les fichiers mp3 doivent être nommés avec 3 chiffres et glissés dans dans les dossiers numérotés selon l’organisation que vous aurez choisie. Votre première histoire pourra donc être nommé « 001.mp3 » et glissée dans le dossier « 1 ».</li><li>Une fois que vous avez rangé vos histoires ou chansons dans votre MicroSD vous pouvez la retirer de l’ordinateur et la glisser dans le DFPlayer Mini.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Déjouer les petits pièges</strong><p><strong>Étapes :</strong></p><ol><li>Car oui, il y en a ! Il s’agit des problèmes classiques qui se produisent lorsqu’on a pas lu le bien nommé fichier ReadMe. Mais comme je l’ai fait, je peux vous donner les tips et vous épargner la lecture de ce document rédigé moitié en allemand et moitié en anglais.</li><li>La carte Arduino Nano fournie par AZ Delivery nécessite un driver pour bien fonctionner. Vous pouvez le télécharger ici, puis l’installer.</li><li>Dans l’archive TonUino que vous avez téléchargée, ouvrez le dossier src puis le fichier constants.hpp</li><li>Vous allez devoir définir la configuration que vous comptez utiliser, pour nous il s’agit de TonUINO_Classic. Pour ce faire, dé-commentez la ligne 9 du fichier en enlevant les // en début de ligne.</li><li>De la même manière, définissez la variante matérielle que vous comptez utiliser, c’est-à-dire la version 3 boutons. Pour ce faire, dé-commentez la ligne 19 du fichier en enlevant les « //« en début de ligne.</li><li>Enregistrez le fichier constants.hpp en écrasant la version précédente, le second piège est déjoué !</li><li>À la racine de l’archive TonUINO que vous avez téléchargée se trouve le fichier platform.local.txt. Si ce dernier n’est pas bien rangé, votre code n’arrivera jamais à compiler dans le logiciel Arduino par la suite.</li><li>Il vous faut donc le copier et aller le coller dans</li><li>C:\Users\<votrenomdutilisateur>\AppData\Local\Arduino15\packages\arduino\hardware\avr\1.8.6</li><li>Vous allez probablement vous arracher les cheveux en cherchant ce fameux dossier, c’est parce qu’il est par défaut caché dans Windows. Si vous ne savez pas comment le faire apparaitre, je vous invite à faire une petite recherche sur votre navigateur en tapant « windows afficher les dossiers cachés ».</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Installer le logiciel Arduino</strong><p><strong>Étapes :</strong></p><ol><li>C’est grâce au logiciel Arduino que vous allez pouvoir téléverser le code de TonUINO dans la carte Arduino.</li><li>Vous devez donc télécharger et installer le logiciel Arduino si ce n’est pas déjà fait. Ça se passe par ici !</li><li>Ouvrez ensuite le logiciel.</li><li>Les différents composants de votre TonUINO ont besoin de certaines bibliothèques Arduino pour fonctionner, commencez par les installer lorsque vous êtes dans le logiciel Arduino.</li><li>Pour cela allez dans sketch > include Library > manage libraries.</li><li>Cherchez les bibliothèques suivantes et installez-les :<ul><li>MFRC522 (1.4.10)</li><li>DFPlayer Mini Mp3 by Makuna (1.2.3)</li><li>JC_Button (2.1.2)</li></ul></li><li>Branchez votre carte ArduinoNano à votre ordinateur à l’aide du câble mini USB / USB.<ul><li>Indiquez au logiciel que vous utilisez la carte (=board) Arduino Nano avec le processeur ATMega328p (old bootloader).</li></ul></li><li>C’est le grand moment : vous pouvez ouvrir le fichier TonUINO-TNG.ino dans le logiciel Arduino. Cliquez sur le bouton « téléverser » et croisez les doigts, fort.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Programmer votre premier tag RFID</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/e/e2/TonUINO_mode_d_emploi_TonUINO.jpg/800px-TonUINO_mode_d_emploi_TonUINO.jpg' alt='TonUINO mode d emploi TonUINO.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a0/TonUINO_mode_d_emploi_TonUINO2.jpg/800px-TonUINO_mode_d_emploi_TonUINO2.jpg' alt='TonUINO mode d emploi TonUINO2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On va considérer que le téléversement s’est bien passé et que le fichier TonUINO est maintenant gentiment installé sur votre ArduinoNano.</li><li>C’est donc le moment de programmer votre premier tag RFID, celui qui par la suite lira le fichier 001.mp3 de la carte MicroSD lorsque on le posera sur le lecteur RFID.</li><li>Pour vous aider, vous pouvez afficher le serial monitor sur le logiciel Arduino. Pensez à le régler en « Both NL & CR » à 115200 Baud, sans quoi vous ne pourrez pas lire ce qui s’affiche dessus.</li><li>Posez la carte RFID sur le lecteur et laissez-là bien jusqu’à la fin de la configuration.</li><li>Vous entendez alors le message « Voilà une nouvelle carte, bien choisis le mode d’exécution de TonUINO à l’aide des boutons de volume ».</li><li>Il existe plusieurs modes d’exécution de TonUINO, je vous invite à aller voir sur internet pour en savoir plus. Un sujet en français a été ouvert ici et récapitule les différents modes.</li><li>Pour une exécution simple qui consistera à lire une histoire ou une chanson lorsqu’on pose la carte sur le lecteur RFID, faites défiler les propositions à l’aide d’un des boutons de réglage de son jusqu’à arriver au « mode individuel », validez votre sélection en appuyant sur le bouton play/pause.</li><li>Vous entendez alors « choisis un dossier avec des boutons de volume pour configurer la carte ». Naviguez alors jusqu’à votre fichier 001.mp3 à l’aide d’un des boutons de réglage de son. Pour vous aider, vous pouvez regarder le serial monitor sur l’ordinateur. Lorsque le son que vous voulez jouer se lance à l’aide de cette carte RFID se lance, validez en appuyant sur le bouton play/pause. Vous entendez alors « Bon, la carte est maintenant configurée ».</li><li>C’est donc que c’est bon ! Désormais lorsque vous poserez cette première carte sur votre lecteur RFID, c’est le fichier 001.mp3 qui se lancera.</li><li>Procédez de la même manière à chaque fois que vous voulez programmer un tag RFID.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Une alimentation sur batterie</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/c/ce/TonUINO_Sche_ma_Arduino_Nano_like.png' alt='TonUINO Sche ma Arduino Nano like.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/87/TonUINO_pile_et_interrupteur.png/800px-TonUINO_pile_et_interrupteur.png' alt='TonUINO pile et interrupteur.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour le moment, votre TonUINO fonctionne en étant alimenté par le port USB de votre ordinateur. Pour plus de mobilité de cet objet, je vous propose de le faire fonctionner à l'aide d'une pile 9V et d'un interrupteur. Vous trouverez le schéma de montage ci-contre.</li><li>Votre carte comporte un régulateur de tension, même si votre alimentation est supérieure à 5V, tant qu’elle se situe entre 7 et 12V le régulateur l’abaissera à 5V et vous ne risquez pas d’endommager votre carte.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Une alimentation sur secteur</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/6/6e/TonUINO_she_ma_complet_avec_alim_et_interrupteur.png/800px-TonUINO_she_ma_complet_avec_alim_et_interrupteur.png' alt='TonUINO she ma complet avec alim et interrupteur.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Sur pile vous remarquerez que votre TonUINO ne tient pas forcément très longtemps et on doit bien admettre que ce n'est pas la solution la plus écologique que vous pouvez choisir.</li><li>Alors si la plupart du temps le TonUINO est utilisé dans un endroit pourvu de prises, opter pour l'ajout d'un petit module d'alimentation et d'une alimentation secteur est la meilleure solution. AZDelivery vend des petits modules d'alimentation, ensuite il vous faudra y ajouter un adaptateur secteur 12V avec connecteur DC 5,5x2,5mm.</li><li>Vous trouverez ci-contre le schéma complet du câblage de TonUINO avec ce module d'alimentation et un interrupteur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - L'emballage</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/5/5b/TonUINO_Capture_d_e_cran_2024-01-10_a_11.38.38.png' alt='TonUINO Capture d e cran 2024-01-10 a 11.38.38.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/0/04/TonUINO_Capture_d_e_cran_2024-01-10_a_11.38.47.png' alt='TonUINO Capture d e cran 2024-01-10 a 11.38.47.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/0/0b/TonUINO_Capture_d_e_cran_2024-01-10_a_11.38.57.png' alt='TonUINO Capture d e cran 2024-01-10 a 11.38.57.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/d/de/TonUINO_Capture_d_e_cran_2024-01-10_a_11.39.09.png' alt='TonUINO Capture d e cran 2024-01-10 a 11.39.09.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Soyons honnêtes, même si tout fonctionne, cet amas de fils et de composants n’est visuellement pas très gracieux et nécessite d’être protégé des petites mains.</li><li>C’est maintenant à vous de jouer pour fabriquer une jolie boîte qui embarquera votre TonUINO. Vous en trouverez plusieurs exemples sur internet, vous permettant de vous inspirer.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

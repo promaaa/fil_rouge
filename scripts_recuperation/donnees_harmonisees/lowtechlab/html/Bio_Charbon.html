@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bio Charbon</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Bio Charbon</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/b6/Bio_Charbon_Sechage_Charbon_Vert_%28c%29_Pierre_Alain_%28GOB%29.JPG/800px-Bio_Charbon_Sechage_Charbon_Vert_%28c%29_Pierre_Alain_%28GOB%29.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Fabriquer des briquettes de charbon à partir de déchets agricoles carbonisés.</div>
+        
+      </div>
+    
+    
+      
+        <p>Contexte global</p>
+      
+        <p>Depuis quelques décennies, le Sénégal subit de fortes pressions sur ses ressources naturelles : 42% de la superficie de la forêt sénégalaise a disparu depuis 1960. Une forte croissance démographique, la coupe abusive de bois pour combustibles, des pratiques agricoles non durables et les feux de brousse (350000 ha /an) en sont les principales causes.</p>
+      
+        <p>En conséquences, on assiste à une irrégularité et un retard des pluies ainsi qu'a des sécheresses récurrentes.</p>
+      
+        <p>Situation énergétique du Sénégal</p>
+      
+        <p>Au Sénégal, le bois et le charbon représentent 84% de la consommation énergétique des ménages. A titre d’exemple, les populations utilisent chaque année 58kg de charbon par habitant. Cette consommation encourage la coupe du bois et pèse sur les ressources naturelles du pays.</p>
+      
+        <p>Avantages du Bio-charbon</p>
+      
+        <p>Le bio- Charbon, réalisé à partir de déchets agricoles (tel que la paille, les coques d’arachide ou bien encore la paille de brousse) peut remplacer le charbon de bois.</p>
+      
+        <p>Il offre des avantages aussi bien au niveau écologique qu'économique et sociétal :</p>
+      
+        <p>En effet sur le plan économique, bien qu’une consommation légèrement supérieure au charbon de bois soit nécessaire, il est plus avantageux pour les familles utilisatrices. Dans la région de Kaolak, il se vend 150 CFA le kilo contre 250 à 300 CFA le kilo de charbon de bois* (*association NEBEDAY).</p>
+      
+        <p>Sur le plan environnemental, la paille de brousse et les déchets agricoles étant de la biomasse renouvelable, leur valorisation permet la diminution du risque de départ de feux de brousse. Il permet, ainsi, de préserver la forêt et la biodiversité.</p>
+      
+        <p>Enfin, le charbon de paille s’utilisant dans les mêmes conditions que le charbon de bois, il respecte donc les traditions culinaires locales, ce qui permet une rapide appropriation par les populations locales.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Bio_Charbon" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Bio_Charbon</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Résidus agricole : paille</li></ul></li><li>Pour 50 kilo de paille<ul><li>100L Eau</li><li>5.5 kg d'argile</li><li>15 kg de Coques d'arachide broyées</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Fût en métal de 200L transformé en pyrolyseur (pour la carbonisation)</li><li>Pelle</li><li>Rateau</li><li>Masque et gants de protection</li><li>Grand récipient pour les mélanges</li><li>Bache</li><li>Pilon</li><li>Tamis</li><li>Presse</li><li>Claies de séchage</li><li>Empreinte en métal pour standardiser la taille des briquettes</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Discussion</strong><p><strong>Étapes :</strong></p><ol><li>Apportez vos remarques, idées, retours d'expériences ici afin d'améliorer cette lowtech!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fonctionnement</strong><p><strong>Étapes :</strong></p><ol><li>L'étape la plus importante dans la fabrication de briquettes de bio-charbon est la carbonisation.</li><li>Ce processus se déroule au sein d’un carbonisateur, ici réalisé dans un fut métallique. De la biomasse très sèche est introduite dans le fut, elle est ensuite enflammée afin d’atteindre progressivement une température de 400 à 500°C.</li><li>Attention : Le bon déroulement du processus de carbonisation dépendra de la bonne gestion de l’apport en oxygène dans le système : C’est l’oxygène qui permet la réaction de combustion, réaction libératrice d'énergie. Un trop fort apport en oxygène risquerait de bruler la matière première au lieu de produire le charbon souhaité.</li><li>1 - Allumage</li><li>2 - Après allumage, la température monte progressivement jusqu’à 100°C le temps que l’humidité (environ 10%) contenue dans la biomasse s’évapore.</li><li>La température monte ensuite jusqu’à 280°C. Cette phase est dite endothermique, elle a besoin d’énergie pour se dérouler. Cette énergie est apportée par une combustion complète d’une petite partie de la paille du carbonisateur. Plus la paille sera sèche, moins d’énergie sera nécessaire.</li><li>3 - A partir de 280°C, commence la phase de pyrolyse. La paille se décompose en charbon, goudron et autres éléments. Cette réaction est dite exothermique, elle libère de l’énergie. Il faut donc limiter l'apport en oxygène en fermant le carbonisateur afin d'éviter la combustion totale de la paille. La chaleur dégagée par la pyrolyse fait monter la température à 400°C, jusqu'à ce que toute la paille soit réduite en charbon, goudron et autres composés.</li><li>Attention : la qualité du charbon obtenu à 400°C n’est pas optimale (65% de carbone pur). Une température de 500°C permet la production d'un charbon de meilleure qualité (environ 85% de carbone pur). Il faut donc apporter de l’énergie par la combustion d’une partie du charbon créé, afin de monter jusqu’à cette température. Toute la difficulté de la carbonisation est donc de contrôler l’arrivée d’oxygène afin d’assurer la combustion du minimum de charbon possible pour la production de charbon de qualité.</li><li>L'expérience et les essais permettent de maîtriser ce procédé pour un rendement maximum.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Le Carbonisateur</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/d/da/Bio_Charbon_Carbonisateur_1.PNG' alt='Bio Charbon Carbonisateur 1.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/07/Bio_Charbon_Carbonisateur_2.PNG' alt='Bio Charbon Carbonisateur 2.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/91/Bio_Charbon_Carbonisateur_3.PNG' alt='Bio Charbon Carbonisateur 3.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Ouvrir une trappe sur une extrémité (1) d'un fût métallique de 200 L.</li><li>2) Percer de nombreux trous sur l'autre extrémité (2).</li><li>3) Réaliser un couvercle amovible avec cette extrémité (2).</li><li>4) Souder des pieds et poignées pour la manipulation du Carbonisateur, l'extrémité amovible (2) étant le bas du système lors de la carbonisation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Récolte de la paille</strong><p><strong>Étapes :</strong></p><ol><li>Récolter la paille en brousse ou dans les champs après moisson, selon les disponibilités.</li><li>Attention Il est important que la paille soit bien séchée par le soleil avant la récolte.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Remplissage du Carbonisateur</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/2/26/Bio_Charbon_3_charger_paille.PNG' alt='Bio Charbon 3 charger paille.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/89/Bio_Charbon_4_charger_paille_4.PNG/800px-Bio_Charbon_4_charger_paille_4.PNG' alt='Bio Charbon 4 charger paille 4.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0a/Bio_Charbon_5_charger_paille.PNG' alt='Bio Charbon 5 charger paille.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Placer le carbonisateur avec l'extrémité amovible vers le haut.</li><li>2) Placer un cylindre au centre du fût, on peut utiliser un manche d'outil par exemple.</li><li>Remarque Le trou central réalisé à l'aide du cylindre servira à la bonne mise à feu du système.</li><li>3) Remplir de paille en prenant soins de bien tasser.</li><li>4) Retirer le cylindre.</li><li>5) Repositionner le couvercle amovible en vérifiant bien son blocage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Allumage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/9/9b/Bio_Charbon_1_allumage.PNG' alt='Bio Charbon 1 allumage.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e0/Bio_Charbon_2_allumage.PNG' alt='Bio Charbon 2 allumage.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2c/Bio_Charbon_3_allumage.PNG' alt='Bio Charbon 3 allumage.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/75/Bio_Charbon_4_allumage.PNG/800px-Bio_Charbon_4_allumage.PNG' alt='Bio Charbon 4 allumage.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Retourner le carbonisateur, l'extrémité avec la trappe ouverte doit être vers le haut.</li><li>2) A l'aide d'un râteau, dégager sur le sol une cuvette de terre d'un diamètre légèrement supérieur à celui du carbonisateur. Garder tout autour une couronne de terre.</li><li>3) Positionner le fût au centre de cette cuvette, l'air doit pouvoir circuler sous le carbonisateur.</li><li>Attention Avant l'allumage, s'assurer de travailler dans un endroit très ventilé, en extérieur. Le processus dégage des fumées et gaz.</li><li>4) Allumer la paille par la trappe et laisser ouvert.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Carbonisation</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/8/8c/Bio_Charbon_carbonisation_1.PNG' alt='Bio Charbon carbonisation 1.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/68/Bio_Charbon_carbonisation_2.PNG' alt='Bio Charbon carbonisation 2.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e6/Bio_Charbon_carbonisation_3.PNG' alt='Bio Charbon carbonisation 3.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f0/Bio_Charbon_carbonisation_4.PNG' alt='Bio Charbon carbonisation 4.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Laisser brûler la paille environ 30 minutes jusqu'à ce que la flamme devienne plus claire, avec peu de fumée visible.</li><li>2) Fermer la trappe</li><li>3) Colmater la trappe avec de la terre humide afin d’empêcher l'arrivée d'oxygène.</li><li>4) Rabattre la terre sur la base du fût afin d’empêcher l'entrée d'oxygène par le bas.</li><li>5) Laisser fermé pendant 15 minutes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Premier mélange</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/4/4e/Bio_Charbon_premier_melange_1.PNG' alt='Bio Charbon premier melange 1.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d1/Bio_Charbon_premier_melange_2.PNG' alt='Bio Charbon premier melange 2.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/3e/Bio_Charbon_premier_melange_3.PNG' alt='Bio Charbon premier melange 3.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Bio_Charbon_premier_melange_4.PNG/800px-Bio_Charbon_premier_melange_4.PNG' alt='Bio Charbon premier melange 4.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/67/Bio_Charbon_premier_melange_5.PNG/800px-Bio_Charbon_premier_melange_5.PNG' alt='Bio Charbon premier melange 5.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Ouvrir le carbonisateur et le vider dans un récipient.</li><li>Attention Travailler avec des gants et lunettes de protection, le fût est très chaud.</li><li>2) Pour 20kg de matière carbonisée (poussier), ajouter 20 L d'eau et 4 kilo d'argile.</li><li>3) Bien mélanger à l'aide d'un râteau.</li><li>4) Récolter le mélange en l'égouttant correctement.</li><li>5) Étendre sur une bâche pour faire sécher le mélange au soleil.</li><li>6) Stocker le poussier sec à l'abris de l'humidité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Deuxième mélange</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/8/8d/Bio_Charbon_deuxieme_melange_1.PNG' alt='Bio Charbon deuxieme melange 1.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/66/Bio_Charbon_deuxieme_melange_2.PNG' alt='Bio Charbon deuxieme melange 2.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f3/Bio_Charbon_deuxieme_melange_3.PNG' alt='Bio Charbon deuxieme melange 3.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Bio_Charbon_deuxieme_melange_4.PNG/800px-Bio_Charbon_deuxieme_melange_4.PNG' alt='Bio Charbon deuxieme melange 4.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/82/Bio_Charbon_deuxieme_melange_5.PNG/800px-Bio_Charbon_deuxieme_melange_5.PNG' alt='Bio Charbon deuxieme melange 5.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Bio_Charbon_deuxieme_melange_6.PNG/800px-Bio_Charbon_deuxieme_melange_6.PNG' alt='Bio Charbon deuxieme melange 6.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le poussier ne peut être utilisé tel quel pour faire des briquettes, on lui applique un second mélange :</li><li>1) Étendre une bâche au sol.</li><li>2) Préparer sur la bâche 50 kg de poussier sec issus du mélange précédent.</li><li>3) Pour 50 kg de poussier, peser et préparer 15 kg de coques d'arachide broyées.</li><li>4) Peser et préparer 1.5 kg d'argile pilée et tamisée.</li><li>Remarque 1 La coque d'arachide broyée, non carbonisée, permet à la briquette d'être plus puissante, notamment à l'allumage. L'argile sert de liant.</li><li>5) Incorporer l'argile à la coque d'arachide en prenant soins d'homogénéiser le mélange.</li><li>Remarque 2 Pour rendre le mélange argile/arachide/poussier homogène, étaler l'un des ingrédients au sol, disposer le second par dessus. A l'aide d'une pelle, rabattre le mélange par petites pelletées, d'abord vers l'extérieur puis vers l'intérieur.</li><li>6) Incorporer le mélange argile/arachide au poussier, en prenant soins d'homogénéiser le mélange.</li><li>7) Mettre le mélange dans un récipient et y ajouter 50 L d'eau tout en mélangeant.</li><li>8) Réaliser le test de bonne proportion du mélange: Faire une boule avec les mains puis la lâcher d'1 m de hauteur. La boule doit se tenir. Si elle se casse, il n'y a pas assez d'eau, si elle s'écrase de façon importante, il y a trop d'eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Pressage</strong><p><strong>Étapes :</strong></p><ol><li>Remarque Il existe de nombreux types de presses, de très accessibles d'autres plus complexes et coûteuses comme les presses à vis sans fin utilisées ici. Celle-ci a un réel avantage quand il y a accès à l’électricité. Sinon des presses manuelles plus simples sont préférables pour réduire la pénibilité du travail.</li><li>1) Une fois la presse en action, insérer le mélange au fur et à mesure.</li><li>2) Extruder les briquettes à la longueur souhaitée (ici 20 cm).</li><li>3) Disposer les briquettes sur des claies de séchage.</li><li>4) A l'aide de l'empreinte, couper les bords des briquettes afin de standardiser le format à la longueur voulue.</li><li>Attention L'utilisation des presses à vis sans fin nécessite une attention particulière pour la sécurité lors de l'approvisionnement en mélange. Il faut au moins 2 personnes pour être efficace: une personne chargée de l'approvisionnement et une personne chargée des briquettes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Séchage et Empaquetage</strong><p><strong>Étapes :</strong></p><ol><li>1) Mettre les claies au soleil durant 3 ou 4 jours le temps que les briquettes sèchent.</li><li>2) Empaqueter les briquettes pour le stockage et la vente.</li><li>Attention Bien protéger les briquettes en cas de pluie.</li><li>Remarque Ici, les briquettes sont empaquetées 2 par 2 dans des sacs de ciments revaloriser.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/5/5b/Bio_Charbon_charbon.JPG' alt='Bio Charbon charbon.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux").</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

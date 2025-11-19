@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Electric Projection Screen Lost Remote Mod</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Electric Projection Screen Lost Remote Mod</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FNW/GDLR/KYK4O7VN/FNWGDLRKYK4O7VN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>I bought a electric projection screen for my new LCD projector. Together they provide a new large screen viewing experience to watching streaming movies, videos and documentaries. When I was moving to a new apartment the remote control for the projection screen, which automatically lowers and raises the screen, got lost and from then on I would have to physically use the alternate main control master switch near the screen to lower and raise it. But the convenience of not having to do this was not lost. So I finally figured out a easy solution utilizing a robot push button device and a simple 3D printed mechanism to replace the lost remote control. So now, not only can I control the screen from my smartphone app, but also via voice commands utilizing Alexa devices.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>A Switchbot</li><li>Included .stl files</li><li>A good glue for plastic</li><li>A electric projection screen</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Print Out and Assemble the Rocker Switch and Base.</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FWO/G676/KYK4O7UB/FWOG676KYK4O7UB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print Out and Assemble the Rocker Switch and Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPI/I4VN/KYK4O7UE/FPII4VNKYK4O7UE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print Out and Assemble the Rocker Switch and Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNG/9XA4/KYK4O7UM/FNG9XA4KYK4O7UM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print Out and Assemble the Rocker Switch and Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWO/G676/KYK4O7UB/FWOG676KYK4O7UB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print Out and Assemble the Rocker Switch and Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPI/I4VN/KYK4O7UE/FPII4VNKYK4O7UE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print Out and Assemble the Rocker Switch and Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNG/9XA4/KYK4O7UM/FNG9XA4KYK4O7UM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print Out and Assemble the Rocker Switch and Base.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The device is very simple. It is basically a seesaw, like the one in the playground, that transmits the movement from the robot push button device to depress the UP or Down screen control buttons on the main control box.</li><li>The base for the device has holes to allow a protrusion to depress the buttons. Push in one direction depresses one button and pull the rocker bar in the opposite direction depresses the other button while releasing the first.</li><li>Assemble it with a good plastic glue after putting the rocker's pegs through the support holes, then glue the supports onto the base.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Affix the Robot Push Button Device to the Base.</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FRM/KMOX/KYK4O7VB/FRMKMOXKYK4O7VB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Robot Push Button Device to the Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F4I/10A8/KYK4O7UU/F4I10A8KYK4O7UU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Robot Push Button Device to the Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRM/KMOX/KYK4O7VB/FRMKMOXKYK4O7VB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Robot Push Button Device to the Base.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F4I/10A8/KYK4O7UU/F4I10A8KYK4O7UU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Robot Push Button Device to the Base.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Since the result desired is to utilize a single robot push button device to both raise and lower the screen, the device's "Wall Switch Add-On Mode" for wall light rocker switches will have to be initialized in the app and the little arm will pop out and stay there.</li><li>Use one of the device's double stick mounting stickers to securely mount it to the raised portion of the 3D printed base. Ensure that the lowered robot push button device's arm can swing freely without jamming against the rocker arm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Affix the Add-on Straps to the Device.</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FPM/QF5G/KYK4O7UO/FPMQF5GKYK4O7UO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS2/74M0/KYK4O7UW/FS274M0KYK4O7UW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHZ/I4HX/KYK4O7UX/FHZI4HXKYK4O7UX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGU/86NS/KYK4O7UT/FGU86NSKYK4O7UT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPM/QF5G/KYK4O7UO/FPMQF5GKYK4O7UO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS2/74M0/KYK4O7UW/FS274M0KYK4O7UW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHZ/I4HX/KYK4O7UX/FHZI4HXKYK4O7UX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGU/86NS/KYK4O7UT/FGU86NSKYK4O7UT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Add-on Straps to the Device.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Insert the fishing line loop into the hole in the robot push button device's arm and then peel off the double-stick tape film and carefully attach it to rocker arm. But first try this without removing the tape's film to test the best location while operating the function via your smartphone's SmartBot app. When satisfied secure it and then proceed to the next step.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Affix the Device to the Main Control Box.</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FGM/USC5/KYK4O7UY/FGMUSC5KYK4O7UY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBA/SM3U/KYK4O7VD/FBASM3UKYK4O7VD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGF/GA5P/KYK4O7VE/FGFGA5PKYK4O7VE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGX/NK4W/KYK4O7VF/FGXNK4WKYK4O7VF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGM/USC5/KYK4O7UY/FGMUSC5KYK4O7UY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBA/SM3U/KYK4O7VD/FBASM3UKYK4O7VD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGF/GA5P/KYK4O7VE/FGFGA5PKYK4O7VE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGX/NK4W/KYK4O7VF/FGXNK4WKYK4O7VF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Affix the Device to the Main Control Box.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Find the main control box wired to the projection screen and align the device's holes over each UP/DOWN buttons. Hold firmly while giving commands, via the app, to lower and raise the screen. This will give you the proper placement of the device to ensure good operation. When satisfied apply a bead of adhesive to the edge and hold, tape down or clamp it until glue sets well. You can use hot-melt glue to tack the device in place while the glue dries but don't rely on hot-melt glue alone as it will fail.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Open App and Remotely Operate Your Screen/bot.</strong><div class='step-images count-12'><figure><img src='https://content.instructables.com/FKJ/RULR/KYK4OHPZ/FKJRULRKYK4OHPZ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F07/KUI1/KYK4O7V6/F07KUI1KYK4O7V6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRV/C1F8/KYK4O7VL/FRVC1F8KYK4O7VL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FT9/J66Y/KYK4O7VI/FT9J66YKYK4O7VI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7V/7Z4Q/KYK4O7VM/F7V7Z4QKYK4O7VM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGG/M820/KYK4O7VC/FGGM820KYK4O7VC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKJ/RULR/KYK4OHPZ/FKJRULRKYK4OHPZ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F07/KUI1/KYK4O7V6/F07KUI1KYK4O7V6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRV/C1F8/KYK4O7VL/FRVC1F8KYK4O7VL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FT9/J66Y/KYK4O7VI/FT9J66YKYK4O7VI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7V/7Z4Q/KYK4O7VM/F7V7Z4QKYK4O7VM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGG/M820/KYK4O7VC/FGGM820KYK4O7VC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Open App and Remotely Operate Your Screen/bot.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Open the app on your smartphone and initialize the robot push button device via bluetooth. And then acquaint yourself with which button is ON and OFF for LOWER and RAISE. If you get the SwitchBot Mini Hub you can contol this with your voice via Alexa SmartHome and other services.</li><li>Enjoy,</li><li>E.D.M.</li><li>to my generous patrons</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

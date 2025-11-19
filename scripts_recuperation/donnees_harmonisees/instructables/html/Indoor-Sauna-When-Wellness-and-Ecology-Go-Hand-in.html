@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Indoor Sauna, When Wellness and Ecology Go Hand in Hand</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Indoor Sauna, When Wellness and Ecology Go Hand in Hand</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FHY/QVHY/LS7IJFHP/FHYQVHYLS7IJFHP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Now you may wonder: Why ecology? This project is the result of several facts I came across:</p>
+      
+        <p>Are sauna energetically inefficient?</p>
+      
+        <p>According to this article an average American shower uses 17.2 gallons (65.1 liters) and lasts for 8.2 minutes at average flow rate of 2.1 gallons per minute (gpm) (7.9 lpm). It is close to what I observe for myself. If we need to warm 61liter of water from 5 to 30 degrees, it requires (4180 x 25 x 61) 6.37 mega joules which is 1.77 kWh.</p>
+      
+        <p>The heater I installed in my sauna has a power of 3.5 kW and it takes about 30 minutes to reach 70 degrees. So the minimum energy required to take a sauna is 3.5 x 0.5 = 1.75 kWh. After my session I just rinse myself with cold water for 10 seconds.</p>
+      
+        <p>Is the conclusion that sauna and showers use the same energy? Well, no. Because the water in a shower stays 2 seconds on your skin and disappear in the pipe while the energy of the sauna dissipate slowly and warm the house.</p>
+      
+        <p>Now that you are convinced, let's build one:</p>
+      
+        <p>Ground area : 2 x 1.3 m Height: 2m</p>
+      
+        <p><ul><li>In my region in France water-saving measures have been adopted after the drought that hits Europe these last years.</li><li>We take showers (or bath) to wash ourselves but not only. We also take showers to warm up, to wake up, to relax etc. A sauna can also make this.</li><li>Some remote places in Siberia and in Scandinavia use sauna for hygiene and wellness when there is no running water.</li></ul></p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>30 Cleats: 30 x 60 x 2000 mm</li><li>Pannels: thickness 9 mm (some people prefer 12 mm)</li><li>Baseboards for inner angles and for the panels bottom</li><li>9 Boards: 100 x 20 x 2000 mm</li><li>Material :</li><li>-Wood</li><li>I bought fir tree even though people say that cedar or hemlock would last longer. I just went for the cheapest.</li><li>The cleat width should be the same size of slightly larger than the insulation width.</li><li>-Insulation</li><li>Normally glass wool and vapour barrier are used together but I found a material that has insulation and vapour barrier together (and really good insulation properties). Also I thought it would be easier to put in place a solid material rather that flexible wool. Now I am not sure with this choice because was not that quick to assemble it and tape. Moreover glass wool do not burn. There is also insulating tape (aluminium).</li><li>-Screw</li><li>a bunch of little nails for the panels and screws to assemble the cleat with metallic corners.</li><li>-Door</li><li>I ordered a special sauna door that can handle the high temperature</li><li>-Heater (Harvía vega compact 3.5kW)</li><li>I am at the maximum volume that this heater can heat but in the end I am happy with the result. I heats fast enough although I never tried to go above 80 Celsius. (It works probably because it is an indoor sauna). Also it has the advantage to draw 16 amps which is the limit for 2.5 mm2 cross section electrical wire (that I had).</li><li>A special electrical wire has been used (2 m). This wire can handle 300 degrees Celsius. Ensure the wire diameter (or cross section area) is large enough for your heater power.</li><li>Tools :</li><li>-Mitre saw (not necessary but it helps. I borrowed one to a friend and give him back before I finished so I had to finishe with a hand saw and it was ok, it is possible for a small project like this one.)</li><li>-Hammer</li><li>-Measuring tool</li><li>-Drill</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Foundations</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FH3/5I4P/LSG36K5X/FH35I4PLSG36K5X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Foundations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPR/WB0O/LSG36K69/FPRWB0OLSG36K69.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Foundations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FH3/5I4P/LSG36K5X/FH35I4PLSG36K5X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Foundations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPR/WB0O/LSG36K69/FPRWB0OLSG36K69.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Foundations' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Find a place in your bathroom large enough. My insulation panels are 60 cm width. I have three of them on the width and two of them on the depth. So it is a bit more than 1.8 x 1.2 m (inside the sauna). Secure the structure with the metallic angles and screws.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Insulation and Panels</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FMK/A27V/LSG36L7W/FMKA27VLSG36L7W.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Insulation and Panels' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMK/A27V/LSG36L7W/FMKA27VLSG36L7W.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Insulation and Panels' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Once all the insulation are between each cleat, tape all the junctions to make it air sealed (this prevent moisture to escape the sauna). Then nail the wood panels. I used a big nail to push the small nails in the slits and hide them. Avoid visible metallic parts, this can cause skin burn.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Attach the Door and the Heater</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FZW/GJJE/LSG36M74/FZWGJJELSG36M74.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Door and the Heater' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSA/Q8L0/LSG36O94/FSAQ8L0LSG36O94.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Door and the Heater' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTJ/W3NZ/LSG36MNT/FTJW3NZLSG36MNT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Door and the Heater' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZW/GJJE/LSG36M74/FZWGJJELSG36M74.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Door and the Heater' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSA/Q8L0/LSG36O94/FSAQ8L0LSG36O94.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Door and the Heater' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTJ/W3NZ/LSG36MNT/FTJW3NZLSG36MNT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Door and the Heater' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now add the door. This door is heavy and my structure is light so I used the metallic angle on both sides of the lumbers to secure it. Make sure that the frame stays parallel and at 90 degrees so that the door closes tightly.</li><li>As the door, the heater requires a special care about the supporting structure. The heater is filled with stones so it is heavy. As for the door, make sure to use enough screws and metal angles to hold everything firmly. Also it is time to connect the special electrical wire (hot temperature proof) and ensure that the heater works (before you close the wall).</li><li>Then finish the front insulation and wood panels the same way as before. A ventilation hole can be added on the bottom and on the top to renew the air. I have a 3 cm gap under the door for inlet. Normally another hole should be added above for outlet but I don't feel the need now.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Build the Bench</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FB4/349S/LSG36O6S/FB4349SLSG36O6S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build the Bench' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUJ/VBFG/LSG36O7F/FUJVBFGLSG36O7F.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build the Bench' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTO/A87C/LSG36O85/FTOA87CLSG36O85.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build the Bench' loading='lazy'></figure><figure><img src='https://content.instructables.com/FB4/349S/LSG36O6S/FB4349SLSG36O6S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build the Bench' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUJ/VBFG/LSG36O7F/FUJVBFGLSG36O7F.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build the Bench' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTO/A87C/LSG36O85/FTOA87CLSG36O85.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build the Bench' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The bench allows us to stay up in the warmest part. Ensure to have a bit of room above your head when you sit (15 cm min). The bench width is 60 cm so that I can lay on my back when I am alone.</li><li>The footboard allows to put the feet comfortably when you sit on the bench. It has a width of 30 cm (size of my foot).</li><li>Avoid metallic part on the bench. Screw from under (cf. image 3). The bench and footboard are not supported by the walls (they have their own legs) but the bench is secured to the wall with two srews to prevent any move.</li><li>That's it!</li><li>After all this work just relax. I don't need to mention all the health benefits of regular sauna bathing like<ul><li>Improved imunity</li><li>Glowy skin</li><li>Lower stress</li><li>Improved circulation</li><li>Improved sleep</li><li>Lower wood pressure</li><li>Less inflammations</li><li>Burn calories</li><li>Flush toxins</li><li>Promote social interactions (yes In Scandinavia and Russia people speak, laugh and make noise in saunas, you are not in a church)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Installation Biogaz autoconstruite</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Installation Biogaz autoconstruite</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/1/19/Installation_Biogaz_autoconstruite_N1.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Installation d'un bio digesteur de taille intermédiaire pour rendre une ferme autonome en énergie (1m3 de biogaz par heure)</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce document est une version raccourci du document PDF joint, publié par Jean-Philippe Valla.</p>
+      
+        <p>Il décrit comment mettre en place une installation biogaz de taille intermédiaire. Le projet qu'il présente permet de produire environ 1m3/h de biogaz. Pour info, 1m3 de biogaz = 7kWh = 0,7l de diesel = 2,7 kg de bois. 10kg de matière organique équivaut à environ 1L d'essence, mais produit sur une période de 3 mois. Le biogaz produit pourra être utilisé pour cuisiner/stériliser, se chauffer, faire fonctionner un groupe électrogène et pourquoi pas faire rouler un véhicule équipé GNV. Les modifications sur les tracteurs autant essence que diesel sont possibles. D'une manière plus générale, on obtient du gaz et tout ce qui se fait avec le gaz de ville/butane/propane peut être aussi fait avec le biogaz moyennant quelques menus modifications. On peut même faire du froid avec le gaz !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very hard Très difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 month(s) mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 6000 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Installation_Biogaz_autoconstruite" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Installation_Biogaz_autoconstruite</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Ferraille + Moellons Ciment Mélange béton Regards Isolation Bache EPDM Profilé-Seeger Enduit étanche 2 Poubelles plastiques de 100L bois de coffrage Tubes PVC tuyaux de jardinage Pompe</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Tractopelle Bétonneuse Serre-joints</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Présentation du projet</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/9/95/Installation_Biogaz_autoconstruite_introduction.png' alt='Installation Biogaz autoconstruite introduction.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cet équipement représente 2 cuves de 30m3 accolées l'une à l'autre, utilisés en mode discontinu, dans lesquels seront placés du fumier de mouton et des déchets végétaux issus du broyage de branchages/herbes. En fait, il y a un voisin qui lui amène du fumier bovin car il sort son fumier de mouton 1 fois/an en juin.</li><li>Ces cuves s'accompagnent d'un système de pompage pour faire circuler le liquide, brasser et réchauffer le mélange.</li><li>Enfin le gaz obtenue a la composition approximative suivante : 55% méthane, 40% CO2 et 5% d'autres gaz (1% de H2S dont il faut absolument se séparer)</li><li>La purification du biogaz (enlever le CO2) est indispensable pour l'utiliser dans des moteurs (alternateur ou voiture) et ne sera pas étudié ici.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Creuser la fosse</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/4/4d/Installation_Biogaz_autoconstruite_Creuserlafosse1.png' alt='Installation Biogaz autoconstruite Creuserlafosse1.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tout commence par 2 cuves de 30m3 creusées dans le sol qui recevra les matières organiques et sera fermée de façon étanche pour démarrer une digestion anaérobie et permettre aux bactéries méthanogènes de se développer. On commence par creuser un gros trou dans le sol. Vous voyez donc sur cette photo le tracto creusant un trou de 4x7m sur 4m de profond. Les 2 cuves accolées font 3x6m, ça laisse un peu de place pour monter les murs en moellons banchés et mettre ensuite de l'isolant. Il a réservé aussi en haut à gauche sur la photo, un regard qui va permettre de puiser le jus au fond des cuves pour le mélange.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Couler la dalle et monter les murs</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/c3/Installation_Biogaz_autoconstruite_monterlesmurs.png' alt='Installation Biogaz autoconstruite monterlesmurs.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ensuite on coule une dalle (camion toupie pour les fainéants comme moi) après avoir ferraillé le sol, renforcer la ferraille sous les murs. Faites comme si c'était une cuve à eau pour le calcul des ferrailles.</li><li>On monte ensuite les murs avec des moellons banchés (moellons creux qui seront remplis ultérieurement de béton). Les murs doivent faire 3m de haut soit environ 15 moellons. Dans la première série de moellons, faites deux trous d'un peu plus de 100mm de diamètre pour la connexion vers le regard. Glissez-y ensuite un tube PVC (d'une longueur de 50cm ) dans chaque trou afin de faire communiquer chaque cuve avec le regard. On monte 3-4 rangées et on remplit de béton, il faut ferrailler à chaque niveau (ou moins) en horizontal. Le dernier niveau est un peu particulier car il va recevoir un profilé plastique dans lequel sera inséré la bâche en EPDM qui fait l'étanchéité supérieure. Et l'étanchéité dans les murs ? Banché pas étanche, voilà ma conclusion. J'ai du passer 2 couches de lancofuge (marque lanco) mais je suppose qu'il y en a plein d'autres. C'est comme un ciment qu'on met à la brosse de partout pour boucher les microtrous.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Étanchéité avec la bâche</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Installation_Biogaz_autoconstruite_Etancheit_.png/800px-Installation_Biogaz_autoconstruite_Etancheit_.png' alt='Installation Biogaz autoconstruite Etancheit .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour obtenir une connexion étanche avec la bâche en EPDM, il a utilisé les profilés dans lesquels il vient coincer la bâche grâce à une chambre à air (3bars).</li><li>Les profilés sont scellés avec les moellons grâce au coffrage que l'on voit sur les photos ci-contre</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Mélangeur et réchauffeur du jus</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ee/Installation_Biogaz_autoconstruite_Jus.png/800px-Installation_Biogaz_autoconstruite_Jus.png' alt='Installation Biogaz autoconstruite Jus.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Entre 5 et 50% de la cuve doit être brassé quotidiennement (d'après les prospros). Il est nécessaire de mélanger le contenu des cuves pour uniformiser les bactéries et la température et éviter qu'une croûte bloque le passage du gaz vers le haut (surtout pour des digestions en mode continu). Lorsque le méthanisation fonctionne, les cuves sont remplies de matière organique, elle-même noyée au ¾ dans de l'eau (3/4 d'eau). Attention si il y a trop d'eau, la matière organique risque de remonter. Cette eau (jus) est filtrée puis pompée dans la partie basse du regard puis diffusée ensuite dans les cuves via un circuit de tubes perforées (aspersoirs).</li><li>Pour mélanger la cuve on utilisera une pompe inox supportant les eaux chargées. Ceci dit il faudra quand même filtrer le liquide avant qu'il soit absorbé par la pompe. Ce filtre sera composé de 2 poubelles noires de 100l bon marché et d'un peu de paille. Elles sont imbriquées l'une dans l'autre, séparées par de la paille pour en faire un filtre.</li><li>Enfin le liquide chaud est aspergé par le dessus comme le montre la photo.</li><li>Pour réchauffer le jus, plusieurs méthodes peuvent être utilisées : chauffe-eau solaire, utiliser la chaleur dégagé par l'utilisation du gaz, tas de compost en décomposition).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Remplissage de la cuve</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/5/56/Installation_Biogaz_autoconstruite_Remplissage_de_la_cuve.png' alt='Installation Biogaz autoconstruite Remplissage de la cuve.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On peut y mettre n'importe quelle matière organique. L'important est que la matière soit broyée le plus finement possible (passer la matière dans un broyeur à végétaux par exemple).Il faut vraiment du petit gabarit, les bactéries n'ont que très peu de surface à grignoter sinon.</li><li>La matière organique doit arriver juste en dessous des tuyaux PVC qui entrent dans la cuve.</li><li>On y ajoute l'eau qui doit noyer la matière organique jusqu'au ¾ de la cuve environ. Soyez malin, surtout en hiver, mettez de l'eau chaude !</li><li>NB : lors du démarrage, c'est à dire le 1er remplissage des cuves, il est préférable de mettre un peu de fumier de vache (ruminants de manière générale), qui a la particularité d'être très riche en bactéries méthanogènes.</li><li>On peut aussi utiliser comme ferment un vieux fumier, de la boue de mare ou faire comme les indiens : faire fermenter de la bouse enterrée. Avant de fermer, il est bon de laisser chauffer la MO dans la cuve en mode aérobie pour qu'elle se réchauffe, jusqu'à 60° c'est pas mal, on emmagasine pas mal de chaleur pour démarrer.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Vider la cuve</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/a/af/Installation_Biogaz_autoconstruite_vidercuve.png' alt='Installation Biogaz autoconstruite vidercuve.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Et brave gens, l'immense problème de la méthanisation est là : la vidage des cuves.</li><li>L'idéal est une griffe à fumier montée sur la rétro du tracto ou mieux sur un système maison que vous inventerez. Une piste : il y a longtemps un gars avait bricolé comme une petite grue pour vider sa cuve dans une remorque avec un moteur et un câble et une griffe a fumier au bout, actionné avec un bras, comme un balancier équilibré pour que cela ne soit pas fatiguant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Filtrer le H2S</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/c0/Installation_Biogaz_autoconstruite_H2S.png' alt='Installation Biogaz autoconstruite H2S.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le biogaz comporte quelques % d'H2S, gaz autant toxique pour l'homme que pour les machines. Il faut à tout prix l'enlever. Il existe plusieurs solutions. On peut injecter un peu d'air dans la cuve avec une pompe d'aquarium, le risque étant de mettre trop d'air et de rendre le gaz explosif. Pas la bonne solution pour des paysans en quête d'autonomie et disposant de peu de moyens d'analyses et de contrôles. Mieux : faire un filtre composé de copeaux de bois et de copeaux d'acier rouillé. Les copeaux de bois n'entrent pas réellement dans l'équation mais maintiennent une ambiance humide favorable aux réactions chimiques mais surtout les oxydes de fer s’imprègnent dans le bois entraînant une plus grande surface d'échange. Concrètement, vous prenez un tuyau PVC de ø110 de 2m de haut que vous remplissez à part égale de cette mixture (1/3 copeaux de bois et 2/3 de copeaux d'acier rouillé au pif). Vous bricolez une entrée en bas et une sortie en haut pour PEHD ø25 (avec raccord).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Utilisation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/d/d5/Installation_Biogaz_autoconstruite_utilisation.png' alt='Installation Biogaz autoconstruite utilisation.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cuisiner : Il est simple de modifier une cuisinière pour l'utiliser avec du biogaz. Enlever simplement les gicleurs de gaz (ceux en laiton qu'on change entre butane/propane/GNV) Jouez sur l'apport d'air prévu sur les cuisinières, juste après le gicleur, pour avoir une belle flamme bleue. Pour que cela marche il faut aussi un minimum de pression : entre 10 et 20 mbars. La cuve sort un gaz à 1 ou 2 mbars, il faut donc compresser un peu pour atteindre 10-20 mbars.</li><li>Se chauffer : Le biogaz arrive sans H2S. Il suffit ici de faire un trou au bas de son poêle, d'y placer un tuyau en acier. il a mis un T en acier au bout pour mieux répartir le gaz dans le poêle. Il s'en sert en appoint pour démarrer le feu directement avec des grosses bûches ou si beaucoup de gaz pur, sans bois. Mettre un robinet de plomberie pour ouvrir/fermer l'arrivée du gaz. Toutes les tuyauteries de transport du gaz sont en PEHD ou PVC pression (pour la solidité, pas la pression). On a intérêt à dégazer dans le poêle même si le gaz n'est pas encore super combustible, le CO2 ne brûlera pas mais le méthane, si, même en petite quantité. C'est bien l'hiver ! Notez que le 1er gaz de cuve à faible teneur en méthane est très difficilement brûlable dans une cuisinière, la flamme ne tient pas. Dans le poêle, c'est chaud, il y a du bois avec de la flamme qui rallume constamment le gaz (qui ne tient pas allumé seul). Faites gaffe de garder une longueur de métal avant votre tuyau plastique, la chaleur se propageant finirait par fondre le tuyau plastique. Autre possibilité, souder des ailettes sur le tuyau métal pour évacuer la chaleur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Conclusion</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/ce/Installation_Biogaz_autoconstruite_CorteX_Biogaz_Valla.jpg' alt='Installation Biogaz autoconstruite CorteX Biogaz Valla.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette présentation est un résumé de l’expérience de Jean-Philippe Valla en 2013 sur son exploitation. Si vous voulez avoir plus de détails, le pdf de Jean-Philippe est disponible en références. Il a aussi publié un livre sur le sujet dont les référencessont également fournies.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

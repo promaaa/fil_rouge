@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Make an "About Me" Website!</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Make an "About Me" Website!</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F70/JYYL/L1W5NWW5/F70JYYLL1W5NWW5.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Hi! I'm Mez, a doctoral student at the University of Michigan School of Information. I want to talk about finding inspiration for telling people about your research aims, projects, and other things that you might want people to know about you as a researcher/person!</p>
+      
+        <p>This instructable was sparked by a class I'm taking in Digital Discourse & Interaction, taught by the wonderful Dr. Ebony Elizabeth Thomas, and in close conversation with monét cooper and Cat Ventura. By the end of this instructable, you will have a toolset to start your journey of translating parts of you and your work to the world! This builds not only on theory, but practical advice from others (who are highlighted as we go along). I frame this in the world of research/grad school/academia, but it can probably be adapted to other worlds as well!</p>
+      
+        <p>Here is an example of my website, so you know what to expect while getting started! There is a lot more to share, but I wanted to go for short and simple, and let my social media be part of telling my story. Including Instructables I've made for personal and research work!</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Website building platform (squarespace, adobe spark, wix, …)</li><li>OR something that provides a one page of your interest, like carrd</li><li>Personal domain (your [insert name here] . com)</li><li>Blog (Tumblr, Wordpress, Instructable, ... )</li><li>Social Media (Twitter, Facebook, Instagram, ...)</li><li>You will mostly need digital tools, but you DO NOT need ALL of these things! Mainly these are places you can choose from to build one out in-depth, or make a collection of them to tell a fuller story.</li><li>While following the first 3 steps, you may want to have a pencil/pen and paper around to write down your responses. Not required if you are fine with writing on a digital document!</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Who Is Your Audience?</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FRK/KQ44/L1W5O05E/FRKKQ44L1W5O05E.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Who Is Your Audience?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FK1/7NSY/L1W5O18X/FK17NSYL1W5O18X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Who Is Your Audience?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRK/KQ44/L1W5O05E/FRKKQ44L1W5O05E.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Who Is Your Audience?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FK1/7NSY/L1W5O18X/FK17NSYL1W5O18X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Who Is Your Audience?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>So, you've decided to make an "about me" website. Nice! There is a few things that you may want to consider as you start putting it together. One of the first things is figuring out who you are telling about yourself. In the case of an academic website, you may be talking to students (graduate and undergraduate), professors, community partners, grant funders, etc..</li><li>So some essentials you will want to have are:</li><li>Equally as important though are the people outside of this core circle you may imagine seeing/needing your website, such as your family, friends, community members, people who are looking for something that you do (such as the type of research, a service, etc.). You'll want to have something for them too!</li><li>Since I wanted to keep it simple, my header photo is a picture of a place in my community that I love: a corner in my neighborhood with a cluster of palm trees. It's simple, but I have it up first with my name which is meant to communicate how front and center it is for me. (this is the picture in the description!)</li><li>So, answering these few questions will help with communicating other parts of yourself that you may want these people to see. Feel free to grab a pencil and paper, answer in your head, or on an online document!</li><li>You should answer these questions for yourself, but in the next step you can figure out what you actually want to share. Since a website can be seen by multiple people, you may not want to have all of this out there all the time.</li><li>Side note: If you have any suggestions for things to include here, let me know in the comments and I'll be sure to give you a credit!<ul><li>Contact info (email, social media, and/or possibly even a contact form)</li><li>Your CV (example of this here, in case you need help putting one together)</li><li>A short bio</li><li>What are things you do that you want people to contact you about?</li><li>for example, you may be a consultant, or offer a type of service. You may also be an artist that is trying to share their work!</li><li>What locale do you work out of? Do you have more than one? Are you open to people contacting you about that?</li><li>Do you have social media that you want to highlight? Is that the best place to contact you?</li><li>Do you have people that you want to speak directly to? (i.e. you have a specific note for students in your class, or people who are trying to reach you for something specific)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: What Do You Want to Share?</strong><p><strong>Étapes :</strong></p><ol><li>A good starting place for this part is from a recent article by one of my faves, JP Brammer. In his column, he responds to people who write in with questions about life, and in this particular one he is talking to someone who is wondering how to be "more online." He concludes:</li><li>This quote reminds me that, although your digital presence may be an important part of how you present yourself, and though you may be putting a lot of yourself out there, you should not let what other people are going to think of it be the main thing that you care about when making it.</li><li>We can think about this another way: you can refuse to include information (data) about yourself that you feel may perpetuate harmful practices, or is not true to you and what you stand for.</li><li>Ultimately, how and what you tell of your story is entirely up to you. In place of the things I recommended in the previous step, you may want to include all or none of it in favor of something I didn't mention! If you decide a bio is something you want to include, there are some very helpful guides on that here, those these definitely lean more traditional professional. Many people find that one short bio cannot even begin to contain who they are and what they do, and opt for sharing in lots of little places along their site (like Anna!).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Sharing It With the World!</strong><p><strong>Étapes :</strong></p><ol><li>Once you have a good draft of what you want, you will want to publish! This step will depend on what platform you use, but you will want to make sure that you keep a few things in mind when you think about the presentation.</li><li>First and foremost, you want to make sure that anyone who visits your site will be able to get useful information from it. This means that your site should allow for screen readers to be used, and that you pick colors/text that can create an easily readable page. Try this tool for your site to make sure that you are on the right track!</li><li>Once you have that figured out, you can publish!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Inspiration</strong><p><strong>Étapes :</strong></p><ol><li>Feeling stuck? These are the websites I look to, of people who I know and care about. They also exhibit a range of storytelling, with some who share recent news, or blog posts, and some who keep it simple.</li><li>Laura-Ann Jacobs</li><li>monét cooper</li><li>Cat Ventura</li><li>Anna Almore</li><li>Anubha Singh</li><li>Sarah P. Lee</li><li>Stephanie T. Jones</li><li>Daniel Delmonaco</li><li>Han Na Shin</li><li>Mia Shaw</li><li>Gayithri Jayathirtha</li><li>You also might want to consider looking up your own friends'/colleagues' websites! Remember, this is not about comparing yourself to anyone, it is about how you want to tell your story. Or part of it anyway!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

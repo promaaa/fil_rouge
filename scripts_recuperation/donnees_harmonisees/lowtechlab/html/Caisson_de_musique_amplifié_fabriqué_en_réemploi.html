@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Caisson de musique amplifié fabriqué en réemploi</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Caisson de musique amplifié fabriqué en réemploi</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/ed/Caisson_LowTech_mur_son.jpg/ia-8f6041b215a1e7a006fc791f160b6990-px-Caisson_LowTech_mur_son.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Le Caisson Low Tech vous permettra d’animer vos soirées en respectant une démarche de durabilité et de sobriété.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le Caisson Low-tech est une enceinte amplifiée qui vous permettra d'écouter votre musique via un câble Jack et Bluetooth. Elle est constituée à partir de matériaux récupérés ou recyclés uniquement. L'objectif est de partir de pièces d'enceinte, d'amplificateur, de chaîne Hi-Fi, afin de construire un système d'amplification audio adapté à la sonorisation d'une salle (environ 150 Watts), d'après une démarche Low-Tech et durable.</p>
+      
+        <p>Dans ce tutoriel vous retrouverez toutes les étapes de réalisation ainsi que les informations qui vous permettront de récupérer les matériaux et pièces nécessaires. Bien entendu, puisqu'il s'agit de matériel de récupération chaque élément sera unique et aura ses propres caractéristiques techniques. Le caisson que vous obtiendrez aura ses caractéristiques propres, et il vous faudra sûrement adapter les informations de ce tutoriel à votre cas.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 7 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Caisson_de_musique_amplifié_fabriqué_en_réemploi" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Caisson_de_musique_amplifié_fabriqué_en_réemploi</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Planches de bois aggloméré ou contreplaqué (planches idéalement de 18 à 22 mm d'épaisseur et de grandes dimensions)</li><li>Electronique :</li><li>Haut-parleurs : des gros pour les basses et des petits pour les aigus, mais vous pouvez adapter selon vos besoins et selon ce que vous trouvez</li><li>Hauts parleurs choisis : 2 gros haut-parleurs de 25 cm de diamètre (KEF B200 - SP1022), et 2 petits de 10 cm de diamètre (EASTECH FSB512040-)</li><li>1 Ampli audio : L’avantage de l’ampli audio est qu’il contient déjà les filtres spécifiques au traitement de la musique. L'ampli choisi a une impédance minimale de 6 ohms, et c'est un ampli stéréo (avec deux sorties)</li><li>1 Récepteur Bluetooth : Esinkin, avec une sortie RCA et une sortie Jack</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>vis, tournevis, scie sauteuse, colle à bois, peinture, scie à cloche, perceuse</li><li>Station de soudage, multimètre</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récupération des différents éléments</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Caisson_LowTech_Leboncoin-embleme.jpg/800px-Caisson_LowTech_Leboncoin-embleme.jpg' alt='Caisson LowTech Leboncoin-embleme.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/Caisson_LowTech_donnons.org.png/800px-Caisson_LowTech_donnons.org.png' alt='Caisson LowTech donnons.org.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/c1/Caisson_LowTech_emmaus.png' alt='Caisson LowTech emmaus.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>De multiples options de récupération de matériaux s’offrent à vous :<ul><li>Donnons.org (avec le numéro de département)</li><li>Le bon coin</li><li>Groupes Facebook de dons/échanges</li></ul></li><li>Vous pouvez aussi trouver des éléments dans les ressourceries et repairs cafés près de chez vous, à Emmaüs (https://www.label-emmaus.co/fr/), dans des déchetteries, ou dans des magasins d'électroniques, mais nous n'avons pas testé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Récupération des haut-parleurs</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Caisson_LowTech_20240313_111857.jpg/800px-Caisson_LowTech_20240313_111857.jpg' alt='Caisson LowTech 20240313 111857.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il vous faut récupérer des haut-parleurs. Plus les haut-parleurs sont gros, plus ils transmettent bien les basses fréquences. Plus ils sont petits, plus ils transmettent bien les hautes fréquences. Vous pouvez trouver des haut-parleurs dans des chaînes hifi et autres appareils de musique.</li><li>Il est bien plus simple de connaître les références de vos haut-parleurs et amplis, pour éviter de les casser ou de les abîmer, et pour pouvoir les appairer convenablement en terme de puissance et d'impédance. Nous avons récupéré nos haut-parleurs sur des chaînes hifi, mais certaines n'avaient pas d'inscription permettant de retrouver leur référence. Les références sont généralement notées à l'arrière des haut-parleurs, sur la partie métallique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Récupération de l'ampli (et calcul compatibilité)</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/2/29/Caisson_LowTech_ampli.jpg' alt='Caisson LowTech ampli.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/01/Caisson_LowTech_chaine_hifi.jpg' alt='Caisson LowTech chaine hifi.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il faut aussi récupérer un ampli. Il existe des amplis de tout type. Nous recommandons de choisir des amplis de musique, plutôt que des amplis de moteur ou autre. En effet, les amplis de musique sont fait pour transmettre plutôt uniformément toutes les fréquences du spectre auditif. Ce n'est pas le cas avec d'autres amplis qui peuvent avoir un bande passante inadaptée à la transmission de signaux audio. Pour dimensionner l’amplificateur, il faut comprendre comment juger de la bonne compatibilité entre enceintes et amplificateurs selon le rendu désiré mais surtout pour que le produit soit fonctionnel et de qualité.</li><li>Premièrement, la puissance RMS est une norme de référence pour les constructeurs de matériel audio. Elle désigne la puissance moyenne fournie par l’ampli. C’est une notion importante pour en connaître la puissance effective. Cette puissance doit être semblable à celle des hauts parleurs pour obtenir une bonne correspondance. Vous pouvez trouver cette information dans la fiche technique de votre ampli. Les tests pour la trouver expérimentalement consistent à faire fonctionner l'ampli à certaines puissances pendant un certain temps et à voir si l'ampli chauffe trop. Nous ne l'avons pas fait nous même, car nous ne voulions pas endommager notre ampli.</li><li>On parle également de puissance admissible : c’est la puissance maximum acceptable avant d’endommager les hauts parleurs. Si l’ampli est trop puissant et non bridé, on risque de faire fondre la bobine du haut-parleur.</li><li>Si un ampli trop puissant est utilisé à volume trop élevé, on risque d’abîmer définitivement l'enceinte. Si celui-ci est utilisé de manière raisonnable, c'est-à-dire en le réglant à une puissance acceptable pour les hauts parleurs, le rendu sera de très bonne qualité et sans risque !</li><li>Si l’ampli n’est pas assez puissant : il sera poussé à son maximum pour en tirer de la puissance mais cela pourra aussi endommager des enceintes et le son sera de mauvaise qualité car saturé avec de la distorsion et de l'écrêtage.</li><li>On privilégie donc un ampli suffisamment puissant voire légèrement surdimensionné pour fournir un signal de qualité continu aux enceintes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Récupération du récepteur Bluetooth</strong><p><strong>Étapes :</strong></p><ol><li>Nous avons récupéré un récepteur Bluetooth vendu séparément, mais il doit être possible de récupérer un récepteur Bluetooth sur une enceinte Bluetooth, ou même des écouteurs. Cependant, le récepteur Bluetooth peut se trouver sur une carte de commande plus grande, et donc il sera difficile de séparer le récepteur du reste de l'appareil.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Démontage</strong><p><strong>Étapes :</strong></p><ol><li>La plupart du temps , vous récupérerez les pièces dans un appareil endommagé. Il faut donc démonter au maximum ce dernier afin de ne récupérer que le(s) pièce(s) intéressante(s).</li><li>Pour les haut-parleurs, il faut les retirer entièrement de l'appareil autour.</li><li>Concernant l’amplificateur en fonction de ce que vous trouvez vous pouvez faire le choix de le conserver comme à l’initial mais vous pouvez également le démonter. C’est cette dernière option que nous avons personnellement choisie étant donné que nous voulions nous séparer de tout l’électronique lié au triple lecteur CD et au lecteur cassette de l’ampli.</li><li>L’objectif étant, pour les hauts parleurs d'utiliser leurs dimensions pour les plans du caisson et pour l’ampli de créer une nouvelle boîte ne contenant que ce qui nous est nécessaire.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Câblage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Caisson_LowTech_sch_ma_lectronique.png/800px-Caisson_LowTech_sch_ma_lectronique.png' alt='Caisson LowTech sch ma lectronique.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d8/Caisson_LowTech_imp_dance.png/800px-Caisson_LowTech_imp_dance.png' alt='Caisson LowTech imp dance.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/35/Caisson_LowTech_ampli_expliqu_.png/800px-Caisson_LowTech_ampli_expliqu_.png' alt='Caisson LowTech ampli expliqu .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Caisson_LowTech_Image_s_rie_parall_le_MTX.png/800px-Caisson_LowTech_Image_s_rie_parall_le_MTX.png' alt='Caisson LowTech Image s rie parall le MTX.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le câble d'alimentation est connecté à l'amplificateur. Il alimente aussi (au moyen d'un adaptateur) le récepteur Bluetooth. Le récepteur Bluetooth peut être branché et débranché à l'entrée RCA de l'amplificateur. L'ampli comporte deux sorties, et une impédance minimale sur chaque sortie (ici 6 ohms, généralement 4 ohms, pour les meilleurs ampli l'impédance minimale peut être de 2 ohms). Pour notre caisson, puisque nous appliquons un filtre passe-haut aux haut-parleurs aigus et un filtre passe-bas aux haut-parleurs graves, le filtre passe-bas et les deux haut-parleurs graves sont connectés en série à une sortie, et le filtre passe-haut et les deux haut-parleurs aigus sont connectés en série à l'autre sortie. Vous pouvez varier les configurations.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Filtrage (facultatif)</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/a/a3/Caisson_LowTech_sch_ma_filtrage.png' alt='Caisson LowTech sch ma filtrage.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d8/Caisson_LowTech_445873414_985710979820583_618749863342812721_n.jpg/800px-Caisson_LowTech_445873414_985710979820583_618749863342812721_n.jpg' alt='Caisson LowTech 445873414 985710979820583 618749863342812721 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4e/Caisson_LowTech_442661130_284064304784795_2715097594091736128_n.jpg/800px-Caisson_LowTech_442661130_284064304784795_2715097594091736128_n.jpg' alt='Caisson LowTech 442661130 284064304784795 2715097594091736128 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/c7/Caisson_LowTech_courbes_filtrage.png' alt='Caisson LowTech courbes filtrage.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si vous êtes confronté.es à ce problème, il vous faudra filtrer le son, en faisant un passe-bas et un passe-haut. Un filtre passe-bas sert à couper les hautes fréquences (mais les basses fréquences passent encore), tandis qu’un filtre passe-haut sert à couper les basses fréquences (et à laisser passer les hautes fréquences). Le site de Dominique Pétoin (https://www.petoindominique.fr/php/accueil.php) dispose d’un outil qui montre directement les différentes possibilités : https://www.petoindominique.fr/php/filtrejmlc_2v.php . Dominique Pétoin est un amateur d'accoustique. Son site est très complet, et contient des informations sur les caissons, les types de filtrage, et, de manière générale, tout ce qui se rapporte aux enceintes</li><li>Le nombre de voies correspond au nombre de haut-parleurs différents (des haut-parleurs aigus et graves donc 2 voies, des haut-parleurs aigus, graves et médium donc 3 voies).</li><li>Le site dispose d’un calculateur qui vous donnera les valeurs des composants à utiliser pour fabriquer votre filtre. Avant de l’utiliser il est important de savoir si vous souhaitez 2,3 ou 4 haut-parleurs différents, de quelle façon (Butterworth, Bessel ou L-R (Linkwitz-Riley) ) et à quelle intensité (12, 18 ou 24dB/ octave).</li><li>Dans notre cas, pour concilier efficacité du filtre et Low-Tech, nous avons opté pour un filtre Butterworth à 18dB. De façon générale, les filtres L-R sont difficiles à implémenter et demandent plus de composants que les deux autres, malgré leur meilleur rendement. Nous avons choisi un filtre Butterworth avec une pente de 18 dB/octave.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Design plans de caisson</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9e/Caisson_LowTech_Capture_1_.PNG/800px-Caisson_LowTech_Capture_1_.PNG' alt='Caisson LowTech Capture 1 .PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le caisson a été dimensionné selon les informations du site de Dominique Pétoin (https://www.petoindominique.fr/php/accueil.php ). Il permet la génération de plans en entrant la référence de son haut parleur ainsi que l’épaisseur du bois utilisé. Le gros trou dans le caisson est l'emplacement du haut-parleur, les deux petits trous sont des évents, c'est par là que le son est renvoyé depuis l'arrière du haut-parleur. Le paramètre important est le volume d'air dans les évents, vous pouvez en faire un gros, ou plusieurs petits évents.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Construction caisson (et structure pour ampli)</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/4/44/Caisson_LowTech_assemblage3.jpg' alt='Caisson LowTech assemblage3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ef/Caisson_LowTech_decoupe_laser.jpg' alt='Caisson LowTech decoupe laser.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/27/Caisson_LowTech_assemblage_2.jpg' alt='Caisson LowTech assemblage 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/00/Caisson_LowTech_semblage.jpg' alt='Caisson LowTech semblage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2c/Caisson_LowTech_tasseau.jpg' alt='Caisson LowTech tasseau.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si vous avez décidé de démonter l’ampli et de changer sa taille/structure, il vous faut réaliser une nouvelle boîte ne contenant plus que les parties que vous avez décidé de conserver. On laissera un accès extérieur uniquement aux entrées/sorties nécessaires tout en veillant à ce qu’une face soit ouvrable (par trappe, par vis) afin que l’ampli reste accessible pour toute réparation ou changement éventuels. L’enjeu sur cette boîte est de contenir solidement tous les éléments de l’ampli afin que rien ne se casse, ne se démonte à l'intérieur au moment du transport ou lors d’un choc. Cela protégera les parties sous tension, et évitera des accidents.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Finitions</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/8/83/Caisson_LowTech_caisson_fini.jpg' alt='Caisson LowTech caisson fini.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ed/Caisson_LowTech_mur_son.jpg' alt='Caisson LowTech mur son.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le produit est construit et fonctionnel, vous pouvez ajouter des finitions afin de le renforcer : l’apport de joints étanches le long des arêtes permettra de le consolider. De plus, l’application d’un vernis sur le bois peut optimiser la conservation du bois.</li><li>Votre produit étant finalisé techniquement, il ne reste plus qu’à vous faire plaisir en pimpant vos caissons avec de la peinture pour bois par exemple. Vous pouvez également choisir de garder le charisme du bois brut.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

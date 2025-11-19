@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Superadobe</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Superadobe</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/e1/Superadobe_cal-earth_eco-dome490_1_.jpg/ia-ed7c37cdffa9a9aa4f6c587a36e1dc32-px-Superadobe_cal-earth_eco-dome490_1_.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Le Superadobe est une technique de bioconstruction, consistant à empiler des sacs, remplis de terre, les uns au-dessus des autres selon l’architecture désirée (généralement des dômes).</div>
+        
+      </div>
+    
+    
+      
+        <p>Le tuto a été rédigé suite à la réalisation de deux constructions avec la méthode de superadobe.</p>
+      
+        <p>1ère expérimentation au Sud du Brésil près de Porto Alegre : réalisation d’une salle de bain séparée.</p>
+      
+        <p>2ème expérimentation en Argentine dans la Province de Cordoba pour la réalisation d’une maison entière.</p>
+      
+        <p>Lors de ces deux expérimentations, nous n'avons participé qu’à une partie de la construction et nous n’avons pas vu les résultats finaux.</p>
+      
+        <p>Le processus général reste le même pour les deux expérimentations que nous avons faites cependant ils ont quelques particularités que nous allons détailler dans ce tuto.</p>
+      
+        <p>En règle générale, si vous souhaitez utiliser la méthode de Super adobe, il faudra l’adapter à votre milieu (terre à disposition, terrain) mais aussi aux matériaux utilisés.</p>
+      
+        <p>Concernant la durée et le cout du projet il sont difficiles à estimer, ils dépendront de chaque construction et son environnement.</p>
+      
+        <p>Durée:</p>
+      
+        <p>La durée peut varier de plusieurs jours à plusieurs semaines en fonction de la superficie souhaitée et du nombre de travailleurs. Cela dépend également de la taille de l'habitat.</p>
+      
+        <p>Cette technique peut être longue mais le résultat est très satisfaisant.</p>
+      
+        <p>Coût :</p>
+      
+        <p>Le prix dépend de certaines conditions:<ul><li>De la terre utilisée, si vous l'obtenez de votre jardin ou non, et si vous devez acheter d’autres matières premières pour faire le mélange.</li><li>Des sacs utilisés, vous pouvez recycler des sacs (anciens sacs de farine) ce qui vous coûtera moins cher ou en acheter ce qui sera plus qualitatif</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 month(s) mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 100 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Superadobe" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Superadobe</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Les matériaux utilisés pour une construction en superadobe sont : les sacs, la terre, les fils barbelés et les graviers.</li><li>1- Sacs:</li><li>Les sacs choisis sont de préférence synthétiques, résistant aux UV, ainsi qu’à la pression (sans s’étirer, ni casser) et doivent permettre une bonne aération afin que l’humidité de la terre puisse sécher.</li><li>Il est recommandé de prendre des sacs de toile tissé en polypropylène (ou des tubes que l’on coupe à notre volonté).</li><li>Les sacs de jute ne sont pas recommandés car étant biodégradable ils peuvent être fragilisés.</li><li>Dans le cas 1 au Brésil nous avons utilisé des sacs de 20 kg en polypropylène tissé, de récupération (anciennement des sacs de farine).</li><li>Dans le cas 2, en Argentine nous avons utilisé un rouleau de polypropylène tissé non laminés.</li><li>2- Terre:</li><li>Le mieux est de récupérer la terre localement mais elle doit être étudiée au préalable. Il est recommandé d’avoir une terre argileuse pour une meilleure solidité sans que ce soit trop dur, ce n’est pas grave si la terre est humide. Idéalement la terre doit être un mélange de 30% d’argile et de 70% de sable en pensant à bien enlever les végétaux et grosses pierres contenu dans la terre.</li><li>3- Fils de barbelés:</li><li>Les fils barbelés servent à consolider la structure entre chaque couche. Généralement, les fils barbelés employés à cet effet doivent être galvanisés à 4 points et 2 torons.</li><li>4- Des graviers:</li><li>Les graviers seront utiles pour les fondations.</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>a - Sceaux de 4L ou plus (dans le tuto nous parlerons de sceaux de 4L)</li><li>b - Pelle</li><li>c - Poids pour tasser</li><li>d- Genre de compas si dôme</li><li>e- Brouette</li><li>f - Ciseaux</li><li>g- Un sceau percé pour faciliter l’insertion de la terre dans le sac</li><li>h- Echelle</li><li>i- Tamis</li><li>j- Rateau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Etudier la terre</strong><p><strong>Étapes :</strong></p><ol><li>La première chose à faire est de réfléchir à la possibilité de faire sa maison en super adobe en fonction de votre terrain, de la qualité de la terre à disposition, de votre mairie pour le permis de construire, du temps imparti, de la main d'œuvre…</li><li>Pour étudier la terre, la méthode est de remplir un contenant (bouteille d’eau, ou bocal transparent) de terre que vous souhaitez utiliser. Recouvrir d’eau, secouer pour mélanger, laisser reposer 2 jours.</li><li>Au bout de 2 jours votre terre se sera séparée en différentes parties, l’argile, le sable …</li><li>Le but est de remplir les sacs d’un mélange de terre contenant du sable, de la terre et de la chaux.</li><li>En fonction de la terre que vous avez, vous allez devoir ajouter des éléments ou non.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparer la terre/ le mélange (cette étape est répétitive)</strong><p><strong>Étapes :</strong></p><ol><li>Au Brésil méthode 1 : Nous utilisons la terre comme nous la trouvions sur le terrain, ce qui était plus rapide, mais un peu moins solide.</li><li>En Argentine méthode 2 : la terre accessible n’était pas de très bonne qualité (suite au test de la terre), il fallait donc faire une mixture.</li><li>La recette : prendre de la terre à quelques mètres sous le sol, la tamiser pour enlever les gros cailloux</li><li>Avec ce type de terre :</li><li>Il faut 7 sceaux de terre au préalable tamiser pour enlever les cailloux (cf photo)</li><li>1 seau de chaux (attention dangereux à respirer)</li><li>2 seaux de sable</li><li>Mélanger le tout à l’aide de pelles, rajouter de l’eau jusqu'à ce que le mélange soit consistant. Le mélange est prêt lorsque vouspouvez facilement faire une boule avec la main, pour être sûr que cela est bon, faire tomber cette boule à la hauteur de l’épaule et elle ne doit pas s’éclater en tombant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Creuser les fondations</strong><p><strong>Étapes :</strong></p><ol><li>Pour une meilleure stabilité et pour éviter que de l’eau s'infiltre en sous-sol, il faut préparer le sol. Creuser un trou d’environ 50cm de profondeur et de la largeur des sacs que vous allez utiliser.</li><li>Recouvrir d’une couche d'environ 10 cm de graviers.</li><li>Poser au dessus une toile plastique qui dépasse sur les côtés ( moitié enterrée moitié non enterré)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Couche enterrée (2 couches enterrée suffisent)</strong><p><strong>Étapes :</strong></p><ol><li>Vous pouvez maintenant faire la première couche de Super Adobe qui sera enterrée.</li><li>Processus qui se répétera à chaque couche:</li><li>Remplir les sacs de terre en position debout (à l’aide d’un sceau), en fonction de la taille de vos sacs mettre plus ou moins de terre. Lorsque votre sac est rempli, le coucher et le fermer, soit en le pliant, soit en laissant un peu de sac de marge et juste empiler l’autre sac (schéma) et ainsi renouveler l’étape jusqu’à ce que vous ayez terminé la première couche du premier étage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Tasser</strong><p><strong>Étapes :</strong></p><ol><li>Lorsque la première couche de super adobe est terminée, il faut alors tasser les sacs pour qu’ils deviennent compacts. Pour se faire, utiliser un poids et faire des aller-retours sur votre couche pour être sûr de bien tasser.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Barbelé</strong><p><strong>Étapes :</strong></p><ol><li>Lorsque la couche est bien tassée, mettre une ligne de barbelé au milieu des sacs tout le long de la couche</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Vérifier dimension si dôme:</strong><p><strong>Étapes :</strong></p><ol><li>Si vous faites un dôme, il est important de vérifier les dimensions du dôme, pour se faire lors de la méthode 1 nous utilisons une chaîne accrochée au centre du dôme qui sera le repère du diamètre souhaité pour notre dôme, entre chaque couche on la tend pour vérifier que l’on soit bien dans les dimensions (le bout du fil étant l'extérieur du dôme on sait que pour la prochaine couche les sacs ne devront pas dépasser cette ligne imaginaire).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Couche</strong><p><strong>Étapes :</strong></p><ol><li>Il faut renouveler les étapes 4, 5, 6 et 7 jusqu’à ce que la hauteur de votre maison vous convienne.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Eléments extérieurs</strong><p><strong>Étapes :</strong></p><ol><li>Pour les fenêtres et portes de votre habitation, il faut créer des supports en bois de la taille souhaitée pour vos futurs portes et fenêtres, qui seront retirés après la construction des couches.</li><li>Vous pouvez améliorer/ innover votre construction en ajoutant des éléments extérieurs comme des bouteilles en verre pour faire entrer de la lumière, vous pouvez anticiper des dressings en callants des bouts de bois entre les couches de super adobe, ou pour faire un étage…</li><li>Il faut penser également à l'installation des câbles .</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Revêtement</strong><p><strong>Étapes :</strong></p><ol><li>Vous pouvez faire différents revêtements possibles : un revêtement classique ou un revêtement naturel nommé cob ( mélange de terre, sable, argile et pigment pour ajouter la couleur que vous souhaitez.)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Petit conseil</strong><p><strong>Étapes :</strong></p><ol><li>Si vous cherchez de la main d'œuvre vous pouvez faire appel à des volontaires grâce à la plateforme workaway par exemple.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

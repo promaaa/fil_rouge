@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Smartphone Paper Stand</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Smartphone Paper Stand</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FEQ/39ZE/L3N9HVC0/FEQ39ZEL3N9HVC0.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Imagine you are watching a movie in bed on your phone. Now, I want to place the phone on the bed, but the phone stand is in the other room. Here is a solution, flip your phone, open the stand and enjoy!</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>A4 - size paper.</li><li>Black marker.</li><li>Glue</li><li>Hard metal sheet. (without any corners, it should have a soft corner, if it does not, then make it so) 1 inch x 5 inch</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Cut Out Paper for Stand</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FU3/4PJI/L3N9HVBV/FU34PJIL3N9HVBV.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Out Paper for Stand' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP8/LMQN/L3N9HVBT/FP8LMQNL3N9HVBT.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Out Paper for Stand' loading='lazy'></figure><figure><img src='https://content.instructables.com/FU3/4PJI/L3N9HVBV/FU34PJIL3N9HVBV.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Out Paper for Stand' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP8/LMQN/L3N9HVBT/FP8LMQNL3N9HVBT.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Out Paper for Stand' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Measure the dimensions of your phone on the paper.</li><li>Mark dimensions which are smaller than the phone and as per requirement of the stand. I have used 3 inch x 2inch rectangle for my smartphone which should work for almost all phones generally. Keep a margin of 1 inch as free space. Let's say the length of the mark is l (small L, (3 inches)) and the breadth of the mark is b (2 inches).</li><li>Now, the length of the cutout from the paper required = L' = 2* (l + b) = 10 inches and the width should be 4 inches (this is fixed).</li><li>This is because the stand is a 3d box-shape. For making the 3x2, we require a rectangle of 3x2 dimensions multiplied by the height of the stand.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Fold the Shape Into Form</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FVO/7AJ8/L3N9HVBU/FVO7AJ8L3N9HVBU.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLM/NI76/L3N9HVBW/FLMNI76L3N9HVBW.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5P/C85I/L3N9HVBN/F5PC85IL3N9HVBN.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRR/IPBJ/L3N9HVBQ/FRRIPBJL3N9HVBQ.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVO/7AJ8/L3N9HVBU/FVO7AJ8L3N9HVBU.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLM/NI76/L3N9HVBW/FLMNI76L3N9HVBW.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5P/C85I/L3N9HVBN/F5PC85IL3N9HVBN.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRR/IPBJ/L3N9HVBQ/FRRIPBJL3N9HVBQ.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fold the Shape Into Form' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Fold 4 mountains across the 4 inch width as shown in the figure.</li><li>Now, fold across the length (10 inch ) as shown in the figure with length 3 inch, 2 inch, 3 inch and 2 inch respectively.</li><li>Fold the corners as shown in the video.</li><li>Check the shape should look like as shown in the given figure.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Add Bottom and Top Faces</strong><div class='step-images count-12'><figure><img src='https://content.instructables.com/FVT/DVHL/L3N9HVBZ/FVTDVHLL3N9HVBZ.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/F76/R3IL/L3N9HVBY/F76R3ILL3N9HVBY.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW5/9OCA/L3N9HVBM/FW59OCAL3N9HVBM.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJN/8Q03/L3N9HVBK/FJN8Q03L3N9HVBK.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIU/BXTI/L3N9HVBO/FIUBXTIL3N9HVBO.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Q/6I8T/L3N9HVBG/F3Q6I8TL3N9HVBG.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVT/DVHL/L3N9HVBZ/FVTDVHLL3N9HVBZ.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/F76/R3IL/L3N9HVBY/F76R3ILL3N9HVBY.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW5/9OCA/L3N9HVBM/FW59OCAL3N9HVBM.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJN/8Q03/L3N9HVBK/FJN8Q03L3N9HVBK.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIU/BXTI/L3N9HVBO/FIUBXTIL3N9HVBO.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Q/6I8T/L3N9HVBG/F3Q6I8TL3N9HVBG.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Bottom and Top Faces' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Cut out two rectangles of size l x b (3 x 2) and paste them to the constricted shape on the bottom and the top respectively.</li><li>Attach the metal piece of 1 inch by 5 inch at the bottom of the base.</li><li>Now, attach the base with the metal on the phone with glue. (Note, any glue may be used keep in mind if removal is required)</li><li>Draw a design on the front.</li><li>Fold the extra piece of metal onto the front to prevent it from opening.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Watch a Movie</strong><div class='step-images count-12'><figure><img src='https://content.instructables.com/FTL/8WLN/L3N9HVBB/FTL8WLNL3N9HVBB.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN7/Q3W7/L3N9HVBC/FN7Q3W7L3N9HVBC.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZV/ZDI4/L3N9HVBF/FZVZDI4L3N9HVBF.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FI8/5WMG/L3N9HVBI/FI85WMGL3N9HVBI.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLI/1H73/L3N9HVBH/FLI1H73L3N9HVBH.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2I/VHLC/L3N9HVBD/F2IVHLCL3N9HVBD.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTL/8WLN/L3N9HVBB/FTL8WLNL3N9HVBB.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN7/Q3W7/L3N9HVBC/FN7Q3W7L3N9HVBC.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZV/ZDI4/L3N9HVBF/FZVZDI4L3N9HVBF.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FI8/5WMG/L3N9HVBI/FI85WMGL3N9HVBI.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLI/1H73/L3N9HVBH/FLI1H73L3N9HVBH.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2I/VHLC/L3N9HVBD/F2IVHLCL3N9HVBD.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Watch a Movie' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Unlock the metal pieces.</li><li>Spread the paper stand.</li><li>Enjoy your movie!</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

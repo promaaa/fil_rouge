@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Table à lame d'air</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Table à lame d'air</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/2/28/Table_lame_d_air_Vue_AirSlitTable.png/ia-653ee8679c379495104b666beb350e0f-px-Table_lame_d_air_Vue_AirSlitTable.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Le but de ce tutoriel est de montrer que l'utilisation d'une table à lame d'air permettrait de partager des repas avec d'autres personnes sans partager les microbes. L'intérêt est évident pour les restaurants et les cantines scolaires ou d'entreprises, dans le cadre du Covid mais aussi pour d'autres virus respiratoires à venir. Le moment du repas partagé est en effet le maillon faible de la prévention car les personnes sont sans masque, à proximité les uns des autres et discutent entre eux. Comme les virus respiratoires sont de nouveau de retour, je remets mon projet en tête de gondole, pour les quelques rares visiteurs de ce site.</div>
+        
+      </div>
+    
+    
+      
+        <p>L'idée de cette table à lame d'air est le prolongement de ma réflexion sur les purificateurs d'air ( Purificateur d'air anti-Covid ).</p>
+      
+        <p>Les purificateurs d'air sont très intéressants pour éliminer les aérosols dans une classe dont les élèves portent un masque. En effet, seuls les aérosols les plus ténus passent à travers les masques et diffusent dans toute la salle, en particulier jusqu'au niveau des purificateurs d'air qui les aspirent et les traitent. Peu à peu, comme expliqué dans mon tuto sur le purificateur d'air, la concentration en virus diminue jusqu'à un niveau qui dépend du débit de traitement et du débit d'émission de la personne covidée (Compétition).</p>
+      
+        <p>Par contre, ces purificateurs d'air sont beaucoup moins efficaces dans les cantines où les personnes sont face à face et n'ont évidemment pas de masques. En effet, sans masque, des aérosols sont produits et peuvent être projetés vers la personne en face, bien avant d'avoir pu être récupérés par le purificateur.... .</p>
+      
+        <p>On trouvera des informations sur les gouttelettes et aérosols émis sur ces deux liens:</p>
+      
+        <p>https://www.futura-sciences.com/tech/actualites/technologie-bien-placer-table-temps-pandemie-83734/</p>
+      
+        <p>https://journals.plos.org/plosone/ar...l.pone.0059970</p>
+      
+        <p>Cependant on va voir que l'utilisation d'une lame d'air pour séparer les personnes qui se font face peut être une solution pour partager un repas sans partager des microbes....</p>
+      
+        <p>Dans ce qui suit, on va</p>
+      
+        <p>- décrire le concept</p>
+      
+        <p>- décrire le banc de test de la lame d'air et donner les résultats expérimentaux obtenus</p>
+      
+        <p>- donner quelques pistes pour améliorer le concept, et sa réalisation</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 7 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 500 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Table_à_lame_d_air" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Table_à_lame_d_air</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Description du concept: Agencement général</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/5/55/Table_lame_d_air_Global_1.jpg/800px-Table_lame_d_air_Global_1.jpg' alt='Table lame d air Global 1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7f/Table_lame_d_air_Global_2.jpg/800px-Table_lame_d_air_Global_2.jpg' alt='Table lame d air Global 2.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/40/Table_lame_d_air_Global_3.jpg/800px-Table_lame_d_air_Global_3.jpg' alt='Table lame d air Global 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On notera d'abord que le design présenté ici n'a pas été réalisé, mais qu'il a</li><li>été imaginé sur la base des tests effectués avec le prototype de la lame d'air et de la récupération des aérosols. Son but est principalement d'expliciter le fonctionnement d'une possible table à lame d'air.</li><li>Figure 1: Une table au plateau fendu laisse passer une lame d'air ascendante qui sépare les convives. Cette lame d'air n'est pas ressentie par les personnes mais par contre elle recueille et entraîne rapidement vers le haut les aérosols émis. L'air contaminé est ensuite récupéré par une tente et aspiré par une fente située au point le plus haut. Cet air vicié est ensuite purifié par irradiation avec des UV C (on pourrait également en retenir les aérosols par un filtre HEPA). Une partie de cet air nettoyé est ensuite aspiré par une turbine et renvoyé vers le tube produisant la lame d'air.</li><li>Figure 2: On voit le tube fendu situé sous la table. Ce tube est fixé à la table à plateau fendu. On peut imaginer que ce tube reste à demeure même si la table peut être utilisée comme une table ordinaire. Un simple cache masque alors la fente du plateau. Au point le plus haut de la tente on aperçoit la fente du tube aspirateur.</li><li>Figure 3: Cette figure montre les détails des tubes générateur de la lame d'air et du tube aspirateur. On note que la fente générant la lame d'air est équipée de deux "lèvres" qui permettent de contrôler la divergence de la lame.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Description du concept: Module turbines et traitement de l'air</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/3/3d/Table_lame_d_air_ModuleTurbinesUVC_1.jpg/800px-Table_lame_d_air_ModuleTurbinesUVC_1.jpg' alt='Table lame d air ModuleTurbinesUVC 1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d4/Table_lame_d_air_ModuleTurbinesUVC_2.jpg/800px-Table_lame_d_air_ModuleTurbinesUVC_2.jpg' alt='Table lame d air ModuleTurbinesUVC 2.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d0/Table_lame_d_air_ModuleTurbinesUVC_3.jpg/800px-Table_lame_d_air_ModuleTurbinesUVC_3.jpg' alt='Table lame d air ModuleTurbinesUVC 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Figure 1: Cette figure présente la circulation de l'air dans le système. La turbine d'aspiration envoie l'air vicié récupéré au sommet de la tente directement dans la chambre d'irradiation UV C. A la sortie cet air désinfecté est partiellement récupéré par la turbine alimentant la lame d'air.</li><li>Figure 2: On voit ici, après avoir enlevé le réflecteur aluminium, l'air vicié récupéré qui est soufflé autour du tube UVC. Ces tubes sont suffisamment puissants pour détruire les virus et bactéries. Le réflecteur aluminium renforce très notablement l'irradiation. Voir les explications dans Purificateur d'air anti-Covid</li><li>Figure 3 : Cette figure montre une particularité qui permet un débit d'aspiration (200 m3/H) supérieur au débit de la lame d'air (100 m3/H) afin de capturer et retenir au mieux les aérosols dans la tente, tout en assurant que l'air envoyé dans la lame d'air est bien désinfecté. Globalement le système ne renvoie dans la salle que de l'air propre.</li><li>Nota: On verra expérimentalement que la lame d'air entraîne une partie de l'air ambiant par effet Venturi. Ainsi le volume d'air récupéré par la tente est supérieur au volume d'air émis par la fente. Une aspiration nettement supérieure au débit de la lame d'air doit donc être prévue.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Le prototype pour tester la lame d'air</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/8/86/Table_lame_d_air_Proto_1.jpg/800px-Table_lame_d_air_Proto_1.jpg' alt='Table lame d air Proto 1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3b/Table_lame_d_air_Proto_2.jpg/800px-Table_lame_d_air_Proto_2.jpg' alt='Table lame d air Proto 2.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/0c/Table_lame_d_air_Proto_3.jpg/800px-Table_lame_d_air_Proto_3.jpg' alt='Table lame d air Proto 3.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/5c/Table_lame_d_air_Proto_4.jpg/800px-Table_lame_d_air_Proto_4.jpg' alt='Table lame d air Proto 4.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Figure 1: On voit le prototype de la lame d'air avec la tente de récupération et avec les deux turbines qui ne "bouclent" pas au travers du module de traitement. Le module de traitement des aérosols ne fait pas partie du prototype. Ce module en effet a déjà été évalué ( Purificateur d'air anti-Covid ). De plus le plateau fendu n'est pas représenté car ce détail ne semble pas avoir une réelle importance. Ainsi, la table supporte l'ensemble tube lame d'air et tube d'aspiration.</li><li>Figure 2: On voit ici la fente et les deux "lèvres" qui déterminent la divergence de la lame d'air. Il s'agit ici d'un réglage particulier, pas forcément optimum.</li><li>Figure 3: On voit ici la fente d'aspiration située au point le plus haut.</li><li>Figure 4: La récupération de la totalité des aérosols est un vrai problème car la "force d'aspiration" est toujours à faible portée. Aussi il est important que des volutes d'air soient réorientées vers l'intérieur afin de bénéficier de l'assistance de la lame d'air. Ce problème a été vu et corrigé lors des tests.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Résultats des tests de la lame d'air</strong><p><strong>Étapes :</strong></p><ol><li>Vidéo 1:</li><li>On voit deux bougies allumées placées à la hauteur des visages des convives. Dans un premier temps la lame d'air est arrêtée et la flamme des bougies est très stable. Dans un deuxième temps la lame d'air est activée. Les flammes des deux bougies vacillent légèrement. De plus elles sont légèrement penchées vers la lame d'air, traduisant un léger flux d'air vers elle. Toutefois ces légers mouvements d'air sont faibles et les convives ne ressentent aucune gêne.</li><li>Vidéo 2:</li><li>On a remplacé les deux bougies par deux morceaux de papier d'Arménie en train de se consumer. On constate bien que les fumées des deux côtés sont entraînées vers la lame d'air. C'est dû au fait qu'il y règne une légère dépression, due à la vitesse de l'air. C'est l'effet Venturi. Cet effet est très utile ici car il draine tous les aérosols légers pouvant sortir des nez et des bouches des convives lorsqu'ils mangent et parlent.</li><li>Vidéo 3:</li><li>On teste ici l'effet d'un "éternuement poli".... produit par un générateur de fumée utilisé pour les discothèques.... Le résultat est satisfaisant dans la mesure où la majorité des aérosols sont captés par la lame d'air et piégés dans la tente de récupération avant d'être aspirés. Toutefois, il ne faudrait pas compter sur la protection de la lame d'air dans le cas d'un "éternuement débridé" contenant de grosses gouttelettes.....<ul><li>https://wikifab.org/wiki/Fichier:Table_lame_d_air_Bougies_2.mp4</li><li>https://wikifab.org/wiki/Fichier:Table_lame_d_air_Armenie_5.mp4</li><li>https://wikifab.org/wiki/Fichier:Table_lame_d_air_Fumee_2.mp4</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Améliorations</strong><p><strong>Étapes :</strong></p><ol><li><translate>Il faut voir ce tutoriel comme une exploration d'un principe et non comme une version définitive d'une table à lame d'air. Il reste donc pas mal d'optimisation pour améliorer l'efficacité et l'esthétique..</li><li>1) Optimiser la lame d'air</li><li>La largeur et la divergence de la lame d'air n'ont pas été optimisées. Le but était de démontrer un principe. L'optimisation de la lame d'air permettrait peut-être de réduire notablement (?) la largeur de la tente servant à récupérer l'air vicié. De plus d'autres types de fentes pourraient être utilisées comme celles à effet Coanda.... Mais la contrainte essentielle reste qu'un faible bruit est requis !</li><li>2) Optimiser la récupération et l'aspiration des aérosols</li><li>Trouver une largeur de fente d'aspiration qui minimise les retours de l'air de la lame vers les bords de la tente. Trouver une forme de tente à la fois esthétique et efficace. Je suggère l'utilisation d'une grille d'aspiration type hotte aspirante (non testé ici)</li><li>3) Améliorer le design mécanique et esthétique</li><li>On peut juste souligner que toute amélioration géométrique et esthétique de la tente de récupération doit être validée par la conservation de l'efficacité de récupération. Par contre, inclure un éclairage sympa dans la tente ne pose aucun problème (facile par exemple avec des LEDs dont on peut facilement choisir la couleur à la demande).</li><li>4) Se passer totalement de la tente de récupération en aspirant l'air contaminé dans un faux plafond afin de le renvoyer à l'extérieur. (suggestion non vérifiée)</li><li>Nota: Pour alimenter la réflexion, ce lien me semble très intéressant: [https://www.airtecnics.com/ Air curtains Manufacturer Specialist</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Utilisation en restauration collective</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/e/e3/Table_lame_d_air_Salle_cantine.png/800px-Table_lame_d_air_Salle_cantine.png' alt='Table lame d air Salle cantine.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/57/Table_lame_d_air_salle_cantine_echangeur_2.jpg/800px-Table_lame_d_air_salle_cantine_echangeur_2.jpg' alt='Table lame d air salle cantine echangeur 2.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/8/8b/Table_lame_d_air_salle_cantine_circulation_air.jpg' alt='Table lame d air salle cantine circulation air.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une version simplifiée, sans tente de récupération, pourrait être envisagée pour la restauration collective, dans les écoles comme dans les entreprises ou les EHPAD. J’ai vérifié en effet que la lame d’air est toujours capable d’aspirer vers elle les aérosols, même sans tente de récupération. Dans ce cas ces aérosols contaminés sont envoyés au plafond et doivent y être traités.</li><li>Les discussions sur l'utilisation des purificateurs d'air font ressortir la nécessité de diluer rapidement les aérosols dans un grand volume d'air de façon à en diminuer la concentration (et donc la contagiosité). On n'a pas intérêt en effet à garder des volutes d'aérosols concentrées près des autres convives autour d'une table. L'utilisation d'une lame d'air seule permet la capture et la dilution quasi immédiates dans une grande quantité d'air (transport vers le plafond).</li><li>Ensuite les aérosols ainsi dilués et transportés vers le haut doivent être traités:</li><li>- Soit par des plafonniers de désinfection à UVC pouvant être utilisés en présence de personnes (figure 1): https://www.assets.signify.com/is/content/Signify/Assets/philips-lighting/france/20210817-fiche-produit-uv-c-upper-air-fixation-plafond.pdf)</li><li>- Soit aspirés par un faux plafond percé d'une grille d'aspiration (figure 2). L'air vicié récupéré peut ainsi être renvoyé vers l'extérieur au travers d'un échangeur thermique permettant de réchauffer l'air entrant insufflé à travers un faux plancher muni de grilles d'aération. A l'intérieur de ce mouvement d'air général allant du sol au plafond, les lames d'air des tables jouent leur rôle de collection et transport d'air contaminé bien plus rapidement que ne le ferait le mouvement global de l'air (figure 3). Les lames d'air peuvent être alimentées par des turbines individuelles ou par une alimentation par des tubes alimentés depuis le circulateur externe (utilisation d'air comprimé ?).</li><li>Nota 1: La validité du concept de la figure 1repose entièrement sur les spécifications de Philipps</li><li>Nota 2: Compte tenu du matériel conséquent à investir pour réaliser une maquette fonctionnelle de la figure 2, je n'ai pas pu tester la validité de l'idée.</li><li>Nota 3: On peut noter que ce type de table à lame d’air est tout à fait adapté à la restauration avec plateau repas.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Synthèse et conclusion</strong><p><strong>Étapes :</strong></p><ol><li>On a montré expérimentalement, par des petits tests simples, que l'utilisation d'une lame d'air pour séparer les convives qui se font face est un moyen très efficace pour récupérer les aérosols émis par chacun (respiration, parole, toux contrôlée) et pour les envoyer rapidement vers le haut, empêchant ainsi les contaminations par des maladies respiratoires.</li><li>On a par la suite envisagé différents dispositifs pour récupérer ces aérosols contaminés et les neutraliser :</li><li>- Un système de tente avec une aspiration qui renvoie l’air vicié vers un module de désinfection (UVC) ou de piégeage (filtre HEPA). En sortie de ce module, l’air peut être remis dans la salle sans risque. C’est un système autonome qui peut fonctionner en circuit fermé, même si une salle ventilée est recommandée.</li><li>- Un système où aucun dispositif de récupération et d’aspiration des aérosols n’est nécessaire. La lame d’air renvoie directement les aérosols vers le plafond où ils sont dilués et désinfectés par des luminaires UVC utilisables avec du public (Philipps). C’est également un système autonome qui peut fonctionner en circuit fermé, même si une salle ventilée est recommandée.</li><li>- Un système où les aérosols sont envoyés sur un faux plafond comportant des grilles d’aspiration, avant d’être renvoyés à l’extérieur pour y être dilués. Il faut toutefois prévoir une entrée compensatrice d’air frais qu’il est intéressant d’aménager sur le principe d’une ventilation double flux pour l’efficacité thermique.</li><li>Dans tous les cas, la lame d’air joue son rôle de récupération et de transport rapide des aérosols loin des convives, ce qu’aucune ventilation globale acceptable ne pourrait faire.</li><li>Si l’idée première a concerné la table avec tente de récupération pour une utilisation familiale ou pour des restaurants, il s’avère après réflexion qu’il y a un grand intérêt à simplifier le système pour l’envisager dans la restauration de masse, comme les cantines scolaires ou d’entreprises ainsi que les EHPADs. On peut noter que la restauration utilisant des plateaux est particulièrement compatible avec la présence indispensable de la lame d’air.</li><li>A la suite de quelques recherches internet, il semble que ce concept est original et n’est pas exploité ni même décrit. En le décrivant ici j'en fais donc cadeau à celui qui voudra bien l'exploiter.</li><li>Il reste cependant pas mal de points à optimiser, comme la lame d’air qui doit être à la fois efficace et non bruyante. Toutefois les quelques essais que j’ai effectués sont très encourageants.</li><li>En conclusion, la table à lame d'air représente une solution prometteuse pour réduire la transmission des aérosols dans les cantines, tout en permettant aux convives de partager un repas en toute sécurité et convivialité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

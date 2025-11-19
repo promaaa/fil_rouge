@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>FlashClip - the Handy Hat Clip for Pocket Flashlights</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>FlashClip - the Handy Hat Clip for Pocket Flashlights</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FC3/XK1K/MCW9XSSY/FC3XK1KMCW9XSSY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Imagine this: Your engine starts smoking on the way home from watching the sunset in the mountains. You pull over and pop the hood, grabbing the small tool bag from your trunk. You are talking on the phone with the tow service, working with both hands to see what might have gone wrong with your engine, in the dark. You remember the flashlight you keep in your pocket for times like this, but how can you use it? You don't have a third hand, and you can't hold it in your mouth.</p>
+      
+        <p>I experienced a situation very similar to that on a trip back from stargazing, and needless to say, it was not fun. If only I had a headlamp or some other way of securing the flashlight to my head, so I could see where I was working. That moment was the inspiration behind FlashClip, an easy way to convert a pocket flashlight into a head lamp, mounted on the brim of any-sized hat. In this Instructable, I will walk you through how I designed and built the first version of FlashClip, and how you can make one for yourself. Let's get started!</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>2 Medium-Size Rubber Bands</li><li>6 Meters of 3D Printer Filament (preferably PLA)</li><li>Access to a 3D Printer and a Slicing Software</li><li>All you will need to make your own FlashClip is:</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: The Design</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F4R/AF0Q/MCW9WONS/F4RAF0QMCW9WONS.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Design' loading='lazy'></figure><figure><img src='https://content.instructables.com/F4R/AF0Q/MCW9WONS/F4RAF0QMCW9WONS.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Design' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>First, I created some project guidelines for what I wanted the clip to look like. I wanted to be able to easily slide the flashlight in and out of the clip for quick deployment, while not being too loose as to be insecure during use. I wanted it to be slim so it could fit in a pocket or center console, and not require any special parts or hardware. I decided it would clip into the front of the hat brim, so it would be aimed wherever the user was looking. I eventually settled on a two-plate sandwich design that gripped the flashlight during use and then stored it small for storage. Besides efficiency, the sandwich design allows for any size flashlight to be used, even longer ones that house multiple batteries.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Measurements</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FT2/E847/MCW9XSD6/FT2E847MCW9XSD6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measurements' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0O/UW69/MCW9XSC6/F0OUW69MCW9XSC6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measurements' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYT/8QDI/MCW9XSCO/FYT8QDIMCW9XSCO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measurements' loading='lazy'></figure><figure><img src='https://content.instructables.com/FT2/E847/MCW9XSD6/FT2E847MCW9XSD6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measurements' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0O/UW69/MCW9XSC6/F0OUW69MCW9XSC6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measurements' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYT/8QDI/MCW9XSCO/FYT8QDIMCW9XSCO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measurements' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I started by measuring my flashlight, a very common generic one that I was gifted to keep for emergencies. The flashlight measured to be 3.5 inches long and just shy of 1 inch in diameter. I then grabbed one of my baseball caps and measured the width of the brim, which was 2 millimeters thick. I noted down my measurements and then jumped into CAD.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Autodesk Fusion</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F83/MABU/MCW9WY15/F83MABUMCW9WY15.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Autodesk Fusion' loading='lazy'></figure><figure><img src='https://content.instructables.com/F83/MABU/MCW9WY15/F83MABUMCW9WY15.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Autodesk Fusion' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>For this project, I decided to use Autodesk Fusion, an easy-to-use CAD software that I've been learning to use. I love Fusion because it's super easy to create multiple-part designs, and it has great support for the 3D printing slicer I will be using.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: The Basic Shape</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FER/GGW0/MCW9WKJD/FERGGW0MCW9WKJD.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Basic Shape' loading='lazy'></figure><figure><img src='https://content.instructables.com/FER/GGW0/MCW9WKJD/FERGGW0MCW9WKJD.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Basic Shape' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I started by creating the basic shape of the clip. I decided the spacing between the body and the clip arm would be 2 millimeters wide, and that the whole clip would be 3 inches long. That way, it would be slightly smaller than the flashlight itself, while allowing it to protrude out on either side.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: The Contour</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FCB/US3L/MCW9WKJO/FCBUS3LMCW9WKJO.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Contour' loading='lazy'></figure><figure><img src='https://content.instructables.com/FCB/US3L/MCW9WKJO/FCBUS3LMCW9WKJO.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Contour' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To give the clip a better grip on the flashlight, I added a slight curve to the inside of the clip. This ensures that the flashlight remains centered in the clip and won't slide around side to side under use. I created the curve by drawing a sketch on the side and then using the "extrude" tool.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: The Sandwich Plate</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FH5/ZZ0L/MCW9WKJV/FH5ZZ0LMCW9WKJV.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Sandwich Plate' loading='lazy'></figure><figure><img src='https://content.instructables.com/FH5/ZZ0L/MCW9WKJV/FH5ZZ0LMCW9WKJV.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Sandwich Plate' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Next, I created the second part of the clip. I mirrored the curve on the first part of the clip and shortened it to 2 inches. I shortened the second piece so that there would be access to the focus ring and the power button the light, for adjustment during use.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Rubber Band Grooves</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F2F/KWJ2/MCW9WKK3/F2FKWJ2MCW9WKK3.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Rubber Band Grooves' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2F/KWJ2/MCW9WKK3/F2FKWJ2MCW9WKK3.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Rubber Band Grooves' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To keep tension on the two parts of the clip, the rubber bands would run around, forcing them together. To prevent them from slipping off the clip, I added a set of grooves that run along the top and bottom pieces.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Bevel</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FJP/75YH/MCW9WKKC/FJP75YHMCW9WKKC.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bevel' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJP/75YH/MCW9WKKC/FJP75YHMCW9WKKC.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bevel' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To make for easier printing later, reduce stress on the rubber bands, and to remove any possibly dangerous corners, I added bevels to the edges of the design.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Clip Notch</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F76/EDZY/MCW9WKKI/F76EDZYMCW9WKKI.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Clip Notch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F76/EDZY/MCW9WKKI/F76EDZYMCW9WKKI.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Clip Notch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>For a finishing touch, I added a small notch to the end of the clip. This provides some additional tension to the brim of the hat, and reduces any wiggling around that might happen.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Slicing</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F76/YP02/MCW9WOPD/F76YP02MCW9WOPD.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Slicing' loading='lazy'></figure><figure><img src='https://content.instructables.com/F76/YP02/MCW9WOPD/F76YP02MCW9WOPD.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Slicing' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>From Fusion, I exported the model as an OBJ file and loaded it into CURA. I went with a layer height of 0.2mm and set the infill density to 20% for strength, since the clip would be under mechanical stress during use. I designed the model so that there would be no overhangs steeper than 45 degrees, and both have flat faces on each end so that they can be printed flat and upright together on the bed. I added a raft for some extra bed adhesion, and hit "Slice".</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Printing</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FFG/TPGH/MCW9XNMX/FFGTPGHMCW9XNMX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Printing' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFG/TPGH/MCW9XNMX/FFGTPGHMCW9XNMX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Printing' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I loaded the G-Code file onto my micro SD card, and got to printing. I decided to go with PLA for this print, as the clip will need a little bit of flexibility but also some rigidity so that the clip doesn't wear down as much over time.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: Assembly</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FY4/5D74/MCW9XSFB/FY45D74MCW9XSFB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F83/YWAE/MCW9XNO2/F83YWAEMCW9XNO2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7W/IT27/MCW9XNNC/F7WIT27MCW9XNNC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FY4/5D74/MCW9XSFB/FY45D74MCW9XSFB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F83/YWAE/MCW9XNO2/F83YWAEMCW9XNO2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7W/IT27/MCW9XNNC/F7WIT27MCW9XNNC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Once it was done printing, I removed the raft from the parts and slid the rubber bands into the grooves. I wrapped the rubber bands around 3 times each for added grip on the flashlight because mine is on the smaller end, but depending on the size of your light, you can adjust the band strength.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Step 13: Finished</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FTU/2DD6/MCW9XOKI/FTU2DD6MCW9XOKI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finished' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTU/2DD6/MCW9XOKI/FTU2DD6MCW9XOKI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finished' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>With the clip done, I slid in my flashlight and mounted it on my baseball cap for a test. It worked super well! I could not shake it off of the brim, and the whole time the light was steady and didn't even shake in the clip. I tried two different configurations, one with the flashlight on the underside of the brim, and one with the flashlight ontop. I will say that the flashlight mounted under worked better for me because it was more stable, but if you're using a larger light, it might get in the way. I really love the way this project turned out, and now I have a helpful new addition to my preparation kit. I think this is a pretty handy little gadget, and I'm excited to see what the community thinks. I have included all of the files if you would like to print one for yourself, or make any adjustments. Thanks for reading!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

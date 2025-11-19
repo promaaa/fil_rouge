@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Biosphère Urbaine : Filière élevage de larves de mouches soldats noires (BSF)</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Biosphère Urbaine : Filière élevage de larves de mouches soldats noires (BSF)</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/7/79/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_14.27.29.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_14.27.29.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a été créé dans le cadre de l'expérience de mode de vie low-tech en ville menée par Biosphère Expérience à Boulogne Billancourt. Il présente les étapes de fabrication de l'incubateur et de la volière utilisés par Solène et Thomas durant l'expérience.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le projet - Biosphère Urbaine</p>
+      
+        <p>Pendant 4 mois, Corentin et Caroline ont expérimenté un mode de vie low-tech en ville en collaboration avec un réseau d'acteurs locaux à Boulogne Billancourt. L'idée est de profiter de la forte densité de population pour répartir les connaissances, diviser le travail et mutualiser le matériel. Ainsi, Emma a constitué et coordonné des filières temporaires composées de structures locales et de citoyens. Au total, ce sont 14 personnes du territoire de Boulogne Billancourt qui ont participé à cette expérience !</p>
+      
+        <p>Filière - élevage de larves de mouches soldats noires (BSF)</p>
+      
+        <p>L'une de ces filières concerne l'utilisation des larves de mouches soldats noires pour dégrader les déchets générés dans l'habitat. Si le cycle de reproduction est plutôt simple, réaliser l'intégralité de l'élevage à l'échelle individuelle ne fait pas trop sens dans un contexte urbain dense. C'est pourquoi Emma a créé une filière temporaire d'élevage de larves de mouches soldats noires qui assure tout le cycle de reproduction. Thomas et Solène étaient en charge de la reproduction à partir des prépupes fournies par l'appartement low-tech. Les prépupes se transformaient en mouches qui se reproduisaient dans la volière installée chez ces derniers. Une fois les oeufs récoltés, ils étaient transférés dans l'incubateur pour la transformation en larves. Au bout de 5 jours de vies, une partie des bébés larves étaient transférée dans le bac à compostage de l'appartement low-tech de Corentin et Caroline (l'autre partie donnée à la ferme du coin pour nourrir ses poules). Les prépupes étaient à nouveau données à Thomas et Solène pour assurer le cycle de reproduction. Ce tutoriel vise à démocratiser l'élevage de larves de mouches soldats noires à l'échelle d'un territoire.</p>
+      
+        <p>Pourquoi utiliser les larves pour dégrader les déchets ?</p>
+      
+        <p>Aujourd'hui, la plupart de ces déchets organiques, pourtant valorisables, sont enfouis ou incinérés, apportant des problèmes environnementaux majeurs (pollution des sols, de l'air et des nappes phréatiques, demande d'espaces de stockages de plus en plus grande...). Une solution de plus en plus utilisée est la conversion des déchets organiques par des insectes ou des larves, notamment celles de la mouche soldat noire (Black Soldier Fly, BSF). En voici quelques avantages :<ul><li>Les larves se composent à ±40% de protéines et à ±30% de graisse brute. Cette protéine d'insecte est de haute qualité nutritive et peut constituer une ressource intéressante pour l'alimentation animale (Poules, oies, canards, poissons...)</li><li>Il est démontré que les larves ont pour effet de neutraliser la plupart des bactéries transmettant des maladies, telles que Salmonella spp ou E.Coli, ce qui limite le risque de transmission de maladies aux animaux et aux humains. [1]</li><li>Une réduction de la masse humide de déchets organiques entre 50 et 80 %</li><li>Le résidu, une substance proche du compost, contient des éléments nutritifs et de la matière organique pouvant être utilisée directement sur les cultures.</li><li>L'élevage est peu coûteux et ne nécessite pas de moyens de production sophistiqués. Ce qui en fait une solution accessible dans toutes les régions du monde.</li><li>La mouche soldat noir (BSF) peut être rencontrée dans la nature à l'échelle mondiale dans les régions tropicales et subtropicales entre les latitudes 40°S et 45°N</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 40 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Filière_élevage_de_larves_de_mouches_soldats_noires__BSF_" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Filière_élevage_de_larves_de_mouches_soldats_noires__BSF_</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Ceci est une liste de matériaux exhaustive. Si vous avez déjà certains éléments, nous vous conseillons de favoriser la seconde main et d’adapter les diamètres et dimensions indiqués dans le tutoriel.</li><li>Pour l’incubateur<ul><li>un bac en plastique de dimension : 560 (L) x 385 (l) x 420 (H) mm</li><li>le carton d'emballage du bac ou un autre contenant un peu plus grand que ce dernier</li><li>isolant type laine de chanvre</li><li>drap blanc</li><li>un tapis chauffant de dimensions : 25 (L) x 53 (l) cm + un thermomètre à sonde</li><li>12 bocaux en verre avec couvercle de 0,5 L</li><li>textile moustiquaire rigide</li></ul></li><li>Pour la volière<ul><li>textile toile à beurre</li><li>tasseaux de bois pour la structure</li><li>coton</li><li>pinces à linge</li><li>ficelle</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Ceci est une liste d'outils exhaustive à adapter en fonction de ce que vous possédez déjà.</li><li>scie manuelle ou scie sauteuse</li><li>perceuse / visseuse</li><li>visserie</li><li>machine à coudre</li><li>scotch</li><li>paire de ciseaux</li><li>mètre</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Monter la filière</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-20_a_12.52.11.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-20_a_12.52.11.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-20 a 12.52.11.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si vous souhaitez monter une filière de ce type, la première étape sera de former un groupe de personnes sur votre territoire. Dans le cadre de ce projet, j'ai cherché 2 personnes sur le territoire pour assurer le bon déroulé de l'expérience mais aujourd'hui nous savons qu'un incubateur et une volière sont bien dimensionnés pour dégrader les déchets générés par 2 personnes.</li><li>De fait, il est tout à fait imaginable que chaque foyer prenne en charge plusieurs incubateurs afin que cette filière profite à un maximum de personne sans demander trop d'investissement à chacune des personnes (voir étape ... sur les retours d'expérience).</li><li>Comment trouver des personnes pour monter une filière ?</li><li>De mon côté, j'ai largement diffusé l'information via les réseaux de la ville (site internet, article dans le journal de la ville), nos réseaux sociaux ou encore les associations du territoire en les contactant par mail et par téléphone. Quelques exemples d'associations : Shifters, Ville en transition, Low-tech Lab..</li><li>Plus généralement, j'ai parlé du projet à toutes les personnes que je rencontrais au quotidien. Si vous souhaitez en parler à votre entourage, à vos amis, à vos collègues, je vous invite à utiliser toute la documentation présente sur ce tutoriel pour vous sentir capable de présenter les objectifs et intérêts de monter une telle filière à l'échelle du territoire.</li><li>Par ailleurs, 20 citoyens en France et à l'étranger ont expérimenté la dégradation de leurs déchets organiques dans le cadre du programme de science participative. N'hésitez pas à rejoindre les groupes WhatsApp mis en place durant l'expérience! Vous trouverez peut être des personnes, proche de chez vous, intéressées pour monter cette filière.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Les étapes suivantes concernent la fabrication de l'incubateur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/ba/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Biosph_re_Urbaine_-_Reproduction_de_grillons_comestibles_IMG_7777-preview.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Biosph_re_Urbaine_-_Reproduction_de_grillons_comestibles_IMG_7777-preview.jpg' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Biosph re Urbaine - Reproduction de grillons comestibles IMG 7777-preview.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'incubateur est utile en début d'élevage pour assurer le bon développement des bébés larves dans des conditions optimales !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Découpe de l'isolant</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.13.11.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.13.11.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.13.11.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/79/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.09.51.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.09.51.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.09.51.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'objectif est d'isoler la boîte afin de garder la chaleur à l'intérieur de la boîte. On va donc placer de l'isolant sur les 3 faces de la boîte en carton. Pour cette étapes, les dimensions dépendent de celles de votre boîte. Ici notre boîte en carton a pour dimensions extérieures : 57 (L) x 44 (l) x 47 (H) cm.<ul><li>Côtés intérieur de la boîte : découpez un panneau d'isolant de 210 x 42 cm (1)</li><li>Dessous intérieur de la boîte : découpez un panneau d'isolant de 55 x 42 cm (2)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Habillage du carton (optionnel)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/92/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.26.54.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.26.54.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.26.54.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'idée est de confectionner une chaussette pour recouvrir la boîte en carton afin que l'incubateur s'intègre mieux dans l'habitat. De la même manière, les dimensions dépendent de celles de votre boîte et 2 cm ont été rajouté à chaque longueur en prévisions des coutures.</li><li>Découpe du tissu<ul><li>Tour extérieur de la boîte en carton : découpez un morceau de tissu de dimension : 210 x 69 cm (1). La largeur de ce textile est plus grande que celle du carton afin de rabattre le textile sur l'isolant.</li><li>Dessous extérieur de la boîte : découpez un morceau de tissu de dimension : 62 x 49 cm (2)</li></ul></li><li>Couture<ul><li>Réalisez une couture en suivant les indications de la photo ...</li></ul></li><li>Assemblage<ul><li>Placez ce tissu sur le carton</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Le coussin couvercle</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/53/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.11.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.11.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.44.11.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/45/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.49.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.49.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.44.49.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>De la même manière, l'objectif est d'isoler au niveau du couvercle. De fait, nous avons confectionné un coussin avec le restant d'isolant. J'ai prévu 2 couches d'isolant afin de garantir une bonne isolation thermique. Ici, les dimensions intérieures sont : 56 x 36,5 cm</li><li>Découpe du tissu<ul><li>Découpez un morceau de tissu de dimension : 70 x 130 cm</li></ul></li><li>Couture<ul><li>Pliez en deux votre morceau de tissu, dans le sens de la longueur</li><li>Réalisez une couture sur les deux largeurs et une longueur, en suivant les indications de la photo</li><li>Retournez votre tissu afin que les coutures se retrouvent à l'intérieur</li><li>Placez les (ou le) panneaux isolant à l'intérieur du coussin</li><li>Réalisez une dernière couture sur la longueur pour fermer le coussin</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Mise en place de l'incubateur</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.45.39.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.45.39.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.45.39.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/91/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.46.44.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.46.44.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.46.44.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.51.32.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.51.32.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.51.32.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c9/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.30.22.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.30.22.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 15.30.22.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Assemblage de l'incubateur<ul><li>Placez les panneaux d'isolant (1) et (2) à l'intérieur de la boîte en carton (voir photo 1). Recouvrez l'isolant avec le tissu d'habillage du carton (étape 4 optionnelle)</li><li>Insérez le bac à l'intérieur (voir photo 2)</li><li>Posez le tapis chauffant bien à plat dans le fond du bac. Le tapis chauffant doit idéalement recouvrir tout le fond de la boîte. Scotchez la sonde sur la dans la partie basse du bac et sortez le câble d'alimentation à l'extérieur de la boîte en carton pour le brancher plus tard</li></ul></li><li>Préparation des bocaux<ul><li>Réalisez des trous de ⌀ 2 mm dans 10 couvercles de bocaux (1) et refermez ces bocaux</li><li>Sur les 2 derniers couvercles, réalisez un gros trou avec un objet tranchant</li><li>Coupez un morceau de moustiquaire un peu plus grand que le diamètre du bocal</li><li>Positionnez la moustiquaire dans le couvercle (2) et refermez le bocal : la moustiquaire doit être bien maintenue grâce au pas de vis du bocal</li><li>Disposez les 12 bocaux en verres sur le tapis chauffant</li></ul></li><li>Placer l'incubateur<ul><li>Trouvez le meilleur endroit pour que l'incubateur ne soit pas encombrant au quotidien tout en restant accessible pour la maintenance</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Préparation de la nourriture pour bébés larves</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/63/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_11.03.45.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_11.03.45.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-26 a 11.03.45.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le régime alimentaire des bébés larves (bocaux dans l'incubateur) se compose principalement d'un mélange de céréales en poudre. Je vous conseille d'acheter les ingrédients en poudre ou bien de les concasser vous-même.</li><li>Les quantités indiquées sont adaptées pour un bocal d'environ 100 g.<ul><li>Dans un saladier, mélangez les ingrédients suivants :</li><li>51 g de son de blé en poudre</li><li>20 g de farine de maïs</li><li>29 g de graines d'alfafa</li></ul></li><li>2. Transférez le mélange dans un bocal d'environ 100 g. Fermez bien pour éviter d'introduire de l'humidité à l'intérieur du bocal. Vous pouvez conserver ce bocal fermé tant que vous n'avez pas d'oeufs de mouches dans la volière.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Les étapes suivantes concernent la fabrication de la volière</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/d/d9/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_14.39.06.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 14.39.06.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La volière est le lieu de vie des mouches et l'endroit dans lequel elles se reproduiront.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Découpe du textile</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/ba/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-21_a_16.53.22.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-21_a_16.53.22.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-21 a 16.53.22.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour fabriquer cette volière, j'utilise de la toile à beurre qui est un textile à petit maillage pour éviter les évasions et relativement transparent pour vérifier facilement l'état des mouches. Nous avons fait des tests avec d'autres textiles mais celui-ci était le plus adapté.<ul><li>Paroi de la volière : dans la toile à beurre, découpez un rectangle de 122 x 102 cm (2 cm en plus pour les coutures)</li><li>Dessus de la volière : dans la toile à beurre, découpez un carré de 27 x 27 cm (2 cm en plus pour les coutures)</li><li>Dessous de la volière : dans la toile à beurre, découpez un carré de 27 x 27 cm (2 cm en plus pour les coutures)</li><li>2 poches d'accès à l'intérieur de la volière : dans la toile à beurre, découpez 2 rectangles de 42 x 22 cm (2 cm en plus pour les finitions et coutures)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Couture</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a7/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_16.35.51.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_16.35.51.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 16.35.51.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d6/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_16.33.00.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_16.33.00.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 16.33.00.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>2 poches d'accès à l'intérieur de la volière (voir photo 1)<ul><li>Réalisez les finitions sur une largeur des 2 rectangles</li><li>Pliez en 2 les rectangles dans leurs longueurs et réalisez une couture sur la longueur. Retournez le textile pour laisser les couture à l'intérieur</li></ul></li><li>Assemblage de la volière (voir photo 2)<ul><li>Pliez en 2 la paroi de la volière dans la longueur du textile</li><li>Déterminez et marquez l'emplacement des 2 poches d'accès à l'intérieur de la volière</li><li>Réalisez une couture sur la longueur, en dehors des emplacements des poches</li><li>Placez une poche sur un des emplacements délimités en suivant les indication de la photo 2. Assemblez les 2 textiles en réalisant une couture sur toute la circonférence de la poche</li><li>Réalisez la même chose avec la seconde poche</li><li>Placez le dessus de la volière à l'une des extrémités. Assemblez les 2 textiles en réalisant une couture sur chaque longueur du carré</li><li>Réalisez la même opération avec le dessous de la volière à l'autre extrémité de la paroi</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Finition de la volière</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d0/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.25.14.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.25.14.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-26 a 10.25.14.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.30.37.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.30.37.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-26 a 10.30.37.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>2 cadres en bois (voir photo Solène)<ul><li>Découpez 4 morceaux de tasseaux de bois de ... cm (1)</li><li>Découpez 4 morceaux de tasseaux de bois de ... cm (2)</li><li>Assemblez le tout pour former 2 cadres en bois</li></ul></li><li>Assemblage des cadres en bois avec la volière (voir photo 1)<ul><li>Fixez des clous aux 4 coins de chaque cadre en laissant dépasser au moins 1 cm</li><li>Attachez les 8 coins de la volière aux clous des cadres avec de la ficelle</li></ul></li><li>Abreuvoir-pondoir (voir photo Solène)<ul><li>Découpez un morceau de coton de 25 x 5 cm</li><li>Enroulez-le d'un morceau de toile à beurre recouvrant l'intégralité du coton</li><li>Réalisez une couture pour assembler le coton et la toile à beurre</li></ul></li><li>Mise en place de l'abreuvoir-pondoir dans la volière (voir photo 2)<ul><li>Sur la face supérieure de la volière, réalisez un petit trou centré et passez une ficelle de 60 cm</li><li>Laissez dépasser quelques centimètres de la ficelle hors de la volière et maintenez-la en position avec une pince à linge</li><li>Rentrez l'abreuvoir-pondoir à l'intérieur de la volière par l'une des poches. Pliez le en 2 et accrochez les 2 extrémité au bout de ficelle avec une pince à linge</li></ul></li><li>Mise en place de la volière (voir photo 3)<ul><li>Placez votre volière dans une pièce chauffée, bien ensoleillée durant la journée. En effet, la température a une forte influence sur la reproduction des mouches</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Protocole d'élevage dans le bac à compost (hors incubateur et volière)</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/63/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_tiroir_ouvert_main_1.1.2_1.1.3.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_tiroir_ouvert_main_1.1.2_1.1.3.jpg' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF tiroir ouvert main 1.1.2 1.1.3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b7/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_09.56.25.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_09.56.25.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-26 a 09.56.25.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4e/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.15.09.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.15.09.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-26 a 10.15.09.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/52/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_09.58.23.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_09.58.23.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-26 a 09.58.23.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/69/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.02.54_1.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-26_a_10.02.54_1.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-26 a 10.02.54 1.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois atteint 5 jours dans l'incubateur, les bébés larves sont transférées dans le bac à compost de l'appartement, appelé toilettes vivantes dans le cadre de notre expérience à Boulogne Billancourt. Retrouvez le tutoriel de sa fabrication sur Biosphère Urbaine - Toilettes vivantes. Ce bac à compost est rempli des déchets toilette et organique générés dans l'appartement. Les larves vont rapidement dégrader ces déchets et restituer au bout de 2 semaines environ un compost très riches, pouvant être utiliser en maraîchage.</li><li>La maintenance quotidienne consiste à vérifier que les larves dégradent bien les déchets qui tombent dans le bac à compost et vérifier l'état de développement des larves. Plus rarement (toutes les 2 à 3 semaines), il vous faudra tamiser le contenu du bac afin de séparer les larves du compost et ainsi assurer le cycle de reproduction de la larve.</li><li>Temps de maintenance quotidienne : 2 minutes par jour</li><li>Observation du bac à compost (voir photo 1)<ul><li>Les larves grandissent très vites et passent d'une couleur blanche à noire en quelques semaines</li></ul></li><li>Récolte des larves</li><li>Au bout d'environ 2 semaines passées à se nourrir des déchets, les larves de BSF peuvent être récoltées (voir photo 2). À ce stade, les larves ont atteint leur poids maximum, mais ne se sont pas encore transformées en pré-nymphe. Leur valeur nutritionnelle est donc à son maximum. La récolte est le processus par lequel les larves sont séparées du résidu.<ul><li>Pour ce faire, on peut utiliser un tamis à manuel ou automatisé qui permet de séparer facilement les larves des résidus. Plusieurs techniques ont été testé mais cette étape reste assez longue (voir photo 3)</li><li>Option : gardez une partie des larves pour l'alimentation de vos poules ou grillons (voir photo 5)</li></ul></li><li>Préparation des bocaux de larves adultes pour la reproduction (voir photo 4)<ul><li>Remplissez un ou plusieurs bocaux de 10 cm de substrat sec type pellets de paille, sciure ou fibre de coco</li><li>Versez une grosse poignée de larves dans chaque bocal</li><li>Fermez les bocaux et donnez-les à la personne en charge de l'incubateur : rendez-vous à l'étape 13 pour découvrir la suite du protocole</li></ul></li><li>Suivi de la croissance<ul><li>Nous vous encourageons à noter vos observations sur la croissance</li></ul></li><li>Communication avec les membres de la filière<ul><li>Tenez au courant les membres de la filière du stade de croissance de vos larves et planifiez ensemble le bon moment pour réaliser les échanges de bocaux</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Protocole d'élevage dans l'incubateur et la volière</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fd/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.21.24.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.21.24.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 15.21.24.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/04/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.23.07.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.23.07.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 15.23.07.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.47.32.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.47.32.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 15.47.32.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e5/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.31.33.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.31.33.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 15.31.33.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3a/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.55.08.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_Capture_d_e_cran_2024-11-25_a_15.55.08.png' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF Capture d e cran 2024-11-25 a 15.55.08.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/08/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_larves_toilettes_1.1.3.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_larves_toilettes_1.1.3.jpg' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF larves toilettes 1.1.3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La maintenance quotidienne consiste à vérifier s'il y a des éclosions de mouches dans les bocaux, des oeufs de larves dans la volière, des naissances de bébés larves dans le bocal-moustiquaire, gérer la nourriture pour les larves. et l'eau pour les mouches de la volière.</li><li>Temps de maintenance quotidienne : 2 à 5 minutes par jour</li><li>Vérifier les éclosions de mouches dans les bocaux de l'incubateur (voir photo 1)</li><li>Lorsque vous récupérez des bocaux de larves adultes (étape 12), placez-les dans l'incubateur<ul><li>Vérifiez si une dizaine de mouches sont nées dans ces bocaux</li></ul></li><li>Transfert des mouches dans la volière (voir photo 2)</li><li>Passez à cette étape lorsque vous avez au moins une dizaine de mouche dans votre bocal : cela permettra d'augmenter vos chances d'avoir des mâles et des femelles et donc des reproductions dans la volière.</li><li>Lorsque vous observez une dizaine de mouches dans un bocal :<ul><li>Introduisez le bocal à l'intérieur de la volière par l'une des poches</li><li>Ouvrez le couvercle du bocal et laissez les mouches s'échapper dans la volière</li><li>Refermez le bocal et sortez-le de la volière</li><li>S'il reste des mouches ou des larves, replacez le bocal dans l'incubateur. Au bout de 2 semaines vous pouvez enlever le bocal de l'incubateur et vider son contenu dans un jardin</li></ul></li><li>Vérifier l'abreuvoir-pondoir (voir photo 3 et 4)<ul><li>Sortez l'abreuvoir-pondoir de la volière (en faisant attention de ne pas sortir des mouches) et vérifiez s'il y a des oeufs de mouches à l'intérieur</li></ul></li><li>Si vous avez des oeufs :<ul><li>Ouvrez un bocal et remplissez un quart du bocal de nourriture pour larves (voir étape 7) avec quelques cuillère à café d'eau : l'objectif est d'obtenir une consistance boueuse (mais pas trop liquide pour éviter que les larves ne se noient)</li><li>Refermez le couvercle en coinçant la moustiquaire dans le pas de vis du bocal</li><li>Déposez délicatement les oeufs sur la moustiquaire du couvercle</li><li>Replacez le bocal dans l'incubateur</li><li>Imbibez d'eau l'abreuvoir-pondoir dans un bocal, essorez-le puis accrochez-le à la pince à linge à l'intérieur de la volière</li></ul></li><li>Vérifier la naissance de larves dans le bocal moustiquaire (voir photo 5)<ul><li>Ouvrez le bocal-moustiquaire et vérifiez s'il y a des naissances</li><li>Si la nourriture est sèche : rajoutez de l'eau et laissez le mélange s'imbiber. N'utilisez pas d'ustensiles pour mélange car vous pourriez tuer des bébés larves</li><li>Lorsque les oeufs sont très secs (devenus jaunes), vous pouvez les jeter, nettoyer la moustiquaire et visser le couvercle-moustiquaire (2) sur un bocal vide. De fait, vous pouvez visser un couvercle avec des petits trous (1) sur le bocal avec les bébés larves</li></ul></li><li>Transfert des larves de 5 jours dans le bac de compost (voir photo 6)<ul><li>Organisez-vous avec les membres de la filière pour introduire les larves de 5 jours dans le bac de compost</li></ul></li><li>Suivi de la croissance<ul><li>Nous vous encourageons à noter vos observations sur la croissance</li></ul></li><li>Communication avec les membres de la filière<ul><li>Tenez au courant les membres de la filière du stade de croissance de vos larves et planifiez ensemble le bon moment pour réaliser les échanges de bocaux</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - FAQ</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4e/Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_couvercle_coton.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_larves_de_mouches_soldats_noires_BSF_couvercle_coton.jpg' alt='Biosph re Urbaine - Fili re levage de larves de mouches soldats noires BSF couvercle coton.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>De la moisissure apparaît dans mes bocaux, que dois-je faire ?</li><li>Il se peut qu’il y est du moisi dans votre pot d’incubation de larve naissante. Ce n’est pas un problème pour les larves qui peuvent le manger et le digérer sans problème.</li><li>Des moucherons (drosophile/mouche à vinaigre) sont rentrés dans un pot de l'incubateur, est-ce grave ?</li><li>Ca n’est pas grave, c’est juste désagréable d’avoir des moucherons en train de voler. Pour éviter ça, il est possible de rajouter un “surcouvercle” (voir photo 1) en tissu respirant et le fixer avec un élastique (du coton avec un maillage fin fait très bien l’affaire).</li><li>Les larves naissantes dans les pots de mon incubateur essayent de s’échapper, et bouchent les trous de passages d’air dans le couvercle, que faire ?</li><li>Il y a plusieurs causes potentiels:<ul><li>Pas assez d’air dans le bocal (et ça empire lorsqu’elles bouchent les trous en essayant de sortir)</li><li>Pas assez de nourriture dans le bocal</li></ul></li><li>Solution:<ul><li>rajouter de la nourriture</li><li>ajouter plus de trou d’aérations</li></ul></li><li>Le substrat des larves (naissante ou mature) est rapidement devenu très sec, c’est normal ?</li><li>Il est possible qu’en laissant un simple dessus de pot moustiquaire dans l’incubateur, l’humidité contenu dans le bocal se soit rapidement évaporée. Il faut juste remettre un peu d’eau en faisant attention à ne pas noyer vos larves (une consistance compote est suffisante).</li><li>Les nymphes qui étaient récemment des pré-pupes ne sortent pas du bocal pour aller dans la volière, que faire ?</li><li>Les nymphes sont attirées par la lumière, il sera plus facile de les faire sortir s’il y a un contraste important entre le bocal et la volière. On peut donc mettre en permanence un cache sur le bocal pour plonger les nymphes dans le noir.</li><li>Puis, 1 fois par jour, sortir le bocal de l’incubateur, l’insérer dans la volière en gardant à la main le pot. Et enfin l’ouvrir en l’orientant l’ouverture dans la direction de la source de lumière la plus intense.</li><li>90 % des nymphes s’envolent généralement, on peut laisser le reste dans le pot, remettre le pot dans l’incubateur et recommencer le lendemain quand de nouvelles nymphes seront apparues (durée totale de l’opération 30 secondes).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

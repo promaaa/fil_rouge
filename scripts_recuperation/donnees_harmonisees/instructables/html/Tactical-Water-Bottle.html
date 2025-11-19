@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tactical Water Bottle</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Tactical Water Bottle</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FZD/GG1B/KUV8SWOC/FZDGG1BKUV8SWOC.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Have you ever spilt your water on your papers while in class?</p>
+      
+        <p>While this handy water bottle will make sure it never happens again. It comes with a handy device at the bottom that makes sure it cant be tipped over. It also has the ability to store 2 separate beverages of your choosing, as it has a separation wall that you can take out.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>3d Printer</li><li>3d Printer plastic</li><li>This water bottle was made in fusion 360. In order to create it, you need:</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Inspiration</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FLF/QU5G/KUV8SX3E/FLFQU5GKUV8SX3E.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Inspiration' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLF/QU5G/KUV8SX3E/FLFQU5GKUV8SX3E.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Inspiration' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>My inspiration was that I always end up spilling water on my papers in class. So I decided to fix that.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Start</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FBQ/C24V/KUV8SX9F/FBQC24VKUV8SX9F.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Start' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBQ/C24V/KUV8SX9F/FBQC24VKUV8SX9F.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Start' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To start I created the water bottle shaft and put a whole through the window.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Legs</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FRU/CX6H/KUV8SXCR/FRUCX6HKUV8SXCR.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Legs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRU/CX6H/KUV8SXCR/FRUCX6HKUV8SXCR.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Legs' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I then created the 4 legs</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Platform</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F5I/VBKB/KUV8SY05/F5IVBKBKUV8SY05.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Platform' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5I/VBKB/KUV8SY05/F5IVBKBKUV8SY05.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Platform' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I then created the bottom platform</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Platform Cutting</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F6R/XY9P/KUV8SY77/F6RXY9PKUV8SY77.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Platform Cutting' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6R/XY9P/KUV8SY77/F6RXY9PKUV8SY77.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Platform Cutting' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I then cut the platform to make it more practical</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6:</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FHF/2XSB/KUV8SYBH/FHF2XSBKUV8SYBH.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOA/42LP/KUV8SYO0/FOA42LPKUV8SYO0.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGD/645B/KUV8SYVM/FGD645BKUV8SYVM.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHF/2XSB/KUV8SYBH/FHF2XSBKUV8SYBH.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOA/42LP/KUV8SYO0/FOA42LPKUV8SYO0.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGD/645B/KUV8SYVM/FGD645BKUV8SYVM.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>After that, I cut a small gap in the water bottle so I could put in a small wall that can be taken out so I can have two beverages In the bottle at once.</li><li>I then created the wall.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Next Part of the Project</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FAH/AW5V/KUV8SYWK/FAHAW5VKUV8SYWK.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Next Part of the Project' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAH/AW5V/KUV8SYWK/FAHAW5VKUV8SYWK.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Next Part of the Project' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I finished the bottle portion, and next I needed to create a lid.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Start</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FMU/5BWY/KUV8SZAL/FMU5BWYKUV8SZAL.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Start' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMU/5BWY/KUV8SZAL/FMU5BWYKUV8SZAL.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Start' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To start, I created a circle and extruded to make a 3d circle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Shelling & Construction</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FGW/Q2Z2/KUV8T01Z/FGWQ2Z2KUV8T01Z.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shelling & Construction' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAL/APBO/KUV8T154/FALAPBOKUV8T154.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shelling & Construction' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGW/Q2Z2/KUV8T01Z/FGWQ2Z2KUV8T01Z.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shelling & Construction' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAL/APBO/KUV8T154/FALAPBOKUV8T154.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shelling & Construction' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I Shelled lid so it could be placed on the bottle.</li><li>I then preceded to assemble the whole thing which finished the building of the bottle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Material and Designs</strong><div class='step-images count-14'><figure><img src='https://content.instructables.com/FS0/0Z7N/KUV8T31T/FS00Z7NKUV8T31T.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBP/7HRX/KUV8T39F/FBP7HRXKUV8T39F.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3A/DG37/KUV8T40W/F3ADG37KUV8T40W.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAV/3TW8/KUV8T4H7/FAV3TW8KUV8T4H7.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGP/JZV6/KUV8T52P/FGPJZV6KUV8T52P.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/F9R/9CXM/KUV8T54S/F9R9CXMKUV8T54S.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSM/8VHA/KUV8T5D7/FSM8VHAKUV8T5D7.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS0/0Z7N/KUV8T31T/FS00Z7NKUV8T31T.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBP/7HRX/KUV8T39F/FBP7HRXKUV8T39F.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3A/DG37/KUV8T40W/F3ADG37KUV8T40W.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAV/3TW8/KUV8T4H7/FAV3TW8KUV8T4H7.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGP/JZV6/KUV8T52P/FGPJZV6KUV8T52P.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/F9R/9CXM/KUV8T54S/F9R9CXMKUV8T54S.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSM/8VHA/KUV8T5D7/FSM8VHAKUV8T5D7.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Material and Designs' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I made the bottle and lid out of plastic so it will be easier and less costly to create.</li><li>I wanted there to be multiple colors so this is what I got:<ul><li>Dark Blue</li><li>Beige</li><li>Turquoise</li><li>Red</li><li>Green</li><li>Black</li><li>White</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Conclusion</strong><p><strong>Étapes :</strong></p><ol><li>It was a fun project and I enjoyed it and I hope you do to.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

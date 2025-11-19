@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Socially Distanced High Five Machine</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Socially Distanced High Five Machine</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FJJ/VWQS/KMC0YVE7/FJJVWQSKMC0YVE7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Hello Instructables!</p>
+      
+        <p>As a teacher coming back to students, much like a beautiful and confused butterfly emerging from its quarantine cocoon, I am very excited to be back in person again! That said, there are still some restrictions we have to abide by, and one of the things I miss most is the confidence and positivity boost of a good old fashioned "high five"! After seeing some inspiration from a teacher in the Netherlands, I decided I wanted to make my own socially distanced high five machine out of mostly PVC piping!</p>
+      
+        <p>The point of this machine is for students to use their foot to push the lever forward, bringing the hand up to me at the other end! That way, I'm the only one touching the hand part, and students can safely use it without having to worry about sanitizing (unless they're bare-foot, in which case you may have other concerns)! I chose not to glue it together, since I often need to move and store it, so I wanted to be able to quickly take it apart and put it back together, but you could easily use PVC cement to keep it all together (which would be especially helpful if you have some very excited kids trying it out)!</p>
+      
+        <p>This is the first iteration of it, and it certainly can use some improvements, but here is as detailed as I made it! Feel free to add suggestions or improvement ideas in the comments, and thank you for checking it out!</p>
+      
+        <p>PS - This is my first Instructable, so any feedback would be much appreciated!</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>I was able to pick up everything I needed from Lowes for less than $40, though you might have many of these already lying around! Here, I will include each part, and what cuts I made!</li><li>Three 10' lengths of 1" PVC Piping (Two of these were cut into 6' and 4' pieces, and the last one was cut into three 2' pieces, and the rest was kept as scrap)</li><li>One 10' length of 1-1/4" PVC Piping (Cut into one 5' piece, two 2' pieces, and two 6" pieces)</li><li>One 10' length of 3/4" PVC Piping (Cut into two 4.75' pieces, and leaving a small piece to use as a joint connector)</li><li>Four 1" x 1" dia 90-Degree Elbow PVC Fitting (Here is a pack of 5, though you only need 4)</li><li>Two 1" x 1" x 1" dia 90-Degree Side Outlet Elbow PVC Fitting</li><li>Two 3/4" x 3/4" dia 90-Degree Slip Elbow PVC Fitting</li><li>One 1-1/4" x 1-1/4" x 1-1/4" dia 90-Degree Tee PVC Fitting</li><li>One 1/4-in x 4-in Zinc-Plated Coarse Thread Carriage Bolt (You could get a slightly longer one for safety, since mine is a very tight fit)</li><li>One 1/4-in x 20 Zinc-Plated Steel Hex Nut</li><li>One 3/4-in to 3/4-in dia Galvanized 2-hole Pipe Strap (This links to a 10-pack, but you can pick up single ones in store)</li><li>Four 1-in to 1-in dia Galvanized 2-hole Pipe Strap (This is a 4 pack, so perfect sized!)</li><li>Two 1-1/4-in Galvanized 2-hole Pipe Strap (Another 4 pack, so either pick this up or go in store for 2)</li><li>Screws</li><li>One spare 2x4 (I only used 4' of some scrap 2x4)</li><li>Some scrap cardboard (this was used to make the hand, but you could use a number of different materials)!</li><li>Tape</li><li>Tools</li><li>Miter saw (or anything that can cut PVC piping)</li><li>Drill (for drilling holes and screws into PVC and wood)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Cut and Prepare All of Your PVC!</strong><p><strong>Étapes :</strong></p><ol><li>If you haven't already done so, you need to cut all of your PVC! Here are all the pieces you will need:</li><li>1" Diameter: Two 6', Two 4', Three 2' (Should have 4' left as scrap)</li><li>3/4" Diameter: Two 4'10", One 4" (Using the whole 10'!)</li><li>1-1/4" Diameter: One 5', Two 1', Two 8" (Should have about 2' of scrap!)</li><li>Also, cut your 2x4 into 4 pieces: One 2'6", one 1'10", and two small blocks - about 4" each</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Assemble the Frame!</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FMG/W9DY/KMC0YVOD/FMGW9DYKMC0YVOD.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYE/1STF/KMC0YVDT/FYE1STFKMC0YVDT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F06/J8MF/KMCBU9UA/F06J8MFKMCBU9UA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1G/I8XM/KMCC88LA/F1GI8XMKMCC88LA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMG/W9DY/KMC0YVOD/FMGW9DYKMC0YVOD.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYE/1STF/KMC0YVDT/FYE1STFKMC0YVDT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F06/J8MF/KMCBU9UA/F06J8MFKMCBU9UA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1G/I8XM/KMCC88LA/F1GI8XMKMCC88LA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Frame!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now comes the fun part! We are going to assemble the frame using all of our 1" diameter PVC pipes, and our 1-1/4" diameter pipes.</li><li>Before we start putting the base together, take your two 8" long 1-1/4" diameter PVC pipe pieces, and connect them on opposite sides of the 1-1/4" T joint! That piece is going to slide on top of the short end of the base, so be ready!</li><li>The goal is to make a base out of 1" diameter PVC piping that is 2' x 6', with 90 degree elbow joints at one end, and the three point side outlet elbow joints at the other end (the empty socket pointing up). At the end with the three point side outlet elbow joints, before you connect the joints, slide that 1-1/4" diameter T joint piece we just connected over top of the 2' long 1" PVC pipe. Also, slide one of the 1' pieces of 1-1/4" diameter PVC on each 6' side. Once those are on, use the connectors! If you are planning on keeping this whole thing together and not taking it apart often, you can cement these joints - just be sure to not get any cement on the 1-1/4" diameter pieces that are sliding on top! The 1-1/4" diameter pieces should be able to slide and turn freely on top of the 1" diameter pieces, and that's how we will get our movement!</li><li>Now that we have the base, we can attach the safety bar! This part will keep this machine a safe high five machine, instead of a "slap-you-in-the-face" machine, though you can remove the bar if you need something that does that! Attach the 4' long 1" diameter PVC pipe pieces to the 3 point elbows going straight up, and then connect those at the top using the last two 90 degree elbows and the last 2' long 1" diameter PVC piece.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Add the Baseboard and Foot Pedal!</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FMZ/PAUX/KMC0YVER/FMZPAUXKMC0YVER.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FI0/QU0C/KMCC88JH/FI0QU0CKMCC88JH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNR/GEFF/KMC0YVDP/FNRGEFFKMC0YVDP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUF/EEOW/KMCC88JJ/FUFEEOWKMCC88JJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMZ/PAUX/KMC0YVER/FMZPAUXKMC0YVER.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FI0/QU0C/KMCC88JH/FI0QU0CKMCC88JH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNR/GEFF/KMC0YVDP/FNRGEFFKMC0YVDP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUF/EEOW/KMCC88JJ/FUFEEOWKMCC88JJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add the Baseboard and Foot Pedal!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now that we have our frame, we can secure it to the ground! First, use the 1'10" long 2x4 for the base at the end further from the safety bar. Put the 2x4 underneath the 2' length of PVC piping, and use two of the 1" pipe straps to connect the pipe to the board. Take the two 4" blocks, and do the same at the end with the T joint and the safety bar - just be sure to allow the T joint and 1-1/4" diameter PVC pipe pieces enough room to spin on top of the 1" diameter pipe.</li><li>Then, we are going to use the 2'6" long 2x4 as our foot pedal! Pull the two 1' long 1-1/4 PVC pipe pieces all the way to the back so they are right against the elbow joints on the end away from the safety bar. With the 2x4 on top of this, we are going to use the two 1-1/4" pip straps underneath to attach the wood. Make sure it is tight enough that when you push the wood, those pieces slide on top of the 1" diameter pipe.</li><li>TIP - To make this easier for the kids, make sure the wood is as close to the edge of the 1-1/4" pipe - as far away from the end with the safety bar as possible. That way, the kids can reach it easier and won't have to do a split to get their foot on it!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Build and Attach the Connector!</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FQJ/BXI7/KMC0YVEF/FQJBXI7KMC0YVEF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build and Attach the Connector!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPG/IX35/KMCC88JK/FPGIX35KMCC88JK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build and Attach the Connector!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQJ/BXI7/KMC0YVEF/FQJBXI7KMC0YVEF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build and Attach the Connector!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPG/IX35/KMCC88JK/FPGIX35KMCC88JK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build and Attach the Connector!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now, we are going to use our 3/4" diameter PVC pipe pieces!</li><li>Use the small 4" long piece to act as a connector, with the two 90 degree elbows on each side, and attach the two 4'10" pieces to the other ends of the elbows, making a very long looking "U".</li><li>Face those towards the safety bar, and attach them to the foot pedal using the 3/4" pipe strap right in the middle of the 4" long piece. This one should be attached, but not so tight that it can twist a little.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Connect the Connector to the Arm!</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FBM/9L2K/KMCC88JL/FBM9L2KKMCC88JL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPN/0I5U/KMCC88JD/FPN0I5UKMCC88JD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL2/2SU1/KMC0YVE4/FL22SU1KMC0YVE4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FV8/58J6/KMC0YVDY/FV858J6KMC0YVDY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBM/9L2K/KMCC88JL/FBM9L2KKMCC88JL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPN/0I5U/KMCC88JD/FPN0I5UKMCC88JD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL2/2SU1/KMC0YVE4/FL22SU1KMC0YVE4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FV8/58J6/KMC0YVDY/FV858J6KMC0YVDY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Connector to the Arm!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nearly there!</li><li>Using a drill, drill a hole big enough for your carriage bolt to go through the two ends of the 3/4" diameter pipes. The goal is to connect this to the 1-1/4" PVC arm pipe that is attached to the T joint. When drilling the hole through the 1-1/4" PVC pipe, not that the height is important to consider. The higher you drill it, the further the foot pedal will have to be pushed to get the arm to the top! I found a good height for the hole was about 18" from the T joint. If you need to, you can make a couple holes to test out different heights and see how that changes how far you need to push the pedal!</li><li>Once you have the holes drilled through all three pipes, hold them to line up the holes (another set of hands is helpful here) and push the carriage bolt through all three, using the hex nut to tighten it on the other side (again, not so tight that they can't move)!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Create a Hand, and Test It Out!</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FBH/VXYS/KMCC88JM/FBHVXYSKMCC88JM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Hand, and Test It Out!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMU/8VM4/KMCC88JR/FMU8VM4KMCC88JR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Hand, and Test It Out!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBH/VXYS/KMCC88JM/FBHVXYSKMCC88JM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Hand, and Test It Out!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMU/8VM4/KMCC88JR/FMU8VM4KMCC88JR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Hand, and Test It Out!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now all you've got to do is create a hand! I used some scrap cardboard and cut out two rough sketches of a hand, and then used them to sandwich the top of the 1-1/4" diameter pipe! Using some duct tape, I was able to attach it and revel in its glory!</li><li>For the future, I think adding some locking wheels to one end would be a great way to move this thing around. I'd also consider using some PVC unions to make this a little easier to take apart and put back together. That said, it seems to work pretty well, and the kids have loved it!</li><li>Let me know what you think, and what improvements you might add! Like I said, I'm new to this, but I wanted to put this idea out there so it could be shared and improved upon! Thank you for checking it out, and have a great day!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

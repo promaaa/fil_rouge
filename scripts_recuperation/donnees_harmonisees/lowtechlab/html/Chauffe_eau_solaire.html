@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chauffe eau solaire</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Chauffe eau solaire</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/2/2e/Chauffe_eau_solaire_Chauffe_eau_solaire_PST_maison.png/800px-Chauffe_eau_solaire_Chauffe_eau_solaire_PST_maison.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Capter l'énergie solaire pour l'eau chaude sanitaire ou le chauffage à haut rendement.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les panneaux solaires thermiques sont très performants pour profiter du rayonnement solaire. Sous nos latitudes le soleil dispense jusqu'à 1000 Watts par m². Avec des panneaux photovoltaïques on arrive à capter 200 W/m², en thermique on monte à 800W/m², soit quatre fois plus ! Les panneaux solaires thermiques sont donc bien plus rentables que les panneaux photovoltaïques et bien moins coûteux. La solution « faite maison » que nous propose Eric Lafond dépasse allègrement les 500W/m² pour un prix de revient de 15€ le m².</p>
+      
+        <p>Ce site permet notamment de connaître la puissance solaire reçue en fonction de la position géographique et de la saison.</p>
+      
+        <p>Les panneaux solaires thermiques sont particulièrement intéressant pour produire l’eau chaude sanitaire, on parle dans ce cas de chauffe-eau solaire.</p>
+      
+        <p>Pour un foyer de 2 personnes, 3 ou 4m² de panneaux solaires thermiques permettent de couvrir 90% des besoins en eau chaude à l’année. La résistance du ballon prend le relais les jours sans soleil. S’il y a plus d’habitants et donc plus d’eau consommée il faut augmenter la surface de panneaux, par exemple 6m² pour 6 personnes.</p>
+      
+        <p>Le système qu'Eric nous propose, au complet, panneaux fait maison, tuyaux d’alimentation, liquide caloporteur, ballon solaire, circulateur et régulateur est rentabilisé en deux à trois ans. Les panneaux installés chez lui fêtent leur dix-huitième année.</p>
+      
+        <p>Ces panneaux thermiques sont conçus de la même manière que ceux du marché, un isolant et une vitre prennent en sandwich un capteur solaire parcouru par un fluide caloporteur. Dans notre cas, le capteur solaire est la grille que l’on trouve à l’arrière des frigos. L’isolant est fourni par les portes de ces mêmes réfrigérateurs. La vitre est récupérée sur du double vitrage. Les frigos sont nombreux en décharges ou recycleries, les doubles-vitrages quant à eux encombrent les verriers.</p>
+      
+        <p>Un grand merci à Riké, qui nous a partagé son savoir-faire, du haut de ses 20 ans d’expériences dans le solaire thermique ainsi qu’aux membres du collectif du Grand Moulin qui nous ont accueillis au stage qu’ils organisaient, particulièrement à Karine, Sylvain et Pascal. Merci également à Jean-Loup pour son accompagnement sur la découpe du verre et les brasures ainsi qu’à tous les autres volontaires du chantier participatif pour leur aide.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Chauffe_eau_solaire" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Chauffe_eau_solaire</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>portes de frigo de taille similaire (support)</li><li>grilles à l'arrière de frigo de taille similaire (capteur)</li><li>liteaux en bois imputrescible (douglas, mélèze…)</li><li>tubes cuivre de diamètre 16mm (nourrice)</li><li>vitre double vitrage à séparer</li><li>peinture acrylique noire</li><li>vis à bois ou auto-foreuse,</li><li>rondelles</li><li>mastic polyuréthane</li><li>bouchons de liège</li><li>baguettes de brasure laiton et décapant</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>cutter et lames</li><li>coupe-tube</li><li>visseuse et embouts</li><li>scie à métaux et/ou disqueuse</li><li>chalumeau</li><li>scie égoïne et/ou scie circulaire</li><li>papier de verre</li><li>tube fer plein (diamètre 12mm)</li><li>équipement de protection (lunettes, gants, lunette protection brasage)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Avant-propos</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/97/Chauffe_eau_solaire_47943917076_05c3219c7e_o.jpg/800px-Chauffe_eau_solaire_47943917076_05c3219c7e_o.jpg' alt='Chauffe eau solaire 47943917076 05c3219c7e o.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d0/Chauffe_eau_solaire_47943938256_1b72aedc83_k.jpg/800px-Chauffe_eau_solaire_47943938256_1b72aedc83_k.jpg' alt='Chauffe eau solaire 47943938256 1b72aedc83 k.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8f/Chauffe_eau_solaire_Grille.jpg/800px-Chauffe_eau_solaire_Grille.jpg' alt='Chauffe eau solaire Grille.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/26/Chauffe_eau_solaire_AP_-_orientation_grille.png' alt='Chauffe eau solaire AP - orientation grille.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les panneaux solaires thermiques que nous vous proposons de réaliser devront être installés plein Sud, formant dans l’idéal un angle de 60° avec l’horizon, sinon à la verticale en façade. L’utilisation en toiture n’est pas intéressante en hiver et provoque des surchauffes en été. (plus de détails dans la phase installation)</li><li>Pour profiter au maximum de l’énergie solaire thermique, il est intéressant de minimiser l’inertie dans la captation et de la maximiser dans le stockage ou la diffusion. Les panneaux fonctionnent dès qu’il y a un rayon de soleil grâce à leur faible inertie. La chaleur est conservée longtemps dans le ballon du à son grand volume et sa bonne isolation.</li><li>Les tuyaux des grilles de réfrigérateur sont de petits diamètres (4mm), il y a donc un faible volume de liquide caloporteur à chauffer dans le panneau. Cette faible inertie permet de monter vite en température dès qu’une éclaircie apparait entre deux nuages et donc de chauffer le ballon d’eau chaude. Plus le diamètre des tuyaux augmente, plus il faut du temps pour chauffer le grand volume de liquide et moins le système est performant.</li><li>Pour que les panneaux montent en température le plus vite possible il faut que le volume compris entre l’isolant et la vitre sois le plus faible possible. Il faut donc limiter l’épaisseur du panneau dans la limite où la grille ne touche ni le fond ni la vitre, sinon elle perdrait ses calories par conduction avec les autres éléments.</li><li>Les températures peuvent dépasser les 150°C à l’intérieur du panneau, il faut donc utiliser des matériaux résistants à ces chaleurs et aux UV. Il ne faut en aucun cas utiliser de colles ou peintures avec solvant qui ne tiennent pas aux UV. Dans notre cas nous utilisons du mastic PU et de la peinture acrylique. Pour une bonne longévité il faut également utiliser du bois local imputrescible.</li><li>Les nuits d’hiver, il peut faire très froid à l’intérieur du panneau. Les différents matériaux, isolant, métal, bois et verre vont se dilater différemment entre la nuit d’hiver et le plein soleil estival. Les joints qui les unissent doivent être épais pour absorber la déformation, s’ils ne le sont pas assez ils vont s’arracher, on dit qu’ils délaminent.</li><li>La particularité et l’ingéniosité de ces panneaux solaires thermiques est d’utiliser des grilles de réfrigérateurs. Mais attention, toutes les grilles ne sont pas bonnes et il faut les utiliser dans le bon sens ! Les grilles doivent être munies d’ailettes de refroidissement et peintes en noires (voir photo). Elles ne doivent pas être en acier galvanisé, la peinture ne tiendra pas dessus. De même, certains réfrigérateurs sont équipés de tuyaux reliés par des fils métalliques, la surface apparente de ces grilles n’est pas suffisante, elles ne sont pas intéressantes pour cet usage.</li><li>Les bonnes grilles ont un sens de montage, les ailettes, comparables à des persiennes, doivent capter le soleil. Dans un sens le soleil passera à travers, c’est le mauvais, dans l’autre sens elle capteront les rayons, c’est le bon ! Elles doivent être perpendiculaires aux rayons du soleil.</li><li>Astuce : prendre la grille et la lever entre le soleil et soi-même, dans un sens les rayons vont passer et pas dans l’autre.</li><li>Les grilles de réfrigérateurs sont parcourues par un fluide frigorifique, nocif pour l’environnement, l’effet de serre et la couche d’ozone. En France les gaz frigorifiques doivent être récupérés. Il existe cependant des dérogations pour les équipements contenant moins de 3 kg de fluide et ce jusqu’en 2025. Les installations domestiques (réfrigérateur et climatiseur) sont donc dégazées avant de poursuivre leur cheminement de revalorisation. On peut donc ouvrir le circuit sans trop mauvaise conscience.</li><li>Attention, vous allez faire quelque chose et cela peut comporter des risques.</li><li>Les informations et conseils donnés dans ce tutoriel viennent notamment d'atelier fait en commun et ne sont ni parfaits ou exhaustifs. Si vous n'avez pas certains outils ou que vous ne vous sentez pas compétent, n'hésitez pas à demander autour de vous pour être aidé. Pensez à bien porter vos équipements de sécurité, à bricoler dans des espaces aérés et ne vous mettez pas en danger. Soyez précautionneux dans l'action, posé et calme, et bien sûr critique vis à vis des éventuelles fausses bonnes idées que vous pourriez avoir (« ça ira bien comme ça ... »).</li><li>Bonne réalisation !!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Récupération grille</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/Chauffe_eau_solaire_Grille_couper.png/800px-Chauffe_eau_solaire_Grille_couper.png' alt='Chauffe eau solaire Grille couper.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9a/Chauffe_eau_solaire_Grille_laver.png/800px-Chauffe_eau_solaire_Grille_laver.png' alt='Chauffe eau solaire Grille laver.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/79/Chauffe_eau_solaire_Grille_souflette.png/800px-Chauffe_eau_solaire_Grille_souflette.png' alt='Chauffe eau solaire Grille souflette.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les réfrigérateurs sont nombreux dans les déchèteries, il faut identifier ceux qui ont les grilles adéquates (voir Avant-propos – Grille) et de la plus grande dimension possible.<ul><li>Pincer les tuyaux à la sortie du compresseur, cela limitera l’échappement des gaz frigorifiques.</li><li>Couper les tuyaux au plus proche du compresseur pour avoir une longueur maximale avec la grille.</li><li>Dévisser la grille.</li><li>Laver la grille à l’eau savonneuse.</li><li>Mettre un coup de soufflette dans les tuyaux pour chasser les impuretés.</li><li>Boucher les tuyaux avec un scotch pour éviter que des impuretés s’y introduisent, étant de petit diamètre ils pourraient s’obstruer.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Récupération porte</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Chauffe_eau_solaire_Porte_-_nettoyage.png/800px-Chauffe_eau_solaire_Porte_-_nettoyage.png' alt='Chauffe eau solaire Porte - nettoyage.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Chauffe_eau_solaire_Porte_-_nettoyage_2.png/800px-Chauffe_eau_solaire_Porte_-_nettoyage_2.png' alt='Chauffe eau solaire Porte - nettoyage 2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les portes de réfrigérateurs sont remplies de mousses isolantes. En les récupérant et en les assemblant elles forment l’arrière du panneau. Elles doivent être plates (et non pas bombées), ce n’est pas grave s’il y a un chanfrein sur les bords, il sera comblé avec du mastic.<ul><li>Dégonder la porte du réfrigérateur.</li><li>Enlever tous les éléments en dehors de l’isolant et de la tôle de la porte : joint, plaintes, plots, poignées, vis, autocollants… Si la face intérieure n’est pas plane, la retirer également.</li><li>Si la mousse isolante est difforme, scier les parties qui dépassent pour avoir une face la plus plane possible. Ce n’est pas la peine d’avoir une surface magnifique non plus, c’est l’arrière du panneau.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Dimensionnement panneaux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/84/Chauffe_eau_solaire_Cadre_positionnement.jpg/800px-Chauffe_eau_solaire_Cadre_positionnement.jpg' alt='Chauffe eau solaire Cadre positionnement.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans l’idéal, les panneaux doivent faire entre 1,5 et 2m², s’ils sont plus gros ils seront lourd et donc plus complexes à installer. Le verre risque de se casser si les panneaux se déforment. S’ils sont plus petits il faudra augmenter le nombre de panneaux, donc plus de travail.</li><li>Il faut rassembler des grilles de taille similaire de dimension légèrement inférieure aux portes. Pour un panneau d’environ 2m² il faut en général 3 à 4 grilles pour 2 ou 3 portes. Dans notre cas nous avons 3 grilles et 3 portes.<ul><li>Rassembler au moins 2-3 portes de tailles similaires.</li><li>Rassembler au moins 3 grilles de tailles similaires qui logent sur les 3 portes.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Réalisation cadre</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/84/Chauffe_eau_solaire_Cadre_-_joint_liteau.png/800px-Chauffe_eau_solaire_Cadre_-_joint_liteau.png' alt='Chauffe eau solaire Cadre - joint liteau.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f7/Chauffe_eau_solaire_Cadre_-_serre_joint.png/800px-Chauffe_eau_solaire_Cadre_-_serre_joint.png' alt='Chauffe eau solaire Cadre - serre joint.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c6/Chauffe_eau_solaire_Cadre_-_poncer_portes.png/800px-Chauffe_eau_solaire_Cadre_-_poncer_portes.png' alt='Chauffe eau solaire Cadre - poncer portes.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d8/Chauffe_eau_solaire_Cadre_-_joint_porte.png/800px-Chauffe_eau_solaire_Cadre_-_joint_porte.png' alt='Chauffe eau solaire Cadre - joint porte.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Chauffe_eau_solaire_cadre_-_global.png/800px-Chauffe_eau_solaire_cadre_-_global.png' alt='Chauffe eau solaire cadre - global.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les portes de réfrigérateur forment la structure du panneau et en sont l’isolant. Elles seront collées côte à côté, dans la hauteur. La différence d’épaisseur des portes n’importe pas, on les aligne sur la face avant, intérieure au panneau.<ul><li>Découper les portes afin qu’elles soient toute de la même longueur.</li><li>Poncer les portes</li><li>Disposer les portes sur deux chevrons, longueur contre longueur, côté tôle vers le bas.</li><li>Faire un joint sur la longueur des portes puis les coller.</li><li>Découper 4 liteaux pour former un cadre sur le panneau.</li><li>Poncer les liteaux</li><li>Mettre du mastic sur la largeur de chacun des liteaux et les coller par-dessous le cadre, contre la tôle, à l'aide de serre-joints. Ne pas trop serrer pour avoir une bonne épaisseur de mastic (>1mm).</li><li>Laisser sécher.</li><li>Retourner le cadre sur les chevrons et faire un joint de mastic à l’intérieur et à l’extérieur du cadre ainsi qu’entre les portes.</li><li>Lisser les joints avec un doigt. Pour bien lisser sans effectuer de « pâtés » et se mettre du mastic plein les doigts, tremper son doigt dans de l’eau savonneuse régulièrement.</li><li>Laisser sécher</li></ul></li><li>Attention : La mise en œuvre du polyuréthane entraîne des risques : il est toxique par inhalation, réactif, irritant et très volatil. A manipuler dans un espace aéré avec des équipements de protection. Une fois polymérisés (c'est-à-dire après la stratification), les produits finis sont physiologiquement inactifs.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Peinture cadre</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Chauffe_eau_solaire_Peinture_noir_mat.png/800px-Chauffe_eau_solaire_Peinture_noir_mat.png' alt='Chauffe eau solaire Peinture noir mat.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/85/Chauffe_eau_solaire_Peinture_noir_Chab.jpg/800px-Chauffe_eau_solaire_Peinture_noir_Chab.jpg' alt='Chauffe eau solaire Peinture noir Chab.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Peindre le cadre, les liteaux et les bords des portes avec de la peinture acrylique noire mat.</li><li>Laisser sécher.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Assemblage des grilles et des nourrices</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Chauffe_eau_solaire_Grille_et_nourrice_-_Coupe_tube.png/800px-Chauffe_eau_solaire_Grille_et_nourrice_-_Coupe_tube.png' alt='Chauffe eau solaire Grille et nourrice - Coupe tube.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9c/Chauffe_eau_solaire_Grille_et_nourrice_-_Ecrasement_nourrice.png/800px-Chauffe_eau_solaire_Grille_et_nourrice_-_Ecrasement_nourrice.png' alt='Chauffe eau solaire Grille et nourrice - Ecrasement nourrice.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/80/Chauffe_eau_solaire_Grille_et_nourrice_-_Tige_m_tallique.png/800px-Chauffe_eau_solaire_Grille_et_nourrice_-_Tige_m_tallique.png' alt='Chauffe eau solaire Grille et nourrice - Tige m tallique.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/af/Chauffe_eau_solaire_Grille_et_nourrice_-_Brasures.png/800px-Chauffe_eau_solaire_Grille_et_nourrice_-_Brasures.png' alt='Chauffe eau solaire Grille et nourrice - Brasures.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9f/Chauffe_eau_solaire_Grille_et_nourrice_-_fil_nourrice.jpg/800px-Chauffe_eau_solaire_Grille_et_nourrice_-_fil_nourrice.jpg' alt='Chauffe eau solaire Grille et nourrice - fil nourrice.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6e/Chauffe_eau_solaire_Grille_et_nourrice_-_assemblage.png/800px-Chauffe_eau_solaire_Grille_et_nourrice_-_assemblage.png' alt='Chauffe eau solaire Grille et nourrice - assemblage.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette étape consiste à relier le capteurs solaires (grille de réfrigérateur) au circuit du fluide caloporteur via deux nourrices (tubes en cuivres). Les nourrices doivent avoir un diamètre égal à la somme des diamètres des tuyaux qu’elles alimentent, en plus clair, dans notre cas, 3 tuyaux de 3mm de diamètre intérieur, il faut une nourrice d’au moins 9mm de diamètre intérieur.<ul><li>Positionner les grilles sur le cadre, dans le sens suivant, les ailettes en opposition aux rayons du soleil une fois le cadre à la verticale. Si nécessaire, redécouper les grilles à la bonne taille.</li><li>Chaque grille sera connectée à deux nourrices, l’une d’arrivée d’eau « froide » et l’autre sortie d’eau « chaude ».</li><li>Pour chacune des grilles, couper avec un coupe-tube un des tuyaux à environ 10 cm de la grille et l’autre à environ 15cm. Il faut pouvoir faire rentrer chacun des tubes dans une nourrice différente dans le même plan.</li><li>Ébavurez les coupes</li><li>Nettoyer précautionneusement au papier de verre les tubes coupés sur quelques centimètres. Il ne doit pas rester de peinture pour réussir la brasure.</li><li>Découper un passage dans le cadre pour faire sortir les nourrices.</li><li>Coupez 2 tuyaux en cuivre, les nourrices, de manière à ce qu'ils dépassent d'environ 15 cm du panneau</li><li>Positionner les deux nourrices. L’une va recevoir les tuyaux « courts » d’eau chaude, l’autre les tuyaux longs, d’eau froide.</li><li>Écraser le bout des deux nourrices du côté borgne du cadre, celui par lequel les nourrices ne sortent pas.</li><li>Marquer au crayon l’endroit où se rencontre les tuyaux et les nourrices.</li><li>Marquer au pointeau.</li><li>Percer les nourrices au diamètre des tuyaux (4mm).</li><li>Ébavurer les trous de perçage des nourrices.</li><li>Enfiler dans chacune des nourrices une tige métallique d’environ 12mm de diamètre avec du papier de verre au bout pour enlever les copeaux à l’intérieur des tuyaux, comme pour les ramoner.</li><li>Mettre à nouveau les tiges métalliques dans les nourrices, elles servent de butées aux tuyaux des grilles. Si les tuyaux des grilles sont enfoncés jusqu’au fond de la nourrice, le fluide caloporteur ne passera pas !</li><li>Insérer chaque tuyau dans la nourrice qui lui correspond</li><li>Maintenir les grilles et les nourrices avec du fil de fer entre les deux.</li><li>Braser les interfaces tuyau de grille/nourrice en effectuant bien le tour de chacun des tuyaux. Les tuyaux de grille étant en fer blanc, la brasure est réalisée à base de laiton ou d’argent pour ne pas faire fondre le métal.</li><li>Braser les bouts borgnes des nourrices.</li><li>Retirer les deux tiges métalliques qui servaient de butée aux tuyaux des grilles.</li><li>Agiter le cadre pour faire tomber les potentielles impuretés dues à la brasure.</li><li>Faire un test d’étanchéité des brasures « à la Riké ». Humidifier un pouce et le mettre à l’entrée d’une des nourrices, faire le vide avec sa bouche et mettre sa langue sur la 2e nourrice. La langue doit rester collée. Sinon revoir les brasures.</li></ul></li><li>Les nourrices peuvent être sur le haut ou le bas du cadre, cela ne change rien au bon fonctionnement du panneau. A adapter en fonction de l'installation de chacun.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Installation des grilles sur le cadre</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Chauffe_eau_solaire_Grille_cadre_-_plot_li_ge.png/800px-Chauffe_eau_solaire_Grille_cadre_-_plot_li_ge.png' alt='Chauffe eau solaire Grille cadre - plot li ge.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d9/Chauffe_eau_solaire_Grille_cadre_-_plot_li_ge_global.png/800px-Chauffe_eau_solaire_Grille_cadre_-_plot_li_ge_global.png' alt='Chauffe eau solaire Grille cadre - plot li ge global.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour concentrer la chaleur sur les grilles, elles ne doivent pas être en contact direct avec la tôle des portes. Elles sont espacées grâce à des entretoises en liège. Le liège est imputrescible et résiste bien aux hautes températures.<ul><li>Découper des bouchons en lièges en rondelle de 5mm d’épaisseur avec un cutter.</li><li>Enfiler une rondelle sur une vis et la passer à travers les ailettes des grilles puis dans une rondelle de liège. L’ordre des éléments doit être le suivant : tête de vis, rondelle, grille, rondelle de liège. Cela forme un plot.</li><li>Préparer ainsi l’ensemble des grilles assemblées avec un plot tous les 30 cm. L’objectif est que la grille soit près du fond du cadre sans jamais le toucher. Ajuster le nombre de plots en fonction de la situation.</li><li>Nettoyer le panneau.</li><li>Positionner les grilles et nourrices dans le cadre.</li><li>Visser les plots au panneau sans trop serrer.</li><li>S’assurer que les grilles ne touchent pas la tôle du fond, déformer les grilles si besoin.</li><li>Peindre tout ce qui n’est pas noir en noir (tête de vis, rondelles, nourrices…)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Fermeture panneau</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c5/Chauffe_eau_solaire_vitre_-_parclose.png/800px-Chauffe_eau_solaire_vitre_-_parclose.png' alt='Chauffe eau solaire vitre - parclose.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6e/Chauffe_eau_solaire_Vitre_-_s_paration_double_vitrage.png/800px-Chauffe_eau_solaire_Vitre_-_s_paration_double_vitrage.png' alt='Chauffe eau solaire Vitre - s paration double vitrage.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/11/Chauffe_eau_solaire_Vitre_-_d_coupe.png/800px-Chauffe_eau_solaire_Vitre_-_d_coupe.png' alt='Chauffe eau solaire Vitre - d coupe.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f7/Chauffe_eau_solaire_Vitre_-_mastic.png/800px-Chauffe_eau_solaire_Vitre_-_mastic.png' alt='Chauffe eau solaire Vitre - mastic.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour créer un effet de serre et limiter la convection entre la grille et l’extérieur les panneaux vont être fermés par une vitre. Les verriers se débarrassent des vieilles fenêtres, particulièrement des doubles-vitrages, en leur demandant gentiment on peut les récupérer gratuitement. Dans l’idéal, il faut une épaisseur de vitre de 4mm pour des panneaux verticaux et de 5mm pour des panneaux inclinés, davantage soumis à la grêle et aux intempéries. Ce n’est pas la peine d’avoir des verres plus épais, cela réduit leur performance.<ul><li>Récupérer des fenêtres, pour éviter qu’elles se cassent déplacer les fenêtres et les verres sur la tranche et non pas à plat. Pour travailler le verre il faut se protéger : manches longues, gants et lunettes.</li><li>Retirer les parcloses, glisser un ciseau à bois ou un tournevis entre le cadre de la fenêtre et le parclose du côté intérieur de la fenêtre, taper avec un marteau pour séparer les deux puis retirer le parclose à la main. Faire de même pour les autres côtés.</li><li>Le vitrage est calé sur les côtés. Retirer les cales avec une pince. En écartant légèrement le cadre de la fenêtre de la vitre, il est plus facile de retirer les cales, attention à ne pas trop forcer sous risques de faire éclater le verre.</li><li>Récupérer la vitre ou le double vitrage</li><li>Si c’est un double vitrage, il faut séparer les deux vitres. Glisser une lame de cutter dans le joint contre la vitre. Travailler debout, avec la vitre verticale posée sur des tasseaux, en faisant passer le cutter du haut vers le bas. Faire pivoter la vitre pour toujours travailler dans cette position, du haut vers le bas. J’ai cassé 3 vitres en travaillant à plat et aucune à la verticale ! Enlever le joint de la même manière pour la deuxième vitre du double vitrage</li><li>Dans l’idéal il faut travailler avec des vitres qui n’ont pas de traitement anti-UV, qui limite l’entrée des rayons dans le panneau. Les vitres avec un traitement UV ont un léger reflet. Si on souhaite comparer deux vitres, il faut les mettre côte à côté devant un fond blanc, s’il est teinté d’un côté, il y a traitement anti-UV.</li><li>Pour nettoyer le joint restant sur la vitre, la poser à plat sur une table et passer une lame de cutter à 45°. Un coup de chiffon avec un peu d’acétone permettra d’enlever les derniers restes.</li><li>Mesurer la largeur du cadre, entre les deux tasseaux, retirer 1cm, et couper la vitre à cette mesure. La vitre fait 1/2cm de moins de chaque côté, cela permet de ne pas la casser quand le panneau est posé sur le champ. Pour couper une vitre, tracer avec un diamant le trait de coupe puis passer un chiffon avec du pétrole. Positionner le trait de coupe sur le bord de la table, saisir fermement le bord à casser et effectuer un mouvement sec vers le bas. La découpe est plus évidente quand la partie à retirer fait au moins 10 cm et n’est pas trop longue. Si vous devez couper un verre dans la longueur et la largeur il vaut mieux commencer par la largeur puis la longueur.</li><li>Couper le nombre de vitres nécessaires pour recouvrir entièrement le panneau.</li><li>Nettoyer les vitres avec attention, particulièrement le côté qui sera à l’intérieur du panneau car on ne pourra plus y toucher une fois refermé.</li><li>Faire un cordon de mastic PU noir sur le cadre et déposer précautionneusement les verres un par un sans effectuer de pression dessus, il ne faut écraser les cordons. Pour éviter la condensation, il ne faut pas chercher à étanchéifier à fond les panneaux.</li><li>Passer la ponceuse avec un disque à lamelles sur le bord du verre pour casser l’angle et ne pas se couper.</li><li>Faire un joint PU noir entre le bord du cadre et le verre et le lisser avec un doigt trempé dans l’eau savonneuse.</li><li>Faire un joint PU noir entre les verres et le lisser de la même manière.</li><li>Le panneau solaire thermique est terminé, bravo, il n’y a plus qu’à le laisser sécher puis l’installer.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Panneaux supplémentaires</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/12/Chauffe_eau_solaire_Panneau_suppl_mentaire_-_durite.png' alt='Chauffe eau solaire Panneau suppl mentaire - durite.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>En fonction des besoins en eau chaude et de la puissance d’ensoleillement il faudra probablement plusieurs panneaux solaires thermiques. Pour faire des panneaux supplémentaires il faut reprendre les étapes précédentes. Cependant, à l’inverse du panneau borgne, les nourrices doivent être traversantes, c’est-à-dire que les deux tuyaux en cuivre, d’eau chaude et d’eau froide, doivent dépasser en bas du cadre de chaque côté. Le diamètre doit augmenter de 2mm dans chaque panneau supplémentaire : 12mm pour le panneau borgne, 14 dans le second, 16 dans le troisième, etc. Il faut faire attention à bien raccorder les nourrices d’eau chaude entre elle et de même pour l’eau froide.<ul><li>Raccorder les nourrices avec des durites.</li><li>Bien isoler les nourrices et leur trou de passage dans les panneaux.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Installation</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fc/Chauffe_eau_solaire_PST_maison_3.png/800px-Chauffe_eau_solaire_PST_maison_3.png' alt='Chauffe eau solaire PST maison 3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/35/Chauffe_eau_solaire_Plomberie_expansion_membrane.png/800px-Chauffe_eau_solaire_Plomberie_expansion_membrane.png' alt='Chauffe eau solaire Plomberie expansion membrane.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Chauffe_eau_solaire_Plomberie_expansion_air_libre.jpg/800px-Chauffe_eau_solaire_Plomberie_expansion_air_libre.jpg' alt='Chauffe eau solaire Plomberie expansion air libre.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a4/Chauffe_eau_solaire_soleil_hiver.png' alt='Chauffe eau solaire soleil hiver.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour capter un maximum d’énergie solaire, de calories, le ou les panneaux solaires doivent être perpendiculaire aux rayons du soleil pour deux raisons :<ul><li>en étant perpendiculaire aux rayons la densité énergétique est plus élevée, plus l’angle augmente plus le « nombre » de rayons captés sera réduit par unité de surface. Autrement dit la surface apparente du panneau, vue du soleil, réduit avec l’angle.</li><li>la vitre reflète les rayons, si les rayons arrivent perpendiculairement au verre, tous entrent dans le panneau, plus l’angle augmente, plus la part de rayons reflétés est élevée.</li></ul></li><li>Les panneaux solaires sont rarement mobiles et leur angle est donc fixé à l’installation. La puissance solaire est beaucoup plus forte en été qu’en hiver, sans parler de la durée des journées. L’énergie solaire est au moins trois fois plus importante en été qu’en hiver (voir tutoriel l'énergie dans l'habitat), les panneaux sont donc dimensionnés et orientés pour la période la plus critique : l’hiver.<ul><li>En plein hiver, en France, le soleil a un zénith à 30° avec l’horizon, c’est sa hauteur maximum. En été, sous ces mêmes latitudes, il monte à 60°. Dans l’idéal, les panneaux seront installés perpendiculairement aux rayons solaires d'hiver soit à 90°+30°=120°. Ils forment donc un angle de 120° à l’horizon, plein Sud (voir schéma). Sinon, pour limiter les pertes, on peut les mettre à la verticale contre un mur, c’est plus intéressant et moins dangereux que sur les toits.</li></ul></li><li>L’été, la puissance solaire étant beaucoup plus importante, l’angle importe peu, les panneaux seront vite très chauds, voire trop. Un ombrage est intéressant pour limiter la surchauffe, une casquette sur un panneau à la verticale fait très bien l’affaire.</li><li>Les panneaux solaires thermiques doivent être positionnés au plus près du ballon d’eau chaude pour minimiser les pertes de chaleur.</li><li>Les panneaux doivent être reliés à un ballon échangeur. En plus de la résistance électrique standard, un échangeur fait passer le liquide caloporteur dans le ballon pour transférer la chaleur des panneaux à l'eau sanitaire. On trouve ces ballons échangeurs en magasin de bricolage. Ils coûtent 15 à 30% plus cher que les ballons 100% électriques mais seront très rapidement rentabilisés. Sinon, quelques bons tutos permettent de les faire soi-même à partir d'un ballon classique, comme celui-ci par exemple.</li><li>Le système doit être équipé d’un régulateur et d’un circulateur. Dans notre cas le circulateur s’allume quand la température des panneaux est 10°C supérieure à celle du ballon, elle se coupe quand cette différence est inférieure à 5°C. Cela permet de ne pas refroidir le ballon la nuit ou quand le soleil se fait timide. Le ballon est également muni d’un vase d’expansion pour absorber la dilatation du fluide caloporteur les jours de grand soleil. Ces éléments sont en général fournis avec les ballons échangeurs solaires. On peut aussi les réaliser par soi-même.</li><li>Il est conseillé d'utiliser un liquide caloporteur alimentaire dans le circuit. S'il est utilisé l'hiver il doit être antigel, sinon il faut vidanger le système.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Chauffage solaire</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/52/Chauffe_eau_solaire_47949921956_479ae5b9ec_k.jpg/800px-Chauffe_eau_solaire_47949921956_479ae5b9ec_k.jpg' alt='Chauffe eau solaire 47949921956 479ae5b9ec k.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est possible d’utiliser le même système de panneaux solaires thermiques en chauffage basse température. Le fluide caloporteur des panneaux est envoyé directement dans le réseau de tuyaux chauffant dans le sol ou les murs. Cependant, en solaire, le chauffage est bien moins évident que l’eau chaude sanitaire. En effet, pour le chauffage, on va demander un maximum d’énergie quand elle est le moins disponible : en hiver, alors que le besoin en eau chaude sanitaire s’étale sur toute l’année. De plus l’énergie nécessaire au chauffage de la maison est 6 fois supérieure à celle de l’eau chaude (voir tutoriel l'énergie dans l'habitat), il faudra donc 6 fois plus de panneaux pour le chauffage que pour l’eau chaude.</li><li>En exemple, selon les années, Riké couvre 10 à 30% de ses besoins en chauffage avec 14m² de panneaux alors qu’il dépasse les 90% de couverture avec 6m² de panneaux dédiés à chauffer son ballon de 350 litres eau chaude.</li><li>Une solution de chauffage solaire plus simple à mettre en œuvre a été documentée en février, c’est un convecteur solaire, imaginé par Guy Isabel.</li><li>Pour les jours froids, un Poelito, poêle de masse à très haut rendement, est également documenté, grâce au travail de Vital Bies et de David Mercereau. Il est possible d’y ajouter un bouilleur pour chauffer l’eau chaude sanitaire. C’est le partenaire idéal des journées sans soleil !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Chauffe_eau_solaire_Capture_d_e_cran_2021-03-26_a_10.54.47.png/800px-Chauffe_eau_solaire_Capture_d_e_cran_2021-03-26_a_10.54.47.png' alt='Chauffe eau solaire Capture d e cran 2021-03-26 a 10.54.47.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab à l'occasion de l'exposition "En Quête d'un Habitat Durable" dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux".</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

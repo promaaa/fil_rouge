@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>L'éolienne</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>L'éolienne</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/10/L_olienne_Equipe_et_Eolienne_c_Laurent_Sardi.jpg/800px-L_olienne_Equipe_et_Eolienne_c_Laurent_Sardi.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Créer une éolienne à partir de moteurs pas à pas d'imprimante</div>
+        
+      </div>
+    
+    
+      
+        <p>En Afrique, près de 600 millions de ruraux n’ont pas accès à l’électricité.</p>
+      
+        <p>CONTEXTE :</p>
+      
+        <p>L’accès à l’énergie, et plus particulièrement l’accès à l’électricité, est une condition indispensable pour le développement économique et sanitaire d’un pays. Or, si la consommation d’énergie mondiale a presque doublé depuis les années 1970, la part des pays pauvres n’a cessé d’augmenter. Aujourd’hui, on estime à 2 milliards le nombre de personnes qui ne disposent pas d’un accès à l’énergie suffisant pour vivre dans des conditions correctes, et à 1,6 milliards le nombre de personnes n’ayant pas accès à l’électricité. Ce qui a des conséquences sanitaires et environnementales dramatiques. Les énergies renouvelables, comme l’éolien pourraient être une solution : Une éolienne convertit l’énergie cinétique du vent en énergie électrique.</p>
+      
+        <p>L'EOLIENNE INDUSTRIELLE :</p>
+      
+        <p>Une éolienne industrielle d'une puissance de 2 mégawatts produit annuellement environ 4400 mégawatts/heure, soit la consommation électrique d'environ 2000 personnes. Les éoliennes industrielles sont remplies de capteurs, de pièces mobiles, de régulateurs et de pièces mécaniques en tout genre. Elles sont complexes de fabrication et leur impact environnemental à la construction est loin d'être neutre. De plus il n’est aujourd’hui pas possible de réparer ces éoliennes avec des moyens locaux.</p>
+      
+        <p>L'EOLIENNE LOW-TECH :</p>
+      
+        <p>Une éolienne low-tech à moins de 10€, très simple à fabriquer à partir de matériaux de récupération, c’est possible ! De plus faible puissance que les éoliennes industrielles elle peut être utilisée pour des applications locales : charger un téléphone, allumer des LED, actionner une petite pompe… Pour de telles applications, quelques watts seulement suffisent.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/L_éolienne" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/L_éolienne</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Eolienne :</li><li>1 - Une planche de bois (au moins 10 mm d’épaisseur)</li><li>2 - Une plaque de fer plate (au moins 2 mm d’épaisseur)</li><li>3 - Un moteur pas à pas d’imprimante (avec sa broche de connexion)</li><li>4 - Un tube PVC (55 mm < diamètre < 100 mm ; et au moins 3 mm d’épaisseur)</li><li>5 - Une chambre à air de vélo</li><li>6 - Des vis à bois</li><li>Circuit électrique :</li><li>3 - Le moteur pas à pas d’imprimante</li><li>8 - Un support en plastique pour accueillir les différents éléments du système (récupérable sur une partie plate du boîtier de l'imprimante)</li><li>9 - Deux redresseurs de tension ou pont de diodes W</li><li>10 - Un condensateur 1000µF 16V W</li><li>11 - Un régulateur de tensionW LM7805 pour fixer la tension à 5V, on peut aussi utiliser le LM7812 pour fixer la tension à 12V</li><li>11' - A la place du régulateur de tension on peut utiliser un rehausseur de tension ou Booster DC/DC ou encore Step Up qui fournira une tension de sortie de 5V (USB) avec une tension d'entrée allant de 0,9 à 5V.</li><li>12 - Un connecteur USB</li><li>13 - De l’étain pour la soudure</li><li>14 - Du fil électrique</li><li>Retrouvez globalement la maquette 3D de cette éolienne en suivant ce lien</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Eolienne :</li><li>a - Un étau</li><li>b - Une scie à bois et à métaux</li><li>c - Une règle</li><li>d - Une visseuse</li><li>e - Un voltmètre</li><li>f - Des pinces crocodile</li><li>- Un poste à souder à l'arc</li><li>Circuit électrique :</li><li>g - Une pince coupante</li><li>h - Un fer à souder</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Fonctionnement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/b1/L_olienne_Eolienne_-_Fonctionnement.jpg' alt='L olienne Eolienne - Fonctionnement.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce tutoriel montre comment fabriquer une petite éolienne à partir de vieux moteurs pas à pas d’imprimantes ou de photocopieurs. Elle permettra par exemple de recharger un téléphone portable.</li><li>1 - La rotation des pales</li><li>Sous l’effet du vent, l’hélice, aussi appelée rotor, se met en marche. Ses pales tournent.</li><li>Le rotor à 4 pales est placé en haut d’un mât pour prendre plus de vent.</li><li>2 - La production d’électricité</li><li>L’hélice entraîne un moteur pas à pas d’imprimante.</li><li>Grâce à l’énergie fournie par la rotation des pales le moteur pas à pas produit un courant électrique alternatif.</li><li>3 - Le circuit électrique</li><li>Le circuit sert à « traiter » le courant en sortie du moteur, afin qu’il puisse être utilisé pour charger un téléphone, ou un autre appareil à partir d’un port USB.</li><li>Il est composé :</li><li>- De redresseurs qui « redressent » la tension à la sortie du moteur afin de récupérer un courant continu.</li><li>- D’un condensateur permettant de redistribuer l’électricité de façon constante, car le vent fournit une énergie non continue.</li><li>- D’un régulateur de tension qui limite la tension du courant électrique produit par le moteur au voltage voulu, ici 5V.</li><li>La rotation de l’éolienne nécessite une vitesse de vent minimale d’environ 10 à 15 km/h pour démarrer.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Etapes de fabrication</strong><p><strong>Étapes :</strong></p><ol><li>L'éolienne</li><li>1 - Préparation du moteur</li><li>2 - Axe du moteur</li><li>3 - Préparation des pales</li><li>4 - Aileron et base des pales</li><li>5 - Assemblage</li><li>Le circuit électrique</li><li>1 - Redresseurs</li><li>2 - Condensateur</li><li>3 - Régulateur de tension</li><li>4 - Raccordement du port USB</li><li>Protection du moteur</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - L'éolienne - Le moteur</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/b/b9/L_olienne_1_-_Tester_les_couples_de_fils.jpg' alt='L olienne 1 - Tester les couples de fils.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/01/Mini_olienne_30W_4ou6fils-e49e5.jpg' alt='Mini olienne 30W 4ou6fils-e49e5.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/L_olienne_Module5v.png/800px-L_olienne_Module5v.png' alt='L olienne Module5v.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Choix du moteur</li><li>De manière générale, plus le moteur a de pas (steps en anglais), moins la vitesse de rotation sera élevée à tension constante. Les caractéristiques techniques importantes dans le choix du moteur sont : - La tension maximale ou nominale (mesurée en volts) : Vmax - Le courant par phase (mesuré en ampères / phase) : A/ph - Le nombre de pas ou l'angle de pas (mesuré en °)<ul><li>Par exemple, un moteur pas-à-pas dont l'angle est de 3.6° aura 360/3.6 = 100 pas, un moteur à 1.8° aura 360/1.8 : 200 pas... Si vous deviez choisir entre deux moteurs aux caractéristiques (Vmax et A/ph) identiques, préférez le moteur avec le plus grand nombre de pas (ici le moteur à 1.8° puisqu'il a 200 pas), il nécessitera une vitesse de rotation moins importante pour délivrer une tension satisfaisante.</li></ul></li><li>Le choix du moteur sera aussi conditionné par la tension maximale (Vmax). Un moteur caractérisé à 3V délivrera une puissance nettement inférieure à un moteur caractérisé à 50V à vitesse de rotation égale. Choisissez votre moteur (dans la limite du choix disponible) en fonction de l'application souhaitée et de la puissance demandée.</li><li>1 - Couper les 6 fils sortant du moteur pas à pas, les dénuder et les torsader.</li><li>A partir de la deux méthodes possibles :</li><li>Méthode #1</li><li>Afin de savoir lesquels des 6 fils a la tension de sortie la plus haute, il faut tester tous les couples possibles de sortie du moteur, et sélectionner les deux plus élevés.</li><li>2 - A l’aide d’une visseuse, d’un voltmètre réglé sur « alternatif » et de pinces crocodiles, tester les couples de fils. Noter la tension pour chacun des couples. (image 1)</li><li>3 - Sélectionner les deux couples de fil ayant la tension de sortie la plus élevée (ici 10V, cela peut varier en fonction du moteur). Ce sont eux qui seront ensuite connectés au circuit électrique de l’éolienne.</li><li>* Astuce : Marquer d’un scotch de couleur les deux couples retenus pour ne plus les mélanger aux autres.</li><li>Méthode #2</li><li>En fait les moteurs pas-à-pas (stepper en anglais) sont constitués schématiquement de deux ou quatre bobines :</li><li>(image 2)</li><li>Comme décrit dans l'image, dans le cas d'un 6 fils on ne va pas utiliser le point milieu. On va en fait cumuler deux bobines pour n'en faire qu'une et générer plus de tension.</li><li>A partir de la c'est finalement très simple :</li><li>1) Il suffit de placer son multimètre en mode ohmètre, ou encore mieux en mode détection de contact (vous savez quand il fait "BBIIIIPPPPP !!" quand les deux sondes se touchent ;) ).</li><li>2) Il s'agit tout d'abord de séparer les deux jeux de fil pour chacune des bobines.</li><li>Pour un 4 fils du coup c'est très simple : vous prenez un fil sur une sonde, et avec l'autre sonde vous touchez les autres fils. Quand il y en a qui fait "BBBIIIIIPPPPP !!!" ou que la résistance mesurée devient faible (tout dépend du moteur mais une fourchette large serait 1 à 50 ohms) vous êtes bon vous avez trouvé votre bobine et par élimination les deux fils qui restent sont pour l'autre bobine.<ul><li>Pour un 6 fils c'est à peine plus complexe : on applique la même méthode pour déterminer les jeux de 3 fils par bobine. Ensuite on passe en mode ohmètre et cherche quelle paire de fils par bobine donne la pllus grande résistance ==> bingo vous avez trouvé les bons fils pour une bobine, répétez l'opération pour l'autre et vous êtes bons ;)</li></ul></li><li>Note : il existe aussi des 8 fils. En fait c'est un 6 fils (donc 4 bobines) mais avec 4 bobines indépendantes (comme un 4 fils donc ...). Utilisez alors la méthode du 4 fils mais plus de fois ;)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - L'éolienne - Axe du moteur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/e/e6/L_olienne_Support_moteur.jpg' alt='L olienne Support moteur.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b1/L_olienne_2_-_Souder_pales_plaque_me_tal.png/800px-L_olienne_2_-_Souder_pales_plaque_me_tal.png' alt='L olienne 2 - Souder pales plaque me tal.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1 - Découper une plaque métallique de 80x30 cm. La percer de 5 trous de diamètre 4.</li><li>* Astuce : Vous pouvez vous aider du schéma 1 ci-dessus pour découper et percer la plaque.</li><li>2 - Souder la plaque de métal au niveau de son trou central à l’axe du moteur. (image 2)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - L'éolienne – Préparation des pales</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/7/75/L_olienne_-_quipe_des_l_phants_-_Hack_le_Lab_Formule_puissance_vent.gif' alt='L olienne - quipe des l phants - Hack le Lab Formule puissance vent.gif' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9c/L_olienne_-_quipe_des_l_phants_-_Hack_le_Lab_Relation_longueur_pale_-_vitesse_vent.gif/200px-L_olienne_-_quipe_des_l_phants_-_Hack_le_Lab_Relation_longueur_pale_-_vitesse_vent.gif' alt='L olienne - quipe des l phants - Hack le Lab Relation longueur pale - vitesse vent.gif' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/53/L_olienne_3_-_De_couper_pales.png/800px-L_olienne_3_-_De_couper_pales.png' alt='L olienne 3 - De couper pales.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/41/L_olienne_Eolienne_-_De_coupe_pa_les.jpg' alt='L olienne Eolienne - De coupe pa les.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/c6/L_olienne_-_quipe_des_l_phants_-_Hack_le_Lab_Vue_pale_sens_d_coupe.png' alt='L olienne - quipe des l phants - Hack le Lab Vue pale sens d coupe.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/L_olienne_4_-_Percer_les_pales.jpg/800px-L_olienne_4_-_Percer_les_pales.jpg' alt='L olienne 4 - Percer les pales.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A partir de la formule reliant la vitesse du vent, une surface donnée et la puissance du vent sur cette surface :</li><li>On peut établir cette formule, permettant de calculer la longueur des pales de l'éolienne :</li><li>Où :<ul><li>L = longueur de la pale en m</li><li>P = puissance caractéristique du moteur en W</li><li>V = vitesse du vent en m/s (en fonction de la localisation)</li></ul></li><li>Dans les conditions courantes, la Longueur de la pale doit être de 35 cm.</li><li>1 - Dessiner et découper les pales dans un tube PVC. (image 3)</li><li>* Astuce : Vous pouvez vous aider du schéma 2 ci-dessus pour dessiner la forme des pales.</li><li>Le schéma 3 indique le sens de la découpe.</li><li>2 - Poncer les bords de chacune des pales : le bord d’attaque doit être arrondi, et le bord de fuite aiguisé.</li><li>3 - Percer les pales : le perçage s’effectue au plus proche du bord de fuite afin que ce dernier puisse être fixé à plat sur la plaque qui porte les pales. (image 4)</li><li>Vos pales sont prêtes !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - L'éolienne - Aileron et base des pales</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/6/68/L_olienne_5_-_Aileron.jpg' alt='L olienne 5 - Aileron.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e4/L_olienne_De_coupe_aileron.jpg' alt='L olienne De coupe aileron.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1 - Dans une planche de bois, dessiner et découper l’aileron. (image 5)</li><li>* Astuce : Vous pouvez vous aider du schéma 3 ci-dessus pour dessiner la forme de l’aileron.</li><li>2 - Dans cette même planche découper un carré de la taille de votre moteur (ici 80x80cm) qui servira à accueillir les pales précédemment découpées afin de les solidariser entre elles. (schéma 3 - base des pales)</li><li>3 - Sur l’aileron, marquer l’emplacement du moteur de façon à ce qu’il puisse s’encastrer de force dans la forme. (schéma 3 - moteur)</li><li>* Remarque : Les dimensions de cette partie dépendent de la taille de votre moteur.</li><li>4 - Poncer les rebords de l’aileron pour un meilleur aérodynamisme et un meilleur rendu. (image 5)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - L'éolienne - Assemblage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/L_olienne_6_-_Assemblage.jpg/800px-L_olienne_6_-_Assemblage.jpg' alt='L olienne 6 - Assemblage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1 - Visser les pales (découpées à l’étape 3) sur leur base (découpée à l’étape 4).</li><li>2 - Visser la base des pales sur la plaque en métal. Utiliser les trous percés dans la plaque métallique à l’étape 2. (image 6)</li><li>3 - Vérifier qu’il y ait le même angle entre chacune des pales.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Le circuit électrique - Redresseurs</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/92/L%27%C3%A9olienne_Sch_ma_lec_olienne_Dakar.png/800px-L%27%C3%A9olienne_Sch_ma_lec_olienne_Dakar.png' alt='L'éolienne Sch ma lec olienne Dakar.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/69/L_olienne_Circuit_e_lec_moteur_pas_a_pas.jpg' alt='L olienne Circuit e lec moteur pas a pas.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/23/L_olienne_7_-_Souder_moteur_redresseur.jpg/800px-L_olienne_7_-_Souder_moteur_redresseur.jpg' alt='L olienne 7 - Souder moteur redresseur.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/6c/L_olienne_8_-_Souder_redresseurs_entre_eux.jpg' alt='L olienne 8 - Souder redresseurs entre eux.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/86/L_olienne_-_quipe_des_l_phants_-_Hack_le_Lab_20170305_151123.png/800px-L_olienne_-_quipe_des_l_phants_-_Hack_le_Lab_20170305_151123.png' alt='L olienne - quipe des l phants - Hack le Lab 20170305 151123.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le circuit électrique est celui du schéma 4.</li><li>En sortie du moteur, on obtient du courant alternatif. Or, pour charger une batterie ou allumer une lampe, il est nécessaire d’avoir du courant continu. Pour transformer du courant alternatif en courant continu on utilise deux redresseurs : ils « redressent » la tension à la sortie du moteur.</li><li>Chaque redresseur dispose de 4 pattes : Les deux pattes centrales sont les pôles alternatifs du condensateur Les deux pattes extérieurs sont les pôles positifs et négatifs du condensateur</li><li>* Astuce : sur la tête du redresseur chacun de ces 4 pôles sont indiqués.</li><li>1 - Souder les sorties tension du moteur pas à pas (précédemment sélectionnées) aux entrées alternatives de chaque redresseur : le premier couple avec les pôles alternatifs du premier redresseur, et le deuxième couple avec les pôles alternatifs du deuxième redresseur. (image 7)</li><li>* Astuce : Il est possible d’utiliser de la gaine thermorétractable pour couvrir les connections afin de protéger le système.</li><li>2 – Souder les sorties négatives des deux redresseurs entre elles, puis souder les sorties positives des deux redresseurs entre elles. (image 8)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Le circuit électrique – Condensateur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/L_olienne_9_-_Redresseur_de_tension_a_condensateur.jpg/800px-L_olienne_9_-_Redresseur_de_tension_a_condensateur.jpg' alt='L olienne 9 - Redresseur de tension a condensateur.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’énergie fournie par l’éolienne n’est pas constante car la vitesse du vent varie en permanence. Il faut donc stocker provisoirement la surcharge afin de pouvoir la redistribuer de façon constante. On utilise pour cela un condensateur.</li><li>Le condensateur est un composant polarisé : - la borne positive est la tige la plus longue - la borne négative est la tige la plus courte</li><li>* Astuce : Il est également possible de se référer au symbole “-” inscrit sur la borne moins.</li><li>1 - Souder les pôles négatifs entre eux puis les pôles positifs entre eux en sortie de redresseur. (image 9)</li><li>* Astuce : si les tiges de vos différents composants sont trop courtes pour se souder entre elles, vous pouvez les relier à l’aide de fils électriques.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Le circuit électrique – Régulateur de tension ou rehausseur de tension</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5d/L_olienne_10_-_Souder_condensateur_-_Re_gulateur_de_tension.jpg/800px-L_olienne_10_-_Souder_condensateur_-_Re_gulateur_de_tension.jpg' alt='L olienne 10 - Souder condensateur - Re gulateur de tension.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/ca/L%27%C3%A9olienne_Booster_DCDC.png' alt='L'éolienne Booster DCDC.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le régulateur de tension permet de récupérer un courant 5V en sortie.</li><li>*Remarque : Chaque régulateur est différent, si vous voulez une sortie en 12V, par exemple, achetez votre régulateur en conséquence. Ici pour connecter un port USB nous prendrons du 5V.</li><li>Le régulateur de tension à 3 tiges différentes : - 1 entrée - 1 commun - 1 sortie</li><li>1 - Souder le pôle négatif du condensateur avec le commun du régulateur de tension. Souder le plus du condensateur à l’entrée du régulateur de tension. (image 10)</li><li>Alternative : utiliser un rehausseur de tension qui fournira une tension de sortie de 5V (USB) avec une tension d'entrée allant de 0,9 à 5V.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Le circuit électrique – Raccordement du port USB</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/a/ae/L_olienne_11_-_Raccord_USB.jpg' alt='L olienne 11 - Raccord USB.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/44/L_olienne_12_-_Entre_e_re_gulateur.jpg' alt='L olienne 12 - Entre e re gulateur.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/L_olienne_13_-_Circuit_fini.jpg/800px-L_olienne_13_-_Circuit_fini.jpg' alt='L olienne 13 - Circuit fini.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Lorsque vous posez votre connecteur sur une table avec la lamelle plastique vers le dessus, la patte de droite est votre borne positive, et la patte de gauche votre borne négative.</li><li>1 – Souder un fil rouge à la borne positive et un fil noir à la borne négative. Ce seront les fils de sortie de votre éolienne, auxquels vous pouvez connecter une batterie, une ampoule, etc,et dans le cas présent un port USB. (image 11)</li><li>2 – Souder le fil rouge avec la sortie du régulateur et le fil noir avec le commun du régulateur. (image 12)</li><li>Votre circuit est prêt à fonctionner vous pouvez y brancher un téléphone, à condition qu’il y ait du vent bien sûr. (image 13)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Protection du moteur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/82/L_olienne_14_-_Prote_ger_syste_me.jpg/800px-L_olienne_14_-_Prote_ger_syste_me.jpg' alt='L olienne 14 - Prote ger syste me.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Couvrir le moteur et le circuit électrique de chambre à air : cela permettra de les protéger de la pluie ou des embruns. (image 14)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Utilisation</strong><p><strong>Étapes :</strong></p><ol><li>Brancher un téléphone portable ou autre appareil comportant une connexion USB au circuit électrique et laisser recharger quelques heures. Par vent moyen compter 5 heures de charge pour une batterie de téléphone.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 -</strong><p><strong>Étapes :</strong></p><ol><li>Vous avez une minute ? Que vous souhaitiez ou non réaliser cette low-tech, votre réponse à ce formulaire nous aiderait à améliorer nos tutos. Merci d'avance pour votre aide !</li><li>Comme tout le travail du Low-tech Lab, ce tutoriel est participatif, n'hésitez pas à ajouter les modifications qui vous semblent importantes, et à partager vos réalisations en commentaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/2/28/L_olienne_olienne.JPG' alt='L olienne olienne.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux").</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

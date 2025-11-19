@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Nettoyant dégraissant toute surface</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Nettoyant dégraissant toute surface</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/d/d7/Nettoyant_d_graissant_toute_surface_pchit_vitre.jpg/ia-5496b3f6f7b6852d65306fff9d8e757e-px-Nettoyant_d_graissant_toute_surface_pchit_vitre.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">2 recettes rapides et 100% biodégradable de nettoyant dégraissant toute surface sans rinçage : une au vinaigre blanc et l'autre au vinaigre</div>
+        
+      </div>
+    
+    
+      
+        <p>Ces deux produits peuvent servir à nettoyer n'importe quelles surfaces grasses, à noter tout de même que suivant les surfaces il vaut mieux choisir l'une que l'autre.<ul><li>Le nettoyant au vinaigre : pour les vitres, lunettes, mirroir, robinetterie, les jouets de bébés/enfants, le cuir</li><li>Le nettoyant au bicarbonate : pour les surfaces calcaire, le bois fragile, les métaux oxydables</li><li>L'un ou l'autre : pour les surfaces plastique, émaillées, métal inox</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Nettoyant_dégraissant_toute_surface" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Nettoyant_dégraissant_toute_surface</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Vinaigre blanc</li><li>Bicarbonate de sodium</li><li>eau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>flacons asperseurs vides ou bouteilles classiques</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Détails sur les ingrédients</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Vinaigre blanc : Le vinaigre blanc, autrement appelé vinaigre d'alcool, cristal. C'est un produit 100% naturel et biodégradable avec un pH entre 3.5 et 5 (acide) avec environ 12% d'alcool obtenu par macération d’une solution aqueuse d’au moins 6% d’acide acétique (issu d’éthanol de betterave souvent). Il s'évapore naturellement sans comporter de risque (sauf une irritation légère et passagère de la gorge et des yeux si vous êtes dans un petit espace). Cout : ~ 0.40€/L, préferez acheter au rayon vinaigre alimentaire (éviter le rayon ménage car il est souvent plus cher et aromatisé). Propriétés : Plus d’infos et de culture G ici Dégraissant, Désodorisant, Conservateur (grâce au pH acide), Antiseptique, désinfectant, antiparasite, antibactérien, antifongique (grâce au pH acide) Détartrant / anticalcaire (l'acide réagit avec le calcaire pour le faire disparaitre au cours d'une réaction acido-basique provoquant chaleur et bulles de CO2), Corrosif pour les surfaces calcaire (et abime le bois à haute dose).</li><li>Dégraissant,</li><li>Désodorisant,</li><li>Conservateur (grâce au pH acide),</li><li>Antiseptique, désinfectant, antiparasite, antibactérien, antifongique (grâce au pH acide)</li><li>Détartrant / anticalcaire (l'acide réagit avec le calcaire pour le faire disparaitre au cours d'une réaction acido-basique provoquant chaleur et bulles de CO2),</li><li>Corrosif pour les surfaces calcaire (et abime le bois à haute dose).</li><li>Dégraissant,</li><li>Désodorisant,</li><li>Conservateur (grâce au pH acide),</li><li>Antiseptique, désinfectant, antiparasite, antibactérien, antifongique (grâce au pH acide)</li><li>Détartrant / anticalcaire (l'acide réagit avec le calcaire pour le faire disparaitre au cours d'une réaction acido-basique provoquant chaleur et bulles de CO2),</li><li>Corrosif pour les surfaces calcaire (et abime le bois à haute dose).</li><li>Biocarbonate de sodium : autrement appelé bicarbonate de sodium, hydrogénocarbonate de sodium, carbonate acide de sodium, carbonate monosodique, sodium bicarbonate, soda, baking soda voire natrum bicarbonatum. Poudre blanche +/- fine similaire au sel de table ou au talc avec un pH à 8-8.5 (base). Fabriqué à partir de calcaire et de sel, le bicarbonate est présent naturellement dans l’organisme, il est sans risque pour la santé. Ne dégage aucune émanation, ne s'évapore pas. Propriétés : nettoyant, récurant et désodorisant. Il dissout les graisses et les protéines responsables des tâches. Il évite la prolifération des bactéries et adoucit l’eau dure. Plus d’infos et de culture G ici Cout : ~3-4 euros/kg</li></ul></li><li>Ici on utilisera du bicarbonate ménager (moins cher que le bicarbonate alimentaire, mais si vous n'avez que l'alimentaire ou le cosmétique sous la main cela fonctionne très bien).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Nettoyant multiusage vinaigre</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1b/Nettoyant_d_graissant_toute_surface_2.png/800px-Nettoyant_d_graissant_toute_surface_2.png' alt='Nettoyant d graissant toute surface 2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Mélanger 1/3 de vinaigre blanc pour 2/3 de volume d'eau.</li><li>Optionnel : pour parfumer vous pouvez remplacer une partie de l'eau par des hydrolats OU ajouter 4-8 gouttes d'huiles essentielles pour 1L</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Nettoyant multiusage bicarbontate</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b0/Nettoyant_d_graissant_toute_surface_3.png/800px-Nettoyant_d_graissant_toute_surface_3.png' alt='Nettoyant d graissant toute surface 3.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Mélanger du bicarbonate et de l'eau froide jusqu'à saturer l'eau, puis rajoutez un peu d'eau. Il est important de rajouter de l'eau sinon le liquide saturé recristalisera dans l'embout et finira par le boucher.</li><li>Optionnel : pour parfumer vous pouvez remplacer une partie de l'eau par des hydrolats OU ajouter 4-8 gouttes d'huiles essentielles pour 1L.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

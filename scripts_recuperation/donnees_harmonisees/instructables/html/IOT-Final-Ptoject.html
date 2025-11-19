@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>IOT Final Project</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>IOT Final Project</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FYL/OOY1/KZWPOUTR/FYLOOY1KZWPOUTR.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Final Project Video</p>
+      
+        <p>A person's room/ home is his natural environment, where he can feel safe and free to be himself.</p>
+      
+        <p>For people with ADHD, it can be very difficult to remember things, and they often forget to do some basic tasks such as leaving the lights and AC on when they leave the room.</p>
+      
+        <p>We wanted to create a system that enabled those people to be the best versions of themselves.</p>
+      
+        <p>Our system supports the following scenarios:</p>
+      
+        <p>1. Turning off lights after leaving a room.</p>
+      
+        <p>2. After leaving a room, switch off the fan.</p>
+      
+        <p>3. The Blynk app lets users turn on and off their lights from the app, and it can be done while in a room as well, creating an elegant smart home experience.</p>
+      
+        <p>4. The moment we leave the room and slam the door, a notification will be sent to the app that the lights are on, so we can turn them off again even if we did not notice.</p>
+      
+        <p>5. In the event that the temperature sensor detects a temperature higher than the average temperature in the room, a notification will be sent to the application explaining to the user that the temperature is higher than normal, and whether he wants to turn on the fan.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Circuit Playground Express</li><li>Battery Holder</li><li>3 X AAA Batteries</li><li>Cables</li><li>Glue with double-sided adhesive</li><li>Engine that controls the fan switch</li><li>Engine that controls the fan switch</li><li>Our project based on the Adafruit Circuit Playground Express uses Blynk.</li><li>We will need:</li><li>Engine that controls the fan switch</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Step 1: the Technologies</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F7W/OQIV/KZWPOSPS/F7WOQIVKZWPOSPS.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 1: the Technologies' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7W/OQIV/KZWPOSPS/F7WOQIVKZWPOSPS.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 1: the Technologies' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>CPX - The Circuit Playground is a family of small microcontroller boards with LEDs, buttons, and sensors.Blynk - An IoT platform for iOS or Android smartphones that allows you to control Arduino, Raspberry Pi, and NodeMCU remotely.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Step 2: Before You Go...</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FUY/TWMQ/KZWPOU36/FUYTWMQKZWPOU36.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 2: Before You Go...' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUY/TWMQ/KZWPOU36/FUYTWMQKZWPOU36.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 2: Before You Go...' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>install Arduino software from the following link: https://www.arduino.cc/en/Main/Software</li><li>Install adafruit driver from the following link: http://bit.ly/adafruit-windows-drivers (only for Windows)</li><li>Install the board manager SAMD from the following link: http://bit.ly/adafruit-windows-drivers</li><li>Create a user on Blynk from the following link: http://bit.ly/adafruit-windows-drivers</li><li>Create new template, fill the details and choose "Arduino" in HARDWARE and WiFi in CONNECTION TYPE</li><li>Create new device on the template you created before</li><li>On Device Info you will find Template ID, Device Name and Auth Token.</li><li>Download Blynk application to your mobile</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Step 3: Preperation of Hardware</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F2O/K2TS/KZWPOU7G/F2OK2TSKZWPOU7G.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 3: Preperation of Hardware' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPJ/NGG2/KZWPOU7H/FPJNGG2KZWPOU7H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 3: Preperation of Hardware' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2O/K2TS/KZWPOU7G/F2OK2TSKZWPOU7G.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 3: Preperation of Hardware' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPJ/NGG2/KZWPOU7H/FPJNGG2KZWPOU7H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Step 3: Preperation of Hardware' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. The CPX should be attached straight to the door with the double-sided glue</li><li>2. Connect A3 and A2 to the light and fan engines, respectively</li><li>3. The "Plus" (+) of the engines connects to the VOUT and the GND</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Turning On/ Off Lights and Fan Scenario</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FZB/UVTP/KZWPOUCL/FZBUVTPKZWPOUCL.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Turning On/ Off Lights and Fan Scenario' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZB/UVTP/KZWPOUCL/FZBUVTPKZWPOUCL.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Turning On/ Off Lights and Fan Scenario' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Blynk website - Open the Blynk website and enter the template that you have already created. Create a new virtual pin datastream with a double data type (we chose V0).</li><li>Blynk app - Open the app and enter the device that you have created before, Click on the settings symbol and then on the + button, Add Gauge display and fill in the title and appropriate datastream (we chose V0).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Blynk Notifications</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FVY/5PN4/KZWPOUDY/FVY5PN4KZWPOUDY.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Blynk Notifications' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE7/XSF6/KZWPOUDZ/FE7XSF6KZWPOUDZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Blynk Notifications' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVY/5PN4/KZWPOUDY/FVY5PN4KZWPOUDY.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Blynk Notifications' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE7/XSF6/KZWPOUDZ/FE7XSF6KZWPOUDZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Blynk Notifications' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Last Step: Code and CPX</strong><p><strong>Étapes :</strong></p><ol><li>To connect the CPX and the code that was written in Arduino you need to:<ul><li>Download the attached file (.ino file)</li><li>Connect the CPX to your computer and upload the code</li><li>Disconnect the CPX from the computer and connect it to the battery holder</li><li>Place the CPX on the door</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

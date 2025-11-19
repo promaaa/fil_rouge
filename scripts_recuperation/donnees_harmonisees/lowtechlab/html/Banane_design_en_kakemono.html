@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Banane design en kakemono</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Banane design en kakemono</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/f/f5/Banane_design_en_kakemono_IMG_4610_1_.JPG/ia-7737b41826d9f4434d7b25086fd9d36f-px-Banane_design_en_kakemono_IMG_4610_1_.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Sac banane design parfait pour mettre à l'abri les objets auxquels vous tenez !</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment banane design en kakemono.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1,5 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 3 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Banane_design_en_kakemono" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Banane_design_en_kakemono</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Kakémono, Fil, Chambre à air, Fermeture éclair</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Machine à coudre, Ciseaux, aiguille > 90</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Réalisation du patron</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fd/Banane_design_en_kakemono_Patron_de_banane_Bluedja.jpg/800px-Banane_design_en_kakemono_Patron_de_banane_Bluedja.jpg' alt='Banane design en kakemono Patron de banane Bluedja.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Reproduire le patron ci-joint sur la partie colorées du kakémono (contrairement à la photo du tutoriel). Puis découper les différentes pièces avec des ciseaux.<ul><li>Patron inspiré de la vidéo : https://www.youtube.com/watch?v=tS9vXfhAzlU&feature=youtu.be</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Couture fermeture éclair/dessus</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7f/Banane_design_en_kakemono_fermeture_dessus1.PNG/800px-Banane_design_en_kakemono_fermeture_dessus1.PNG' alt='Banane design en kakemono fermeture dessus1.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/43/Banane_design_en_kakemono_fermeture_dessus2.PNG/800px-Banane_design_en_kakemono_fermeture_dessus2.PNG' alt='Banane design en kakemono fermeture dessus2.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Pour la couture vous pouvez suivre le tutoriel en commençant la vidéo à 5:45 car le kakémono est trop rigide pour faire des cache-zip : https://www.youtube.com/watch?v=tS9vXfhAzlU&feature=youtu.be</li></ul></li><li>Pour toutes les étapes à suivre vous pouvez utiliser des épingles pour maintenir le tissu.</li><li>Pour les étapes 2 et 3 ouvrir la fermeture éclair pour que ça soit plus simple.</li><li>Coudre la partie arrondie de la face du dessus avec une partie de la fermeture éclair.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Couture fermeture éclair/avant</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d1/Banane_design_en_kakemono_fermeture_avant.PNG/800px-Banane_design_en_kakemono_fermeture_avant.PNG' alt='Banane design en kakemono fermeture avant.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Coudre l'autre partie de la fermeture éclair avec le côté le plus long de la face avant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Couture avant/dessous</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Banane_design_en_kakemono_avant_dessous1.PNG/800px-Banane_design_en_kakemono_avant_dessous1.PNG' alt='Banane design en kakemono avant dessous1.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c5/Banane_design_en_kakemono_avant_dessous2.PNG/800px-Banane_design_en_kakemono_avant_dessous2.PNG' alt='Banane design en kakemono avant dessous2.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Coudre le deuxième côté long de la face avant avec la partie arrondie de la face du dessous.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Couture côtés</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/6/6e/Banane_design_en_kakemono_cot_.PNG' alt='Banane design en kakemono cot .PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a6/Banane_design_en_kakemono_cot_2.PNG' alt='Banane design en kakemono cot 2.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Coudre les 2 pièces des côtés opposées ensemble (en haut et en bas), en mettant le coté uni côté extérieur (la pièce étant petite, elle ne sera pas retournable).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Couture côtés/avant</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Banane_design_en_kakemono_cot_3.PNG/800px-Banane_design_en_kakemono_cot_3.PNG' alt='Banane design en kakemono cot 3.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Epingler les deux pièces préalablement créées aux côtés de la face avant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Couture arrière</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Banane_design_en_kakemono_arriere.PNG/800px-Banane_design_en_kakemono_arriere.PNG' alt='Banane design en kakemono arriere.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c5/Banane_design_en_kakemono_arriere2.PNG/800px-Banane_design_en_kakemono_arriere2.PNG' alt='Banane design en kakemono arriere2.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Epingler la face arrière aux faces dessus et dessous ainsi qu'aux côtés de la face avant puis coudre la face arrière et les côtés. Attention à ne pas oublier les pièces pour accrocher la ceinture.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Sangle en chambre à air</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/3/3a/Banane_design_en_kakemono_sangle.jpg' alt='Banane design en kakemono sangle.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Mesurer et découper la chambre à air à la taille souhaitée en fonction de comment vous voulez la porter (à la taille, en bandoulière...).</li><li>Il est aussi possible de mettre un système de boucle pour rendre la sangle réglable.</li><li>Passer ensuite la chambre à air dans l'espace laissé ouvert sur les côtés puis coudre pour assurer le maintien de la sangle avec le reste du sac.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

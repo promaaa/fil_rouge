@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Biodiesel</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Biodiesel</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/3/30/Biodiesel_IMG_2512.JPG/800px-Biodiesel_IMG_2512.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel décrit le procédé de fabrication à échelle moyenne (environ 50L) de biodiesel à partir d'huiles de friture usagées. Ce tutoriel a été écrit suite à la visite de l'équipage Nomade des Mers au Cambodge. L'entreprise sociale Naga Earth collecte et transforme les huiles de fritures usagées des hôtels et restaurants de la ville en biodiesel. Ils fabriquent également du savon grâce à la glycérine issue de cette même réaction. Celui-ci bénéficie aux écoles et associations de la région pour mener des programmes d'hygiène.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le biodiesel est un carburant alternatif au diesel pétro-sourcé. Il peut être utilisé seul dans les moteurs ou être mélangé avec du pétro-diesel à différentes concentrations. Ce carburant est obtenu à partir d’huile végétale ou de graisse animale transformée par un procédé chimique appelé la transestérification. Il consiste à faire réagir de l’huile avec un alcool (méthanol ou éthanol) et d’un catalyseur (hydroxyde de sodium ou de potassium) afin d’obtenir des esters méthyliques ou éthyliques (le biodiesel) et un sous-produit, la glycérine.</p>
+      
+        <p>Le biodiesel peut être fabriqué en n'importe quelle quantité. Le processus décrit ici convient à une production occasionnelle et de petites quantités. Parce que le procédé demande de l’entrainement, il est conseillé de débuter par la fabrication de petites quantités et d’aller progressivement vers de plus grandes échelles de production.</p>
+      
+        <p>Le biodiesel présente plusieurs avantages, qui en font un carburant alternatif intéressant :<ul><li>Il est simple à produire soi-même.</li><li>Il peut être produit à bas coûts.</li><li>Il peut être utilisé dans n’importe quel moteur diesel conventionnel. Permet également une meilleure lubrification du moteur.</li><li>Il participe au recyclage de déchets organiques que sont les huiles de fritures usagées qui sont massivement utilisées dans le milieu de la restauration.</li><li>Il est fabriqué à partir d’huile végétale et rejette donc très peu de CO2 supplémentaire dans l’atmosphère. Il réduit également les émissions de certains composés nocifs par rapport au pétro-diesel (monoxyde de carbone, dioxyde de souffre, etc)</li></ul></p>
+      
+        <p>Si vous souhaitez réduire votre consommation en carburant fossile tout en économisant les dépenses correspondantes, plusieurs solutions s'offrent à vous :<ul><li>L'huile végétale carburant mélangée au diesel</li><li>L'huile végétale carburant avec modification du moteur</li><li>Le Biodiesel</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 40 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Biodiesel" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Biodiesel</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>1.1 Huile</li><li>Dans le cadre d’une démarche la plus écologique possible, l’huile utilisée pour la fabrication du biodiesel sera de l’huile de friture usagée récupérée dans n’importe quel type d’établissement de restauration. Pour récupérer la meilleure huile, n’hésitez pas à discuter avec le propriétaire du restaurant ainsi qu’avec le chef pour leur expliquer la démarche. Récupérer l’huile sans permission peut constituer un délit. De plus, il est important de s’assurer de la qualité de l’huile récupérée. Les huiles usagées contiennent des Acides Gras Libres. Ces derniers apparaissent lorsque que les huiles sont entreposées un certain temps à l’air libre et qu’elles rancissent ou lors du chauffage d’une huile en présence d’eau. La friture des aliments (qui contiennent de l’eau) entraîne donc l’apparition d’AGL dans l’huile. Pendant la transestérification, ces AGL vont réagir avec le catalyseur (base forte) et créer du savon indésirable. Ce dernier va empêcher la bonne séparation des produits de la réaction, le biodiesel et le glycérol, qui créeront plutôt une émulsion avec laquelle il est difficile de travailler.</li><li>Plus une huile de friture est utilisée, plus sa concentration en AGL augmente et plus elle brunit. Eviter donc au maximum de récupérer des huiles âgées et brunies. Plus la qualité de l’huile sera bonne, plus le procédé de transformation sera simple.</li><li>Les huiles à privilégier dans le cadre de la fabrication de biodiesel sont les huiles végétales au pH neutre ou presque comme les huiles de colza, maïs ou tournesol. Ces huiles ont un point de fusion bas, ce qui signifie qu’elles ne se solidifient pas si les températures chutent en hiver (les températures de fusion de ces huiles sont de -10°C à -2°C pour le colza, -15°C pour le tournesol).</li><li>Il est nécessaire d’éviter les huiles d’arachide, coco, palme ou les graisses animales car elles se solidifient à des températures trop élevées (>10°C), même si le biodiesel a un point de fusion inférieur à l’huile qui est à son origine. L’huile d’olive est aussi à proscrire car trop acide, ces acides peuvent interférer pendant la réaction de création du biodiesel.</li><li>1.2 Méthanol</li><li>Le méthanol, ou alcool de bois, était autrefois obtenu par pyrolyse du bois. Il est aujourd’hui synthétisé à partir de gaz naturel et est utilisé principalement comme antigel pour le liquide de refroidissement, comme solvant pour la synthèse d’autres produits chimiques ou comme carburant pour la course (dragster, modélisme). On peut s'en procurer chez des fournisseurs spécialisés de produits chimiques, certains grands magasins de bricolage, certains garages.</li><li>1.3 Catalyseur</li><li>Pour le catalyseur, on peut utiliser l'hydroxyde de sodium (NaOH, soude caustique) ou d'hydroxyde de potassium (KOH, potasse caustique). Ils sont tous deux corrosifs et fortement basiques. Ces produits chimiques, assez communs, se trouvent dans les magasins de bricolage, en ligne ou chez les fournisseurs de produits chimiques. Le KOH et le NaOH sont tous deux hygroscopiques, ce qui signifie qu'ils absorbent rapidement l'humidité de l'atmosphère. L'eau en fait des catalyseurs moins efficaces : toujours les conserver dans des contenants scellés et hermétiques.</li><li>NaOH vs KOH, des propriétés différentes.</li><li>· L’hydroxyde de sodium (NaOH) est moins cher et communément utilisé pour la fabrication de biodiesel à petite échelle. Par contre, l’hydroxyde de sodium (NaOH) contamine l’eau de lavage du biodiesel et ne doit pas être déversée dans la nature. Il est donc déconseillé de l’utiliser si vous n’avez de moyen de retraitement.</li><li>· L’hydroxyde de potassium (KOH) gagne en popularité grâce à ces propriétés de catalyse supérieures. L’hydroxyde potassium (KOH) se dissout plus facilement dans le méthanol et est moins sensible à l’eau. De plus, la glycérine obtenue au cours de la réaction reste liquide et peut être ajoutée avec plus de sécurité dans du compost ou utilisée en petite quantité comme complément pour l’alimentation animale.</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li>Transestérification<ul><li>Huile végétale usagée</li><li>250 mL de méthanol / litre d'huile</li><li>Si vous utilisez de l’huile neuve: 5,5g de NaOH ou 7g de KOH / litre d'huile.</li><li>Si vous utilisez de l’huile usagée : Calculez la masse de catalyseur à ajouter lors de l’étape de titrage</li><li>1 grand conteneur propre et sec avec drain ou robinet pour réaliser la réaction</li><li>· 1 pompe submersible pour réaliser le mélange dans le bidon</li><li>. 1 plaque ou résistance chauffante</li><li>· 1 sonde de température</li><li>· 1 balance de précision</li><li>· 1 entonnoir</li><li>· 1 grand bocal fermé en verre ou une cuve en acier inox pour le mélange du méthanol et du catalyseur</li><li>· 1 verre doseur en verre pour le dosage du méthanol</li><li>· Des gants en caoutchouc</li><li>· Des lunettes de sécurité</li></ul></li><li>Filtration<ul><li>· 1 bidon d’huile neuve</li><li>· 1 bidon d’huile vide et propre</li><li>· 1 entonnoir</li><li>· 1 drap en coton / 1 chaussette</li><li>· 1 poche filtrante de 1 à 5µm</li></ul></li><li>Titrage<ul><li>· 10mL d’alcool isopropylique ou isopropanol.</li><li>· 1mL de votre huile usagée</li><li>· 2-3 gouttes de phénolphtaléine (indicateur)</li><li>· 1L d’eau distillée</li><li>· 1g de catalyseur, hydroxyde de sodium NaOH ou hydroxyde de potassium KOH.</li><li>· 1 balance</li><li>· 1 récipient / bocal en verre</li><li>· 3 éprouvettes graduées</li><li>· Deux seringues ou burettes graduées d'1 mL. Notez qu'une seringue est pour l'huile et l'autre pour le mélange soude-eau.</li><li>· Des gants en caoutchouc</li><li>· Des lunettes de sécurité</li><li>· Masque respiratoire</li></ul></li><li>Distillation du glycérol<ul><li>1 cocotte minute</li><li>5 m de tuyau de cuivre</li><li>50 cm de tuyau souple résistant à la chaleur (silicone, téflon)</li><li>Colliers de serrage de plomberie</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Identifier son besoin</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/a/a4/Biodiesel_800px-Transformer_de_l_huile_en_biodiesel_-_galop_d_essai_Screenshot_from_2017-06-16_11-56-53.png' alt='Biodiesel 800px-Transformer de l huile en biodiesel - galop d essai Screenshot from 2017-06-16 11-56-53.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il existe au moins trois façons de faire fonctionner un moteur diesel avec de l'huile végétale:<ul><li>la mélanger avec du pétro-diesel, avec un solvant, ou avec de l'essence;</li><li>l'utiliser telle qu'elle est - habituellement appelée huile végétale carburant (HVC, SVO en anglais) ou huile végétale recyclée (HVR, WVO en anglais) ;</li><li>la convertir en biodiesel.</li></ul></li><li>Les deux premières méthodes ont l'air plus faciles, mais comme souvent, ce n'est pas si simple.</li><li>1. Les mélanges</li><li>L'huile végétale est beaucoup plus visqueuse (plus épaisse) que le pétrodiesel ou le biodiesel. Le but de mélanger ou de mixer l'HVC avec d'autres carburants ou solvants est d'abaisser la viscosité pour la rendre plus liquide, de sorte qu'elle s'écoule plus facilement à travers le circuit de carburant, jusqu'à la chambre de combustion. Cependant ce n'est pas le seul problème avec l'utilisation de l'HVC. Elle présente des propriétés chimiques et des caractéristiques de combustion différentes du pétro-diesel avec lequel les moteurs diesel et leurs circuits de carburant sont conçus pour être utilisés. Les moteurs diesel, en particulier les plus modernes, sont des machines de haute technologie avec des besoins précis en carburant (voir la controverse TDI-SVO).</li><li>Les gens utilisent divers mélanges, allant de 10% HVC et 90% pétro-diesel à 90% HVC et 10% pétro-diesel. Certaines personnes l'utilisent tell quelle, sans préchauffer (ce qui rend l'huile végétale beaucoup moins visqueuse). Certains utilisent même 100% d'HVC sans préchauffer. Ils n'ont souvent pas conscience des effets à long terme sur le moteur</li><li>Vous pourriez vous en sortir l'été avec quelque chose comme un vieux Mercedes-Benz diesel à 5 cylindres de plus de 80 ans, qui est un moteur très résistant et tolérant. Il n'appréciera pas, mais vous ne le détruirez probablement pas. Sinon, ce n'est pas une bonne idée.</li><li>Ce n'est pas garanti, mais l'utilisation d'un mélange d'huile végétale allant jusqu'à 20% de bonne qualité avec 80% de pétrodiesel est dite assez sûre pour les vieux diesels, surtout en été.</li><li>Si vous mélangez l'HVC avec du pétro-diesel, vous utiliserez toujours des combustibles fossiles - vous serez alors plus propres que la moyenne, mais toujours pas assez pour beaucoup. Pourtant, pour chaque litre d'HVC que vous utilisez, c'est un litre de carburant fossile économisé, et beaucoup moins de dioxyde de carbone émis.</li><li>Cependant, pour le faire correctement et en toute sécurité toute l'année, vous aurez besoin de ce qui équivaut à un système HVC approprié avec au moins un préchauffage du carburant (voir ci-dessous). Et dans ce cas, il n'y a pas besoin de mélanges, vous pouvez simplement utiliser 100% d'HVC.</li><li>Enfin, les mélanges d'HVC avec divers solvants, comme la térébenthine minérale (white spirit), ou avec divers ingrédients «secrets» tels que le naphtalène et le xylol, ou avec de l'essence sans plomb, sont expérimentaux au mieux, et on ne connaît rien des effets de ces additifs sur les caractéristiques de combustion du carburant ou leurs effets à long terme sur le moteur. Cette solution est donc fortement déconseillée : utilisez de tels mélanges à vos risques et périls.</li><li>2. Huile végétale carburant avec modification du moteur</li><li>Les systèmes directs d'alimentation en huile végétale (HVC) peuvent être une option propre, efficace et économique.</li><li>Contrairement au biodiesel, vous devez modifier le moteur pour utiliser l'HVC. La meilleure façon est de se procurer un système professionnel SVO à un seul réservoir avec des injecteurs et des bouchons de protection optimisés pour l'huile végétale, ainsi que le chauffage du carburant. Avec le système Elsbett, vous pouvez utiliser du pétro-diesel, du biodiesel ou du HVC, selon n'importe quelle combinaison. Démarrez et roulez, éteignez et arrêtez-vous, comme avec n'importe quelle voiture.</li><li>Il existe également des systèmes HVC à deux réservoirs qui préchauffent l'huile pour la rendre moins visqueuse. Vous devez démarrer le moteur avec le pétro-diesel ordinaire (ou le biodiesel) dans un réservoir, puis passer à l'HVC dans l'autre réservoir lorsque l'huile végétale est suffisamment chaude (donc assez liquide) et revenir au pétro-diesel avant d'arrêter le moteur, ou vous boucherez les injecteurs.</li><li>De nombreuses informations sur les systèmes d'HVC sont disponibles ici.</li><li>3. Biodiesel ou HVC ?</li><li>Le biodiesel présente des avantages évidents sur SVO:<ul><li>Il fonctionne dans n'importe quel diesel, sans aucune conversion ou modification du moteur ou du système d'alimentation - il suffit de le mettre dans le réservoir et démarrer.</li><li>Il a également de meilleures propriétés en temps froid que l'HVC (mais pas aussi bonnes que le pétro-diesel - voir ici pour l'utilisation du biodiesel en hiver).</li><li>Contrairement à l'HVC, il est soutenu par de nombreux tests sur le long terme dans de nombreux pays, avec des millions de kilomètres de route parcourus.</li></ul></li><li>Le biodiesel est un carburant de remplacement propre, sûr, prêt à l'emploi, tandis que de nombreux systèmes HVC sont encore expérimentaux et doivent être développés.</li><li>D'un autre côté, le biodiesel peut être plus coûteux, en fonction de la quantité que vous produisez, de ce que vous obtenez et de la comparaison avec de l'huile ou du pétrole neuf. Et contrairement à l'HVC, il nécessite un traitement (l'objet de ce tutoriel). Mais la communauté, qui s'étend de plus en plus rapidement, de producteurs de biodiesel ne se préoccupe pas de cela - ils font une fournée chaque semaine ou chaque mois et ils s'y habituent rapidement. Beaucoup le font depuis des années.</li><li>Quoi qu'il en soit, vous devez également traiter l'HVC, en particulier l'HVR, que beaucoup de personnes utilisent avec des systèmes HVC parce qu'elles sont bon marché voire gratuites. Avec l'HVR, les particules alimentaires et les impuretés et l'eau doivent être enlevées, et elle devrait également être désacidifiée. Les producteurs de biodiesel pensent : «Si je dois faire tout ça, autant faire du biodiesel à la place». Mais les défenseurs de l'HVC soutiendront que c'est beaucoup moins de traitement que le biodiesel.</li><li>Les goûts et les couleurs... à vous de juger !</li><li>Ci-contre un tableau résumant les principales différences entre faire du biodiesel et modifier son moteur pour utiliser directement de l'HVC. SVO/WVO sont les correspondances anglophones de HVC/HVR.</li><li>$ Considérations financières : $<ul><li>Un français consomme en moyenne : 1,3[€/L]*4/100[L/km]*19000[km/an] = 988 €/an Soit environ 1000 € par an de diesel.</li></ul></li><li>Le biodiesel coûte entre 0,5 et 1 € par litre à produire à partir d'huile recyclée, soit entre 380 et 760 € par an. Un bon système de traitement adapté à ce volume peut être construit pour environ 100€. Celui-ci est donc remboursé en quelques mois.</li><li>Un système pour HVC coûte entre 900 et 1800 €. Si l'HVC est gratuite, celui-ci sera donc remboursé en 1 à 2 ans.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Filtration</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/59/Biodiesel_Huile_3.jpg/800px-Biodiesel_Huile_3.jpg' alt='Biodiesel Huile 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de pouvoir être transformée, l’huile usagée doit tout d’abord être filtrée pour la nettoyer des éventuels résidus alimentaires (frites, beignets…). Il est conseillé de laisser l’huile décanter pendant quelques jours. Filtrer une première fois l’huile pour se débarrasser des particules les plus grosses (ex: drap en coton doublé, chaussette…). Puis verser l’huile dans une poche de filtration d'au maximum 5µm (le plus fin sera le mieux) au-dessus d’un bidon propre prévu à cet effet.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Titrage de l’huile (seulement pour les huiles usagées)</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/de/Biodiesel_IMG_2545.JPG/800px-Biodiesel_IMG_2545.JPG' alt='Biodiesel IMG 2545.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bf/Biodiesel_IMG_2550.JPG/800px-Biodiesel_IMG_2550.JPG' alt='Biodiesel IMG 2550.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/13/Biodiesel_IMG_2558.JPG/800px-Biodiesel_IMG_2558.JPG' alt='Biodiesel IMG 2558.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9a/Biodiesel_IMG_2568.JPG/800px-Biodiesel_IMG_2568.JPG' alt='Biodiesel IMG 2568.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/34/Biodiesel_IMG_2579.JPG/800px-Biodiesel_IMG_2579.JPG' alt='Biodiesel IMG 2579.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e4/Biodiesel_IMG_2581.JPG/800px-Biodiesel_IMG_2581.JPG' alt='Biodiesel IMG 2581.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>- Peser précisément 1g de catalyseur et le dissoudre dans 1L d’eau distillée</li><li>- Dans un récipient gradué en verre, mesurer 10 mL d’isopropanol.</li><li>- Prélever 1 mL de votre huile à tester à l’aide d’une seringue graduée et ajouter à l’isopropanol.</li><li>- Ajouter 3 gouttes de phénolphtaléine au mélange.</li><li>- Bien remuer le mélange, si possible avec un agitateur magnétique.</li><li>- Remplir la burette graduée, préalablement rincée à l’eau distillée, de 10 mL du mélange eau distillée/catalyseur.</li><li>- Ajouter la solution eau distillée-catalyseur au mélange, goutte par goutte, tout en remuant continuellement.</li><li>- Continuer l’ajout de solution titrante peu à peu jusqu’au point de virage. Le mélange devient de couleur rose foncé. Le changement de couleur doit persister pendant 20 secondes.</li><li>- Relever exactement le volume d’eau distillée/catalyseur (Vtitrage) utilisée pour neutraliser l’acidité de l’huile.</li><li>- Refaire un deuxième essai et calculer la moyenne des essais pour plus de précision.</li><li>- Utiliser cette information pour connaître la quantité de catalyseur à ajouter dans la réaction suivant la formule : (Pour comprendre son obtention voir l'ANNEXE 2 de ce document)<ul><li>Masse catalyseur requise (g) = (B+ Vtitrage(mL)) x Volume huile (L)</li></ul></li><li>Avec :</li><li>Vtitrage : volume de solution titrante ajoutée pour neutraliser l'acidité de l'huile (mL)</li><li>B : la quantité de base (catalyseur) nécessaire pour la réaction avec de l’huile vierge.<ul><li>B (KOH) = 7.0 g/L</li><li>B (NaOH) = 5.5 g/L</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Transestérification</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/19/Biodiesel_IMG_2590.JPG/800px-Biodiesel_IMG_2590.JPG' alt='Biodiesel IMG 2590.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Biodiesel_IMG_2549.JPG/800px-Biodiesel_IMG_2549.JPG' alt='Biodiesel IMG 2549.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>- Faire chauffer l’huile à 60°C et la maintenir à cette température.</li><li>- Verser le méthanol dans un récipient en verre.</li><li>- Peser la quantité de soude définie au cours de l’étape précédente si vous utilisez de l’huile usagée et ajouter au méthanol.</li><li>- Remuer et laisser se dissoudre entièrement le catalyseur dans le méthanol. Cela prend environ 2min. Encore une fois, attention : le mélange se dégrade rapidement. Procéder à l’étape suivante dès que le mélange catalyseur/méthanol est homogène.</li><li>- Ajouter le mélange catalyseur/méthanol à l’huile chaude (60°C). Laisser les éléments se mélanger pendant plusieurs heures. Lors de la réaction, deux produits sont formés : le biodiesel et le glycérol. Le biodiesel étant moins dense, il forme la couche supérieure.</li><li>- Attendre 24 heures ou plus avant de procéder à l’étape suivante.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Séparation du glycérol</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/23/Biodiesel_IMG_2506.JPG/800px-Biodiesel_IMG_2506.JPG' alt='Biodiesel IMG 2506.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ad/Biodiesel_IMG_2515.JPG/800px-Biodiesel_IMG_2515.JPG' alt='Biodiesel IMG 2515.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Drainer le glycérol par le bas de la cuve dans un nouveau contenant. Faite attention à ce qui ne reste plus de glycérine dans le biodiesel. Conserver le glycérol obtenu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Lavage et séchage du biodiesel</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Biodiesel_IMG_2585.JPG/800px-Biodiesel_IMG_2585.JPG' alt='Biodiesel IMG 2585.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d6/Biodiesel_IMG_2586.JPG/800px-Biodiesel_IMG_2586.JPG' alt='Biodiesel IMG 2586.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>- Ajouter très lentement 20 % du volume de biodiesel en solution de lavage pour éviter la formation de savon et attendre 10 min. Drainer l’eau de lavage.</li><li>- Procéder à un second lavage. Cette fois, retourner le contenant lentement 4 à 5 fois et attendre 10 minutes. Une agitation excessive favorise la formation d’émulsion et provoquera un délai d’attente supplémentaire. Drainer l’eau de lavage.</li><li>- Procéder à un troisième lavage. Cette fois, agiter énergiquement le contenant pendant quelques minutes. Laissez reposer puis drainer l’eau de lavage.</li><li>- Transférer le biodiesel vierge et lavé dans un nouveau contenant.</li><li>- Chauffer à 50 °C pendant quelques heures jusqu’à ce que le biodiesel devienne clair.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Traitement du glycérol</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5a/Biodiesel_IMG_2736.JPG/800px-Biodiesel_IMG_2736.JPG' alt='Biodiesel IMG 2736.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Biodiesel_IMG_2741.JPG/800px-Biodiesel_IMG_2741.JPG' alt='Biodiesel IMG 2741.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/66/Biodiesel_IMG_2745.JPG/800px-Biodiesel_IMG_2745.JPG' alt='Biodiesel IMG 2745.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/93/Biodiesel_IMG_2740.JPG/800px-Biodiesel_IMG_2740.JPG' alt='Biodiesel IMG 2740.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Tuto vidéo de construction d'un alambic maison: https://www.youtube.com/watch?v=5H1UVv8FaO8</li><li>Former un serpentin avec le tuyau de cuivre (Par exemple autour d'un bidon d'eau). Laisser les deux extrémités rectilignes sur environ 30 cm.</li><li>Fixer le tuyau flexible sur la sortie de la cocotte minute à l'aide d'un collier de serrage.</li><li>Réaliser la jonction entre le tube de cuivre et le tuyau flexible à l'aide de colliers de serrage.</li><li>Verser la glycérine dans la cocotte minute et chauffer l'ensemble à au moins 100 degrès. Le glycérol ayant une température d’ébullition de 290°C, pas besoin de contrôler précisément la température.</li><li>Refroidir le serpentin de cuivre en le plongeant dans un bac d'eau ou avec un linge humide pour accélérer la condensation du méthanol.</li><li>Récolter le méthanol recondensé dans un bocal en verre.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

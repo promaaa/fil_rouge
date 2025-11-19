@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Socks, What Are They Good For?</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Socks, What Are They Good For?</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F24/X4SW/KWJ98MOR/F24X4SWKWJ98MOR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>What's the deal with all these socks? Do I buy cheap socks, yes I do. Do I still think they have a use after getting hole(s) in them, yes I do. So get your packrat minds working and let me tell you the 7 things I've figured out what to do with a sock.</p>
+      
+        <p>Just to set things right I'm not going to go over putting rice in a sock and heating it up in the microwave. That's been done. You want to put socks under your front door to cut down on drafts? I won't stop you.</p>
+      
+        <p>This post is about things I've not see other's put out there.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>You'll need socks.</li><li>Other items include:</li><li>Golf balls</li><li>Scissors</li><li>Soap</li><li>Plastic Bags</li><li>Burned out lightbulbs</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Child's Toy: 1 "Snow" Balls</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F60/ZD9I/KWJ98MGW/F60ZD9IKWJ98MGW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy: 1 "Snow" Balls' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLN/A2CJ/KWJ98MGX/FLNA2CJKWJ98MGX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy: 1 "Snow" Balls' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2T/7OMN/KWJ98MGY/F2T7OMNKWJ98MGY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy: 1 "Snow" Balls' loading='lazy'></figure><figure><img src='https://content.instructables.com/F60/ZD9I/KWJ98MGW/F60ZD9IKWJ98MGW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy: 1 "Snow" Balls' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLN/A2CJ/KWJ98MGX/FLNA2CJKWJ98MGX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy: 1 "Snow" Balls' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2T/7OMN/KWJ98MGY/F2T7OMNKWJ98MGY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy: 1 "Snow" Balls' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If you have small children, and they want to play SNOW BALL FIGHT! But it there's no snow, or it is way too cold out for small children, have one inside. Use Socks!</li><li>1. Take 2 socks, and ball one up inside the other.</li><li>2. Twist the sock, and turn inside out, do it again.</li><li>3. Repeat until you run out of socks.</li><li>4. Watch a sock hit your TV and not feel your bank account drop.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Child's Toy 2: Bolas</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FBX/HKDU/KWJ98MGB/FBXHKDUKWJ98MGB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy 2: Bolas' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW0/J4O4/KWJ98MGE/FW0J4O4KWJ98MGE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy 2: Bolas' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGQ/LH3L/KWJ98MGF/FGQLH3LKWJ98MGF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy 2: Bolas' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBX/HKDU/KWJ98MGB/FBXHKDUKWJ98MGB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy 2: Bolas' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW0/J4O4/KWJ98MGE/FW0J4O4KWJ98MGE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy 2: Bolas' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGQ/LH3L/KWJ98MGF/FGQLH3LKWJ98MGF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child's Toy 2: Bolas' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>This might be for older children, and absolutely to be done outside. They're still fun to swing around, and wrap around a tree or flag pole. They're also so easy to make.</li><li>1. Get 2 golf balls and 2 socks that preferably don't have holes in the toes.</li><li>2. Tie off the golf balls at the toe of the socks.</li><li>3. A square not to connect the socks together.</li><li>4. Let the neighbors accept that children are crazy.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Child Toy 3: Small Sacks</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FUN/EAKV/KWJ98MGU/FUNEAKVKWJ98MGU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child Toy 3: Small Sacks' loading='lazy'></figure><figure><img src='https://content.instructables.com/FH5/62IM/KWJ98MGV/FH562IMKWJ98MGV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child Toy 3: Small Sacks' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUN/EAKV/KWJ98MGU/FUNEAKVKWJ98MGU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child Toy 3: Small Sacks' loading='lazy'></figure><figure><img src='https://content.instructables.com/FH5/62IM/KWJ98MGV/FH562IMKWJ98MGV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Child Toy 3: Small Sacks' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I learned this one when my child was small. You go for a walk in the woods, and your darling sweet angel has found rocks, and sticks, and some odd leaf that might be a bug, and they want you to hang onto them. Get a sock. This way they're not jabbing you in the pocket, or scraping up sunglasses.</li><li>I grabbed a sock when we were going to a city "festival" a few times. Since some booths have things like free candy for children, and you don't want to hold a slowly melting chocolate bar, put everything in a sock. This gives you the ability to monitor what your child is getting, and when the sock is filled, then sorry child, no more candy.</li><li>Not Pictured, is something I'm currently doing and that's a small trash bag for the car. All children produce trash, well cut a small hole near the opening of the sock and slip the sock through one of the bars of the head rest. This works better if they are socks your child has outgrown.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Adult Idea 1: Hot Burned Out Lightbulb</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FBO/9FZ9/KWJ98MGR/FBO9FZ9KWJ98MGR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 1: Hot Burned Out Lightbulb' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBO/9FZ9/KWJ98MGR/FBO9FZ9KWJ98MGR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 1: Hot Burned Out Lightbulb' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I can't take credit for this one. It came from my late Grandpa. So since there are still incandescent lightbulbs in the world, and they do burn out, this was a great idea for those thin glass spheres. Say a bulb burns out, and it would still be hot, and you don't want to drop it, but if you do you don't want glass going everywhere. Get a Sock! Slip the sock on your hand, and that should protect you (mostly) from burning your fingers. Turn the sock inside out around the bulb. Now the bulb is protected until you get to the trash. If you trip over a small child's toy and the bulb brakes, it is in a sock, and just throw the whole thing out. Thanks Grandpa!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Adult Idea 2: Soap in a Sock</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FUH/2OHA/KWJ98MGZ/FUH2OHAKWJ98MGZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 2: Soap in a Sock' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUA/6NQM/KWJ98MH0/FUA6NQMKWJ98MH0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 2: Soap in a Sock' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUH/2OHA/KWJ98MGZ/FUH2OHAKWJ98MGZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 2: Soap in a Sock' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUA/6NQM/KWJ98MH0/FUA6NQMKWJ98MH0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 2: Soap in a Sock' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I did this last week. So you need to clean something that is absolutely filthy. You will need soap and scrubbing, and whatever you use to scrub will be trash afterwards. Use a Sock! I just put a bar of soap into the the sock, turned inside out, and tied it off. That way you can scrub that moldy mildew covered plastic kid's pool clean before storing it for the winter. Then you can untie the knot recover the soap, and throw out the now green sock.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Adult Idea 3: Neck Pillow</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FTM/GYWS/KWJ98MGS/FTMGYWSKWJ98MGS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 3: Neck Pillow' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBL/4MS8/KWJ98MGT/FBL4MS8KWJ98MGT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 3: Neck Pillow' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTM/GYWS/KWJ98MGS/FTMGYWSKWJ98MGS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 3: Neck Pillow' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBL/4MS8/KWJ98MGT/FBL4MS8KWJ98MGT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 3: Neck Pillow' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I refuse to pay twenty dollars for a neck pillow. Really, why am I even on Instructables if not to find out how to do things for myself? So realizing that a neck pillow would be a great thing for a car trip I made my own. Get one nice soft sock for the outside, and 10 to 20 socks (depending on how firm you want the pillow to be) for the inside. Line all of the filler socks up, and put them in the soft sock all the way to the toe.</li><li>NOTE: Depending on your socks, or how many you are using, it might be easier to take your soft sock, turn it inside out, put your hand into the soft sock, grab the end of the filler socks, and turn the soft sock right side out over them.</li><li>You can then twist and flip the end of the soft sock, or sew it closed. This also makes it so you can wash this neck pillow, unlike some $20 ones.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Adult Idea 4: Bag Dispenser</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FTZ/JBUL/KWJ98MH2/FTZJBULKWJ98MH2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 4: Bag Dispenser' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVI/XAKH/KWJ98MH3/FVIXAKHKWJ98MH3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 4: Bag Dispenser' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNJ/FLBJ/KWJ98MH4/FNJFLBJKWJ98MH4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 4: Bag Dispenser' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTZ/JBUL/KWJ98MH2/FTZJBULKWJ98MH2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 4: Bag Dispenser' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVI/XAKH/KWJ98MH3/FVIXAKHKWJ98MH3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 4: Bag Dispenser' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNJ/FLBJ/KWJ98MH4/FNJFLBJKWJ98MH4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adult Idea 4: Bag Dispenser' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If you have a number of plastic bags, and want to reuse them, but you don't want them all over the place then I have a solution for you! A SOCK! I need to hype this up because it is functional, but looks bad. It's really simple, take a sock you don't care about, and this one can have holes in the toes. Make a small slit at the top of the sock, opposite where the toe holes are. Make the hole in the toes a little larger, maybe an inch in diameter. Shove your bags into the sock at the top, and pull from the bottom. So now you have a way to collect your plastic bags, and get them as needed, but I keep mine in the closet since it looks weird to have a bag filled sock hanging up.</li><li>That's it! I'm sure there are other ideas of what to do with a sock. Put it around hot cups of coffee where the sleeve isn't doing enough. Toss some potpourri into a sock and put the sock in the car, spray with water from time to time to get more sent. Your child forgot their gloves in the winter, so use socks. I've used socks filled with dirt to get some sunflower seeds going (they didn't blossom thanks to squirrels). Keep in mind that just because one use of an item is no longer an option, there may be</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

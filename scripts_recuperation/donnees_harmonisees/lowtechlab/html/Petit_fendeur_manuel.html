@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Petit fendeur manuel</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Petit fendeur manuel</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/e9/Petit_fendeur_manuel_DSC_1041.resized.JPG/ia-f9c1fbf11ff83b87cc71f2d0f07e9efd-px-Petit_fendeur_manuel_DSC_1041.resized.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Le petit fendeur manuel simplifie la préparation de petit bois à partir de matériaux recyclés, pour un allumage écologique et sans risque.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment petit fendeur manuel.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Petit_fendeur_manuel" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Petit_fendeur_manuel</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Extincteur</li><li>Bois contreplaqué</li><li>Profilé acier plat</li><li>2 boulons</li><li>4 vis à bois</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Meuleuse</li><li>Perceuse</li><li>Scie sauteuse</li><li>Tournevis</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - La lame fendeuse</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/b/b1/Petit_fendeur_manuel_DSC_1033.resized.JPG' alt='Petit fendeur manuel DSC 1033.resized.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d6/Petit_fendeur_manuel_DSC_1034.resized.JPG' alt='Petit fendeur manuel DSC 1034.resized.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Petit_fendeur_manuel_DSC_1039.resized.JPG/531px-Petit_fendeur_manuel_DSC_1039.resized.JPG' alt='Petit fendeur manuel DSC 1039.resized.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ici, la lame fendeuse est constituée à partir d’un profilé en acier de dimension 40x6x180mm. Une lame de ressort serait idéale.</li><li>Deux trous de diamètre 6mm ont été pratiqués aux extrémités afin de maintenir la lame en position dans le cylindre.</li><li>L’angle d’affûtage de la lame est d’environ 30° afin de séparer le bois plutôt que chercher à le couper. Le profil adopté est celui d’un merlin plutôt que celui d’une hache.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Un extincteur recyclé surmonté d'une collerette en bois</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/2/29/Petit_fendeur_manuel_DSC_1018.resized.JPG' alt='Petit fendeur manuel DSC 1018.resized.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/25/Petit_fendeur_manuel_DSC_1036.resized.JPG' alt='Petit fendeur manuel DSC 1036.resized.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le cylindre a été découpé dans un extincteur recyclé de diamètre 138mm. La longueur du cylindre est 300mm. Il est surmonté d’une collerette en bois constitué de deux planches de contre-plaqué de 15 mm d’épaisseur.</li><li>Le rôle de la collerette est d’offrir une surface suffisante afin de limiter l’impact d’un coup de marteau malencontreux.</li><li>Pour obtenir deux lumières (les trous rectangulaires visibles ci-dessous), il suffit de pratiquer deux trous dans le cylindre à l’aide d’un forêt de 6mm de diamètre et deux petits coups de meuleuse à l’aide d’un disque fin (1,6mm) puis finir avec une lime plate.</li><li>Les deux planches de contreplaqué sont solidarisées à l’aide de 4 vis à bois et de colle à bois. Le diamètre extérieur de la collerette est de 200mm.</li><li>La planche inférieure permet de centrer la collerette sur le cylindre. Son diamètre intérieur est égal au diamètre extérieur de l’extincteur (138mm). Il est emboîté sans jeu et légèrement en force.</li><li>La partie supérieure de la lame fendeuse est située 60mm sous la partie supérieure du cylindre.</li><li>La planche supérieure permet à la collerette de ne pas glisser sur l’extincteur. Son diamètre intérieur est légèrement inférieur au diamètre intérieur de l’extincteur (122mm). En outre, le fait qu’il soit légèrement inférieur limite la taille des morceaux de bois et évite ainsi qu’un morceau de bois reste bloqué dans le cylindre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Fendre</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/4/4a/Petit_fendeur_manuel_DSC_0488.resized.JPG' alt='Petit fendeur manuel DSC 0488.resized.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/9c/Petit_fendeur_manuel_DSC_1046.resized.JPG' alt='Petit fendeur manuel DSC 1046.resized.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/5a/Petit_fendeur_manuel_DSC_1016.resized.JPG' alt='Petit fendeur manuel DSC 1016.resized.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/fd/Petit_fendeur_manuel_DSC_0940.resized.JPG' alt='Petit fendeur manuel DSC 0940.resized.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/74/Petit_fendeur_manuel_DSC_2573.resized.JPG' alt='Petit fendeur manuel DSC 2573.resized.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour obtenir des bûchettes de faible section, il suffit de poser le morceau de bois sur le fendeur et de frapper avec un marteau.</li><li>L’opération de fente est facilitée.</li><li>La précision du geste est augmentée parce que le morceau de bois est posé sur la lame fendeuse avant la frappe. Le risque est atténué par rapport à l’utilisation d’une hache classique parce que les doigts sont éloignés de la lame fendeuse.</li><li>En outre, si le manche du marteau atteint la collerette en bois située en haut du fendeur, alors 2 cm séparent le marteau de la lame fendeuse, ce afin de protéger les doigts.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

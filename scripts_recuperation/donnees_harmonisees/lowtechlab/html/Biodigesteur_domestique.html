@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Biodigesteur domestique</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Biodigesteur domestique</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/5/56/Biodigesteur_domestique_small_general.png/800px-Biodigesteur_domestique_small_general.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Produire du gaz naturel combustible et du fertilisant à partir de nos déchets organiques</div>
+        
+      </div>
+    
+    
+      
+        <p>Un biodigesteur est une solution technique de valorisation des déchets organiques utilisée pour produire un gaz combustible (le biogaz) et un fertilisant (le digestat). La particularité du biodigesteur est que la dégradation est réalisée par des bactéries dans un milieu privé d’oxygène, on parle de fermentation anaérobique.</p>
+      
+        <p>Le biogaz est un mélange de gaz contenant principalement du méthane, il peut être utilisé pour alimenter un bruleur de gazinière ou de chaudière ou bien comme combustible pour des moteurs.</p>
+      
+        <p>La fermentation méthanogène qui se produit dans le biodigesteur existe dans la nature. C’est par exemple ce qui se produit dans les marais lorsque de la matière organique se décompose sous l’eau. Les feu-follets sont de petites torchères de biogaz.</p>
+      
+        <p>La domestication du biogaz remonte au début du XIXe siècle et le nombre et la variété de biodigesteurs n’ont cessé de croitre depuis. Ils sont particulièrement présents dans les pays en développement de la ceinture tropicale où la petite paysannerie s’autonomise en énergie grâce à leur production de gaz avec leurs déchets organiques. La chaleur étant un catalyseur important de la fermentation, sous ces latitudes, de petites unités sont économiquement intéressantes.</p>
+      
+        <p>En France et dans certains pays, le coût de l’énergie étant très faible par rapport à celui de la main d’œuvre, peu de petits digesteurs existent. Cependant de nombreuses installations industrielles équipent les stations d’épurations et les grands élevages agricoles.</p>
+      
+        <p>Il existe plusieurs types de biodigesteurs, continus ou discontinus, et avec des plages de production selon la température (psychrophile : 15-25°C, mésophile : 25-45°C ou thermophile : 45 – 65°C). Nous allons étudier les biodigesteurs continus mésophiles à 38°C, solutions les plus utilisées en zone tempérée.</p>
+      
+        <p>La caractéristique principale de ce système est sa ressemblance avec un système digestif. Tout comme lui, il cultive des bactéries, a besoin d’une certaine température pour être efficace et reçoit une alimentation régulièrement.</p>
+      
+        <p>Dans un compost, en milieu aérobie, la décomposition des matières organiques conduit à la formation de gaz (H2S, H2, NH3) et à une production de chaleur importante. Seule la décomposition à l’abri de l’air conduit à la formation du méthane. C’est une des raisons pour laquelle la fermentation a lieu dans une cuve étanche.</p>
+      
+        <p>Dans ce tutoriel nous allons étudier les différents éléments constituants un biodigesteur (circuit matière et circuit gaz) et comment l’utiliser.</p>
+      
+        <p>Cette documentation réalisée avec l’association Picojoule retrace la fabrication d’un de leurs prototypes de micro-méthanisation, il ne permet pas l'autonomie en gaz de cuisson mais est une bonne introduction à la biodigestion. Le digesteur semi-enterré d'Hélie Marchand à Madagascar est de plus grande capacité : Biodigesteur</p>
+      
+        <p>Les explications sont largement inspirées du travail de Bernard LAGRANGE dans ses ouvrages Biométhane 1 et 2, que nous vous recommandons vivement !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 500 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Biodigesteur_domestique" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Biodigesteur_domestique</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Circuit matière<ul><li>1 Bidon 60 L</li><li>1 Bouchon 160 mm</li><li>1 Réducteur 160-100 mm</li><li>1 Réducteur 100-50 mm</li><li>1 mètre de tube PVC 50 mm</li><li>4 Coudes 45° 50 mm PVC MF</li><li>2 Raccords démontables 50 mm</li><li>2 Passes-parois 50 mm</li><li>2 Manchons MM 50 mm</li><li>1 Bouchon 50 mm PVC</li><li>Colle PVC</li><li>Décapant</li><li>Pâte à joint plomberie</li></ul></li><li>Circuit gaz<ul><li>2 Ecrous plan 1/2’ pour passe-paroi gaz</li><li>1 lot de joints plan</li><li>1 Tube filté en 1/2’</li><li>1 Coude 1/2’ laiton MF</li><li>1 Raccord FF 1/2’ écrou libre</li><li>1 Vanne Gaz 15x21 MM</li><li>1 lot de colliers de serrage</li><li>1 Tétine gaz 1/2’ F</li><li>5 mètres de tuyau de gaz</li><li>1 Filtre eau</li><li>1 Filtre soufre en bille d’argile</li><li>2 Vannes gaz</li><li>3 T tuyaux gaz</li><li>1 Raccord démontables air comprimé</li><li>1 Manomètre</li><li>1 Réserve à eau souple 150L</li><li>1 Compresseur gaz</li><li>1 Gazinière</li><li>1 Tapis chauffant</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>scie</li><li>perceuse avec scie cloche</li><li>coupe tube</li><li>tournevis</li><li>cutter</li><li>compresseur</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Circuit matière - Digesteur</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a1/Biodigesteur_domestique_digesteur_per_age.png/800px-Biodigesteur_domestique_digesteur_per_age.png' alt='Biodigesteur domestique digesteur per age.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/38/Biodigesteur_domestique_digesteur_passe_paroi.png/800px-Biodigesteur_domestique_digesteur_passe_paroi.png' alt='Biodigesteur domestique digesteur passe paroi.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Biodigesteur_domestique_digesteur_s_parateur.png/800px-Biodigesteur_domestique_digesteur_s_parateur.png' alt='Biodigesteur domestique digesteur s parateur.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Biodigesteur_domestique_digesteur_opercule.png/800px-Biodigesteur_domestique_digesteur_opercule.png' alt='Biodigesteur domestique digesteur opercule.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7c/Biodigesteur_domestique_digesteur_couvercle.png/800px-Biodigesteur_domestique_digesteur_couvercle.png' alt='Biodigesteur domestique digesteur couvercle.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour une bonne digestion, à 38°C, la matière organique doit passer 30 jours dans le biodigesteur. Nous allons dimensionner le volume du digesteur en fonction des apports réguliers et de cette durée.</li><li>Prenons un exemple : l’apport périodique est de 2 litres par jour, la matière devant rester au moins 30 jours, il faut un digesteur de 60 litres minimum.<ul><li>On considère en moyenne 1kg de déchets = 1,6L = 1/2h de gaz. (Le calcul est fait ici pour des déchets alimentaires de cuisine.) Il faut donc ajuster le calcul en fonction de l'apport quotidien et des besoins en gaz.</li></ul></li><li>C’est dans le digesteur qu’a lieu la dégradation bactérienne. Pour avoir une production de méthane il faut des bactéries méthanogènes. Celle-ci se développent en absence d’oxygène, on parle d’un milieu anaérobique. Pour priver la matière organique d’oxygène il suffit de l’immerger dans l’eau.<ul><li>Faire deux trous en vis-à-vis dans le bidon digesteur. Ils doivent être au tiers de la hauteur,</li><li>Insérer un passe-paroi matière préalablement graissé dans chacun des deux trous,</li><li>Graisser l’intérieur des passe-parois matière,</li><li>Positionner une plaque à l’intérieur du digesteur faisant la séparation entre l’entrée et la sortie. En laissant passer la matière au-dessous et au-dessus elle augmente le parcours de la matière et donc le temps de digestion minimum,</li><li>Faire un trou dans l’opercule du couvercle pour installer un passe paroi gaz,</li><li>Installer un passer un passe-paroi gaz au centre de l’opercule d’étanchéité du couvercle. Du téflon sur les filets et un joint plat de chaque côté permettent d’étanchéifier le montage,</li><li>Enduire de graisse la collerette de l’opercule et refermer le couvercle, la graisse fait l’étanchéité, le couvercle maintient la pression,</li><li>Installer une vanne après le passe-paroi gaz.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Circuit matière - Entrée</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/5/5f/Biodigesteur_domestique_small_bouche.png' alt='Biodigesteur domestique small bouche.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/35/Biodigesteur_domestique_small_bouche_install_e.png' alt='Biodigesteur domestique small bouche install e.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/27/Biodigesteur_domestique_small_bouche_filt_e.png/800px-Biodigesteur_domestique_small_bouche_filt_e.png' alt='Biodigesteur domestique small bouche filt e.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C’est par l’entrée du système, sa bouche, que le biodigesteur est nourri. Le montage sera entièrement réalisé à blanc pour s’assurer de ses bonnes dimensions puis démonté et collé.<ul><li>Faire pénétrer un tuyau PVC dans l’une des ouvertures du digesteur, il est inutile qu’il rentre de trop, cela limite la circulation de la matière,</li><li>Faire un angle à 90° en utilisant deux raccords 45°. Sur des petits diamètres de tube il est préférable d’avoir des angles doux. Un raccord à 90° est vite obstrué et bloque le transit,</li><li>Réaliser la bouche à partir de tuyaux de grands diamètres, plus la bouche est large plus il est simple de nourrir proprement le digesteur. Une première fermentation a lieu dans la bouche, un couvercle dévissable ferme le tout,</li><li>Relier la bouche au digesteur de manière à ce que celle-ci-soit plus haute et que la matière circule par gravité.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Circuit matière - Trop-plein</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2b/Biodigesteur_domestique_small_trop_plein_install_.png/800px-Biodigesteur_domestique_small_trop_plein_install_.png' alt='Biodigesteur domestique small trop plein install .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Biodigesteur_domestique_small_trop_plein.png/800px-Biodigesteur_domestique_small_trop_plein.png' alt='Biodigesteur domestique small trop plein.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Par analogie, le trop-plein représente le terminus du système digestif. A chaque fois que le système est nourri, un même volume de digestat quitte le biodigesteur. Pour faciliter l’entretien une sortie basse est réalisée. Elle permet de vidanger le digesteur.<ul><li>Faire pénétrer un tuyau PVC dans la seconde ouverture du digesteur, il est inutile qu’il rentre de trop, cela limite la circulation de la matière,</li><li>Mettre un raccord Y,</li><li>La partie horizontale est prolongée par un tube puis muni d’un bouchon, c’est la vidange,</li><li>Faire remonter la deuxième branche jusqu’au haut du biodigesteur à l’aide de 3 manchons à 45°, toujours pour éviter d’obstruer le système,</li><li>Un tube PVC part vers l’extérieur, c’est par là que se déverse le digestat,</li><li>Le trop-plein est plus bas que le couvercle du digesteur, il permet de maintenir un « ciel gazeux » et de ne pas avoir de matière organique dans le circuit de gaz.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Circuit matière - Collage et étanchéité</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/2/2d/Biodigesteur_domestique_collage_pvc.png' alt='Biodigesteur domestique collage pvc.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si le système monté à blanc est satisfaisant il faut coller les éléments de PVC entre eux :<ul><li>Marquer chacun des raccords en faisant une croix sur la jonction, cela permet de remonter le système en respectant les alignements,</li><li>Nettoyer les zones à coller,</li><li>Coller à la colle PVC,</li><li>Laisser sécher,</li></ul></li><li>Il faut à la suite tester l’étanchéité :<ul><li>Boucher provisoirement la sortie du trop-plein (ex : chambre à air + collier de serrage), visser le couvercle d’entrée matière, visser le bouchon de vidange,</li><li>Mettre le système sous pression à l’aide d’un compresseur en soufflant par la vanne gaz,</li><li>Asperger les jonctions à l’aide d’un spray d’eau savonneuse, si des bulles se forment le collage n’est pas étanche, il faut le revoir.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Chaleur et Isolation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/b/b1/Biodigesteur_domestique_chauffage_et_isolation.png' alt='Biodigesteur domestique chauffage et isolation.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/27/Biodigesteur_domestique_isolation.png/800px-Biodigesteur_domestique_isolation.png' alt='Biodigesteur domestique isolation.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce type de biodigesteur est mésophile, c’est-à-dire que les bactéries se développent entre 25°C et 45°C, idéalement à 38°C. Contrairement au compostage, la biodigestion ne génère que très peu de chaleur. Pour atteindre ces températures de travail il faut donc apporter de la chaleur au système. Il est possible de chauffer de nombreuses manières :<ul><li>par compostage autour du digesteur,</li><li>par chauffage solaire,</li><li>en brulant une partie du méthane produit.</li></ul></li><li>Dans notre cas, étant donné le petit volume du système, nous utilisons un chauffe-lit positionné sous le digesteur</li><li>Pour éviter que le biodigesteur soit énergétiquement déficitaire, il est important de très bien l’isoler pour lui apporter un minimum d’énergie calorifique. De plus, une bonne isolation permet de limiter les variations de températures auxquelles les bactéries sont très sensibles. Il est possible d’isoler de nombreuses façons. Nous avons isolé l’enceinte avec des plaques de liège. Il est possible d’utiliser de la paille, très bon isolant à bon marché.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Circuit gaz</strong><p><strong>Étapes :</strong></p><ol><li>Nous venons d’étudier le circuit de matière organique, de l’entrée à la production du digestat. Un des grands intérêts du biodigesteur est qu’il produit également du biométhane. Dans cette partie nous étudierons les différents éléments du circuit de gaz pour la bonne production et la purification du combustible.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Circuit gaz - Digesteur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7d/Biodigesteur_domestique_digesteur_gaz_small.png/800px-Biodigesteur_domestique_digesteur_gaz_small.png' alt='Biodigesteur domestique digesteur gaz small.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C’est dans le digesteur, en dégradant les matières organiques que les bactéries produisent le biométhane. Il est composé de plusieurs gaz en proportions variables, dont :<ul><li>Méthane (CH4) 50 à 70%</li><li>Dioxyde de carbone (CO2) 35 à 40%</li><li>Hydrogène Sulfuré (H2S) 1 à 3%</li><li>Vapeur d’eau (H20) variable</li></ul></li><li>On y trouve également des traces d’hydrogène, d’oxygène, de monoxyde de carbone, d’azote et d’autre gaz présents en très faibles quantités.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Le méthane</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Le méthane, CH4, est un carbure d’hydrogène de la famille CnH2n+2 tout comme le propane (C3H8) ou le butane (C4H10). Il est très léger (d=0,55), il ne s’accumule donc pas au sol, au contraire du butane et du propane et diminue les dangers d’explosions. Le gaz naturel est composé principalement de méthane.</li></ul></li><li>Pour être liquéfié, en vue d’un transport plus commode, il doit être refroidi à -165°C ou comprimé à 400 bars. Cela n’est possible qu’avec des moyens industriels, on le conserve donc dans notre cas à l’état gazeux.</li><li>Par rapport à la masse, c’est le meilleur carburant sur le plan calorifique (12 000 Kcal/kg), mais c’est le plus volumineux.</li><li>Dans cette application, c’est le méthane qui nous intéresse, nous allons voir comment épurer le biométhane des autres composés.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Le dioxyde de carbone</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/7/75/Biodigesteur_domestique_bulleur.png' alt='Biodigesteur domestique bulleur.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La proportion varie en fonction des réactions bactériennes, de la température et des éléments à digérer. Le CO2 gène la combustion mais ne l’empêche pas.</li><li>Le plus simple est de procéder à un lavage du gaz à l’eau. Le dioxyde de carbone est très soluble (878 cm3/l à 20°C) alors que le méthane l’est très peu (34 cm3/l). Cette eau chargée de CO2 peut être utilisée pour l’irrigation ou pour la culture d’algues comme la spiruline.<ul><li>A la sortie du digesteur, après la vanne, faire passer le gaz dans un réservoir-bulleur,</li><li>Le réservoir doit être rempli d’eau,</li><li>Le tube d’arrivée de gaz plonge dans l’eau,</li><li>La sortie de gaz est en haut,</li><li>Un bouchon de vidange sur le bas du réservoir-bulleur permet de collecter l’eau enrichie en CO2.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - La vapeur d’eau</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9c/Biodigesteur_domestique_collecteur_d_eau.png/800px-Biodigesteur_domestique_collecteur_d_eau.png' alt='Biodigesteur domestique collecteur d eau.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est souhaitable d’avoir le minimum d’eau à la combustion, celle-ci en dégageant déjà une grande quantité. De plus avec la condensation dans les tuyaux il y a un risque d’obstruction dans les points bas du circuit de gaz :<ul><li>Installer un collecteur d’eau au point le plus bas du système,</li><li>Si le circuit gaz est long, installer tous les 5 mètres des collecteurs aux points les plus bas,</li><li>Un bouchon de vidange sur le bas des collecteurs permet de purger l’eau régulièrement.</li></ul></li><li>Le réservoir-bulleur peut jouer le rôle de collecteur d’eau s’il est placé en bas du circuit de gaz.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - L’hydrogène sulfuré</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/c7/Biodigesteur_domestique_filtre_H2S.png' alt='Biodigesteur domestique filtre H2S.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’hydrogène sulfuré (H2S) est combustible mais fortement corrosif par la production d’acide sulfurique. Sa présence est nuisible et nous l’éviterons au maximum par un bon équilibre du pH du biodigesteur. Pour l’éliminer, on fait passer le biométhane à travers de l’oxyde de fer ou de la paille de fer qui sera régénérée par exposition à l’air libre avec départ de souffre. Le charbon de bois ou les billes d’argile peuvent également servir de matériaux filtrant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Circuit gaz - Stockage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/5/58/Biodigesteur_domestique_gazom_tre.png' alt='Biodigesteur domestique gazom tre.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans le digesteur, il est préférable d’avoir une fermentation qui se déroule à pression minimum. Pour cela, le gaz devra être évacué à mesure de son dégagement. A moins d’avoir une consommation continuelle et régulière de gaz, on devra disposer d’une réserve fournissant le gaz aux « pointes » de consommation et le stockant le reste du temps.</li><li>Les réservoirs souples de type « vessie » sont intéressants. A l’inverse, utiliser un récipient indéformable peut être dangereux : il faut être en mesure de vider l’air contenu à l’intérieur avant d'y introduire du méthane, le mélange des deux gaz peut être explosif.<ul><li>Monter le ballon de stockage en parallèle du circuit de gaz,</li><li>Installer une soupape de sécurité 100 mbar au plus proche du stockage, elle dégazera s’il y a une surpression potentiellement dangereuse.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Circuit gaz - Retour de flamme</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/5/5a/Biodigesteur_domestique_retour_de_flamme.png' alt='Biodigesteur domestique retour de flamme.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Partout où on craint un retour de flamme, placer une boule de paille de fer ou de cuivre sur le parcours du gaz qui, par conduction thermique, étouffe la combustion en abaissant la température. Il ne faut cependant pas trop tasser la paille métallique dans les tuyaux au risque de limiter le bon passage du gaz.</li><li>Dans notre cas, pour éviter un retour de flamme vers le digesteur et surtout le ballon de stockage, nous installons de la paille de fer dans le tuyau au plus proche de la gazinière.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Circuit gaz - Combustion</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d1/Biodigesteur_domestique_gicleur.png/800px-Biodigesteur_domestique_gicleur.png' alt='Biodigesteur domestique gicleur.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Comme il est mélangé à du dioxyde de carbone non combustible, le biométhane a un pouvoir calorifique nettement plus faible que le propane, le butane ou le méthane pour un même volume.</li><li>Les appareils qui fonctionnent avec ces gaz ont donc une plus grande admission d’air qu’une gazinière au biométhane.</li><li>Pour adapter les bruleurs standards à du biométhane :<ul><li>Fermer légèrement l’arrivée d’air primaire, au moyen d’une bague métallique ou de papier aluminium.</li></ul></li><li>OU<ul><li>Démonter le gicleur et utiliser l’éjection directe de gaz.</li></ul></li><li>ATTENTION : les flammes de méthane sont moins visibles que celle de propane ou butane, il faut faire attention à ne pas se bruler au contact de la gazinière.</li><li>Le biométhane peut également être utilisé dans des lampes à gaz, des chaudières ou des moteurs à explosions : groupes électrogènes, engins agricoles, voitures…</li><li>Le biodigesteur et le stockage sont à pression atmosphérique pour ne pas ralentir le travail bactérien. Une gazinière biométhane fonctionne avec un gaz à 10 mbar, pour cela :<ul><li>Installer un compresseur entre le stockage et le bruleur,</li></ul></li><li>OU<ul><li>Effectuer une pression sur la vessie de stockage (10 cm d’eau), cela réduit d’environ 5% la production de biogaz mais est beaucoup plus économe que l’acquisition d’un compresseur.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Circuit gaz - étanchéité</strong><p><strong>Étapes :</strong></p><ol><li>Chaque raccord entre un élément et un tuyau de gaz doit être sécurisé avec un collier de serrage.</li><li>Une fois l’ensemble du circuit monté, faire un test d’étanchéité, comme pour le circuit matière, en le mettant sous pression et en aspergeant de l’eau savonneuse sur les jonctions. Si des bulles apparaissent, il y a une fuite.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Utilisation du digesteur - Alimentation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/ba/Biodigesteur_domestique_banane_broy_e.png/800px-Biodigesteur_domestique_banane_broy_e.png' alt='Biodigesteur domestique banane broy e.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le biodigesteur est un système vivant, composé de millions de bactéries, il faut donc lui porter une attention particulière.</li><li>Dans l’idéal le biodigesteur est nourri tous les jours. Il est possible de descendre jusqu’à une fois par semaine. Si le volume de matière à transformer est important, il vaut mieux le répartir sur plusieurs « repas ».</li><li>Il est important de broyer les aliments (au couteau, mixeur …) et d’y ajouter leur poids en eau pour :<ul><li>Faciliter le « transit » des éléments qui ne resteront pas bloqués dans le système,</li><li>Accélérer la dégradation bactérienne donc la productivité du système</li></ul></li><li>Le biodigesteur est un complément très intéressant au composteur. En effet un compost a pour objectif de créer de l’humus, pour cela il a besoin d’un fort rapport carbone/azote, (entre 20 et 30), avec principalement de la cellulose et des composés ligneux. Un surplus de matière organique putrescible déstructure le compost.</li><li>A l’inverse, les matières humides et putrescibles sont les bienvenues dans un biodigesteur (fruits et légumes en décomposition, épluchures…). Il faut limiter les matières fibreuses, sèches et dures voire les éviter dans un petit digesteur. Ils risquent de boucher la circulation de matière, ils ont également tendance à flotter et à former une écume très difficile à faire disparaitre et, en formant des croutes ou en se déposant au fond, ils utilisent de la place inutilement.</li><li>Une alimentation très azotée est idéale, l’azote n’est que très peu présent dans le biométhane mais il participe fortement à sa synthèse via la stimulation de l’activité bactérienne. De plus il permet d’obtenir un fertilisant très riche avec le digestat.</li><li>Il est important d’apporter du « vert » au régime du digesteur, si les épluchures ou diverses fanes ne suffisent pas, de l’herbe tondue et broyée complète bien.</li><li>Les produits animaliers (viandes, lait, œufs…) doivent être évités dans un biodigesteur, ne montant pas en température comme un compost il ne détruit pas les germes pathogènes.</li><li>Les huiles alimentaires ont un très fort pouvoir méthanogène (780 litres de méthane par kilo d’huile !) mais acidifie le biodigesteur. S’il devient trop acide les bactéries vont mourir. A consommer avec modération.</li><li>L’eau de cuisson permet de réchauffer le système tout en fluidifiant le transit. Elle est également chargée en amidon (pommes de terre, céréales, pâtes, riz …) apprécié par les bactéries.</li><li>L’urine peut être utilisée régulièrement. Les excréments sont acceptés en petites doses mais ils ont un faible pourvoir méthanogène, une grande partie de leur valeur énergétique a été absorbée pendant la digestion.</li><li>En milieu acide, l’activité enzymatique des bactéries est bloquée. Cette acidité est surtout due à l’accumulation d’acides organiques. En milieu basique, les fermentations produisent de l’hydrogène sulfuré (H2S) et de l’hydrogène (H2). La digestion peut s’effectuer entre des pH de 6,6 et 7,6 avec un optimum entre 7 et 7,2.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Ensemencement</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d7/Biodigesteur_domestique_collecte_bouse.png/800px-Biodigesteur_domestique_collecte_bouse.png' alt='Biodigesteur domestique collecte bouse.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/65/Biodigesteur_domestique_m_lange_bouse.png/800px-Biodigesteur_domestique_m_lange_bouse.png' alt='Biodigesteur domestique m lange bouse.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/49/Biodigesteur_domestique_table_.png/800px-Biodigesteur_domestique_table_.png' alt='Biodigesteur domestique table .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous avons vu précédemment que les excréments ont un faible pouvoir méthanogène car déjà digérés. Ils restent cependant importants pour lancer l’activité bactérienne dans le digesteur.</li><li>Une vache, à travers ses rots, génère à elle seule entre 60 et 200 litres de biogaz par jour. Nous allons donc récupérer une partie de la flore intestinale du ruminant dans … ses excréments.</li><li>Pour lancer la fermentation bactérienne dans le digesteur :<ul><li>Mélanger une bouse de vache fraiche à de l’eau et l’insérer à l’entrée du biodigesteur.</li></ul></li><li>Si l’activité du biodigesteur est arrêtée à cause d’une longue période sans alimentation il faut à nouveau l’ensemencer de la même manière.</li><li>La stabilisation de la digestion jusqu’à une production régulière d’un gaz combustible peut durer plusieurs semaines, il est bon de ne pas trop perturber son alimentation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Digestat</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Biodigesteur_domestique_silece_a_pousse.png/800px-Biodigesteur_domestique_silece_a_pousse.png' alt='Biodigesteur domestique silece a pousse.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3d/Biodigesteur_domestique_fertilisant.png/800px-Biodigesteur_domestique_fertilisant.png' alt='Biodigesteur domestique fertilisant.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le digestat issu de biodigesteurs domestiques une fois stabilisé est un fertilisant liquide très riche en azote et minéraux.</li><li>Il peut être appliqué dilué à 10% sur toutes les plantes avec un intervalle d’un mois entre chaque utilisation.</li><li>Si des produits animaliers (viandes, lait, œufs…) font partis du régime du biodigesteur il ne faut pas appliquer de digestat sur les fruits et légumes mangés crus (fraises, salades, carottes…). Il trouvera son utilisation dans les vergers ou sur les plantes non-alimentaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/f/f9/Biodigesteur_domestique_BiodigesteurDomestique.PNG' alt='Biodigesteur domestique BiodigesteurDomestique.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab à l'occasion de l'exposition "En Quête d'un Habitat Durable" dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux")</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

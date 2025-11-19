@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Garde-Manger</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Garde-Manger</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/9/96/Garde-Manger_DSC_0265.JPG/427px-Garde-Manger_DSC_0265.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Garde-Manger permettant les bonnes ambiances de conservation par type d'aliment</div>
+        
+      </div>
+    
+    
+      
+        <p>Rapide état du gaspillage alimentaire</p>
+      
+        <p>Dans le monde, 1/3 de la production totale d’aliment est jeté.</p>
+      
+        <p>En France, cela représente 10 milliards de kilogrammes d’aliments gaspillés chaque année et l’impact carbone de ces pertes est équivalent à 5 fois le trafic aérien intérieur.</p>
+      
+        <p>L’analyse du gaspillage montre que 33% de celui-ci est réalisé sur le dernier maillon de la chaîne : le consommateur.</p>
+      
+        <p>Les pertes représentent un coût global de 160€/an/personne .</p>
+      
+        <p>Quantitativement, les pertes les plus importantes concernent les fruits et les légumes (50%).</p>
+      
+        <p>Cependant bien que ne représentant que 6%, les produits animaux (viande, poisson, crèmerie) représentent la perte financière la plus importante.</p>
+      
+        <p>Causes du gaspillage alimentaire</p>
+      
+        <p>Afin de concevoir les bonnes solutions à mettre en œuvre pour réduire le gaspillage, une analyse des causes de celui-ci est intéressante :</p>
+      
+        <p>•Causes sociologique : Nos rythmes de vie, les structures familiales, les modes d’organisation de nos journées et de nos repas évoluent. Nous sommes plus pressés et moins attentifs, ce qui amène un gaspillage alimentaire.</p>
+      
+        <p>•Causes culturelles : Nos perceptions des aliments, nos critères esthétiques et notre façon de nous alimenter nous amène à écarter des produits pourtant consommables.</p>
+      
+        <p>•Une mauvaise connaissance de la conservation des aliments : Conserver n’est pas synonyme de faire du froid, un réfrigérateur n’est donc pas fait pour accueillir tous les aliments. De plus des confusions sont réalisées entre date limite de consommation (DLC) et date limite d’utilisation optimale (DLUO).</p>
+      
+        <p>•Des problèmes d’organisation : Nous manquons d’organisation avant de faire nos courses, pour questionner les besoins et acheter la quantité juste. Les réfrigérateurs et placards sont également la source de nombreuses pertes dues à un mauvais rangement favorisant l’empilement d’aliments neufs devant les plus anciens.</p>
+      
+        <p>Il est important de noter qu’une bonne partie des causes peut être corrigée par de bonnes pratiques que chacun peut mettre en œuvre. Des solutions techniques pourront venir en appui, principalement pour :</p>
+      
+        <p>•Créer les bonnes ambiances de conservation par type d’aliment</p>
+      
+        <p>•Favoriser la bonne visibilité des produits</p>
+      
+        <p>•Les rendre plus facilement accessible.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 150 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Garde-Manger" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Garde-Manger</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - La démarche "0 Waste"</strong><p><strong>Étapes :</strong></p><ol><li>La première étape pour l’utilisateur dans l’utilisation d’un meuble de conservation tel que nous le proposons est de questionner sa manière d’acheter et de consommer.</li><li>En effet, les modules de conservations que nous allons proposer par la suite sont pensés pour des aliments principalement bruts et frais. Par exemple, il sera compliqué pour l’utilisateur se nourrissant de plats préparés d’être en adéquation avec les propositions techniques.</li><li>La démarche « 0 waste » née de la Franco-Américaine Béa Jonhson est une excellente démarche à mettre en œuvre qui permet par la même occasion de réduire de manière significative la production globale de déchets (emballages, plastiques, etc)</li><li>Zero Waste France est un très bon support d’informations complémentaires pour aider le consommateur à passer à l’action.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Généralité sur le meuble de conservation</strong><p><strong>Étapes :</strong></p><ol><li>A la vue du gaspillage que représentent les fruits et légumes et les produits animaux, c’est principalement sur ces types d’aliments qu’il faut travailler, donc sur de la conservation courte.</li><li>Conserver ne veut pas dire faire du froid mais conserver la qualité nutritionnelle, gustative des aliments.</li><li>A ce titre, plusieurs ambiances de conservation sont intéressantes à retenir pour une solution de meuble de conservation.</li><li>De manière général, pour toutes les ambiances de conservation courte, la proposition technique de base la plus intéressante selon notre expérience est le tiroir à claies.</li><li>C’est une solution technique qui s’intègre facilement dans une cuisine, permet une visibilité directe sur tout ce qu’il contient et qui rend l’accès facile à tous les aliments en opposition à un placard ou un réfrigérateur.</li><li>L'usage du principe de claies permet une bonne aération, paramètre très important pour la bonne conservation des fruits et légumes. Il peut être réalisé par l’usage de latte de bois (de 2cm à 3 cm de large) ou l’usage de grillage à garde-manger.</li><li>Sur l’ensemble du meuble de conservation, une lame d’air de 3 à 4cm est à intégrer sur toute la face arrière pour que l’air « vicié » et l’humidité ne stagnent pas au fond au risque de faire pourrir plus rapidement les aliments.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Ambiance 1: Sec, Aéré, à la lumière de la pièce</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/d/d9/Garde-Manger_DSC_0271.JPG' alt='Garde-Manger DSC 0271.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On va y retrouver à titre d’exemple : Abricot, aubergine, avocat, banane, agrumes, tomates mais également les œufs ou le beurre en beurrier s’il ne fait pas trop chaud.</li><li>Dans une cuisine pour 2 personnes, nous proposons 2 à 3 tiroirs en claies, de 15 cm de haut par 40 à 50 cm de profondeur par 50 cm de large.</li><li>Il est pensé pour que l’avant et l’arrière du tiroir laisse circuler l’air.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Ambiance 2: Sec, Aéré, Sombre</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/0/06/Garde-Manger_DSC_0276.JPG' alt='Garde-Manger DSC 0276.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette ambiance de conservation est intéressante notamment pour les pommes de terres, les oignons, l’ail, les courges, etc. L’ambiance noire évite la germination des tubercules, racines et limite la maturation de certains fruits.</li><li>Dans une cuisine pour 2 personnes, nous proposons 2 tiroirs en claies tapissées d’un tissu tel que toile de lin ou jute pour créer à la fois le noir et assurer la ventilation.</li><li>Environ 25 cm de haut, 40 à 50cm de profondeur et 50 cm de large. Il est nécessaire de les faire un peu plus haut que l’ambiance précédente pour pouvoir conserver des carotte en verticale dans un bac à sable légèrement humide qui sera à prévoir dans l’un des tiroirs.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Ambiance 3: Sombre, Frais, Humide</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/8/86/Garde-Manger_DSC_0263.JPG' alt='Garde-Manger DSC 0263.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour un habitat existant:</li><li>Cette ambiance est la plus difficile à créer dans un habitat existant cependant est très intéressante car peut permettre l’arrêt du réfrigérateur une partie de l’année.</li><li>Sur de l’existant, Il est possible, en intérieur, de s’inspirer du frigo du désert ou « zeer pot ». Il s’agit d’une poterie imbriqué dans une seconde poterie. Entre les 2 deux, du sable est ajouté.</li><li>Les aliments sont placés dans la poterie du milieu et le sable estrégulièrement humidifié. Par effet d’évapo-transpiration, la température intérieure peut descendre de 5 à 10°C par rapport à la température ambiante.</li><li>Pour un habitat neuf:</li><li>Dans le cas d’un habitat neuf, il est possible d’imaginer, à l’instar des anciens garde-manger parisiens, des caissons donnant sur l’extérieur, au Nord, via une fenêtre dédiée à cette usage. (Ou dans une cloison non-isolée à cet endroit)</li><li>On va retrouver dans cette ambiance : Artichaut, concombre, haricot, panais, beurre à la mi-saison, etc</li><li>Pour le dimensionnement, un volume intérieur de 40L divisé en 2 est convenable. (par exemple 40cm de haut, 40 cm de large et 30 cm de profondeur)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Ambiance 4: Sombre et Froid</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/54/Garde-Manger_DSC_0268.JPG/427px-Garde-Manger_DSC_0268.JPG' alt='Garde-Manger DSC 0268.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette ambiance est réalisée grâce au réfrigérateur. L’idée est de travailler à réduire la taille de celui-ci pour ne garder à l’intérieur que reste de repas, crèmerie, viande, poisson et boisson fraîche.</li><li>En autre effet positif, la diminution de la taille du réfrigérateur agit directement sur la réduction de la consommation électrique.</li><li>Pour 2 personnes, nous proposons l’utilisation d’un réfrigérateur 40L (type réfrigérateur de bar). Selon le budget accordé, il est possible de trouver des réfrigérateurs tiroirs qui permettent une vue directe sur tout le contenant cependant ils coutent sensiblement plus chers.</li><li>Attention cependant à choisir un réfrigérateur où le stockage vertical de bouteilles standard est possible pour plus de fonctionnalité.</li><li>On évitera de placer le réfrigérateur à coté du four (ce qui est le cas dans de nombreuses cuisines) pour plus d’efficacité.</li><li>Le dégagement de chaleur par l’arrière du réfrigérateur dans la lame d’air du meuble favorisera la circulation de l’air et de l’humidité de l’ensemble du meuble de conservation</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Fruits et les légumes climactériques</strong><p><strong>Étapes :</strong></p><ol><li>En plus des ambiances, un second paramètre entre en jeu dans la conservation des fruits et légumes : c’est leur propriété à émettre ou non de l’éthylène, un gaz qui favorise le murissement et à y être sensible ou non selon leur type.</li><li>Les fruits et légumes qui produisent de l’éthylène et qui continuent de murir après récolte sont dits « climactériques » tandis que d’autres peuvent y être très sensibles et pourrir plus rapidement au contact de l’éthylène.</li><li>Une règle simple est d’éviter de mélanger les aliments qui dégagent de l’éthylène de ceux qui y sont seulement sensible, c’est pourquoi il faut au moins 2 tiroirs par ambiance et qu’ils soient assez grands et aérés pour que l’éthylène s’évacue correctement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

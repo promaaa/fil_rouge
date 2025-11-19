@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Aliments fermentés - alternatives aux protéines animales</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Aliments fermentés - alternatives aux protéines animales</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/7/7b/Aliments_ferment_s_-_alternatives_aux_prot_ines_animales_alternatives_prot_ines_animales.png/ia-ae09ba29516a8ec3079b41ad55d3c4d5-px-Aliments_ferment_s_-_alternatives_aux_prot_ines_animales_alternatives_prot_ines_animales.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">La joie des aliments fermentés c'est qu'en plus d'être bon pour la santé, lorsqu'ils sont réalisés en low-tech ils ne contiennent que très peu d'ingrédients transformés et ils diversifient notre alimentation en l'enrichissant (en saveur et en nutriments)</div>
+        
+      </div>
+    
+    
+      
+        <p>Les aliments fermentés sont des aliments qui ont été transformés par des micro-organismes: bactéries, levures, champignons. Ce processus s'effectue souvent sans oxygène, en milieu anaérobique. Les microbes se multiplient normalement en présence d'oxygène. Mais lorsqu'ils en sont privés, ils luttent en fabriquant des molécules pour prendre l'avantage sur les microbes concurrents: alcool, acide lactique, acide acétique. Cela donne lieu à divers types de fermentation: lactique, alcoolique, acétique, etc... Même si nous avons parfois tendance à l'oublier, de nombreux aliments du quotidien sont en réalité fermentés : pain, fromages, yaourts, choucroute, saucisson, vin, bière... La liste est longue. Et cela tombe bien puisque leurs effets sont bénéfiques pour la santé ! Elles facilitent la digestion, participent au bon fonctionnement de l’intestin, sont sources de vitamines et de minéraux, renforcent notre système immunitaire...</p>
+      
+        <p>Enfin comme le rappelle Virginie Geres avec son site HappyBiote, sans microorganismes nous serions morts ! Tout simplement ! Nous ne pourrions pas fonctionner sans la présence de milliards de bactéries, levures et autres microbes (non pathogènes) qui tapissent notre corps. Ils assurent d’importantes tâches comme nous protéger des agressions d’autres microbes (pathogènes), nous permettent de nous alimenter, d’avoir une odeur distincte des autres individus (et donc facilite de tomber amoureux quand on n’est pas trop crade), ils participent à notre système immunitaire… Et dans chacune de nos cellules se trouve un microorganisme que nous avons incorporé au fil des millénaires : la mitochondrie, qui permet la respiration cellulaire ! Cette super vidéo pour en savoir plus.</p>
+      
+        <p>Donc, non seulement les microorganismes sont nécessaires à notre survie mais en en apportant une grande diversité par une alimentation saine et variée (notamment avec des aliments riches en fibres -prébiotiques- et microorganismes -probiotiques-) nous améliorons notre santé immunitaire et psychique. Ceci est aux antipodes des standards occidentaux modernes, rendant les gens littéralement malades, entre autres par un microbiote faible. Pour plus d’informations je vous conseille ce reportage d’Arte, ou celui-ci un peu plus ancien sur le même thème.</p>
+      
+        <p>Autant de bonnes raisons d'en consommer de manière régulière (attention à ne pas manger que ça pour autant!)</p>
+      
+        <p>Nous vous donnons ici plusieurs recettes de boissons fermentées, zéro gaspi, élaborées à partir de microorganismes naturels, pour vous essayer à la fabrication de ces sodas maison !</p>
+      
+        <p>Pour en savoir plus sur les fermentations je vous invite à regarder, télécharger et diffuser le recueil issu du sommet français sur les fermentations de 2020 qui regroupe des interventions de scientifiques, chef.fe.s cuisinier.e.s et des recettes variées. Il se trouve juste en dessous dans la partie "Fichiers" du tutoriel.</p>
+      
+        <p>Les recettes proposées ici sont des recettes vegan (végétaliennes, c'est-à-dire sans protéines animales) mais n'importe qui peut en utiliser dans sa cuisine pour diversifier son alimentation et chercher de nouvelles découvertes en culinaires! Les recettes choisies ici cherchent à visuellement et gustativement retrouver quelque chose de proche des plats contenant des protéines animales. C'est un parti-pris qui peut faciliter la vie de son entourage (s'il est non-vegan) mais pose des questions morales (pourquoi chercher à reproduire de la viande ou du fromage alors que ça n'en est pas?) et demande souvent plus d'effort que de très bonnes recettes végétales (car il y a une recherche de similarité difficile à atteindre suivant les matières premières).</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Aliments_fermentés_-_alternatives_aux_protéines_animales" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Aliments_fermentés_-_alternatives_aux_protéines_animales</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Règles d'hygiène</strong><p><strong>Étapes :</strong></p><ol><li>Il n'est pas nécessaire de travailler dans un champ stérile lorsqu'il s'agit de fermentation mais il est crucial d'être le plus propre possible.</li><li>Travaillez sur un plan de travail nettoyé (si besoin/possible aseptisé au vinaigre blanc ou à l'alcool). Utilisez des ustensiles et récipients propres, lavés à l'eau chaude (ou passés au lave-vaisselle), manipulez avec des mains propres et essuyez-les avec un torchon PROPRE... bien entendu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Produits laitiers végétaux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/21/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_lait_vegan.jpg/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_lait_vegan.jpg' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan lait vegan.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour la partie concernant les fromages végétaux un autre tutoriel très complet est disponible sur le wiki. N'hésitez pas à le lire et essayer des recettes.</li><li>Aliments fermentés - kéfir de laits végétaux et fromages vegan</li><li>Si vous préférez acheter du fromage végétal je vous conseille la marque Jay & Joy, une crèmerie végétale artisanale sans soja, biologique et française. Leurs produits sont notamment trouvables dans les magasins Biocoop. Ils ont des fromages afinés type camembert, bleu, buche de chèvre... vraiment bluffants!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Remplacer le blanc d'oeuf par de l'aquafaba (légumineuses)</strong><p><strong>Étapes :</strong></p><ol><li>Il est très courant de trouver dans les recettes végétariennes et vegan de l'aquafaba pour remplacer le blanc d'oeuf. En effet cette eau de cuisson de certaines légumineuses (pois-chiche, haricots rouges) possède la même viscosité et peut se monter en neige comme des blancs d'oeufs classiques. Cette eau de cuisson est composée d’environ 90% d’eau et de 10% de protéines et fibres. C’est quasiment la même composition que le blanc d’oeuf, ce qui explique que lorsque l’on mélange vivement le jus de cuisson de pois chiches à l’aide d’un batteur électrique , on obtient une mousse quasiment identique à celle des blancs d’oeufs montés en neige.</li><li>Recette :<ul><li>Faire tremper les pois-chiche ou haricots rouge secs dans l'eau pendant au moins 12h</li><li>Jeter l'eau de trempage</li><li>Mettre les graines dans une casserole et les couvrir d'eau. Ne pas saler. Faire cuire à petit bouillon pendant 1h en remuant de temps en temps.</li><li>Egouttez les légumineuses et gardez l'eau de cuisson. Une fois refroidi le liquide devient légèrement trouble et visqueux, votre aquafaba est prête!</li><li>Conservation : gardez au frigo dans un bouteille ou un bocal hermétique entre 2 et 8 jours. Dès que l'odeur devient forte (légèrement poisson), jetez-là. L'aquafaba se congèle aussi très bien. Idéal dans un bac à glaçon pour pouvoir l'utiliser en petites quantités</li><li>Utilisations : 3 cuillères à soupe d'aquafaba remplacent un blanc d'oeuf.</li></ul></li><li>Exemple d'utilisation<ul><li>la mousse au chocolat : simplement de l'aquafaba montée en neige incorporé à du chocolat fondu avec un peu d'huile (ou de crème végétale)</li><li>les iles flottantes : aquafaba sucrée montée en neige puis cuite à la vapeur.</li><li>la meringue : idem mais cuite au four</li><li>en glace et sorbet pour remplacer l'onctueux donné par l'ajout de blanc d'oeuf (fruits congelés, même poids en sucre, 1 blanc d'oeuf/3 cuillères à soupe d'aquafaba). Pour des crèmes glacées on peut utiliser du lait végétal + aquafaba ou pour des desserts ayant tendance à figer (chocolat), mixer un peu de courgette avec pour garder l'onctueux.</li><li>Les guimauves de Seitan is my Motor</li><li>en mayonaise avec ou sans tofu</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Steaks végétaux</strong><p><strong>Étapes :</strong></p><ol><li>Ah les steaks végétaux... Toute une histoire et énormément de recettes possibles pour éviter les versions ultratransformées des grandes surfaces!</li><li>Suivant vos gouts et votre volonté d'avoir un plat qui ressemble à un steak animal vous avez plusieurs possibilités. Voici plusieurs exemples qui peuvent se mélanger entre eux pour donner la texture, le gout et l'aspect visuel que vous préférez.</li><li>Si vous aimez le soja (ou le tofu de chanvre) vous pouvez réaliser le votre à la maison en low-tech grâce à ce tutoriel.</li><li>Vous pouvez griller un pavé de tofu, le paner et/ou le frire ou bien en faire des petits morceaux pour donner l'impression que ce sont des morceaux de poulets ou le haché finement pour donner une impression de viande hachée. Pour ajuster la couleur et les saveurs, toute la gamme de légumes lactofermentés et autres ferments est possible en plus des épices/aromates. Le tofu remplace aisément les protéines de soja texturées (PST) que l'on trouve dans le commerce et qui sont souvent utilisées pour imiter la viande dans les plats préparés vegan/végétariens.</li><li>Le seitan est une spécialité japonaise consommée depuis des siècles pour remplacer la viande (notamment pour remplacer celle de porc ou de poulet par les moines bouddhistes). Elle est surnommée "viande de blé" car elle est très riche en protéines. Pour en réaliser soi-même en low-tech il suffit de farine de blé, d'eau, d'un bouillon (traditionnellement d'algues kombu) et de sauce soja. Vous pouvez retrouver la recette dans ce tutoriel. Ce qui donne une texture élastique/spongieuse au seitan vient principalement du gluten du blé, mais il est possible d'utiliser d'autres farines pour ne pas avoir de gluten.</li><li>Comme le tofu, le seitan peut être découpé et assaisonné comme il vous plait pour en faire un substitut à la viande. Vous pouvez griller un pavé de seitan, le paner et/ou le frire ou bien en faire des petits morceaux pour donner l'impression que ce sont des morceaux de poulets ou le haché finement pour donner une impression de viande hachée.</li><li>Le tempeh est traditionnelement fabriqué à partir de graines de soja jaunes mais il est possible d'utiliser d'autres graines (lupin, amandes, haricot rouge, maïs, pois-chiche...). Il est possible par exemple d'en faire à partir d'okara (pulpe filtrée non utilisée dans les laits végétaux).</li><li>Le tempeh a un gout qui évoque des arômes de champignons, de noix et de levure. Vous pouvez griller un pavé de tempeh, le paner et/ou le frire ou bien en faire des petits morceaux pour donner l'impression que ce sont des morceaux de poulets ou le haché finement pour donner une impression de viande hachée.</li><li>Il est riche en protéines végétales mais son aspect visuel et son fort gout peut le rendre difficile à utiliser seul comme substitu de viande. N'hésitez donc pas à le mélanger avec els autres recettes et à l'aromatiser.</li><li>Cliquez ici pour voir le tutoriel présenant différentes recettes de tempeh.</li><li>Il est tout à fait possible de faire fermenter de la polenta. Traditionnellement la polenta est à base de maïs mais on peut en faire à partir de graines hachées peu finement comme du pois-chiche, du blé (plus fin que du boulgour), du millet... Pour les faire fermenter il suffit de les faire tremper dans de l'eau ou une saumure (par exemple de lactofermentation) pendant 48h ce qui développe un arôme acidulé et une magnifique croute une fois poëlé. L'avantage des polentas c'est qu'en cuisant la texture peut devenir très épaisse et on lui donne la forme que l'on veut. On peut tout à fait l'aromatiser avec ce que l'on souhaite pour lui donner du gout, et pour avoir une couleur imitant la viande on peut y ajouter un peu de jus de betterave (pourquoi pas dans l'eau de fermentation).</li><li>Les rosties sont traditionnellement des pommes de terres crues, rapées et mélangées avec du fromage. Pour l'adapter à vos envies on peut tout à fait utiliser des fromages végétaux (voir l'autre tutoriel pour les réaliser soi-même), faire lactofermenter les pommes de terres avant de les raper (dans une saumure à 3% de sel pendant 48h) et ajouter des oignons, de l'ail, des légumes comme la courgette (pour plus de moelleux)... Des légumes lactofermentés pour relever le gout et des épices/aromates. On retrouve souvent l'association levures de bière, miso et tamari dans les recettes.</li><li>On retrouve souvent l'association haricots rouges et blanc d'oeufs (remplaçable par l'aquafaba) comme imitation des steaks de viande. L'inconvénient de cette recette est que l'on obtient souvent un steack sec et peu goutû. Pour éviter ce problème je vous conseille (évidemment) de faire fermenter vos légumineuses, d'y ajouter un peu de dosas ou de levain (pour avoir un liant) et d'y ajouter des légumes (lactofermentés? ex: betterave/carotte). En ajoutant de la betterave ou du choux rouge vous aurez une couleur encore plus foncée si vous aimez l'effet trompe-l'oeil.</li><li>Une fois les légumineuses fermentées vous pouvez les cuire à la vapeur ou à l'eau puis les écraser légèrement pour en faire une purée grumeleuse à laquelle vous ajoutez les autres ingrédients avant de former des pavés et de les cuire à la poële.</li><li>Si vous souhaitez recréer un steak tartare en version végétale vous pouvez vous inspirer des recettes ci-dessus en ajoutant un peu de légumes (par exemple de la betterave (dont une partie lactofermentée pour donner de l'acidité, et en aromatisant la lactofermentation l'explosion de saveurs en bouche est incroyable!). L'ajout de légumes aux légumineuses (comme par exemple les haricots rouges) permet de redonner du moelleux et de l'humidité au steak tartare. Ensuite libre à vous de l'aromatiser comme vous le feriez avec un tartare animal : ajoutez des échalottes, des cornichons, des capres (vous pouvez d'ailleurs faire des capres de tout bouton de fleur comestible!). Pour donner une belle forme à votre tartare n'hésitez pas à utiliser un emporte pièce ou un bol et si besoin ajouter un petit peu de sauce (ex : ketchup fermenté maison ou mayonaise, vinaigrette...).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Farce végétale, boulettes et saucisses végétales</strong><p><strong>Étapes :</strong></p><ol><li>Il existe énormément de possibilités pour remplacer la farce à viande suivant votre volontée qu'elle ressemble au plat classique. Il est tout à fait facile de remaplcer la viande par des céréales, des oléagineux, des légumineuses cuites (voire fermentées avant) et avec une texture +/- fine pour former la farce.</li><li>Vous pouvez reprendre les recettes pour faire des steacks végétaux et les modeler en boulettes.</li><li>Pour les saucisses, suivant le résultat que vous souhaitez (texture fine ou granuleuse) vous pouvez utiliser l'une des recettes précédentes sur les steak et les façonner en saucisses. Un tofu ou un seitan rendra une texture fine, les autres dépendront de la finesse de mixage. Pour avoir un gout type chorizo n'hésitez pas à mettre du piment et du poivron rouge/paprika dans vos préparations.</li><li>Les recette de falafels fermentés de ce tutoriel fonctionne très bien : Aliments fermentés - dosas, crèpes vegan</li><li>Vous pouvez aussi simplement mélanger par exemple du boulgour, des lentilles et autres "graines" avec des épices, des champignons et d'autres légumes. Avec ou sans sauce fermentées (donne un gout plus proche de la viande ou du poisson), le résultat est très sain et délicieux!</li><li>Autre astuce : pour un côté fumé incroyable, des aubergines grillées (ou mieux, le caviar d'aubergines lactofermenté de NiCruNiCuit) est à tomber!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Gratin haricots blancs façon brandade de morue et acras sans poissons</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/cf/Accras_sans_poisson_aux_haricots.png' alt='Accras sans poisson aux haricots.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voici une recette cousine de Ferment'Nation faite à partir d'haricots rouges, brésilienne qui remplace souvent les acras de morue : https://www.instagram.com/p/CFZ6q1cIcru/</li><li>Pour ce qui concerne le gratin façon brandade de morue on peut reprendre la recette de boulettes en la modifiant légèrement. On peut faire fermenter des haricots blancs (pour garder une couleur blanche-crème, utiliser des légumes lactofermentés pour réhausser le gout. Pour donner l'aspect fibreux de la morue certaines personnes utilisent du coeur de palmier, il pourrait être remplacé par des pousses de bambou ou tout autre légume légèrement fibreux produit localement (ex: asperges, plus parfumé fenouil)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Préparations imitation poissons panés ou escalopes panées</strong><p><strong>Étapes :</strong></p><ol><li>Pour imiter des viandes ou poissons panés vous pouvez utiliser une recette de steack et le rouler dans un lait végétal ou de l'aquafaba pour ensuite l'envelopper de panure et le faire cuire. l'ajout de paillettes de levures de bières dans la panure augmente le gout.</li><li>Pour le poisson plus précisément, si vous souhaitez retrouver un gout iodé vous pouvez faire mariner un petit peu le "steak" dans une préparation de jus de citron et algues. La recette de Mimagusta présente une vidéo en utilisant des resctangles de celeri rave pané.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Pâtés, rillettes et cakes en recettes végétales (dont imitation poisson)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/9/98/P_t_v_g_tal.png' alt='P t v g tal.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pâté lactofermenté d'automne par Ferment'Nation aux graines de tournesol, poivron, tomates séchées, tamari, courgettes lactofermentées. (Photo)</li><li>Pâté lactofermenté à la courgette, pommes, noix, graines de tournesol par Ferment'Nation.</li><li>Pâté en croute de lentilles au tofu et champignons par La Fée Stéphanie</li><li>Pour un pâté à tartiner avec des ingrédients similaires vous pouvez mixer plus finement celui de la première recette ou bien lire l'adaptation de celle-ci, toujours par La Fée Stéphanie.</li><li>Rillettes imitation terrine de la mer (aux algues) Par Delphine de Geek&Balsamique. Si vous ne souhaitez pas utiliser de soja, il est possible de farbiquer du tofu de chanvre ou bien de remplacer le tofu par des légumineuses (ex: pois-chiche, haricots blancs ou rouges) réduits en purée et d'utiliser comme liant du yaourt végétal ou bien la recette de mayonaise vegan maison décrite dans ce tutoriel.</li><li>Tartinade imitation tarama vegan au tofu et yaourt végétal par Delphine de Geek&Balsamique.</li><li>Pour servir façon cake/terrines-gelées en plat principal il suffit d'augmenter les quantités et ajouter peut-être de l'agar-agar afin de solidifier le "cake". Pour des cake/terrines imitation poisson ou fruits de mer vous pouvez utiliser des lentilles corail et du concentré de tomate jusqu'à avoir la couleur et la texture désirée. Utiliser du miso, du tofu fumé, du paprika fumé ou des aubergines lactofermentées permet de renforcer l'arôme de fumé.</li><li>Si vous avez la chance d'avoir la plante au gout d'huitre à portée de main (Mertensia marine) n'hésitez pas à l'utiliser pour remplacer les algues ou à l'ajouter pour avoir un gout encore plus proche.</li><li>Si vous délayez un peu vos pâtés, cela vous donnera d'excellentes soupes, notamment imitation soupes de poisson. Puisque la préparation est diluée n'hésitez pas à plus fortement doser les épices et les algues.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Tartinade et médaillon imitation foie-gras</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/4/49/Aliments_ferment_s_-_alternatives_aux_prot_ines_animales_foie-gras_vegan.jpg' alt='Aliments ferment s - alternatives aux prot ines animales foie-gras vegan.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voici la recette fermentée d'une amie, Pauline Cueto<ul><li>150g de champignons de Paris</li><li>200g de tofu soyeux</li><li>200g de tofu fumé (ce qui donne la saveur)</li><li>100g de noix de cajou (ou autres noix mais la cajou est très onctueuse)</li><li>100ml d'eau</li><li>150 ml de vin blanc sec</li><li>1 gousse d'ail</li><li>2 cuillère à soupe d'huile d'olive (ou de coco pour l'effet figé médaillon)</li><li>3 cuillèes à café de miso blond</li><li>1 cuillère à café de moutarde</li><li>1 cuillère à café de sauce soja</li><li>1 cuillère à café de vinaigre de cidre</li><li>2 pincées de 4 épices</li><li>3 brins de thym</li><li>1 cuillère à café d'agar-agar</li></ul></li><li>Faire tremper les noix de cajou dans l'eau et le vin pendant quelques heures. Egoutter. Mixer les noix avec tous les autres ingrédients. Diluer l'agar-agar dans le vin et faire chauffer afin d'avoir un liquide homogène. Ajouter au reste du mélange et mixer à nouveau.</li><li>Verser dans des verrines et placer au frais.</li><li>Astuces :<ul><li>Pour imiter la couche de gras à la surface du foie-gras vous pouvez faire fondre un peu d'huile de coco avec une pointe de curcuma pour la couleur et la faire solidifier lors du passage au frigo.</li><li>Pour obtenir des médaillons tranchés vous pouvez démouler la verrine (la taille d'un pot de confiture) et la trancher. Si la texture est trop moeleuse pour rester compacte alors vous pouvez remplacer l'huile d'olive de la recette par de la coco ou bien augmenter légèrement la dose d'agar-agar.</li></ul></li><li>(c) Photos de Consommons Sainement présentant sa réalisation de la recette de La Petite Okara</li><li>Voici une autre recette de La Fée Stéphanie qui adapate la recette de Sébastien Kardinal (vidéo), en utilisant notamment de l'huile d'olive parfumée à la truffe.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Carottes fermentées imitation saumon fumé</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Aliments_ferment_s_-_alternatives_aux_prot_ines_animales_saumon_fum_vegan.png/800px-Aliments_ferment_s_-_alternatives_aux_prot_ines_animales_saumon_fum_vegan.png' alt='Aliments ferment s - alternatives aux prot ines animales saumon fum vegan.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette de ShiraBio en 10 minutes (puis 48h). Voici la vidéo de la recette complète spécial fêtes de Noël.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Sushis, makis et rouleaux de printemps sans poisson</strong><p><strong>Étapes :</strong></p><ol><li>Comme les carottes fermentées il est possible de remplacer les poissons par différents légumes et fromages/protéines végétales. Pour les rouleaux de printemps vous pouvez utiliser ces substitus pour remplacer les crevettes ou le poisson.</li><li>Vous pouvez donc essayer les combinaisons ci-dessous pour vous lancer puis imaginer vos propres "sushis végétaux"<ul><li>Carottes aux algues, paprika fumé, tamari et umeboshi pour imiter le saumon</li><li>Tomates, betterave ou poivrons rouges avec la même préparation pour imiter le thon rouge (ou avec un peu de miso)</li><li>Utiliser du tofu ou bien des poireaux, navets pour imiter des poissons plus blancs</li><li>Utiliser du pâté végétal pour imiter les maki de thon cuit (ex: voir plus haut les tartinade imitation tarama)</li><li>De l'aquafaba pour imiter les sushis à l'omelette</li></ul></li><li>Si vous n'avez pas le temps de les faire fermenter, vous pouvez utiliser des sauces asiatiques du commerce et les faire mariner 24-48h à l'avance.</li><li>Bien sur il existe aussi une grande variété de sushis et makis aux légumes. Par exemple les classiques au concombre, avocat, mais amusez-vous aussi à varier les couleurs, textures et gouts en utilisant des carottes, du choux rouge... lactofermenté? Un délice!</li><li>Et pour les makis francisés contenant du fromage? Utilisez des recettes de fromage vegan, le tutoriel est par ici.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

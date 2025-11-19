@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Eolienne 200W</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Eolienne 200W</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/a/a0/Eolienne_200W_NIKON_-_2017.09.02_-_22.JPG/800px-Eolienne_200W_NIKON_-_2017.09.02_-_22.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Eolienne Piggott de 200w pour 1m20 d'envergure, auto-construite.</div>
+        
+      </div>
+    
+    
+      
+        <p>Retrouvez Ici la vidéo tutoriel</p>
+      
+        <p>Basé sur les travaux de l'écossais Hugh Piggott, ce tutoriel a été réalisé en collaboration avec Aurélie Guibert, membre du réseau Tripalium, au sein du V.A.L à Valence.</p>
+      
+        <p>Il s'agit de la fabrication d’une éolienne de puissance maximum de 200W en 12V pour une envergure d’1 m 20. Elle est dimensionnée pour de faibles besoins en électricité comme un réseau d'éclairage LED ou l’alimentation d’ordinateurs portables.</p>
+      
+        <p>La partie distribution de l’électricité ainsi que le matage ne sont pas détaillés ici.</p>
+      
+        <p>Le vent</p>
+      
+        <p>La puissance que le vent fourni est proportionnelle au cube de sa vitesse. A titre d’exemple, l’éolienne de ce tutoriel reçoit dans son hélice 0,7W quand le vent souffle à 1m/s et mille fois plus à 10m/s.</p>
+      
+        <p>Pour la calculer: P= 1/2 x Rho x S x v^3 avec P: puissance (W), Rho: masse volumique de l'air (environ 1,23 kg/m^3), S: Surface balayée par l’hélice (m²), v: vitesse du vent (m/s)</p>
+      
+        <p>Il est donc indispensable d’étudier le terrain où l’on souhaite installer une éolienne pour voir si le vent souffle relativement constamment et avec une vitesse suffisante pour produire un minimum d’énergie.</p>
+      
+        <p>Comme tout système, une partie de l'énergie est perdu par l'éolienne. En théorie, une éolienne ne pourra jamais transformer plus de 60% de l'énergie que le vent lui fournit, c'est la limite de Betz. Dans la pratique, sur le type d'éolienne développé dans ce tutoriel, le rendement peut atteindre jusqu'à 35%.</p>
+      
+        <p>L'emplacement</p>
+      
+        <p>En règle générale, il vaut mieux un terrain dégagé de tout arbre et toute habitation. Les éoliennes de mêmes tailles placées en villes ou sur des pignons de maisons produisent beaucoup moins à cause des turbulences du vent. De même, le vent est plus constant et puissant en altitude, il sera donc préférable d'installer une petite éolienne en hauteur, qu'une grande éolienne à faible altitude.</p>
+      
+        <p>Coût</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 20 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 350 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Eolienne_200W" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Eolienne_200W</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Liste indicative de matériaux pour l'hélice, se référer aux chapitres pour précisions.<ul><li>Chutes de contreplaqué.</li><li>Bastaing section minimum 95mm x 35mm, longueur 1m80. (cèdre rouge ou douglas ou mélèze ou épicea).</li><li>Contreplaqué 9mm.</li><li>Lots de vis diamètre 5mm, longueur 30mm.</li></ul></li><li>Liste indicative de matériaux pour la génératrice, se référer aux chapitres pour précisions.<ul><li>Disque métallique épaisseur 8mm diamètre 140mm.</li><li>Moyeu arrière de golf, corsa, polo ou Ibiza.</li><li>25cm de tiges filetées diamètre 12mm.</li><li>Lot écrous 12mm.</li><li>30 cm tiges filetées de diamètre 10mm, 4 écrous de 10mm.</li><li>Chutes de tube métallique et de cornière.</li><li>4 clous diamètre 6mm.</li><li>1,5kg de fil de cuivre émaillé, diamètre 1,4mm.</li><li>Scotch électricien.</li><li>Gaine thermorétractable.</li><li>Contreplaqué 9mm et 16mm.</li><li>Tissu de fibre de verre (environ 300g/m²).</li><li>Résine polyester, catalyseur associé.</li><li>Talc.</li><li>Cire de démoulage.</li><li>8 aimants en néodyme.</li><li>Disque acier diamètre 230mm, épaisseur 6mm.</li><li>Boulons 12mm.</li></ul></li><li>Liste indicative des matériaux pour la structure acier, se référer aux chapitres pour précisions.<ul><li>Cornière de 206mm (50x50x6mm).</li><li>Tube diamètre ext 42,2mm, longueur 100mm.</li><li>Tube diamètre ext 33,4mm, longueur 150mm.</li><li>Tube diamètre ext 42,2mm, longueur 130mm.</li><li>Fer plat 50 x 50 x 6mm.</li><li>Tube diamètre ext 33,4mm, longueur 700mm.</li><li>Cornière 30 x 30 x 5, longueur 250mm.</li><li>60 cm de tiges filetées diamètre 12mm.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Liste indicative de l'outillage, se référer aux chapitres pour précision.</li><li>Scies (à main, sauteuse, circulaire).</li><li>Crayons, marqueurs.</li><li>Mètres, règles, réglets, équerre, compas.</li><li>Serres-joints.</li><li>Rabot, ciseaux à bois, wastringue, planes.</li><li>Perceuse, visseuse, forets métal et bois jusqu'à 14mm, scie cloche diamètre 60mm.</li><li>Meuleuse, disques à couper, disques à meuler, gants et lunettes de protection.</li><li>Poste à souder.</li><li>Fer à souder, étain.</li><li>balance électronique.</li><li>seringues graduées.</li><li>Gants latex.</li><li>Barquettes plastiques.</li><li>Paire de ciseaux.</li><li>Voltmètre.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Hélice: le patron</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e4/Eolienne_200W_patron_2.jpg/800px-Eolienne_200W_patron_2.jpg' alt='Eolienne 200W patron 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2e/Eolienne_200W_2017.08.28_-_19.JPG/800px-Eolienne_200W_2017.08.28_-_19.JPG' alt='Eolienne 200W 2017.08.28 - 19.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Tracer et découper le patron des pales dans une planche.</li><li>Noter sur chaque face du patron, celle qui correspond à l'intrados et celle qui correspond à l'extrados.</li></ul></li><li>Remarque: L'intrados est la face des pales qui reçoit le vent, l'extrados est la face arrière.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Hélice: traçage et découpe des pales</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/b/b2/Eolienne_200W_2017.08.28_-_67.JPG' alt='Eolienne 200W 2017.08.28 - 67.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/Eolienne_200W_2017.08.28_-_24.JPG/800px-Eolienne_200W_2017.08.28_-_24.JPG' alt='Eolienne 200W 2017.08.28 - 24.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Eolienne_200W_2017.08.28_-_60.JPG/800px-Eolienne_200W_2017.08.28_-_60.JPG' alt='Eolienne 200W 2017.08.28 - 60.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b0/Eolienne_200W_2017.08.28_-_76.JPG/800px-Eolienne_200W_2017.08.28_-_76.JPG' alt='Eolienne 200W 2017.08.28 - 76.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/74/Eolienne_200W_2017.08.28_-_111.JPG' alt='Eolienne 200W 2017.08.28 - 111.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/92/Eolienne_200W_2017.08.28_-_163.JPG/800px-Eolienne_200W_2017.08.28_-_163.JPG' alt='Eolienne 200W 2017.08.28 - 163.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Choisir un bastaing de section minimum 95mm x 35mm</li></ul></li><li>Remarques:</li><li>1) Le bois sélectionné doit être imputrescible, relativement léger et facile à travailler. Le cèdre rouge, le pin d'Oregon, l’épicéa, le mélèze, le douglas peuvent par exemple convenir.</li><li>2) Pour ce tutoriel, la section du bastaing en cèdre rouge fait 150mm x 45mm.</li><li>3) Le paramètre qui détermine l'énergie transmise par le vent à l'hélice est la longueur de la pale et non sa largeur. La section du bastaing peut donc varier.<ul><li>A l'aide du patron, face intrados visible, tracer l'emplacement de la première pale.</li></ul></li><li>Remarques:</li><li>1) Placer les nœuds et défauts du bois plutôt en pied de pale, afin de ne pas fragiliser la partie la plus fine (milieu-bout de pale).</li><li>2) Sélectionner l'arête du bord d'attaque la plus propre possible. Cette arête ne sera pas modifiée durant la sculpture de la pale.</li><li>3) Prolonger le tracer du bout de pale de 4 à 5 cm afin de conserver une marge en cas de bris.<ul><li>Faire de même pour les 2 autres pales et couper les pales.</li></ul></li><li>Remarque: en cas d'utilisation d'une scie circulaire pour la découpe, prendre garde à placer la largeur de la lame toujours du coté extérieur au trait.<ul><li>Rectifier le gauche des pales si nécessaire à l'aide d'un rabot.</li><li>Fixer les trois pales ensemble à l'aide de serre-joints et égaliser les plans de fuite. Les 3 trois pales doivent être rigoureusement identiques.</li><li>Tracer au marqueur l'arête du bord d'attaque qui restera telle quelle. C'est un repère.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Hélice: Sculpture de l'intrados des pales</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/aa/Eolienne_200W_pale_1_style.jpg/800px-Eolienne_200W_pale_1_style.jpg' alt='Eolienne 200W pale 1 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/63/Eolienne_200W_pale_2_style.jpg/800px-Eolienne_200W_pale_2_style.jpg' alt='Eolienne 200W pale 2 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/99/Eolienne_200W_2017.08.29_-_17.JPG/800px-Eolienne_200W_2017.08.29_-_17.JPG' alt='Eolienne 200W 2017.08.29 - 17.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b1/Eolienne_200W_2017.08.29_-_32.JPG/800px-Eolienne_200W_2017.08.29_-_32.JPG' alt='Eolienne 200W 2017.08.29 - 32.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Eolienne_200W_pale_3_style.jpg/800px-Eolienne_200W_pale_3_style.jpg' alt='Eolienne 200W pale 3 style.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Selon schéma, tracer les 4 sections le long de la pale.</li><li>Selon schéma, tracer la zone de l'intrados à sculpter.</li><li>Pour faciliter les repères, hachurer la zone de bois à éliminer.</li><li>A l'aide d'une plane, de ciseaux de charpentier et d'une wastringue pour les finitions, enlever le bois dans la partie hachurée.</li></ul></li><li>Remarque: Pour garantir de bonnes cotes, la sculpture doit venir au plus près du trait de crayon sans l'effacer.<ul><li>A l'aide d'une règle, vérifier la planéité en toutes sections de l'intrados sculpté.</li><li>Une fois les 3 pales terminées, vérifier l'égalité des cotes en plusieurs points sur les 4 sections tracées auparavant.</li><li>Fichier:Eolienne 200W dt.p le.eolienne.pdf</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Hélice: Sculpture de l'extrados des pales</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Eolienne_200W_pale_5_style_m.jpg/800px-Eolienne_200W_pale_5_style_m.jpg' alt='Eolienne 200W pale 5 style m.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/99/Eolienne_200W_pale_6_style.jpg/800px-Eolienne_200W_pale_6_style.jpg' alt='Eolienne 200W pale 6 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Eolienne_200W_pale_4_style.jpg/800px-Eolienne_200W_pale_4_style.jpg' alt='Eolienne 200W pale 4 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6b/Eolienne_200W_pale_7_style_m.jpg/800px-Eolienne_200W_pale_7_style_m.jpg' alt='Eolienne 200W pale 7 style m.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Eolienne_200W_pale_8_style.jpg/800px-Eolienne_200W_pale_8_style.jpg' alt='Eolienne 200W pale 8 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/71/Eolienne_200W_2017.08.30_-_41.JPG/800px-Eolienne_200W_2017.08.30_-_41.JPG' alt='Eolienne 200W 2017.08.30 - 41.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner la pale, face extrados visible.</li><li>Selon schéma, tracer le point A. Il se situe au 2/3 de la largeur du pied de pale depuis le bord de fuite. Ce point est le centre de rotation de l'hélice.</li><li>Tracer ensuite le point B sur le bord d'attaque en reportant à l'aide d'un compas centré en A les 2/3 du pied de pale. Puis relier AB.</li></ul></li><li>Remarque: Le segment AB forme un angle de 120° avec le pied de pale, qui sera nécessaire par la suite pour l’emboîtement des pales.<ul><li>Selon schéma, tracer un cercle de rayon 100mm centré en A. La surface de cette portion de disque est à laisser intacte et bien plane jusqu'à la fin pour le bon assemblage des pales.</li></ul></li><li>Remarque: Dans le cas de ce tutoriel, le point B se situe sur le périmètre du cercle. Ce n'est pas toujours le cas en fonction de la largeur du bastaing.<ul><li>Selon schéma, tracer l'épaisseur de la pale sur le plan de fuite.</li></ul></li><li>Remarque: Selon l'épaisseur du bastaing, il peut arriver qu'il n'y ait pas 17mm d'épaisseur en section 3. Tracer tout de même l'épaisseur en imaginant un point dans l'espace à 17mm du bord de fuite sur cette section 3.<ul><li>Nommer C l'intersection entre le tracer de l'épaisseur et le bord de la pale.</li><li>Selon schéma, tracer ensuite l'épaisseur de la pale sur la face d'attaque en respectant les mêmes épaisseurs que pour le plan de fuite. Relier le point de la section 3 au point B.</li><li>Sur la face extrados, relier B et C afin de fermer la zone à sculpter.</li><li>Pour faciliter les repères, hachurer la zone de bois à éliminer.</li><li>A l'aide d'une plane, de ciseaux de charpentier et d'une wastringue pour les finitions, enlever le bois dans la partie hachurée.</li></ul></li><li>Remarque: Pour garantir de bonnes cotes, la sculpture doit venir au plus près du trait de crayon sans l'effacer.<ul><li>A l'aide d'une règle, vérifier la planéité en toute section de l'extrados sculpté.</li><li>Une fois les 3 pales terminées, vérifier l'égalité des cotes en plusieurs points sur les 4 sections tracées auparavant.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Hélice: Finalisation profil pale</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/93/Eolienne_200W_2017.08.30_-_42.JPG/800px-Eolienne_200W_2017.08.30_-_42.JPG' alt='Eolienne 200W 2017.08.30 - 42.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bb/Eolienne_200W_pale_11_style.jpg/800px-Eolienne_200W_pale_11_style.jpg' alt='Eolienne 200W pale 11 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b2/Eolienne_200W_2017.09.01_-_27m.JPG/800px-Eolienne_200W_2017.09.01_-_27m.JPG' alt='Eolienne 200W 2017.09.01 - 27m.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/44/Eolienne_200W_2017.09.01_-_36m.JPG/800px-Eolienne_200W_2017.09.01_-_36m.JPG' alt='Eolienne 200W 2017.09.01 - 36m.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b6/Eolienne_200W_2017.09.01_-_41mm.JPG/800px-Eolienne_200W_2017.09.01_-_41mm.JPG' alt='Eolienne 200W 2017.09.01 - 41mm.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Sur la face extrados, tracer sur toute la longueur, à partir du bord d'attaque un trait représentant 30% de la largeur de la pale et un trait représentant 50% de la largeur de la pale.</li><li>Vérifier, à l’aide d’un compas d’épaisseur, l’épaisseur à chaque section sur la ligne de 30%. Comparer les 3 pales et ajuster les plus épaisses si elles ne sont pas rigoureusement identiques.</li></ul></li><li>Remarque: La ligne des 30% correspond à l’épaisseur finale de la pale, c’est pourquoi on vérifie les cotes à cet endroit précis.<ul><li>De la ligne des 50% au bord de fuite, sculpter une surface bien plane en laissant une épaisseur de moins d'1 mm sur le bord de fuite.</li></ul></li><li>Remarque: Attention à ne pas faire d'éclat sur le bord de fuite, c'est une zone très délicate.<ul><li>Du bord d'attaque à la ligne des 30%, sculpter un bel arrondi à l'aide d'une plane, d'une wastringue ou d'un rabot. L'angle d'attaque doit être d'environ 60°.</li><li>Lorsque ces deux zones sont terminées, casser l’arrête restante de la ligne à 50% afin de réaliser un profil continu du bord d'attaque jusqu'au bord de fuite. La seule ligne encore visible au crayon doit être celle à 30%.</li></ul></li><li>Une fois ce travail terminé sur les 3 pales:<ul><li>Scier les pales à 600mm pour supprimer la marge laissée au début en bout de pale à l'aide d'une scie japonaise.</li><li>Scier la section définie par AB en pied de pale pour pouvoir emboîter les 3 pales à 120°.</li></ul></li><li>Remarque: On préférera avoir un angle légèrement inférieur à 120° pour pouvoir pivoter légèrement les pales lors de l’assemblage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Hélice: Réalisation des supports d'assemblage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/df/Eolienne_200W_disque_cp_1_style_m.jpg/800px-Eolienne_200W_disque_cp_1_style_m.jpg' alt='Eolienne 200W disque cp 1 style m.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/22/Eolienne_200W_triangle_cp_1_style_m.jpg/800px-Eolienne_200W_triangle_cp_1_style_m.jpg' alt='Eolienne 200W triangle cp 1 style m.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/99/Eolienne_200W_2017.09.01_-_44_2_m.JPG' alt='Eolienne 200W 2017.09.01 - 44 2 m.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/9d/Eolienne_200W_2017.09.01_-_44_m.JPG' alt='Eolienne 200W 2017.09.01 - 44 m.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Selon schéma, réaliser un disque et ses traçages/perçages dans un contreplaqué épaisseur 9mm. Le diamètre des cercles pour le positionnement des pré-perçage (pour vis 5mm) des vis est fixé arbitrairement. 3 zones à 120° sont définies. Ce disque sert à l'assemblage de l'hélice coté extrados.</li><li>Selon schéma, réaliser un triangle et ses traçages/perçages dans un contreplaqué de 9mm. Chaque pied de pale, face extrados posée sur le triangle, est représenté sur le triangle. Le tracé du cercle central permet de ne pas venir pré-percer sur cette zone qui va accueillir par la suite des tiges filetées. Les lignes parallèles aux cotés pour les pré-perçages (pour vis 5mm) sont définies arbitrairement. Ce triangle sert à l'assemblage de l'hélice coté intrados.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Hélice: Assemblage</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b6/Eolienne_200W_2017.09.01_-_52.JPG/800px-Eolienne_200W_2017.09.01_-_52.JPG' alt='Eolienne 200W 2017.09.01 - 52.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Eolienne_200W_2017.09.01_-_55.JPG/800px-Eolienne_200W_2017.09.01_-_55.JPG' alt='Eolienne 200W 2017.09.01 - 55.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Eolienne_200W_2017.09.01_-_56.JPG/800px-Eolienne_200W_2017.09.01_-_56.JPG' alt='Eolienne 200W 2017.09.01 - 56.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3f/Eolienne_200W_2017.09.01_-_71.JPG/800px-Eolienne_200W_2017.09.01_-_71.JPG' alt='Eolienne 200W 2017.09.01 - 71.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Eolienne_200W_2017.09.01_-_84.JPG/800px-Eolienne_200W_2017.09.01_-_84.JPG' alt='Eolienne 200W 2017.09.01 - 84.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d0/Eolienne_200W_2017.09.01_-_103.JPG' alt='Eolienne 200W 2017.09.01 - 103.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner les pales en hélice, face extrados visible, sur une surface bien plane.</li><li>Centrer le disque en contreplaqué, à l'aide d'un foret en guise de pion de centrage par exemple.</li><li>A l'aide de 3 mètres et de 3 personnes, positionner le cercle de tel sorte que chaque bout de pale soit à équidistance du pion centreur. La référence en bout de pale est le bout de bord d'attaque.</li><li>Une fois bien centré, maintenir le cercle en position et visser une seule vis par pale pour qu'elles puissent encore pivoter.</li><li>Régler ensuite la distance entre chaque bout de pale à l'aide de 3 mètres.</li><li>Maintenir en position puis visser toutes les vis.</li><li>Visser le triangle sur la face intrados en prenant soin de placer le triangle du bon coté pour que les pré-perçages soient bien en face du pied de pale.</li><li>Prolonger, à travers toute l'hélice, les 4 trous de 12mm présent sur le disque de contreplaqué. S'aider d'une équerre afin d'assurer des trous bien verticaux.</li></ul></li><li>Remarque: pour aider à l’emboîtement de l’hélice sur le reste de l'éolienne, il est possible d'agrandir les trous de 12mm en 14mm sur l'épaisseur du triangle et des pales, sans toucher au diamètre 12mm du disque.<ul><li>A l'aide d'une scie cloche de 60mm de diamètre, éliminer un cylindre de 30mm de profondeur depuis la face extrados.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Génératrice, stator: Préparation du berceau</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Eolienne_200W_berceau_1_style.jpg/800px-Eolienne_200W_berceau_1_style.jpg' alt='Eolienne 200W berceau 1 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/70/Eolienne_200W_2017.08.30_-_109m.JPG/800px-Eolienne_200W_2017.08.30_-_109m.JPG' alt='Eolienne 200W 2017.08.30 - 109m.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/54/Eolienne_200W_2017.08.31_-_78.JPG/800px-Eolienne_200W_2017.08.31_-_78.JPG' alt='Eolienne 200W 2017.08.31 - 78.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Se munir d'un disque en métal de diamètre 140mm et d'épaisseur 8mm.</li><li>Selon schéma, réaliser les perçages à 12mm.</li></ul></li><li>Remarque: Pour un perçage précis, pointer le centre à l'aide d'un pointeau, pré-percer avec un foret de petit diamètre et ensuite à 12mm. Choisir une vitesse de rotation adaptée au matériau et au diamètre du foret. Bien lubrifier durant le perçage.<ul><li>Se munir d'un moyeu arrière de Golf, de Corsa, de Polo ou d'Ibiza, récupérable en casse automobile. Séparer la partie qui se fixe à la voiture (fusée) et la partie tournante (cloche) en prenant soin de mettre écrous et roulements à billes de coté.</li><li>Tracer sur le disque en métal un cercle de rayon légèrement supérieur à 40mm pour centrer le socle de la fusée sur le berceau.</li></ul></li><li>Fixer temporairement les deux pièces avec quelques points de soudure. Réaliser les 4 perçages à travers le socle de la fusée et le berceau.</li><li>Remarque: Si les 4 vis initiales de la fusée sont en bon état, il est possible de les récupérer en perçant uniquement le berceau et en vissant dans le socle directement. Dans ce cas, il faut faire attention à ne pas abîmer le filetage d’origine (qui est un filetage mécanique, ne peut pas être utilisé avec d’autres vis). Il est parfois nécessaire de raccourcir ces vis pour ne pas gêner lors de l’assemblage.<ul><li>Percer le centre du berceau avec un petit foret (environ 3mm). Ce perçage servira lors du moulage du stator.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Génératrice, stator: Préparation tiges filetées stator</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/7/73/Eolienne_200W_2017.08.31_-_22.JPG' alt='Eolienne 200W 2017.08.31 - 22.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/1e/Eolienne_200W_2017.08.31_-_29.JPG' alt='Eolienne 200W 2017.08.31 - 29.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque: Le stator est la partie fixe de la génératrice.<ul><li>Se munir d'une tige filetée de diamètre 12mm.</li><li>Couper 3 tiges de 70mm de long.</li></ul></li><li>Remarques:</li><li>1) Si un étau est utilisé pour maintenir la tige filetée pendant la découpe, enrouler la tige filetée dans un tissu au niveau des mors avant de serrer pour ne pas abîmer le pas de vis.</li><li>2) Avant de couper, visser un écrou sur la partie de la tige qui va être coupée afin de pouvoir reformer le pas de vis au niveau de la découpe grâce au passage répété de l'écrou.<ul><li>Fendre en croix sur 10mm de long une des extrémités de chaque tige filetée.</li><li>Mettre de coté le berceau et ces 3 tiges filetées qui serviront par la suite pour le moulage.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Génératrice, stator: Préparation du bobineur</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/6/62/Eolienne_200W_2017.08.28_-_200.JPG' alt='Eolienne 200W 2017.08.28 - 200.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Eolienne_200W_2017.08.28_-_201.JPG/800px-Eolienne_200W_2017.08.28_-_201.JPG' alt='Eolienne 200W 2017.08.28 - 201.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/92/Eolienne_200W_bobineur_1_stylem.jpg/800px-Eolienne_200W_bobineur_1_stylem.jpg' alt='Eolienne 200W bobineur 1 stylem.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Fabriquer le bobineur à l'aide de cornière, tube métallique, tige filetée/écrous de 10mm de diamètre, 4 gros clous de diamètre 6 et chutes de contreplaqué. Respecter les dimensions du schéma pour les découpes de contreplaqué: le rectangle défini par les bords extérieurs des 4 gros clous doit faire 46mm x 30mm.</li></ul></li><li>Remarque: Les bobines seront enroulées entre les deux disques de contreplaqué (épaisseur minimale 15mm), qu’on appelle les « oreilles ». Le petit rectangle de contreplaqué situé entre les deux oreilles est l’espaceur : c’est lui qui détermine l’épaisseur de la bobine. La forme intérieure des bobines est déterminée par les bords extérieurs des 4 gros clous, formant un rectangle de 46mm x 30mm. Ce rectangle correspond aux dimensions des aimants qui passeront devant.<ul><li>Après avoir réalisé la structure en métal « socle » du bobineur, découper les deux oreilles et l’espaceur selon le schéma. Réaliser les perçages avec précision. Découper une petite entaille sur une des deux oreilles pour coincer le fil de cuivre au moment du bobinage.</li></ul></li><li>Remarque: Pour faciliter le glissement du fil lors du bobinage, il est possible de chanfreiner la tranche intérieure des oreilles. Faire une marque au feutre sur la tranche des deux oreilles pour compter les tours plus facilement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Génératrice, stator: Réalisation des 6 bobines.</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/31/Eolienne_200W_2017.08.28_-_220.JPG/800px-Eolienne_200W_2017.08.28_-_220.JPG' alt='Eolienne 200W 2017.08.28 - 220.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ef/Eolienne_200W_2017.08.28_-_231.JPG/800px-Eolienne_200W_2017.08.28_-_231.JPG' alt='Eolienne 200W 2017.08.28 - 231.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/53/Eolienne_200W_2017.08.28_-_246.JPG' alt='Eolienne 200W 2017.08.28 - 246.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/61/Eolienne_200W_2017.08.28_-_277.JPG/800px-Eolienne_200W_2017.08.28_-_277.JPG' alt='Eolienne 200W 2017.08.28 - 277.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque: Le stator est composé de 6 bobines de 76 tours, réalisées avec du fil de cuivre émaillé de 1,4mm de diamètre. Ce dimensionnement permet à la génératrice de produire maximum 200W en 12V sans endommager les fils. Afin de réaliser les 6 bobines, 1,5kg de fil de cuivre sont nécessaires.<ul><li>A l'aide d'une personne et du bobineur, réaliser 1 bobine. 1 personne enroule le fil et compte les tours précisément, une personne crée une tension dans le fil et s'assure de la bonne répartition du fil sur l'épaisseur du bobineur. Si la tension dans le fil n'est pas assez importante, la bobine sera trop large.</li><li>Laisser une marge de 30 cm de fil avant de commencer à enrouler le fil ainsi qu'à la fin.</li><li>Avant de démouler, maintenir la bobine avec du scotch d'électricien. Il est possible de s'aider d'un réglet pour passer le scotch entre l'espaceur et la bobine, grâce aux grandes fentes sur les oreilles prévues à cet effet.</li><li>Au total, réaliser 6 bobines.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Génératrice, stator: Montage "étoile"</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d6/Eolienne_200W_gabarit_bobine_1_style.jpg/800px-Eolienne_200W_gabarit_bobine_1_style.jpg' alt='Eolienne 200W gabarit bobine 1 style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e4/Eolienne_200W_2017.08.29_-_98.JPG/800px-Eolienne_200W_2017.08.29_-_98.JPG' alt='Eolienne 200W 2017.08.29 - 98.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e6/Eolienne_200W_montage_etoile_couleur.jpg/800px-Eolienne_200W_montage_etoile_couleur.jpg' alt='Eolienne 200W montage etoile couleur.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ef/Eolienne_200W_2017.08.29_-_107_m.JPG/800px-Eolienne_200W_2017.08.29_-_107_m.JPG' alt='Eolienne 200W 2017.08.29 - 107 m.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8f/Eolienne_200W_2017.08.29_-_117_m.JPG/800px-Eolienne_200W_2017.08.29_-_117_m.JPG' alt='Eolienne 200W 2017.08.29 - 117 m.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Eolienne_200W_2017.08.29_-_153_m.JPG/800px-Eolienne_200W_2017.08.29_-_153_m.JPG' alt='Eolienne 200W 2017.08.29 - 153 m.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Réaliser dans une chute de contreplaqué le gabarit en schéma. Tracer l'emplacement qui accueillera les 3 tiges filetées au centre ainsi que l'emplacement du centre de chacune des bobines. Il y a 6 bobines, l'écart entre chaque est de 60°.</li><li>A l'aide de 6 chutes de contreplaqué d'environ 50mm x 25mm, fixer chaque bobine à son emplacement sur le gabarit. Numéroter chaque bobine de 1 à 6 comme sur le gabarit.</li></ul></li><li>Remarque: Il est impératif que toutes les bobines soient positionnées avec les spires tournant dans le même sens, soit horaire soit anti-horaire. Si ce point n'est pas respecté, la génératrice ne fonctionnera pas comme prévu.<ul><li>Relier les bobines selon le schéma en prenant soin de laisser libre le centre et les emplacements des tiges filetées.</li></ul></li><li>1) Relier les entrées des bobines 1,2 et 3: c'est le point neutre.</li><li>2) Relier la sortie de 1 à l'entrée de 4.</li><li>3) Relier la sortie de 2 à l'entrée de 5.</li><li>4) Relier la sortie de 3 à l'entrée de 6.<ul><li>Couper le surplus des fils de chaque bobine.</li><li>A l'aide d'un cutter, enlever l'émail sur 3 cm sur chaque extrémité de fils. La surface du fil doit devenir plus claire et mat.</li><li>Torsader les fils de chaque connexion.</li><li>Souder les connexions avec un fer à souder et de l'étain. Pour une belle soudure, faire chauffer la zone à souder puis déposer l'étain sur le fil pour qu'il fonde et migre dans les interstices.</li><li>Protéger chaque soudure avec de la gaine thermorétractable.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Génératrice, stator: Câble triphasé</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/75/Eolienne_200W_2017.08.29_-_137_m.JPG/800px-Eolienne_200W_2017.08.29_-_137_m.JPG' alt='Eolienne 200W 2017.08.29 - 137 m.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Se munir de 60cm de cable 3 fils souple, 2,5mm².</li><li>Souder les sorties des bobines 4, 5 et 6 formant les 3 phases puis les protéger avec de la gaine thermorétractable. Une attention particulière doit être apportée à l'isolation, les fils pouvant se toucher.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Génératrice, stator: Réalisation du moule de stator</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Eolienne_200W_moule_stator_eclat_.jpg/800px-Eolienne_200W_moule_stator_eclat_.jpg' alt='Eolienne 200W moule stator eclat .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/08/Eolienne_200W_moule_stator_emboit_.jpg/800px-Eolienne_200W_moule_stator_emboit_.jpg' alt='Eolienne 200W moule stator emboit .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Eolienne_200W_2017.08.31_-_36_m.jpg/800px-Eolienne_200W_2017.08.31_-_36_m.jpg' alt='Eolienne 200W 2017.08.31 - 36 m.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Dans du contreplaqué de 10mm d'épaisseur réaliser le moule selon schéma.</li></ul></li><li>Il se décompose en 4 parties: le socle, la bordure, l'îlot central et le couvercle. Bien penser à percer 3 détrompeurs pour le bon alignement du couvercle au moulage.<ul><li>Visser/coller la bordure et l’îlot central sur le socle.</li><li>Dessiner l'emplacement de chaque bobine dans le moule. Il est possible de s'aider du gabarit précédemment réalisé.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Génératrice, stator: Préparation du moulage</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9c/Eolienne_200W_2017.08.31_-_43.JPG/800px-Eolienne_200W_2017.08.31_-_43.JPG' alt='Eolienne 200W 2017.08.31 - 43.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6a/Eolienne_200W_2017.08.31_-_91.JPG/800px-Eolienne_200W_2017.08.31_-_91.JPG' alt='Eolienne 200W 2017.08.31 - 91.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/10/Eolienne_200W_2017.08.31_-_93.JPG/800px-Eolienne_200W_2017.08.31_-_93.JPG' alt='Eolienne 200W 2017.08.31 - 93.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/11/Eolienne_200W_2017.08.31_-_123.JPG/800px-Eolienne_200W_2017.08.31_-_123.JPG' alt='Eolienne 200W 2017.08.31 - 123.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4c/Eolienne_200W_2017.08.31_-_126.JPG/800px-Eolienne_200W_2017.08.31_-_126.JPG' alt='Eolienne 200W 2017.08.31 - 126.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque: Cette étape fait intervenir des éléments dangereux (résines, fibres, etc) Porter des gants latex et lunettes de protection jusqu'à la fin du moulage.<ul><li>Préparer 2 disques de fibre de verre ayant la forme du moule puis les mettre de coté. Prévoir une marge de diamètre au niveau de l’îlot (cf photo).</li><li>Préparer les 3 tiges filetée en les vissant sur le berceau. Bien régler le parallélisme des tiges.</li><li>A l'aide de cire de démoulage/wax, bien cirer l'ensemble du moule, intérieur/extérieur, le couvercle intérieur/extérieur, une dizaine de vis qui serviront à fixer le couvercle ainsi que 3 pions pour les détrompeurs.</li><li>Préparer 2 bacs de 150g de résine polyester et 2 seringues de 2,25ml du catalyseur associé.</li><li>Préparer un bac de 300g de résine mélangée avec 150g de talc ainsi qu'une seringue de 4,5ml de catalyseur.</li><li>Préparer l'ensemble du montage bobine, débridé du gabarit, afin qu'il soit prêt à installer dans le moule.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Génératrice, stator: Moulage</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/85/Eolienne_200W_2017.08.31_-_132.JPG/800px-Eolienne_200W_2017.08.31_-_132.JPG' alt='Eolienne 200W 2017.08.31 - 132.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Eolienne_200W_2017.08.31_-_134.JPG/800px-Eolienne_200W_2017.08.31_-_134.JPG' alt='Eolienne 200W 2017.08.31 - 134.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a6/Eolienne_200W_2017.08.31_-_149.JPG/800px-Eolienne_200W_2017.08.31_-_149.JPG' alt='Eolienne 200W 2017.08.31 - 149.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/07/Eolienne_200W_2017.08.31_-_150.JPG/800px-Eolienne_200W_2017.08.31_-_150.JPG' alt='Eolienne 200W 2017.08.31 - 150.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Eolienne_200W_2017.08.31_-_177.JPG/800px-Eolienne_200W_2017.08.31_-_177.JPG' alt='Eolienne 200W 2017.08.31 - 177.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/77/Eolienne_200W_2017.09.01_-_3.JPG/800px-Eolienne_200W_2017.09.01_-_3.JPG' alt='Eolienne 200W 2017.09.01 - 3.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Verser la seringue associée dans un des bacs de 150g de résine et mélanger énergiquement.</li><li>Verser un peu de cette résine dans le fond du moule.</li><li>Plaquer au fond du moule un des deux disques de fibre de verre et bien l'imbiber de résine.</li><li>Placer soigneusement le montage des bobines dans le moule. Chaque bobine doit être bien à sa place et aucun fil ne doit dépasser du moule. C'est une étape délicate. finir de verser le premier bac de résine.</li><li>Verser la seringue associée dans le bac de 300g de résine + talc. Mélanger énergiquement.</li><li>Verser le contenu sur le montage.</li></ul></li><li>Remarque: le talc permet non seulement de charger la résine avec un matériau peu cher mais également de diffuser la chaleur lors du séchage de la résine et durant le fonctionnement futur de l'éolienne afin de ne pas endommager le stator.<ul><li>Positionner le second disque de fibre de verre et bien l'imbiber.</li><li>Préparer et verser le dernier bac de résine. Il vaut mieux avoir un surplus de résine que pas assez.</li><li>Positionner le couvercle grâce aux détrompeurs et le brider grace aux vis cirées.</li><li>Positionner délicatement les tiges filetées liées au berceau, la partie fendue dans la résine. S'aider d'un foret comme centreur entre l’îlot et le berceau.</li><li>Au besoin, attacher à l'aide d'un colson le câble triphasé pour qu'il sorte correctement du stator.</li><li>Laisser durcir (cela peut prendre plusieurs heures). puis démouler, ébavurer et vernir ou peindre.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Génératrice, rotor: Préparation du disque métallique.</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c0/Eolienne_200W_disque_galva_style.jpg/800px-Eolienne_200W_disque_galva_style.jpg' alt='Eolienne 200W disque galva style.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/24/Eolienne_200W_2017.08.29_-_173.JPG' alt='Eolienne 200W 2017.08.29 - 173.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque: le rotor est la partie tournante de la génératrice entraînée par l'hélice.<ul><li>Se munir d'un disque en acier épaisseur 6mm, si possible galvanisé, de diamètre 230mm et le préparer selon schéma. Les 4 trous de 12mm de diamètre sont répartis sur chaque quart du cercle de 100mm de diamètre.</li></ul></li><li>Remarques:</li><li>1) Il est impératif que le disque soit en acier pour qu'il puisse conduire les champs magnétiques. Cela ne fonctionnera pas avec de l'alu ou de l'inox par exemple.</li><li>2) Il peut être plus facile de se fournir le disque tout préparé auprès d'artisans qui disposent d'outils de découpe précise (plasma, laser).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Génératrice, rotor: Préparation de la cloche du moyeu</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/86/Eolienne_200W_2017.08.31_-_61.JPG/800px-Eolienne_200W_2017.08.31_-_61.JPG' alt='Eolienne 200W 2017.08.31 - 61.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/3a/Eolienne_200W_2017.08.31_-_65.JPG' alt='Eolienne 200W 2017.08.31 - 65.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/42/Eolienne_200W_2017.09.01_-_183.JPG/800px-Eolienne_200W_2017.09.01_-_183.JPG' alt='Eolienne 200W 2017.09.01 - 183.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5b/Eolienne_200W_2017.09.01_-_183_2_.JPG/800px-Eolienne_200W_2017.09.01_-_183_2_.JPG' alt='Eolienne 200W 2017.09.01 - 183 2 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Se munir de la cloche du moyeu mise de coté auparavant (cf étape: "Génératrice, stator: Préparation du berceau").</li><li>Découper la cloche à la meuleuse de façon à ne garder que la platine plate avec les perçages.</li><li>Meuler la cloche de telle sorte que le disque en acier puisse s'insérer parfaitement à plat sur les 4 appuis percés. (cf photos)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - Génératrice, rotor: Préparation du gabarit</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/82/Eolienne_200W_gabarit_rotor.jpg/800px-Eolienne_200W_gabarit_rotor.jpg' alt='Eolienne 200W gabarit rotor.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Eolienne_200W_2017.08.29_-_177.JPG/800px-Eolienne_200W_2017.08.29_-_177.JPG' alt='Eolienne 200W 2017.08.29 - 177.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Dans une chute de contreplaqué fin, réaliser le gabarit selon schéma.</li><li>Dégraisser le disque en acier avec du dégraissant.</li><li>Se munir de deux boulons de 12mm avec rondelles.</li><li>Visser le gabarit sur le disque en acier en intercalant des rondelles.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - Génératrice, rotor: Collage des aimants</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/4/4a/Eolienne_200W_2017.08.29_-_178.JPG' alt='Eolienne 200W 2017.08.29 - 178.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b3/Eolienne_200W_2017.08.29_-_199.JPG/800px-Eolienne_200W_2017.08.29_-_199.JPG' alt='Eolienne 200W 2017.08.29 - 199.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque: Cette étape consiste à coller des aimants très puissants sur le disque en acier en alternant les pôles des aimants. Si l'alternance n'est pas respectée, la génératrice ne fonctionnera pas et risque des dommages.<ul><li>Se munir de 8 aimants néodymes 46mm x 30mm x 10mm.</li></ul></li><li>Remarque: Faire très attention durant la manipulation de ces aimants. Etant très puissants, ils peuvent endommager les appareils électroniques, attirer des objets métalliques en tout genre et pincer très fort. Ils sont également fragiles et peuvent se casser durant les chocs.<ul><li>Poser un point de super glue dans une première encoche et coller le premier aimant. Faire attention à ce que l'aimant soit parfaitement calé dans l'encoche.</li><li>Prendre un deuxième aimant dans son poing, le positionner au dessus du premier.</li></ul></li><li>1) S'il y a répulsion, le coller dans l'encoche adjacente en conservant bien ce sens: les 2 aimants ont les polarités positionnées de manière opposée.</li><li>2) S'il y a attraction, le retourner dans sa main, vérifier qu'il y a maintenant répulsion, et le coller dans l'encoche adjacente.<ul><li>Appliquer la même procédure avec tous les aimants. Une fois terminé, les faces visibles des aimants sont alternées comme suit: 1) Nord , 2) Sud, 3) Nord, 4) Sud, 5) Nord, 6) Sud, 7) Nord, 8) Sud ou inversement.</li><li>Laisser sécher puis retirer le gabarit.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Génératrice, rotor: Préparation du moule</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f0/Eolienne_200W_moule_rotor.jpg/800px-Eolienne_200W_moule_rotor.jpg' alt='Eolienne 200W moule rotor.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/Eolienne_200W_moule_rotor_ensemble.jpg/800px-Eolienne_200W_moule_rotor_ensemble.jpg' alt='Eolienne 200W moule rotor ensemble.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f0/Eolienne_200W_2017.08.31_-_36_rotor.jpg' alt='Eolienne 200W 2017.08.31 - 36 rotor.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Réaliser le moule du rotor dans du contreplaqué de 16mm d'épaisseur pour le socle et la bordure, le couvercle peut être moins épais. Les diamètres des trous dans le couvercle doivent permettre le passage d'écrou pour vis de 12mm.</li><li>Visser/coller le socle et la bordure ensemble.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>22. Étape 22 - Génératrice, rotor: Préparation du moulage</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/61/Eolienne_200W_2017.08.31_-_57.JPG/800px-Eolienne_200W_2017.08.31_-_57.JPG' alt='Eolienne 200W 2017.08.31 - 57.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ee/Eolienne_200W_2017.08.31_-_103.JPG/800px-Eolienne_200W_2017.08.31_-_103.JPG' alt='Eolienne 200W 2017.08.31 - 103.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2f/Eolienne_200W_2017.08.31_-_112.JPG/800px-Eolienne_200W_2017.08.31_-_112.JPG' alt='Eolienne 200W 2017.08.31 - 112.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque: Cette étape fait intervenir des éléments dangereux (résines, fibres, etc) Porter des gants latex et lunettes de protection jusqu'à la fin du moulage.<ul><li>Préparer 1 disque de fibre de verre ayant la forme du moule puis le mettre de coté.</li><li>A l'aide de cire de démoulage/wax, bien cirer l'ensemble du moule, intérieur/extérieur, le couvercle intérieur/extérieur ainsi que 2 boulons de 12mm assez longs pour traverser l'ensemble du moule.</li><li>Préparer 2 bacs de 150g de résine polyester et 2 seringues de 2,25ml du catalyseur associé.</li><li>Préparer un bac de 300g de résine mélangée avec 150g de talc ainsi qu'une seringue de 4,5ml de catalyseur.</li><li>Positionner le disque en acier dans le moule, positionner l'ilot par dessus et visser l'ensemble avec les boulons graissés.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>23. Étape 23 - Génératrice, rotor: Moulage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/df/Eolienne_200W_2017.08.31_-_147.JPG/800px-Eolienne_200W_2017.08.31_-_147.JPG' alt='Eolienne 200W 2017.08.31 - 147.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8f/Eolienne_200W_2017.08.31_-_153.JPG/800px-Eolienne_200W_2017.08.31_-_153.JPG' alt='Eolienne 200W 2017.08.31 - 153.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Eolienne_200W_2017.08.31_-_166_2_.JPG/800px-Eolienne_200W_2017.08.31_-_166_2_.JPG' alt='Eolienne 200W 2017.08.31 - 166 2 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/57/Eolienne_200W_2017.09.01_-_105.JPG' alt='Eolienne 200W 2017.09.01 - 105.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Verser la seringue associée dans un des bacs de 150g de résine et mélanger énergiquement.</li><li>Verser cette résine dans le moule.</li><li>De la même manière, préparer et verser la résine + talc.</li><li>Positionner le cercle de fibre et bien l'imbiber.</li><li>Au besoin, préparer et verser le dernier bac de résine. Il vaut mieux avoir un surplus de résine qui déborde.</li><li>Positionner le couvercle et poser de lourdes pièces métalliques dessus (cornières, tubes, etc) la force d'attraction des aimants permet de presser le surplus de résine.</li><li>Laisser durcir, démouler, ébavurer et vernir ou peindre.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>24. Étape 24 - Structure, Nacelle</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Eolienne_200W_nacelle_dessus.jpg/800px-Eolienne_200W_nacelle_dessus.jpg' alt='Eolienne 200W nacelle dessus.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/32/Eolienne_200W_nacelle_cot_.jpg/800px-Eolienne_200W_nacelle_cot_.jpg' alt='Eolienne 200W nacelle cot .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/51/Eolienne_200W_nacelle_perspective.jpg/800px-Eolienne_200W_nacelle_perspective.jpg' alt='Eolienne 200W nacelle perspective.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/cc/Eolienne_200W_2017.08.31_-_35.JPG' alt='Eolienne 200W 2017.08.31 - 35.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Eolienne_200W_2017.08.31_-_190.JPG/800px-Eolienne_200W_2017.08.31_-_190.JPG' alt='Eolienne 200W 2017.08.31 - 190.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/25/Eolienne_200W_2017.09.01_-_19.JPG' alt='Eolienne 200W 2017.09.01 - 19.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Se munir de:</li></ul></li><li>1) Une cornière de 206mm (50x50x6mm).</li><li>2) Un tube diamètre ext 42,2mm, longueur 100mm: Pivot éolienne.</li><li>3) Un tube diamètre ext 33,4mm, longueur 150mm: Pivot Safran.</li><li>4) Le berceau précédemment réalisé.<ul><li>Préparer la cornière selon schéma.</li><li>Souder le tube pivot éolienne sous la cornière, bien centré avec le trou de 14mm et bien perpendiculaire à la cornière.</li><li>Souder le tube pivot safran à l'arrière de la cornière (cf photo).</li><li>Souder le berceau en bout de cornière en centrant le centre du berceau sur le point A. Pour la soudure, il est nécessaire de sacrifier un des 4 trous permettant la fixation de la fusée. Ce n'est pas un problème tant que tous les autres restent bien accessible.</li></ul></li><li>Remarque: La chaleur dégagée par la soudure peut avoir tendance à faire travailler le métal, déformer les pièces et les positions choisies. Pour éviter ce problème, réaliser quelques points de soudure à quelques endroits stratégiques sur le périmètre de la soudure puis tirer le cordon soudure.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>25. Étape 25 - Structure, Safran</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Eolienne_200W_tube_pivot_safran.jpg/800px-Eolienne_200W_tube_pivot_safran.jpg' alt='Eolienne 200W tube pivot safran.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/ff/Eolienne_200W_2017.08.31_-_198.JPG' alt='Eolienne 200W 2017.08.31 - 198.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Eolienne_200W_tube_pivot_safran_et_queue.jpg/800px-Eolienne_200W_tube_pivot_safran_et_queue.jpg' alt='Eolienne 200W tube pivot safran et queue.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a4/Eolienne_200W_2017.09.01_-_161.JPG/800px-Eolienne_200W_2017.09.01_-_161.JPG' alt='Eolienne 200W 2017.09.01 - 161.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/bd/Eolienne_200W_2017.09.01_-_173.JPG' alt='Eolienne 200W 2017.09.01 - 173.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/9f/Eolienne_200W_2017.09.01_-_205.JPG' alt='Eolienne 200W 2017.09.01 - 205.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Se munir de:</li></ul></li><li>1) Un tube diamètre ext 42,2mm, longueur 130mm: Pivot safran.</li><li>2) Un fer plat 50 x 50 x 6mm: Couvercle du pivot safran.</li><li>3) Un tube diamètre ext 33,4mm, longueur 700mm: Queue du safran.</li><li>4) Une cornière 30 x 30 x 5, longueur 250mm: Support safran.</li><li>5) Un contreplaqué taillé selon les envies de chacun, d'épaisseur 6mm et de 0,1m² de surface. (par exemple un triangle rectangle de hauteur 300mm et base 600mm): le Safran.<ul><li>Sur le pivot safran ouvrir une encoche selon schéma.</li><li>Souder le couvercle sur l'extrémité opposé à l'encoche du pivot safran.</li><li>Sur le tube queue de safran, réaliser une gueule de loup en s'aidant d'un patron permettant une soudure à 110° du pivot safran.</li><li>Percer la cornière support en 3 points permettant l'attache du Safran avec des boulons de diamètre 6mm.</li><li>Souder perpendiculairement la cornière support en bout de queue de safran.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>26. Étape 26 - Assemblage, Génératrice</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5b/Eolienne_200W_2017.09.01_-_116.JPG/800px-Eolienne_200W_2017.09.01_-_116.JPG' alt='Eolienne 200W 2017.09.01 - 116.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Eolienne_200W_2017.09.01_-_122.JPG/800px-Eolienne_200W_2017.09.01_-_122.JPG' alt='Eolienne 200W 2017.09.01 - 122.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/81/Eolienne_200W_2017.09.01_-_134.JPG/800px-Eolienne_200W_2017.09.01_-_134.JPG' alt='Eolienne 200W 2017.09.01 - 134.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/98/Eolienne_200W_2017.09.01_-_146_2_.JPG' alt='Eolienne 200W 2017.09.01 - 146 2 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7c/Eolienne_200W_2017.09.01_-_153.JPG/800px-Eolienne_200W_2017.09.01_-_153.JPG' alt='Eolienne 200W 2017.09.01 - 153.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Visser la fusée du moyeu sur le berceau de la nacelle.</li><li>Visser un écrou sur chaque tige du stator.</li><li>Visser le stator sur le berceau.</li><li>Préparer 4 tiges filetées diamètre 12mm, longueur 140mm. (cf méthode: étape "Génératrice, stator: Préparation tiges filetées stator").</li><li>Fixer le rotor sur la cloche du moyeu avec les 4 tiges filetées et 16 écrous.</li><li>Emboîter la cloche du moyeu sur la fusée en repositionnant soigneusement les roulements à billes et écrous de serrage (à serrer au maximum puis desserrer d'un quart de tour). Le système doit tourner librement.</li><li>Ajuster l'écart entre le rotor et le stator en jouant avec les écrous du stator. L'espace doit être d'environ 1mm.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>27. Étape 27 - Assemblage final et test de production</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Eolienne_200W_2017.09.01_-_188.JPG/800px-Eolienne_200W_2017.09.01_-_188.JPG' alt='Eolienne 200W 2017.09.01 - 188.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/ce/Eolienne_200W_2017.09.01_-_205_2_.JPG' alt='Eolienne 200W 2017.09.01 - 205 2 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner la nacelle sur un mat d'essai.</li><li>A l'aide d'une personne, faire tourner la génératrice à 1 tour/seconde. Il est possible d'utiliser un métronome. Régler un voltmètre sur alternatif et mesurer la tension entre chaque phase. La valeur doit être proche de 1,9V. Si ce n'est pas le cas, vérifier l'écart entre stator et rotor.</li><li>Emboîter l'hélice, face extrados vers la génératrice, puis visser un écrou en intercalant une rondelle sur chaque tige filetée. Il est possible de s'aider de serres-joints pour l’emboîtement.</li><li>Installer le safran sur le pivot.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>28. Étape 30 - Installation redresseur 12V continue</strong><p><strong>Étapes :</strong></p><ol><li>Remarque: Afin de pouvoir chargé une batterie 12V, il est d'abord nécessaire de transformer le courant alternatif produit par chaque phase en un courant continu.<ul><li>Se munir d'un redresseur de tension triphasé alternatif à monophasé continu.</li><li>Souder chacune des phases du câble de sortie sur chaque borne d'entrée du redresseur.</li><li>Souder un câble monophasé sur les 2 bornes de sortie du redresseur.</li><li>Protéger le système dans un boitier étanche et le fixer sur le corps de l'éolienne.</li></ul></li><li>Remarque: Il sera nécessaire d'installer un contrôleur de charge entre l'éolienne et la batterie.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>29. Étape 31 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/7/7a/Eolienne_200W_Piggott.JPG' alt='Eolienne 200W Piggott.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux").</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

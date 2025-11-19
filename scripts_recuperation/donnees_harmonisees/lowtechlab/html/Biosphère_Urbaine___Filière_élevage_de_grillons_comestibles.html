@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Biosphère Urbaine : Filière élevage de grillons comestibles</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Biosphère Urbaine : Filière élevage de grillons comestibles</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/d/d2/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-20_a_12.03.09.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-20_a_12.03.09.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a été créé dans le cadre de l'expérience de mode de vie low-tech en ville menée par Biosphère Expérience à Boulogne Billancourt. Il présente les étapes de fabrication de l'incubateur utilisé par Allison et Sandra durant l'expérience.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le projet - Biosphère Urbaine</p>
+      
+        <p>Pendant 4 mois, Corentin et Caroline ont expérimenté un mode de vie low-tech en ville en collaboration avec un réseau d'acteurs locaux à Boulogne Billancourt. L'idée est de profiter de la forte densité de population pour répartir les connaissances, diviser le travail et mutualiser le matériel. Ainsi, Emma a constitué et coordonné des filières temporaires composées de structures locales et de citoyens. Au total, ce sont 14 personnes du territoire de Boulogne Billancourt qui ont participé à cette expérience !</p>
+      
+        <p>Filière - élevage de grillons</p>
+      
+        <p>L'une de ces filières concerne l'élevage de grillons comestibles. Si le cycle de reproduction est plutôt simple, réaliser l'intégralité de l'élevage à l'échelle individuelle ne fait pas trop sens dans un contexte urbain dense. C'est pourquoi Emma a créé une filière temporaire d'élevage de grillons qui assure tout le cycle de reproduction. Allison et Sandra étaient en charge de l'élevage du stade oeuf jusqu'au stade ado (1 mois d'élevage). Les grillons étaient ensuite transférés dans l'appartement low-tech de Corentin et Caroline où ils se sont reproduits. Les oeufs de grillons étaient à nouveau donné à Allison et Sandra pour assurer le cycle et les grillons adultes consommés par les membres de la filière. Ce tutoriel vise à démocratiser l'élevage de grillons à l'échelle d'un territoire.</p>
+      
+        <p>Pourquoi consommer des grillons ?</p>
+      
+        <p>La consommation de grillons est intéressante d'un point de vue nurtitif mais aussi écologique. L’apport énergétique du grillon est 120 kcal/100 g poids frais et sa teneur moyenne en protéine est 8-25 g/100 g masse en frais. (source : FAO). Le grillon se révèle être une très bonne source de protéines, d’acides gras oméga 3 et 6, et de minéraux: fer, zinc, magnésium, cuivre. Par ailleurs, l’élevage d’insectes demande moins d’eau et d’aliments qu’un élevage de bovins, ovins et porcins : leur capacité de conversion des aliments (capacité d’un animal à convertir un poids donné d’aliments en masse corporelle, représentée en kg d’aliment par kg de gain de poids de l’animal) est supérieur à celles des élevages cités précédemment. A titre d'exemple, il faut 10 kg d'aliments pour produire 1 kg de viande bovine alors qu'il faut 1,7 kg d'aliments pour produire 1 kg de grillons.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 30 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Filière_élevage_de_grillons_comestibles" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Filière_élevage_de_grillons_comestibles</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Ceci est une liste de matériaux exhaustive. Si vous avez déjà certains éléments, nous vous conseillons de favoriser la seconde main et d’adapter les diamètres et dimensions indiqués dans le tutoriel.</li><li>Pour l’incubateur<ul><li>un bac de dimension : 560 (L) x 385 (l) x 420 (H) mm</li><li>le carton d'emballage du bac ou un autre contenant un peu plus grand que ce dernier</li><li>isolant type laine de chanvre</li><li>drap blanc</li><li>un tapis chauffant de dimensions : 25 (L) x 53 (l) cm + un thermomètre à sonde</li><li>4 bocaux en verre avec couvercle de 0,5 L</li><li>4 boîtes d’éclosion en plastique avec couvercle de dimensions : 20 (L) x 10,5 (l) x 27 (H) cm</li><li>boîtes à oeufs</li><li>3 planches en bois de dimensions : 18 (L) x 7 (l) x 1 (H) cm. Ces dimensions dépendent de celle de vos boîtes d'élevage</li><li>coton</li><li>textile toile à beurre</li><li>nourriture pour grillons : son de blé en poudre, farine de maïs, soja en poudre, avoine en poudre, huile de colza (voir étape 9)</li></ul></li><li>Pour les boîtes d'élevage dans votre habitat (hors incubateur)<ul><li>substrat : fibre de coco, pellet de paille</li><li>textile moustiquaire rigide + pince à linge</li><li>2 couvercles de bocaux pour l'abreuvoir et la nourriture de grillons</li><li>une planche en bois pour poser l'abreuvoir et la nourriture de grillons</li><li>ficelle</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Ceci est une liste d'outils exhaustive à adapter en fonction de ce que vous possédez déjà.</li><li>scie pour matériaux isolants</li><li>perceuse avec foret de ∅ 2 mm</li><li>machine à coudre</li><li>scotch</li><li>paire de ciseaux</li><li>mètre</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Monter la filière</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fa/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-20_a_12.54.51.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-20_a_12.54.51.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-20 a 12.54.51.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si vous souhaitez monter une filière de ce type, la première étape sera de former un groupe de personnes sur votre territoire. Dans le cadre de ce projet, j'ai cherché 2 personnes sur le territoire pour assurer le bon déroulé de l'expérience mais aujourd'hui nous savons qu'un incubateur est bien dimensionné pour la consommation de grillons de 2 personnes.</li><li>De fait, il est tout à fait imaginable que chaque foyer prenne en charge plusieurs incubateurs afin que cette filière profite à un maximum de personne sans demander trop d'investissement à chacune des personnes (voir étape ... sur les retours d'expérience).</li><li>Comment trouver des personnes pour monter une filière ?</li><li>De mon côté, j'ai largement diffusé l'information via les réseaux de la ville (site internet, article dans le journal de la ville), nos réseaux sociaux ou encore les associations du territoire en les contactant par mail et par téléphone. Quelques exemples d'associations : Shifters, Ville en transition, Low-tech Lab..</li><li>Plus généralement, j'ai parlé du projet à toutes les personnes que je rencontrai au quotidien. Si vous souhaitez en parler à votre entourage, à vos amis, à vos collègues, je vous invite à utiliser toute la documentation présente sur ce tutoriel pour vous sentir capable de présenter les objectifs et intérêts de monter une telle filière à l'échelle du territoire.</li><li>Par ailleurs, 35 citoyens en France et à l'étranger ont expérimenté cet élevage dans le cadre du programme de science participative. N'hésitez pas à rejoindre les groupes WhatsApp mis en place durant l'expérience! Vous trouverez peut être des personnes, proche de chez vous, intéressées pour monter cette filière.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Les étapes suivantes concernent la fabrication de l'incubateur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/97/Biosph_re_Urbaine_-_Reproduction_de_grillons_comestibles_IMG_7777-preview.jpg/800px-Biosph_re_Urbaine_-_Reproduction_de_grillons_comestibles_IMG_7777-preview.jpg' alt='Biosph re Urbaine - Reproduction de grillons comestibles IMG 7777-preview.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'incubateur est utile en début d'élevage pour assurer le bon développement des bébés grillons dans des conditions optimales !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Découpe de l'isolant</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.13.11.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.13.11.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.13.11.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/79/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.09.51.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.09.51.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.09.51.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'objectif est d'isoler la boîte afin de garder la chaleur à l'intérieur de la boîte. On va donc placer de l'isolant sur les 3 faces de la boîte en carton. Pour cette étapes, les dimensions dépendent de celles de votre boîte. Ici notre boîte en carton a pour dimensions extérieures : 57 (L) x 44 (l) x 47 (H) cm.<ul><li>Côtés intérieur de la boîte : découpez un panneau d'isolant de 210 x 42 cm (1)</li><li>Dessous intérieur de la boîte : découpez un panneau d'isolant de 55 x 42 cm (2)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Habillage du carton (optionnel)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/92/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.26.54.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.26.54.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.26.54.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'idée est de confectionner une chaussette pour recouvrir la boîte en carton afin que l'incubateur s'intègre mieux dans l'habitat. De la même manière, les dimensions dépendent de celles de votre boîte et 2 cm ont été rajouté à chaque longueur en prévisions des coutures.</li><li>Découpe du tissu<ul><li>Tour extérieur de la boîte en carton : découpez un morceau de tissu de dimension : 210 x 69 cm (1). La largeur de ce textile est plus grande que celle du carton afin de rabattre le textile sur l'isolant.</li><li>Dessous extérieur de la boîte : découpez un morceau de tissu de dimension : 62 x 49 cm (2)</li></ul></li><li>Couture<ul><li>Réalisez une couture en suivant les indications de la photo ...</li></ul></li><li>Assemblage<ul><li>Placez ce tissu sur le carton</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Le coussin couvercle</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/53/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.11.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.11.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.44.11.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/45/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.49.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.44.49.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.44.49.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>De la même manière, l'objectif est d'isoler au niveau du couvercle. De fait, nous avons confectionné un coussin avec le restant d'isolant. J'ai prévu 2 couches d'isolant afin de garantir une bonne isolation thermique. Ici, les dimensions intérieures sont : 56 x 36,5 cm</li><li>Découpe du tissu<ul><li>Découpez un morceau de tissu de dimension : 70 x 130 cm</li></ul></li><li>Couture<ul><li>Pliez en deux votre morceau de tissu, dans le sens de la longueur</li><li>Réalisez une couture sur les deux largeurs et une longueur, en suivant les indications de la photo</li><li>Retournez votre tissu afin que les coutures se retrouvent à l'intérieur</li><li>Placez les (ou le) panneaux isolant à l'intérieur du coussin</li><li>Réalisez une dernière couture sur la longueur pour fermer le coussin</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Mise en place de l'incubateur</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.45.39.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.45.39.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.45.39.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/91/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.46.44.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.46.44.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.46.44.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.51.32.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_16.51.32.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 16.51.32.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.31.12.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.31.12.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 11.31.12.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Assemblage de l'incubateur<ul><li>Placez les panneaux d'isolant (1) et (2) à l'intérieur de la boîte en carton (voir photo 1). Recouvrez l'isolant avec le tissu d'habillage du carton (étape 4 optionnelle)</li><li>Insérez le bac à l'intérieur (voir photo 2)</li><li>Posez le tapis chauffant bien à plat dans le fond du bac (voir photo 3). Le tapis chauffant doit idéalement recouvrir tout le fond de la boîte. Scotchez la sonde sur la dans la partie basse du bac et sortez le câble d'alimentation à l'extérieur de la boîte en carton pour le brancher plus tard</li><li>Disposez les 4 bocaux en verres et les 4 boîtes à éclosion sur le tapis chauffant</li></ul></li><li>Placer l'incubateur<ul><li>Trouvez le meilleur endroit pour que l'incubateur ne soit pas encombrant au quotidien tout en restant accessible pour la maintenance</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Préparation des boîtes d'élevage de l'incubateur</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c5/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.13.22.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.13.22.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.13.22.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f7/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.15.01.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.15.01.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.15.01.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8c/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.32.42.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.32.42.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.32.42.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/10/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.24.13.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.24.13.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.24.13.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-10-31_a_15.13.49.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-10-31_a_15.13.49.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-10-31 a 15.13.49.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.42.27.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.42.27.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.42.27.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les étapes suivantes concernent la préparation des boîtes d'élevage. Lorsque vous commencez à avoir des éclosions, tous les bébés grillons naissant durant la même semaine sont transvasés dans la même boîte d'élevage afin de rassembler les grillons du même âge ensemble (qu'importe le bocal où il y a eu éclosion).</li><li>Pendant 1 mois, une même génération de bébés grillons va se développer dans l'incubateur avant d'être transvasée dans les boîtes d'élevage de votre habitat. Ainsi, l'incubateur est dimensionné pour accueillir 4 boîtes d'élevage, de manière à pouvoir transvaser chaque semaine des bébés grillons des bocaux vers une nouvelle boîte d'élevage de l'incubateur tout en permettant leur développement pendant 1 mois.</li><li>Lorsque vous initiez l'élevage, vous pouvez donc préparer qu'une seule boîte d'élevage ou bien préparer les 4 directement pour être tranquille.</li><li>Ici, je présente les étapes pour une seule boîte d'élevage. Réalisez ces étapes autant de fois que de boîte d'élevage à préparer.</li><li>Les boîtes d'oeufs<ul><li>Découpez 3 morceaux de boîte d'oeuf de largeur à peine moins grande que votre boîte. Ici la boîte a pour dimensions intérieures : 19,5 (L) x 9,5 (l) x 26 (H) cm. Les 3 boîtes d'oeufs font 18 (L) x 14,5 (l) cm. Pour ce qui est de la largeur, faites attention à laisser plus de 10 cm de hauteur entre les boîtes d'oeuf et le couvercle afin de réduire les risques d'évasion de grillons lors des transferts</li><li>Assemblez les 3 boîtes d'œufs en positionnant les faces rugueuses entre elles. De la même manière, les faces lisses s'assemblent entre elles (voir photo 1)</li><li>Placez les 3 boîtes d'oeufs à l'intérieur d'une boîte d'élevage (voir photo 2)</li></ul></li><li>La planche en bois (voir photo 3)<ul><li>Découpez une planche en bois qui permettra de supporter l'abreuvoir et la nourriture des grillons. Cela réduira les risques de moisissure des boîtes à oeufs. Ici j'utilise une planche en bois de dimensions : 18 (L) x 7 (l) x 1 (H) cm. La hauteur de la planche en bois doit être petite afin que les bébés grillons réussissent à monter dessus.</li><li>Placez la planche en bois sur les boîtes d'oeufs</li></ul></li><li>Le couvercle (voir photo 4)<ul><li>Avec une perceuse et un foret de ∅ 2 mm réalisez des trous dans le couvercle. Cela réduira la condensation à l'intérieur de la boîte.</li></ul></li><li>L'abreuvoir (voir photo 5)</li><li>Cet abreuvoir convient pour ce stade d'élevage, afin d'éviter que les bébés grillons ne se noient<ul><li>Découpez un morceau de coton de 10 x 5 cm</li><li>Découpez un morceau de textile de 20 x 15 cm</li><li>Enroulez le coton du textile en suivant les indications de pliage de la photo</li><li>Réalisez 3 coutures pour finaliser l'abreuvoir</li><li>Placez l'abreuvoir sur une la planche en bois, à l'intérieur de la boîte d'élevage</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Préparation des bocaux d'éclosion de l'incubateur</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.43.54.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.43.54.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.43.54.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2a/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.46.27.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.46.27.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.46.27.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2f/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.48.18.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-19_a_17.48.18.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-19 a 17.48.18.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Lorsque vos grillons adultes se reproduisent dans votre boîte d'élevage (cf. tuto Elevage de grillons comestibles), vous pouvez laisser votre pondoir 3-4 jours dans la boîte d'élevage avant de le récupérer pour assurer la continuité du cycle.</li><li>Mise en route de l'incubateur<ul><li>Branchez le tapis chauffant de l'incubateur en indiquant une consigne de température de 27°C : Appuyer longtemps sur le bouton "SET" et lorsque le chiffre clignote, appuyez sur "Up" ou "Down" jusqu'à arriver à la température souhaitée. Cette dernière peut être adaptée selon l'évolution de votre élevage mais nous vous conseillons une température entre 25°C et 29°C maximum</li><li>Appuyer longtemps sur le bouton "SET" et lorsque le chiffre clignote, appuyez sur "Up" ou "Down" jusqu'à arriver à la température souhaitée. Cette dernière peut être adaptée selon l'évolution de votre élevage mais nous vous conseillons une température entre 25°C et 29°C maximum</li><li>Appuyer longtemps sur le bouton "SET" et lorsque le chiffre clignote, appuyez sur "Up" ou "Down" jusqu'à arriver à la température souhaitée. Cette dernière peut être adaptée selon l'évolution de votre élevage mais nous vous conseillons une température entre 25°C et 29°C maximum</li></ul></li><li>Préparation des bocaux d'éclosion<ul><li>Placez le contenu du ou des pondoir(s) dans un bocal à hauteur de 5 cm maximum (voir photo 2). Si vous avez beaucoup de pondoir, utilisez d'autres bocaux</li><li>Humidifiez légèrement l'intérieur avec un spray</li><li>Refermez le bocal avec un couvercle troué. Ici, j'ai percé je couvercle avec un forêt de ∅ 2 mm (voir photo 2)</li><li>N'oubliez pas d'écrire la date sur le bocal pour améliorer votre suivi d'élevage</li><li>Placez ce bocal à l'intérieur de l'incubateur (voir photo 3). Si vous avez bien suivi le protocole, vous avez au moins une boîte d'élevage dans votre incubateur</li><li>Refermez l'incubateur avec le couvercle</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Préparation de la nourriture pour grillons</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/37/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-10-31_a_15.15.36.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-10-31_a_15.15.36.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-10-31 a 15.15.36.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/48/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-10-31_a_15.15.44.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-10-31 a 15.15.44.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le régime alimentaire des grillons se compose principalement d'un mélange de céréales en poudre. Nous vous conseillons d'acheter les ingrédients en poudre ou bien de les concasser vous-même.</li><li>Les quantités indiquées sont adaptées pour un bocal d'environ 300 g. Si besoin, reprenez la recette pour faire un nouveau pot de nourriture.<ul><li>Dans un saladier, mélangez les ingrédients suivants :</li><li>112,5 g de son de blé en poudre</li><li>66 g de farine de maïs</li><li>51 g de soja en poudre</li><li>45 g d'avoine en poudre</li><li>2 cuillères à soupe d’huile de colza</li></ul></li><li>Le total vous coûtera environ 1.5 € par pot.</li><li>2. Transférez le mélange dans un bocal d'environ 300 g. Fermez bien pour éviter d'introduire de l'humidité à l'intérieur du bocal. Vous pouvez conserver ce bocal fermé tant que vous n'avez pas d'éclosion dans vos bocaux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Protocole d'élevage dans les boîtes de grillons (hors incubateur)</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/66/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-20_a_11.34.40.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-20_a_11.34.40.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-20 a 11.34.40.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/52/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.54.06.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.54.06.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 11.54.06.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.54.12.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.54.12.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 11.54.12.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7a/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-26_a_10.01.17.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-26_a_10.01.17.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-26 a 10.01.17.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f2/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.54.23.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_11.54.23.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 11.54.23.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Au bout d'un mois d'élevage dans l'incubateur, vous pouvez transférer les grillons de la boîte d'élevage de l'incubateur vers la boîte d'élevage de votre habitat (voir photo 1). De la même manière, transférez tous les grillons d'une boite de l'incubateur vers une même boîte de votre habitat afin de garder les grillons du même âge ensemble.</li><li>La maintenance quotidienne consiste à vérifier les pondoirs et s’assurer qu’il ne manque ni eau, nourriture ou chaleur et de préparer les bocaux pour votre voisin responsable de l'incubateur.</li><li>Temps de maintenance : 2 à 5 minutes par jour</li><li>Nourriture et eau dans les boîtes d'élevage (avec grillons)<ul><li>Lorsque nécessaire, rajoutez de l'eau dans l'abreuvoir et de la nourriture dans le couvercle renversé</li></ul></li><li>Mise en place d'un pondoir</li><li>Les grillons sont matures sexuellement lorsqu'ils se mettent à chanter. À ce moment-là :<ul><li>Lavez vous les mains</li><li>Lavez le pondoir à la machine à laver ou avec de l'eau bouillante</li><li>Réhydratez la fibre de coco ou les pellets de paille avec de l'eau (voir photo 2) : le processus sera plus rapide avec de l'eau chaude. Si vous réutilisez le substrat d'une précédente ponte, stérilisez le contenu avec de l'eau bouillante</li><li>Transvasez le substrat (fibre de coco ou pellets de paille) dans le pondoir : un morceau de textile type moustiquaire rigide de 30 x 15 cm, plié en 2 puis cousu dans la largeur</li><li>Essorez le pondoir afin d'évacuer l'eau restante (voir photo 3) puis placez-le dans la boîte (voir photo 4)</li></ul></li><li>Vérification des pondoirs dans la boîte<ul><li>Humidifiez et essorez le pondoir si nécessaire (lavez-vous les mains avant de faire cette opération)</li><li>Au bout de 3 jours, placez le contenu (substrat + oeufs de grillons) dans un bocal (voir photo 5) : rendez-vous à l'étape 11 pour découvrir la suite du protocole</li><li>Mettez en place un nouveau pondoir en suivant le protocole juste au-dessus</li></ul></li><li>Suivi de la croissance<ul><li>Nous vous encourageons à noter vos observations sur la croissance</li></ul></li><li>Communication avec les membres de la filière<ul><li>Tenez au courant les membres de la filière du stade d'élevage de vos grillons et planifiez ensemble le bon moment pour réaliser les échanges de bocaux ou de boîte d'élevage</li></ul></li><li>Lorsque vous le souhaitez, récoltez les grillons pour les consommer. Rendez-vous à l'étape 12 pour découvrir comment faire !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Protocole d'élevage dans l'incubateur</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/66/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.12.58.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.12.58.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 12.12.58.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b9/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.15.27.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.15.27.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 12.15.27.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/16/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.11.59.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.11.59.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 12.11.59.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/df/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.17.49.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.17.49.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 12.17.49.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/37/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.17.16.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-25_a_12.17.16.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-25 a 12.17.16.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La maintenance quotidienne consiste à vérifier s'il y a des éclosions dans les bocaux, réaliser les transfert de grillons des bocaux vers la boîte d'élevage de la semaine et à s’assurer qu’il ne manque ni eau ou nourriture dans les boîtes d'élevage.</li><li>Temps de maintenance : 2 à 5 minutes par jour</li><li>Vérifier les éclosions dans les bocaux<ul><li>Ouvrez les bocaux et vérifiez si des bébés grillons sont nés. L'éclosion des grillons est généralement assez facile à voir</li></ul></li><li>Transfert des bébés grillons dans une boîte d'élevage de l'incubateur</li><li>Lorsque des bébés grillons éclosent dans les bocaux, vous pouvez les transférer dans une boîte d'élevage pour qu'ils se développent correctement.</li><li>Tous les bébés grillons naissant durant la même semaine sont transvasés dans la même boîte d'élevage afin de rassembler les grillons du même âge ensemble (qu'importe le bocal où il y a eu éclosion).</li><li>Lorsque vous observez des bébés grillons dans des bocaux d'éclosion :<ul><li>Attirez-les en plaçant dans les bocaux un morceau de boîte à œufs contenant de la nourriture (voir photos 1 et 2)</li><li>Attendez quelques secondes : les bébés grillons vont se poser sur la nourriture pour se nourrir</li><li>Une fois que les bébés grillons sont dans le morceau de boite à oeuf, déplacez-le délicatement pour le transférer dans une boîte d'élevage (voir photo 3). Tous les bébés grillons naissant durant la même semaine sont transvasés dans la même boîte d'élevage afin de rassembler les grillons du même âge ensemble (qu'importe le bocal où il y a eu éclosion)</li><li>Réitérez plusieurs fois cette opération pour transvaser un maximum de grillons. Vous pouvez aussi laisser le morceau de boîte à oeuf avec de la nourriture dans le bocal et revenir quelques temps après pour effectuer à nouveau l'opération. Cette opération se termine lorsque vous avez transvaser tous les grillons dans la boîte d'élevage (voir photo 4)</li><li>N'oubliez pas d'écrire la date du premier jour de transfert de grillons sur la boîte d'élevage pour assurer le suivi de l'élevage</li></ul></li><li>Nourriture et eau dans les boîtes d'élevage (avec grillons) de l'incubateur (voir photo 5)<ul><li>Tous les jours, passez l'abreuvoir sous l'eau, égouttez-le puis replacez-le sur les boîtes d'oeuf, à l'intérieur de l'incubateur</li><li>Tous les jours, assurez-vous qu'il y ait assez de nourriture</li></ul></li><li>Suivi de la croissance<ul><li>Nous vous encourageons à noter vos observations sur la croissance</li></ul></li><li>Communication avec les membres de la filière<ul><li>Tenez au courant vos voisins du stade d'élevage de vos grillons et planifiez ensemble le bon moment pour réaliser les échanges de bocaux ou de boîte d'élevage</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Récolte des grillons</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8f/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_pie_ge_grillons_1.1.2.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_pie_ge_grillons_1.1.2.jpg' alt='Biosph re Urbaine - Fili re levage de grillons comestibles pie ge grillons 1.1.2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6a/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.2.1.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.2.1.jpg' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Untitled 1.2.1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d0/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.4.1.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.4.1.jpg' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Untitled 1.4.1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2e/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.3.1.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.3.1.jpg' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Untitled 1.3.1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/10/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.5.1.jpg/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Untitled_1.5.1.jpg' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Untitled 1.5.1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Astuce 1 : le piège à grillons</li><li>Cette méthode vous permet de récolter chaque jour une poignée de grillons<ul><li>Munissez-vous d'une bouteille ou bocal en verre assez haut</li><li>Placez une corde qui descend assez bas dans la bouteille (mais pas tout en bas) et assez proche du sol à l’extérieur de la bouteille</li><li>À l’intérieur de la bouteille, placez des aromatiques comme de la menthe ou du basilic. Les grillons vont être attirés par ces aromatiques : ils vont grimper sur la corde puis tomber dans la bouteille sans pouvoir faire le chemin inverse</li></ul></li><li>Astuce 2 : Transfert des grillons</li><li>Cette méthode vous permet de récolter en un coup tous les grillons</li><li>Transvasez les grillons dans un premier contenant :<ul><li>Transvasez les grillons de la boite d'élevage dans une autre contenant en utilisant les boites d'oeufs : secouez les boite d'oeufs pour faire tomber les grillons (voir photo 2)</li><li>S'il reste des grillons dans la boite d'élevage, replacez les boite d'oeufs à l'intérieur et attendez quelques minutes que les grillons se mettent dessus. Puis, réitérez l'opération jusqu'à avoir transvaser tous les grillons dans le nouveau contenant</li></ul></li><li>Transvasez les grillons dans un second contenant :</li><li>À ce stade, vous avez collecter les grillons dans un premier contenant mais il est très probable que vous ayez des restes de nourriture et des mues de grillons (voir photo 3). Vous pouvez donc transvaser une seconde fois les grillons dans un nouveau contenant pour enlever ces restes.<ul><li>Penchez votre premier contenant (avec une légère pente) afin que les grillons sautent dans le second contenant (voir photo 4). Faite attention à ne pas faire glisser les restes de nourriture ou les mues dans le second contenant</li><li>Si vous n'arrivez pas à récupérer tous les grillons de cette manière, utilisez une boite à oeuf pour récolter les derniers grillons du premier contenant (voir photo 5)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Consommation des grillons</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/01/Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-26_a_10.01.35.png/800px-Biosph_re_Urbaine_-_Fili_re_levage_de_grillons_comestibles_Capture_d_e_cran_2024-11-26_a_10.01.35.png' alt='Biosph re Urbaine - Fili re levage de grillons comestibles Capture d e cran 2024-11-26 a 10.01.35.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vos grillons sont prêts à être consommé : vous pouvez les mettre directement dans la poêle, les embouillanter dans l'eau ou bien les passer quelques heures au frigo avant de les cuisiner ! Par suite, voici quelques idées de recettes :</li><li>Grillons grillés</li><li>Vous pouvez saisir les grillons dans une poêle avec de l'huile pendant 5 minutes, jusqu'à ce qu'ils soient croustillants. Ils peuvent être consommés tels quels, ou assaisonnés avec des épices pour plus de saveur. Ils peuvent être ajoutés à des salades, des soupes ou des plats principaux pour un apport en protéines.</li><li>Salade de Grillons Croquants (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>1 cuillère à soupe d'huile d'olive</li><li>1 gousse d'ail émincée</li><li>1 concombre, tranché finement</li><li>1 poivron rouge, coupé en dés</li><li>1 carotte râpée</li><li>10 tomates cerises, coupées en deux</li><li>50 g de feta émiettée</li><li>Quelques feuilles de menthe et de coriandre</li><li>Jus d'un citron</li><li>Sel et poivre</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile d'olive dans une poêle à feu moyen.</li><li>Ajoutez l'ail émincé et faites-le revenir jusqu'à ce qu'il soit doré.</li><li>Ajoutez les grillons et faites-les sauter jusqu'à ce qu'ils soient croustillants, environ 5 minutes.</li><li>Dans un grand saladier, mélangez le concombre, le poivron, la carotte, et les tomates cerises.</li><li>Ajoutez les grillons croustillants et mélangez bien.</li><li>Ajoutez la feta émiettée et les feuilles de menthe et de coriandre.</li><li>Assaisonnez avec du jus de citron, du sel et du poivre.</li><li>Servez frais.</li></ul></li><li>Grillons au reblochon (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>150 g de Reblochon</li><li>1 cuillère à soupe d'huile d'olive</li><li>1 gousse d'ail émincée</li><li>Sel et poivre</li><li>Quelques brins de ciboulette pour la décoration</li><li>Pain</li><li>Accompagnement : une petite salade fraicheur</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile d'olive dans une poêle à feu moyen.</li><li>Ajoutez l'ail émincé et faites-le revenir jusqu'à ce qu'il soit doré.</li><li>Ajoutez les grillons et faites-les sauter pendant environ 5 minutes jusqu'à ce qu'ils soient croustillants.</li><li>Coupez le reblochon en petits morceaux et ajoutez-le dans la poêle.</li><li>Mélangez jusqu'à ce que le fromage soit fondu et bien incorporé aux grillons.</li><li>Assaisonnez avec du sel et du poivre selon votre goût.</li><li>Servez chaud, garni de quelques brins de ciboulette.</li><li>Dégustez avec une petite salade fraicheur !</li></ul></li><li>Grillons au Piment (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>2 cuillères à soupe d'huile d'olive</li><li>1 piment rouge émincé</li><li>1 cuillère à café de paprika fumé</li><li>1 cuillère à café de cumin moulu</li><li>Sel et poivre</li><li>Jus d'un demi-citron</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile d'olive dans une poêle à feu moyen.</li><li>Ajoutez le piment émincé et faites-le revenir pendant 2-3 minutes.</li><li>Ajoutez les grillons et faites-les sauter jusqu'à ce qu'ils soient croustillants, environ 5 minutes.</li><li>Saupoudrez le paprika fumé et le cumin moulu sur les grillons. Mélangez bien pour enrober uniformément.</li><li>Assaisonnez avec du sel et du poivre selon votre goût.</li><li>Pressez le jus de citron sur les grillons avant de servir.</li><li>Servez chaud en accompagnement ou en apéritif.</li></ul></li><li>Grillons Caramélisés au Miel et au Sésame (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>2 cuillères à soupe de miel</li><li>1 cuillère à soupe de sauce soja</li><li>1 cuillère à soupe d'huile de sésame</li><li>1 gousse d'ail émincée</li><li>1 cuillère à soupe de graines de sésame</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile de sésame dans une poêle à feu moyen.</li><li>Ajoutez l'ail émincé et faites-le revenir jusqu'à ce qu'il soit doré.</li><li>Ajoutez les grillons et faites-les sauter jusqu'à ce qu'ils soient croustillants, environ 5 minutes.</li><li>Réduisez le feu et ajoutez le miel et la sauce soja, mélangez bien pour enrober les grillons.</li><li>Continuez à cuire pendant 2-3 minutes jusqu'à ce que le mélange épaississe et caramélise légèrement.</li><li>Saupoudrez de graines de sésame et mélangez.</li><li>Servez chaud en apéritif ou en accompagnement.</li></ul></li><li>Brownie aux grillons (6 personnes)</li><li>Ingrédients :<ul><li>25 g de grillons</li><li>150 g de sucre</li><li>150 g de farine</li><li>4 oeufs</li><li>125 g de beurre</li><li>125 g de chocolat noir (70% de cacao ou plus)</li></ul></li><li>Instructions :<ul><li>Préchauffez votre four à 180°C</li><li>Chemisez un moule à cake avec du papier sulfurisé ou du beurre et de la farine</li><li>Pour l’appareil : faites fondre le chocolat coupé en morceaux au bain-marie. Une fois le chocolat presque fondu, ajoutez le beurre en morceaux également. Retirez du feu et mélanger le tout. L’inertie du chocolat fondu fera fondre le beurre très rapidement</li><li>Dans un saladier, mélanger la farine avec le sucre et une pointe de sel (relève le goût des pâtisseries !)</li><li>Ajouter les œufs au mélange chocolat/beurre, en mélangeant après chaque œuf. Verser ensuite progressivement la farine dans ce dernier mélange, en remuant assez énergiquement pour éviter la formation de grumeaux.</li><li>Passer vos grillons au four. Il faut qu'ils soient croustillants ! Ajouter-les au mélange précédent, coupés ou non</li><li>Pour la cuisson : Verser cet appareil dans son moule, mettez à cuire une vingtaine de minutes.</li><li>Il ne reste plus qu'à déguster !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

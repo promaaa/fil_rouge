@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Cuiseur à bois Oxalis</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Cuiseur à bois Oxalis</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/8/8a/Cuiseur_bois_Oxalis_19-11_cuiseur-bois-265x300.jpg/ia-06b56ca5f6a3d85642246f1caa66f52e-px-Cuiseur_bois_Oxalis_19-11_cuiseur-bois-265x300.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Réalisation de 2 cuiseurs Oxalis dans le cadre du parcours Grenoble INP - UGA PISTE</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce cuiseur à bois économe et très efficace a été conçu au sein de l'association Oxalis.</p>
+      
+        <p>C'est un cuiseur modulaire, qui permet de faire de la cuisine collective, pour entre 10 et 50 personnes par appareil.</p>
+      
+        <p>Le Low-tech Lab Grenoble & l'Atelier du Zéphyr proposent aujourd'hui des formations & stages pour en réaliser, en plus de prestations de cuisine événementielle à l'aide de ces appareils.</p>
+      
+        <p>Ce tutoriel a été réalisé lors d'un projet étudiant du parcours PISTE à Grenoble-INP, et sera complété au fil du temps.<ul><li>Le site de l’association Oxalis</li><li>Photos de la réalisation</li><li>Le tutoriel disponible sur le site d’Oxalis</li><li>Le site de l'Atelier du Zéphyr</li><li>Les Ressources sur le brûleur de l'Atelier du Zéphyr</li></ul></p>
+      
+        <p>Kévin Loesle, Martial Balland, Louis Chateau, Laure Ferreira, Rémi Nus, Tugdual Le Nir, Marie Marchesi-Hubo, Éléa Fortin, Yousra Tchorbo, Agathe Ménage, Rémy Le Calloch, Hugo Jonvel, William Fourcault</p>
+      
+        <p>Une notice détaillée, des conseils, les infos scientifiques en annexes.</p>
+      
+        <p>NB: si certaines étapes sont peu claires ou insuffisamment détaillées, croiser ce tutoriel avec celui disponible sur le site d’Oxalis (lien plus haut)</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 10 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 150 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Cuiseur_à_bois_Oxalis" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Cuiseur_à_bois_Oxalis</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Bidon inférieur</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/68/Cuiseur_bois_Oxalis_upload_4e71fd70b58c6d76bed4e33eda9d70bc.jpg/800px-Cuiseur_bois_Oxalis_upload_4e71fd70b58c6d76bed4e33eda9d70bc.jpg' alt='Cuiseur bois Oxalis upload 4e71fd70b58c6d76bed4e33eda9d70bc.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Cuiseur_bois_Oxalis_upload_24a364c51d71f4d49a295801a8f3d971.jpg/800px-Cuiseur_bois_Oxalis_upload_24a364c51d71f4d49a295801a8f3d971.jpg' alt='Cuiseur bois Oxalis upload 24a364c51d71f4d49a295801a8f3d971.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Cuiseur_bois_Oxalis_upload_213a74f6aa658ccf164df425a2ec9064.jpg/800px-Cuiseur_bois_Oxalis_upload_213a74f6aa658ccf164df425a2ec9064.jpg' alt='Cuiseur bois Oxalis upload 213a74f6aa658ccf164df425a2ec9064.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/20/Cuiseur_bois_Oxalis_upload_631f3a6db134374bc1ce0a3cd136d239.jpg/800px-Cuiseur_bois_Oxalis_upload_631f3a6db134374bc1ce0a3cd136d239.jpg' alt='Cuiseur bois Oxalis upload 631f3a6db134374bc1ce0a3cd136d239.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Préparation du bidon inférieur qui servira de chambre de combustion (cœur de chauffe). Il faut nettoyer, réaliser les différentes ouvertures et fixer des poignées qui serviront au transport. Le bidon doit être propre pour éviter un départ de feu avec les étincelles lors de la découpe à la meuleuse.<ul><li>nettoyer l’extérieur des bidons avec un tissu mouillé.</li><li>rincer l’intérieur des bidons avec de l’eau</li></ul></li><li>NB : Ne pas jeter le mélange huile-eau au tout-à-l’égout. Le mettre dans un contenu étanche destiné à la déchèterie. Un torchon ou de la sciure peuvent être utilisés pour enlever les restes d’huile.<ul><li>Sommet du bidon : Le bidon est fermé par une taule de métal qui est repliée sur le reste du bidon. Il suffit donc de meuler la lèvre (dessus du périmètre extérieur du haut du bidon) jusqu’à arriver à la taule latérale du bidon. Utiliser le disque à ébavurer (on dit aussi ébarber), Une fois que ce périmètre est suffisamment ébavuré, il suffit de faire tomber le couvercle en tapant dessus à l’aide d’un marteau.</li><li>Trou d’arrivée d’air : En se référant au plan fourni par Oxalis et ici en annexe, il faut créer une arrivée d’air. C’est un trou circulaire de 50 mm de diamètre à 12 cm de hauteur à partir du bas du bidon et à 90° de l’arrivée de bois que nous réaliserons juste après. On pourra tracer le cercle à l'aide du tube PVC de 50 mm puis découper à l'aide d'une cisaille à tôle. Pour plus de conseils sur la découpe : se référer à la rubrique conseils bricolage</li></ul></li><li>NB : L’ajout du trou d’arrivée d’air permet d’augmenter la quantité d’air qui arrive jusqu’au feu et ainsi augmenter la quantité de comburant (cf. triangle de feu).<ul><li>Trou du tuyau d’alimentation en bois : la zone à percer n’est pas circulaire car le tuyau d’alimentation doit être placé à environ 45° du bidon. Ainsi il faut se servir du patron suivant pour la découpe.</li></ul></li><li>Attention à bien imprimer au format A4 à échelle 1, sinon les découpes ne correspondront pas. Placer le gabarit à 185mm du haut du bidon (cf plan : le haut de l’“oeuf” est à 185mm du haut du bidon). De plus, le trou se trouve à 1/4 de tour (90°) du trou d’arrivée d’air. La découpe se fait à la disqueuse ou à la cisaille. Essayer de faire la découpe la plus propre possible (cf. bricolage)<ul><li>poignées</li><li>tordre les poignées pour épouser la forme du bidon. Pour se faire, fixez le centre de la poignée dans un étau et martelez avec délicatesse un des côtés de la poignée.</li></ul></li><li>NB: Éviter de marteler les ailettes ou de les coincer dans l’étau (risque de casse).<ul><li>Faire les 4 trous nécessaires pour fixer les poignées. On se place à environ 20 cm du haut du bidon (souvent sur le premier bourrelet). Les poignées sont placées à 90° de l’ouverture pour le tube d’admission de bois.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Isolation en laine de roche</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f6/Cuiseur_bois_Oxalis_upload_2d776e76ab40c0a00e5ceeb7af3df15c.jpg/800px-Cuiseur_bois_Oxalis_upload_2d776e76ab40c0a00e5ceeb7af3df15c.jpg' alt='Cuiseur bois Oxalis upload 2d776e76ab40c0a00e5ceeb7af3df15c.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2b/Cuiseur_bois_Oxalis_upload_a93920eba87153a51e11bdf11361f2ee.jpg/800px-Cuiseur_bois_Oxalis_upload_a93920eba87153a51e11bdf11361f2ee.jpg' alt='Cuiseur bois Oxalis upload a93920eba87153a51e11bdf11361f2ee.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’intérieur du bidon inférieur est tapissé de laine de roche pour l’isoler.<ul><li>réaliser des entailles de 2cm de profondeur au cutter tous les 2cm dans le sens de la largeur du panneau de laine de roche pour pouvoir lui donner une forme tubulaire.</li></ul></li><li>NB : Les stries font toute la largeur et vont bien d’un côté à l’autre du panneau de laine. Le cutter est plus efficace que la lame de scie.</li><li>NB : attention à ce que votre bidon soit bien sec pour garder le pouvoir isolant de la laine de roche<ul><li>positionner la laine à l’intérieur du bidon avec les stries vers la paroi du bidon.</li><li>découper les 2 ouvertures réalisées sur le bidon dans la laine de roche.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Fond en béton allégé</strong><p><strong>Étapes :</strong></p><ol><li>Un fond de béton permet d’isoler et de stabiliser la chambre de combustion.</li><li>NB: cette étape implique du séchage (au moins 6h). Planifier en fonction (séchage pendant la nuit ou autres étapes en parallèle).<ul><li>réaliser des marques sur la laine de roche, à 5cm du fond du bidon, afin de couler la bonne quantité de béton.</li><li>préparation le béton : 1 dose de ciment pour 3.5 doses de granules de vermiculite. Ajouter de l’eau jusqu’à obtenir la texture souhaitée. Attention, plus il y a d’eau, plus le béton sera liquide et lisse en fin de séchage mais le temps de séchage sera plus long.</li><li>couler le béton jusqu’à la marque (5cm de haut)</li><li>laisser sécher sur une zone horizontale.NB: pendant le séchage, certaines étapes suivantes peuvent être faites ou amorcées, tant qu’elles n’impliquent pas de poser des choses sur le béton.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Équerres</strong><p><strong>Étapes :</strong></p><ol><li>Des équerres servent à maintenir en place le bidon supérieur. elles doivent être placées avant de couler le béton. Le bidon supérieur devant être retiré pour le transport, on les fixe dans le bidon inférieur.<ul><li>percer (si nécessaire) les équerres au diamètre des vis. Prévoir 2 vis pour la partie en contact avec le bidon inférieur, une seule pour le bidon supérieur (voir schéma ci-dessus).</li><li>placer les 2 ou 3 équerres de sorte qu’elles soient équidistantes autour du bidon inférieur et au niveau de la zone plate à env. 2 cm max du bord supérieur. Il faut avoir le moins d’espace possible entre le fond du bidon supérieur et le bidon inférieur. Cela évite une sortie de la fumée par cet espace.</li></ul></li><li>NB : penser à prendre en compte l’épaisseur de l’écrou qui se trouvera entre le bidon de 200L et les équerres.<ul><li>percer et fixer dans le bidon inférieur</li></ul></li><li>NB: le perçage du bidon supérieur sera effectué plus tard, afin de bien aligner la chambre de combustion.<ul><li>arrondir les angles à la meuleuse pour éviter de se blesser à l’usage</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Tube d’admission du bois</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ef/Cuiseur_bois_Oxalis_IMG_20241124_125625_1.jpg/800px-Cuiseur_bois_Oxalis_IMG_20241124_125625_1.jpg' alt='Cuiseur bois Oxalis IMG 20241124 125625 1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fb/Cuiseur_bois_Oxalis_IMG_20250408_152514.jpg/800px-Cuiseur_bois_Oxalis_IMG_20250408_152514.jpg' alt='Cuiseur bois Oxalis IMG 20250408 152514.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>un tube aluminé permet d’ajouter le bois dans la chambre de combustion. Celui-ci doit être positionné avant de couler le béton, et découper de manière spécifique afin d’épouser la forme de la chambre de combustion.</li><li>Afin de prévoir un potentiel remplacement du tube d’admission, une vis est ajouter pour relier le tube d’admission au bidon. En effet, un nouveau tube ne serait pas pris dans le béton et aurait donc besoin d’un point de fixation.</li><li>Ci dessus schéma du montage avant de couler le béton<ul><li>découper le tube aluminé (150mm x 50 cm) en s’aidant du patron en gueule de loup imprimé sur une feuille A4. On alignera bien chacune des 2 lignes pointillées en bord tube.</li><li>réaliser 2 trous face à face sur la partie qui sera émergente du tube PVC, afin d’y insérer une barre qui fera office de bras de levier et facilitera le retrait du tube de PVC lors du démoulage.</li><li>déposer de l'huile tout autour de la surface externe du tube de façon à faciliter le démoulage.</li><li>placer le tube PVC de 20 cm de diamètre au centre du bidon et reposant au fond sur le socle de 5 cm de béton (avec un morceau de carton si ce dernier n'est pas sec). Vérifier que la gueule de loup découpée au préalable sur le tuyau aluminé s’adapte parfaitement à la forme du tube en PVC. Sinon, utiliser un marteau à panne ronde pour déformer le trou d’admission bois réalisé dans le bidon. Cette partie est assez technique et peut prendre un peu de temps.</li><li>s’il reste du jeu entre le tube d’admission et le tube PVC, combler avec du gros scotch. On s’assure ainsi que le béton ne coule pas entre les deux.</li></ul></li><li>NB: mettre le scotch depuis l’intérieur du tube d’admission afin qu’il ne soit pas pris entre le tube et le béton.<ul><li>Une fois le tube en position, percer le tube d’admission et le bidon afin de fixer la vis. La tête de vis est entre le bidon et la laine de roche. Mettre 1 écrou entre le bison et le tube et 2 écrous à l’intérieur du tube d’admission.</li></ul></li><li>NB1 : penser à découper la vis à la bonne dimension pour qu’elle ne gène pas l’entrée du bois dans le tube d’admission.</li><li>NB2 : penser à bien serrer les 2 derniers écrous entre eux. On s’assure ainsi qu’ils ne bougeront pas et qu’ils resisteront aux vibrations crées par l’insertion des morceaux de bois.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Isolation en béton allégé</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/a/a3/Cuiseur_bois_Oxalis_IMG_20250408_154031.jpg' alt='Cuiseur bois Oxalis IMG 20250408 154031.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Placer le tube de pvc dans le bidon afin de servir de moule. Couler ensuite du béton allégé autour de celui-ci. Laisser sécher puis retirer le pvc.</li><li>NB: cette étape implique du séchage (au moins 8h). Planifier en fonction (séchage pendant la nuit ou autres étapes en parallèle).<ul><li>préparer le béton de la même façon qu’à l’étape 3</li><li>vérifier le placement du tube de PVC (bien centré et droit pour que la cheminée soit centrée et droite).</li><li>placer un tube PVC de 5 cm de diamètre (ou du carton) à l’intérieur de l’entrée d’air, et l’enfoncer jusqu’au tube central en pvc.</li><li>couler le béton entre la laine de roche et le tube de pvc jusqu’à recouvrir la laine de roche. (truelle). On ira jusqu'à environ 2 cm sous le bord supérieur du bidon.</li><li>Laisser le béton sécher (8h minimum).</li><li>retirer les 2 tubes PVC</li></ul></li><li>NB : s'il y a de l'espace entre le tube d'admission et le PVC central, par ex. plus d'1 cm, on pourra faire un béton plus grossier et donc peu humide afin d'éviter de couler. Sinon on place du scotch.</li><li>NB: pour décoller le gros tube pvc du ciment, on insère une longue tige en métal dans les trous réalisés préalablement de part et d’autre du tube PVC. Dans l’idéal, 1 personne tient le bidon et 2 personnes poussent la tige en même temps et dans le même sens de rotation afin de faire tourner le tube de PVC.</li><li>Une fois qu’il a tourné, il s’enlève très facilement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Interface de cuisson</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/Cuiseur_bois_Oxalis_IMG_20250409_100208.jpg/800px-Cuiseur_bois_Oxalis_IMG_20250409_100208.jpg' alt='Cuiseur bois Oxalis IMG 20250409 100208.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/6e/Cuiseur_bois_Oxalis_IMG_20250409_102328.jpg' alt='Cuiseur bois Oxalis IMG 20250409 102328.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On ajoute un bidon de diamètre supérieur (bidon de 200L) sur le premier bidon, afin de supporter la poêle ou le wok et la cheminée.<ul><li>Dans le bidon de 200L, découper à la meuleuse par exemple une cuve de 26 cm de haut (en gardant le fond ou le haut avec le couvercle et les bouchons). 26 cm tombe souvent juste après une rainure du bidon.</li><li>Limer les bords de façon à réduire les risques de coupure.</li><li>Découper un cercle de 25 cm de diamètre (un peu pus que le diamètre du cœur de chauffe) dans le fond du bidon (au centre). Pour cela, on pourra repérer le centre en traçant les 2 médiatrices de 2 cordes de la grande circonférence. Puis tracer le cercle de 25 cm de diamètre avec un compas. La découpe à la meuleuse est assez dangereuse, il est recommandé de découper par segment et non en cercle (voir photo).</li><li>Présenter le bidon supérieur sur le bidon inférieur (en alignant le trou précédent avec le chambre de combustion)</li><li>Marquer et percer les trous correspondants aux équerres, puis placer les vis et écrous (papillons).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Cheminée</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f8/Cuiseur_bois_Oxalis_IMG_20250409_111933.jpg/800px-Cuiseur_bois_Oxalis_IMG_20250409_111933.jpg' alt='Cuiseur bois Oxalis IMG 20250409 111933.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La cheminée est formée de 2 sections: un coude et un tube. Le coude est fixé sur le côté du bidon supérieur par des ailettes rivetées. Le tube est simplement enchassé dans le coude.<ul><li>découper dans le bidon supérieur un trou de la forme de l’entrée du coude, en enlevant 1-2 cm de rayon pour les ailettes. Les ailettes seront bien repliées jusqu'au bidon. Le bas du trou sera à environ 5 cm du bas du bidon.</li><li>découper dans le coude des ailettes de 3-4 cm de long, espacées d’environ 3 cm.</li><li>connecter le coude et le bidon, en repliant toutes les ailettes (celles du coude et celles du bidon) à l’intérieur du bidon. Replier les ailettes contre le bidon (marteau à panne ronde et pince).</li></ul></li><li>NB : Placer la partie ondulée du coude dans le gros bidon. Cette partie là ne doit pas se retrouver vers le haut sinon des cendres pourraient s’y coincer.<ul><li>percer 3 trous dans les ailettes (répartis autour du trou), et fixer un rivet dans chaque.</li><li>poser le tube de la cheminée dans la sortie du coude.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Poêle</strong><p><strong>Étapes :</strong></p><ol><li>Afin de s’assurer que la fumée s’échappe par la cheminée, on cherche à poser la poêle de la manière la plus hermétique possible sur le bidon supérieur. On réalise donc des encoches pour les poignées de la poêle.<ul><li>découper 4 encoches sur le bidon supérieur pour accueillir les poignées de la poêle (à la pince ou à la meuleuse)</li></ul></li><li>NB: penser à arrondir les angles à la meuleuse pour éviter de se couper à l’usage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Fin !</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>bien laisser sécher le béton avant la première utilisation, au moins 1 semaine.</li><li>utiliser une première fois “à vide” (en faisant chauffer de l’eau par exemple) pour permettre aux résidus divers (huile, peinture) de brûler</li><li>vérifier et corriger d’éventuelles sorties de fumée autres que par la cheminée</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Recherches en cours : Tests de nouveaux matériaux</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/0/00/Cuiseur_bois_Oxalis_IMG_20241022_102342.jpg' alt='Cuiseur bois Oxalis IMG 20241022 102342.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/8/83/Cuiseur_bois_Oxalis_IMG_20241022_103125.jpg' alt='Cuiseur bois Oxalis IMG 20241022 103125.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d6/Cuiseur_bois_Oxalis_IMG_20241022_113215.jpg' alt='Cuiseur bois Oxalis IMG 20241022 113215.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous expérimentons actuellement le remplacement de la couche vermiculite-ciment fondu par un mélange terre (argile) + paille pour la maçonnerie du foyer.</li><li>Premiers retours d'expérience sur la construction & l'usage après plusieurs flambées :</li><li>- Le mélange n'ayant pas de prise chimique, il est beaucoup plus long à sécher, mais comme il est assez épais c'est possible de démouler au bout de 2 ou 3 jours</li><li>- Le mélange étant beaucoup plus dense, le brûleur est beaucoup plus lourd</li><li>- Le coeur du foyer supporte bien les flambées, aucune fissure à déplorer pour l'instant</li><li>Avantages :</li><li>- Economique & écologique</li><li>Inconvénients :</li><li>- Poids du brûleur</li><li>- Temps de séchage</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

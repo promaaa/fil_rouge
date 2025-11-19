@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>The Magnificent Magnetic Pencil</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>The Magnificent Magnetic Pencil</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FB2/MGU7/LJOAWDJ0/FB2MGU7LJOAWDJ0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>A common statement or thought - certainly from every woodworker. They're either on a workbench, on the floor, in a pocket, behind the ear, in the other room...but never where I need it.</p>
+      
+        <p>So this is the result of years of frustration and twiddling designs to create this revolutionary, low cost and easy to make design that everyone needs!</p>
+      
+        <p>I present ..... the Magnetic Pencil</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Pens, pencils, paint brushes or anything similar of similar size you wish to add a magnet to</li><li>electrical heat shrink tube - approx.15mm wide if flat - any colour you wish</li><li>magnets - approx. 8 or 10mm wide, 3 or 4mm thick - depends on the strength you need</li><li>scissors or a sharp blade</li><li>heat gun or a candle flame</li><li>M8 nut....but not really required (why? you're thinking)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Previous Versions</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FKV/HEYM/LJLFZPFK/FKVHEYMLJLFZPFK.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Previous Versions' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6Z/Y13I/LJLFZPFL/F6ZY13ILJLFZPFL.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Previous Versions' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKV/HEYM/LJLFZPFK/FKVHEYMLJLFZPFK.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Previous Versions' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6Z/Y13I/LJLFZPFL/F6ZY13ILJLFZPFL.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Previous Versions' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>So years ago I used to drill a 3mm hole through the top of a pencil and glue a 3mmx10mm rod magnet in it. But they are hard to remove. Then I designed a 'Wegi' made from 'sugru' (air dry mouldable rubber) which was a magnet encased in this, moulded around a pencil top and in a wedge shape. The idea was the wedge shape positioned the pencil off the surface to improve pick up (I also wanted it so if you always had it on you you could place it under wobbly chair or table legs but that's another story...)</li><li>That needed some sort of consistent mould but it never came about...so time moved on.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Eureka Moment</strong><div class='step-images count-10'><figure><img src='https://content.instructables.com/FSU/2FJT/LJLFZPG2/FSU2FJTLJLFZPG2.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYW/RLZK/LJOAV8Q4/FYWRLZKLJOAV8Q4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOO/LMZC/LJOAV8Q5/FOOLMZCLJOAV8Q5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJM/6HVH/LJOAV8Q6/FJM6HVHLJOAV8Q6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWH/WIJ5/LJLFZPG1/FWHWIJ5LJLFZPG1.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSU/2FJT/LJLFZPG2/FSU2FJTLJLFZPG2.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYW/RLZK/LJOAV8Q4/FYWRLZKLJOAV8Q4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOO/LMZC/LJOAV8Q5/FOOLMZCLJOAV8Q5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJM/6HVH/LJOAV8Q6/FJM6HVHLJOAV8Q6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWH/WIJ5/LJLFZPG1/FWHWIJ5LJLFZPG1.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eureka Moment' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I still wanted to magnetize my pencils, the key ingredients being a pencil- a magnet and something rubbery or flexible between. That's when it occurred to me to use heat shrink electrical tube!</li><li>Initially I thought the tube wouldn't seal around the pencil end so I used an M8 nut to thread the end to create a more grippy surface (weird I know but why not). You can jump this stage as it seems to to hold just fine without it - unless you have particularly slippery pencils!</li><li>Cut some heat shrink - approx.50-60mm</li><li>For the magnets I had some rectangular ones that were broken in half as well as disc ones.</li><li>Basically assemble together - push the tube over the pencil end approx.20mm, push the magnet in but leave a gap. You want to end up with enough gap in the tube so it seals up around the magnet at both ends.</li><li>To be honest you can experiment to what suits you but I like the flex this gives.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Hot! Hot! Hot!</strong><div class='step-images count-10'><figure><img src='https://content.instructables.com/F6C/MAJA/LJOAV8Q7/F6CMAJALJOAV8Q7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6Y/GI7T/LJOAV8Q8/F6YGI7TLJOAV8Q8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F58/IKOG/LJLFZPFQ/F58IKOGLJLFZPFQ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSM/57KC/LJLFZPFW/FSM57KCLJLFZPFW.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7S/9C39/LJLFZPFV/F7S9C39LJLFZPFV.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6C/MAJA/LJOAV8Q7/F6CMAJALJOAV8Q7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6Y/GI7T/LJOAV8Q8/F6YGI7TLJOAV8Q8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F58/IKOG/LJLFZPFQ/F58IKOGLJLFZPFQ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSM/57KC/LJLFZPFW/FSM57KCLJLFZPFW.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7S/9C39/LJLFZPFV/F7S9C39LJLFZPFV.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hot! Hot! Hot!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>PLEASE BECAREFUL!</li><li>I know ...how hard can it be? Just heat the tube, it shrinks, you're done!</li><li>That's not the issue. If you are using a heat gun then it has a metal end - this is magnetic. You get it too close and your magnet is strong enough it'll shoot straight onto it - so be warned.</li><li>Basically your aiming to heat the tube enough so it seals around the pencil and the magnet. The excess on the tip of the magnet you want to pinch flat, preferably not your fingers, a bit of wood will do. If you miss it first time just heat the end a little more. Then you can trim the end with scissors. The photos show a couple of examples.</li><li>No need to over heat this thing.... we don't want it bursting into flames!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: My Pencils a Different Shape?</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F54/49VA/LJLFZPFX/F5449VALJLFZPFX.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='My Pencils a Different Shape?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTQ/U2NA/LJLFZPFZ/FTQU2NALJLFZPFZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='My Pencils a Different Shape?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F54/49VA/LJLFZPFX/F5449VALJLFZPFX.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='My Pencils a Different Shape?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTQ/U2NA/LJLFZPFZ/FTQU2NALJLFZPFZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='My Pencils a Different Shape?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>This is OK, they all work in the same way.</li><li>So I tried this out on carpenters pencils with an oval end and also a triangular one which is my left handed pencil.</li><li>("Left handed pencil!" I hear you cry... I know amazing... basically there's shaping in the sides to aid kiddywinkles in writing ability)</li><li>All are satisfactory.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Where Can I Use This?</strong><div class='step-images count-16'><figure><img src='https://content.instructables.com/FIU/7CZ7/LJLFZPFU/FIU7CZ7LJLFZPFU.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQL/TVDL/LJLFZPFN/FQLTVDLLJLFZPFN.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMA/NIWZ/LJLFZPFM/FMANIWZLJLFZPFM.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS8/JZ5O/LJLFZPG7/FS8JZ5OLJLFZPG7.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F20/APQY/LJLFZPG6/F20APQYLJLFZPG6.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWJ/R3PO/LJLFZPG9/FWJR3POLJLFZPG9.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8E/PNCP/LJLFZPG8/F8EPNCPLJLFZPG8.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYG/BXDT/LJLFZPFR/FYGBXDTLJLFZPFR.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIU/7CZ7/LJLFZPFU/FIU7CZ7LJLFZPFU.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQL/TVDL/LJLFZPFN/FQLTVDLLJLFZPFN.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMA/NIWZ/LJLFZPFM/FMANIWZLJLFZPFM.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS8/JZ5O/LJLFZPG7/FS8JZ5OLJLFZPG7.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F20/APQY/LJLFZPG6/F20APQYLJLFZPG6.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWJ/R3PO/LJLFZPG9/FWJR3POLJLFZPG9.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8E/PNCP/LJLFZPG8/F8EPNCPLJLFZPG8.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYG/BXDT/LJLFZPFR/FYGBXDTLJLFZPFR.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Where Can I Use This?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>That's a decision for you alone my friend.</li><li>But here's some pictures of examples. We also have one on the fridge door - just need a magnetic note book...</li><li>I never did examples of pens but the principles the same. You could also use different colour heat shrink to indicate if the pencil is a harder composition, for example 3H or softer like 2B (if you use different ones). Also the advantage of the plastic covering the magnet if it ever picks up metal filings its a lot easier to remove than direct to the magnet.</li><li>That's it, simple enough, about 2 minutes per pencil and they're pretty tough. Of course the magnet is reusable so it doesn't matter if its not correct first time or you've worn out your pencil, just do over.</li><li>Thanks for reading.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

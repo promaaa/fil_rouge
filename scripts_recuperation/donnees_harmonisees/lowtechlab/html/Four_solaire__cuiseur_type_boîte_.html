@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Four solaire (cuiseur type boîte)</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Four solaire (cuiseur type boîte)</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/14/Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Four_solaire_cuiseur_type_bo_te_FourSolaireTypeBoite.jpg/800px-Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Four_solaire_cuiseur_type_bo_te_FourSolaireTypeBoite.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Sous forme de caisse ou de parabole, le cuiseur solaire permet de cuire des aliments en utilisant l'énergie solaire.</div>
+        
+      </div>
+    
+    
+      
+        <p>CONTEXTE :</p>
+      
+        <p>« L’augmentation de l’effet de serre concerne tous les habitants de la planète et chaque cuiseur solaire évite le dégagement de 1.5 tonnes de CO2équivalent par an. » Bolivia Inti En effet, près de 3 milliards d’humains n’ont que le bois pour cuire leurs aliments.</p>
+      
+        <p>1. Dans les pays du "Sud" :</p>
+      
+        <p>Dans les pays du Sud le cuiseur solaire répond à de nombreuses problématiques et présente de nombreux atouts :<ul><li>Santé : évite les maladies des yeux et des poumons dues aux fumées, supprime les diarrhées en rendant l’eau potable par pasteurisation.</li><li>Environnement : freine la déforestation et la dégradation des sols.</li><li>Climat : diminue les émissions de gaz à effet de serre.</li><li>Économie : réduit les dépenses en combustible.</li><li>Humain : émancipe les femmes et les enfants libérés de la corvée de bois (15 heures par semaine, 4 fois 20 kg).</li></ul></p>
+      
+        <p>2. Dans les pays du "Nord" :</p>
+      
+        <p>En France de plus en plus de personnes souhaitent être autonome énergétiquement. David en fait partie, il se sert de l’énergie solaire. Il utilise un four solaire pour chauffer son eau, cuisiner des tartes, des gâteaux, ou autres plats à cuisson douce.</p>
+      
+        <p>3. Atouts :</p>
+      
+        <p>Construit à partir de matériaux que l'on trouve partout : bois, contre-plaqué, papier aluminium ménager, vitre et de l'isolant (liège, laine de mouton, vermiculite, polystyrène...). Ce système est simple de fabrication et coûte peu cher. Lorsque le soleil est au rendez vous, on peut atteindre des températures de l’ordre de 120° à 170° à l’intérieur avec ce système à deux oreilles.</p>
+      
+        <p>FONCTIONNEMENT :</p>
+      
+        <p>Le four solaire est une boite bien isolée thermiquement, au couvercle transparent et aux faces intérieurs réfléchissantes : les rayons du soleil entrent par la vitre et se réfléchissent sur les bords de la boîte jusqu’à heurter la surface sombre de la marmite. L’énergie de ces rayons est alors transformée en chaleur, chaleur qui est emprisonnée dans la boîte. Pour augmenter le flux solaire capté, deux oreillettes recouvertes d’aluminium sont fixées de part et d’autre de la boîte afin de réfléchir la lumière sur la vitre qui doit être la plus perpendiculaire possible aux rayons du soleil. Sous les latitudes de la France métropolitaine, l’inclinaison du soleil par rapport à l’horizon est d’environ 60 ° l’été et de 30° l’hiver. Ainsi l’inclinaison optimale de la vitre en été sera de 30 ° et en hiver de 60°. Le four solaire ne fonctionne qu'avec le rayonnement direct du soleil : nuages, brumes, poussière réduisent donc le rayonnement et prolongent le temps de cuisson.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 150 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Four_solaire__cuiseur_type_boîte_" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Four_solaire__cuiseur_type_boîte_</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>La boite :<ul><li>9 plaques de contre plaqué de 500x500 mm et d’épaisseur d’environ 10 mm (pas trop épais pour que la caisse ne soit pas trop lourde)</li></ul></li><li>Isolant d’environ 40 mm d’épaisseur (4 plaques de 500x500 mm) : polystyrènes, (récupérable chez le poissonnier / en fin de marché ou dans un magasin d'électroménager), liège en plaque, vermiculite …<ul><li>4 mètres de baguettes de la même épaisseur que l’isolant</li><li>Papier aluminium ou adhésif miroir (plus chère)</li><li>Visserie 4x40 (environ 80)</li><li>Clous 1,5 x25 mm (environ 10)</li></ul></li><li>Vitre, cadre et oreilles :<ul><li>Vitre de 410x470 mm, pas trop épaisse 2 à 3mm (récupérable dans la poubelle d’un menuisier pose de vitre)</li><li>Panneau aggloméré de la même épaisseur que la vitre, une de 500x500 mm et une autre de 500X550 mm</li><li>Palette / Planches de bois (8 planches d’environ 500x60 mm et pas trop épaisse (environ 20 mm)</li><li>1 mètre de charnière fine avec des vis à têtes plates OU 6 charnières.</li><li>3 mètres de cordelettes (4 mm de diamètre)</li></ul></li><li>joint</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Visseuse / Perceuse</li><li>Scie sauteuse</li><li>Scie à métaux</li><li>Coupe verre (si besoin)</li><li>Ruban adhésif</li><li>Briquet</li><li>Étau</li><li>Serre joint</li><li>Mètre</li><li>Cutter</li><li>Ciseaux</li><li>Papier ponce</li><li>Équerre, règle, rapporteur</li><li>Casque et lunettes de protection</li><li>Plans</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Modèle 3D à télécharger</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/18/Four_solaire_cuiseur_type_bo_te_solar_oven_01_render_1.png/800px-Four_solaire_cuiseur_type_bo_te_solar_oven_01_render_1.png' alt='Four solaire cuiseur type bo te solar oven 01 render 1.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bf/Four_solaire_cuiseur_type_bo_te_solar_oven_01_render_2.png/800px-Four_solaire_cuiseur_type_bo_te_solar_oven_01_render_2.png' alt='Four solaire cuiseur type bo te solar oven 01 render 2.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ee/Four_solaire_cuiseur_type_bo_te_solar_oven_01_render_3.png/800px-Four_solaire_cuiseur_type_bo_te_solar_oven_01_render_3.png' alt='Four solaire cuiseur type bo te solar oven 01 render 3.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger un modèle 3D du four solaire décrit dans ce tutoriel, au format STEP.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - La boite extérieure : découpe des panneaux et assemblage de la boîte.</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a0/Four_solaire_cuiseur_type_bo_te_Caisse_ext_rieure.jpg/800px-Four_solaire_cuiseur_type_bo_te_Caisse_ext_rieure.jpg' alt='Four solaire cuiseur type bo te Caisse ext rieure.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Four_solaire_cuiseur_type_bo_te_D_coupe.jpg/800px-Four_solaire_cuiseur_type_bo_te_D_coupe.jpg' alt='Four solaire cuiseur type bo te D coupe.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f0/Four_solaire_cuiseur_type_bo_te_Trac_.jpg/800px-Four_solaire_cuiseur_type_bo_te_Trac_.jpg' alt='Four solaire cuiseur type bo te Trac .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Four_solaire_cuiseur_type_bo_te_baguettes_et_serre_joint_.jpg/800px-Four_solaire_cuiseur_type_bo_te_baguettes_et_serre_joint_.jpg' alt='Four solaire cuiseur type bo te baguettes et serre joint .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0b/Four_solaire_cuiseur_type_bo_te_vVis.jpg/800px-Four_solaire_cuiseur_type_bo_te_vVis.jpg' alt='Four solaire cuiseur type bo te vVis.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Four_solaire_cuiseur_type_bo_te_assemblage_panneau_.jpg/800px-Four_solaire_cuiseur_type_bo_te_assemblage_panneau_.jpg' alt='Four solaire cuiseur type bo te assemblage panneau .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Se munir des plans de la boîte, des panneaux de contreplaqué et du mètre.</li><li>2) Reporter les dimensions du côté A sur une des plaques à l’aide d’une règle.</li><li>3) Se servir d’un rapporteur pour créer un angle de 60 ° et un de 30° comme indiqué sur le schéma.</li><li>4) Fixer la plaque sur votre table de travail à l’aide du serre-joint.</li><li>5) Se protéger les oreilles et les yeux.</li><li>6) Couper en suivant les tracés à l’aide de la scie sauteuse</li><li>7) Reporter les dimensions de ce patron sur une deuxième plaque pour réaliser le côté B.</li><li>8) Couper le deuxième panneau.</li><li>9) Tracer, couper les plaques C, D et E</li><li>Remarque : Si à la découpe des panneaux, les bords du contre plaqué contiennent des échardes, il est utile de poncer les bords à l’aide d’un papier ponce.</li><li>Les plaques étant volontairement fines il est nécessaire de fixer sur les plaques A et B des baguettes qui vont servir de support pour visser les plaques C, D, et E. Les baguettes seront dans l’idéal, de la même épaisseur que l’isolant.</li><li>Découper les baguettes :</li><li>1) Se munir des baguettes et tracer les dimensions voulues.</li><li>2) Fixer la baguette sur l’étau et couper à l’aide d’une scie.</li><li>Fixer les baguettes aux plaques :</li><li>3) Positionner une des baguettes et utiliser le serre-joint pour maintenir le tout.</li><li>4) Retourner la plaque et visser l’ensemble à l’aide de vis (deux vis par baguette suffisent).</li><li>Remarque : Penser à garder une épaisseur de plaque entre l’arrête et la baguette (c’est à cet endroit que viendront se positionner les plaques C, D, et E)</li><li>1) Visser les plaques C, D et E sur les baguettes, deux vis suffisent.</li><li>On obtient alors la boîte extérieure, viendra s’y ajouter l’isolant puis la boite intérieure qui sera recouverte de réfléchissant.</li><li>Remarque : Pour visser il peut parfois être judicieux de pré-visser à l’aide d’une perceuse et d’un foret.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - L’isolant : découpe et pose de l’isolant dans la boite.</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/b/b1/Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Step05a.jpg' alt='Four solaire (cuiseur type boîte) Step05a.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/4d/Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Step05b.jpg' alt='Four solaire (cuiseur type boîte) Step05b.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’isolant va venir s’imbriquer entre les baguettes.</li><li>1) Se munir de l’isolant et de son mètre.</li><li>2) Reporter les mesures sur la plaque d’isolation à l’aide d’un mètre.</li><li>3) Couper à l’aide d’un cutter puis emboiter dans son emplacement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - L’intérieur de la boîte : découpe des panneaux A’, B’, C’, D’, et E’.</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Four_solaire_cuiseur_type_bo_te_Alu_boite_int_rieure.jpg/800px-Four_solaire_cuiseur_type_bo_te_Alu_boite_int_rieure.jpg' alt='Four solaire cuiseur type bo te Alu boite int rieure.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/20/Four_solaire_cuiseur_type_bo_te_Scotch_alu_.jpg/800px-Four_solaire_cuiseur_type_bo_te_Scotch_alu_.jpg' alt='Four solaire cuiseur type bo te Scotch alu .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/37/Four_solaire_cuiseur_type_bo_te_Pose_plaque_alu_.jpg/800px-Four_solaire_cuiseur_type_bo_te_Pose_plaque_alu_.jpg' alt='Four solaire cuiseur type bo te Pose plaque alu .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0b/Four_solaire_cuiseur_type_bo_te_Chutes.bmp/800px-Four_solaire_cuiseur_type_bo_te_Chutes.bmp.png' alt='Four solaire cuiseur type bo te Chutes.bmp' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/31/Four_solaire_cuiseur_type_bo_te_rebords.jpg/800px-Four_solaire_cuiseur_type_bo_te_rebords.jpg' alt='Four solaire cuiseur type bo te rebords.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Reporter les mesures sur vos plaques et couper.</li><li>2) Annoter la face intérieure d’un « I » pour repérer la face qui sera recouverte de papier d’aluminium.</li><li>3) Enrober les plaques A’, B’, C’, D’, et E’ de papier d’aluminium.</li><li>4) Fixer le papier d’aluminium à l’aide d’un ruban adhésif à l’arrière.</li><li>Attention : le papier d’aluminium est très fragile, s’il vous arrive de percer le papier vous pouvez faire un pansement en collant un bout d’aluminium avec du ruban transparent.</li><li>5) Emboîter les plaques à leur place.</li><li>Pour finir la boite:</li><li>6) Utiliser les chutes pour finir la boite, c’est-à-dire fermer l’espace occupé par l’isolant, pour cela utiliser votre mètre.</li><li>7) Visser les plaques sur les baguettes (deux vis par plaque suffisent).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Le cadre de la vitre : découpe, assemblage et fixation sur la boite</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Four_solaire_cuiseur_type_bo_te_Cadre.jpg/800px-Four_solaire_cuiseur_type_bo_te_Cadre.jpg' alt='Four solaire cuiseur type bo te Cadre.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Four_solaire_cuiseur_type_bo_te_cadre_vitre.jpg/800px-Four_solaire_cuiseur_type_bo_te_cadre_vitre.jpg' alt='Four solaire cuiseur type bo te cadre vitre.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/53/Four_solaire_cuiseur_type_bo_te_cadre_2_me_couche.jpg/800px-Four_solaire_cuiseur_type_bo_te_cadre_2_me_couche.jpg' alt='Four solaire cuiseur type bo te cadre 2 me couche.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/98/Four_solaire_cuiseur_type_bo_te_cadre_3_me_couche.jpg/800px-Four_solaire_cuiseur_type_bo_te_cadre_3_me_couche.jpg' alt='Four solaire cuiseur type bo te cadre 3 me couche.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/51/Four_solaire_cuiseur_type_bo_te_fixation_cadre.jpg/800px-Four_solaire_cuiseur_type_bo_te_fixation_cadre.jpg' alt='Four solaire cuiseur type bo te fixation cadre.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/84/Four_solaire_cuiseur_type_bo_te_fixation_cadre_2.jpg/800px-Four_solaire_cuiseur_type_bo_te_fixation_cadre_2.jpg' alt='Four solaire cuiseur type bo te fixation cadre 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Explication : Le cadre est formé de 3 couches, il va venir enrober la vitre et la maintenir. Une première couche (planches 1, 2, 3 et 4) va constituer le cadre intérieur. Dessus on pose la vitre qui doit rentrer de 1,5 cm. Pour éviter que la vitre ne sorte et qu’elle soit bien maintenue on ajoute une couche de même épaisseur que la vitre et de même dimension que les planches 1, 2, 3 et 4 moins le 1,5 cm mangé par la vitre. Puis on recouvre avec les planches 1’, 2’, 3’ et 4’. Cette dernière couche va être mise en quinconce, l’air va ainsi avoir plus de difficultés à rentrer.</li><li>1) Se munir des palettes/planches de bois</li><li>2) Couper les planches 1, 2, 3, et 4 et s’en servir comme patron pour en faire une deuxième série : 1’, 2’, 3’ et 4’.</li><li>Remarque : Se référer aux schémas pour les dimensions</li><li>3) Faire deux bandes de 500 x 35 mm et deux de 470x45 mm à partir du panneau aggloméré de même épaisseur que la vitre.</li><li>4) Les planches 1 et 1’ vont venir emboiter l’aggloméré « a » et ce en quinconce de manière à bloquer l’air. Visser le tout de manière à créer 4 modules.</li><li>5) Fixer deux modules entre eux, puis les deux autres ensembles de manière à créer les angles.</li><li>6) Imbriquer la vitre.</li><li>7) Fixer les modules ensembles, la vitre est maintenue : le cadre est terminé.</li><li>Remarque : si la vitre a été récupérée il est possible de la couper à l’aide d’un coupe vitre (410 x 470 mm).</li><li>8) Si besoin couper le mètre de charnière à l’aide de la scie à métaux de manière à obtenir au minimum 6 charnières (à deux trous minimum).</li><li>9) Se munir de deux charnières et les fixer à l’aide de vis à têtes plates sur le bord du cadre/vitre.</li><li>10) Visser l’autre partie de la charnière à la planche a’ de la boite.</li><li>11) Ajouter le joint sur les planches a’, b’, c’ et d’ de manière à ne pas laisser rentrer d’air lorsque le cadre sera fermé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Les oreilles</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/2/20/Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Step05c.jpg' alt='Four solaire (cuiseur type boîte) Step05c.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d6/Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Step05d.jpg' alt='Four solaire (cuiseur type boîte) Step05d.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/3e/Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Step05e.jpg' alt='Four solaire (cuiseur type boîte) Step05e.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/c9/Four_solaire_%28cuiseur_type_bo%C3%AEte%29_Step05f.jpg' alt='Four solaire (cuiseur type boîte) Step05f.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Se munir du dernier panneau de contre plaqué de dimension 500x550mm.</li><li>2) Couper une bande de 15x500 mm. Cette dernière va servir à épaissir la plaque d’agglomérat de 3 mm pour pouvoir mieux la visser et fixer les charnières.</li><li>3) Enrober le panneau d’aluminium.</li><li>4) Fixer deux charnières sur la face intérieure (recouverte d’aluminium) et sur le cadre.</li><li>5) Se munir de la dernière plaque d’agglomérat, l’enrober d’aluminium y fixer la bande sur une des extrémités à l’aide de clous. Si les clous dépassent, couper les pointes à l’aide d’une scie à métaux.</li><li>6) Fixer l’oreille au cadre/vitre à l’aide des deux dernières charnières.</li><li>Remarque : la face arrière avec le ruban adhésif sera la partie visible, il est donc important de s’appliquer !</li><li>Les oreilles sont fixées. Il faut maintenant y ajouter des cordes pour les maintenir à un certain angle.</li><li>7) Pour la position été, c’est l’oreille externe qui va devoir être maintenue en suspension. On va venir visser une vis sur le côté externe du cadre et y enrouler une cordelette.</li><li>Pour la position hivers ce sera l’oreille interne.</li><li>8) Sur l’oreille, percer deux trous à environ 2 cm d’écart dans le coin et situés à environ 70 mm du bord.</li><li>9) Dans les chutes prendre un petit bout de bois (20x10mm) et y percer deux trous.</li><li>10) Y faire passer la corde dans un des deux trous, faire passer la corde dans un des deux trous de l’oreille puis dans le deuxième, puis la faire passer dans le second trou du petit bout de bois.</li><li>11) Faire un nœud à l’extrémité de la corde et bruler le bout pour ne pas qu’elle s’effiloche.</li><li>12) Faire de même pour l’oreille plus fine, cependant cette fois ci visser sur le côté intérieur du cadre. Cette oreille sera la première à être fermée, la corde va se caler entre la vitre et l’oreille.</li><li>Il faut maintenant créer des cales permettant de les maintenir en l’air.</li><li>13) À partir des chutes, créer des baguettes d’environ 1,5 cm d’épaisseur, affiner le bout de la baguette comme pour faire un piquet.</li><li>14) Faire des trous dans l’oreille, ils serviront de crans pour les piquets.</li><li>15) Clouer la baguette à l’extérieur du cadre.</li><li>16) Fixer un clou à l’opposé qui servira de cale lorsque le four sera fermé.</li><li>Remarque : cette partie peut être améliorée, n’hésitez pas à proposer d’autres solutions.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

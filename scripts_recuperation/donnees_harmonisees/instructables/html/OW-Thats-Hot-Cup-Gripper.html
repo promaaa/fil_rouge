@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>OW! That's Hot! Cup Gripper</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>OW! That's Hot! Cup Gripper</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FXH/NCLL/LU2O9EZ3/FXHNCLLLU2O9EZ3.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>I made the OW! That's Hot! Cup Gripper so when picking up hot liquids in a cup, you won’t burn yourself. When printing, the pin will be in PLA, the two arms will be in PLA, and the two grips will be in TPU</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Fusion 360, a computer, glue, and a 3d printer that can print PLA and TPU.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: The Sketch</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FZE/J1IS/LU2O9F06/FZEJ1ISLU2O9F06.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Sketch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZE/J1IS/LU2O9F06/FZEJ1ISLU2O9F06.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Sketch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>First, make an 80mm circle, then, you can either inset it by 7.5mm, or make another circle inside the first one that is 72.5mm. Next, add a 68.5mm line on the larger circle at a 60 degree angle, and a 70mm on the smaller circle at a 60 degree angle as shown in the picture. No add two lines connecting the two lines together on the top and bottom. Now add one more line half way down the big rectangle you just made like shown in the picture. Finally, add a line going across the two circles like shown at the bottom of the picture. Now you have completed the initial sketch.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Extrusion Part 1</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FG8/PTYR/LU2O9F0Y/FG8PTYRLU2O9F0Y.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 1' loading='lazy'></figure><figure><img src='https://content.instructables.com/FG8/PTYR/LU2O9F0Y/FG8PTYRLU2O9F0Y.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 1' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>First, we will extrude this half of the circle by 20mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Extrusion Part 2</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FOG/BBBY/LU2O9F4T/FOGBBBYLU2O9F4T.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 2' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOG/BBBY/LU2O9F4T/FOGBBBYLU2O9F4T.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 2' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Next, extrude the first half of the handle up 10mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Extrusion Part 3</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FY6/03RZ/LU2O9F77/FY603RZLU2O9F77.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 3' loading='lazy'></figure><figure><img src='https://content.instructables.com/FY6/03RZ/LU2O9F77/FY603RZLU2O9F77.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 3' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now we need to cut the first part of the handle. You can do this by extruding into it by 5mm like shown in the picture. Next, we will extrude the second part up 20mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Extrusion Part 4/ New Sketch</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FVT/D90V/LU2O9FBI/FVTD90VLU2O9FBI.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 4/ New Sketch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVT/D90V/LU2O9FBI/FVTD90VLU2O9FBI.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 4/ New Sketch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now create a sketch on the thin part of the handle. Create a centered 5mm circle and then click finish sketch. Now extrude that circle down and cut a hole in the handle. Now click on the top plain of the handle and extrude up 30mm</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Extrusion Part 5</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F4Y/8NFO/LU2O9FG7/F4Y8NFOLU2O9FG7.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 5' loading='lazy'></figure><figure><img src='https://content.instructables.com/F4Y/8NFO/LU2O9FG7/F4Y8NFOLU2O9FG7.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion Part 5' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now extrude the bottom plain of the handle by 30mm. Now you can turn off your sketches.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Handle Sketch</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F4R/3EPU/LU2O9FI5/F4R3EPULU2O9FI5.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Handle Sketch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F4R/3EPU/LU2O9FI5/F4R3EPULU2O9FI5.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Handle Sketch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Create a sketch on the handle and create a centered rectangle that's dimensions are 25mm by 60mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Extrusion</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FWD/DGIN/LU2O9FO9/FWDDGINLU2O9FO9.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWD/DGIN/LU2O9FO9/FWDDGINLU2O9FO9.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extrusion' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now extrude the rectangle so it cuts through the handle. Finally extrude the thin part down 5mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Filleting (optional, But Highly Recommended)</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F33/BKG7/LU2O9FOP/F33BKG7LU2O9FOP.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Filleting (optional, But Highly Recommended)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJL/0IMW/LU2O9FK4/FJL0IMWLU2O9FK4.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Filleting (optional, But Highly Recommended)' loading='lazy'></figure><figure><img src='https://content.instructables.com/F33/BKG7/LU2O9FOP/F33BKG7LU2O9FOP.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Filleting (optional, But Highly Recommended)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJL/0IMW/LU2O9FK4/FJL0IMWLU2O9FK4.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Filleting (optional, But Highly Recommended)' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Make sure to select all edges except for the inside grip and the pin hole. Fillet them 1mm. Congratulations! You’ve finished the arm!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Sketching the Grip</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FAB/VI6L/LU2O9FQR/FABVI6LLU2O9FQR.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sketching the Grip' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAB/VI6L/LU2O9FQR/FABVI6LLU2O9FQR.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sketching the Grip' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>First, create a circle that is 72.5mm, and then another inside it that is 65mm. Now create a line that goes across the circle that is 12.8mm away from the center point. Use the picture as reference.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Extruding</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FIT/N26Y/LU2O9FWO/FITN26YLU2O9FWO.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extruding' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIT/N26Y/LU2O9FWO/FITN26YLU2O9FWO.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Extruding' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now extrude this up 15mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: Sketching and Extruding the Pin</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FVK/GA75/LU2O9G0Y/FVKGA75LU2O9G0Y.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sketching and Extruding the Pin' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVK/GA75/LU2O9G0Y/FVKGA75LU2O9G0Y.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sketching and Extruding the Pin' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Create a 4.9mm circle… and that’s it! Now extrude it up 20mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

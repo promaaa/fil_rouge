@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Milk Jug Funnel - 3D Printed Connector</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Milk Jug Funnel - 3D Printed Connector</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F0X/WWG8/MG16AZ4H/F0XWWG8MG16AZ4H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>This is a very simple 'tool' or 'hack' to enable you to reuse Milk Jugs, for all sorts of things, by creating a 'funnel' from another Milk Jug. They are connected via a 3D Printed 'connector', which simply threads the two bottle screw profile together, avoiding spillage.</p>
+      
+        <p>It's not gonna change the world or anything, but I like the mindset behind the reuse of the bottle, and create a funnel by simple 'inversion' of another jug - cut to shape. I have been using it for the past couple of years, and it really is oddly satisfying. Milk Jugs after all are a really well designed thing, as they're cheap, ergonomic and durable.</p>
+      
+        <p>I've kept a range of bird/duck/squirrel foodstuffs (for my kiddo), as well as gardening things like Iron Phosphate for the lawn (after the paper box got damp - which actually inspired the whole thing). Although Milk Jugs are not 'air tight' 100% - I've kept excess Plaster of Paris, and also excess Cement in them (left over from when you buy a large paper bag of the stuff), and it's done well for a few months, meaning I didn't waste any.</p>
+      
+        <p>It's also been handy for unusual projects, such as making Gall Ink, as the 'galls' need to steep for weeks, and the process is kinda cross, so I'd not want to use a 'nice' container, as the smell would linger.</p>
+      
+        <p>Anyway, you get the idea. Hope it's useful. 3D print the part, which is for UK Milk, so does this work in the US? Dunno - perhaps adjust the CAD (scroll down for files), and upload if you have a better version for a given country! Thanks in advance.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>I've used a UK milk jug, and as mentioned, I've been doing this for a while now, and have tried different brands - and they all seem to work. And also also volumes (1ltr, 2ltr, 4ltr) all good.</li><li>You'll need some scissors, and to print the connector.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Prepare Bottle</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FCW/NRDN/MG16AZ6N/FCWNRDNMG16AZ6N.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare Bottle' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIN/GS4A/MG16AZ56/FINGS4AMG16AZ56.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare Bottle' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVN/D3H4/MG16AZ5W/FVND3H4MG16AZ5W.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare Bottle' loading='lazy'></figure><figure><img src='https://content.instructables.com/FCW/NRDN/MG16AZ6N/FCWNRDNMG16AZ6N.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare Bottle' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIN/GS4A/MG16AZ56/FINGS4AMG16AZ56.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare Bottle' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVN/D3H4/MG16AZ5W/FVND3H4MG16AZ5W.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare Bottle' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remove the Label.</li><li>Cut diagonally as show, this 'saves' the handle, and means you can steady it whilst pouring into it.</li><li>I found doing a 'generous' cut first, and then 'tidying up' worked well to get it just so.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Attach to Milk Jug</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FKB/JOZS/MG16B3K8/FKBJOZSMG16B3K8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach to Milk Jug' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKB/JOZS/MG16B3K8/FKBJOZSMG16B3K8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach to Milk Jug' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Screw as shown.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Attach Funnel</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FE3/Y63A/MG16AYXX/FE3Y63AMG16AYXX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Funnel' loading='lazy'></figure><figure><img src='https://content.instructables.com/FC9/H7LU/MG16AYY9/FC9H7LUMG16AYY9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Funnel' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDG/FD0E/MG16AYYO/FDGFD0EMG16AYYO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Funnel' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE3/Y63A/MG16AYXX/FE3Y63AMG16AYXX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Funnel' loading='lazy'></figure><figure><img src='https://content.instructables.com/FC9/H7LU/MG16AYY9/FC9H7LUMG16AYY9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Funnel' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDG/FD0E/MG16AYYO/FDGFD0EMG16AYYO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Funnel' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Yep - it is that simple. Hardly worth 2 steps really. Haha.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Pour!</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F3W/WMWT/MG16AYZH/F3WWMWTMG16AYZH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Pour!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3W/WMWT/MG16AYZH/F3WWMWTMG16AYZH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Pour!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Very satisfying indeed.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Label</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FZE/40O4/MG16AZ2K/FZE40O4MG16AZ2K.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Label' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZE/40O4/MG16AZ2K/FZE40O4MG16AZ2K.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Label' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>With a handy Sharpie, permanent marker, you can label up your jugs.</li><li>My only slight warning would be to not put anything 'high risk' such as flammable liquids, caustic powders, etc. - as of course these would be lacking safety information, so please do use wisely.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Enjoy</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FKF/6KJV/MG16AZ3T/FKF6KJVMG16AZ3T.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Enjoy' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKF/6KJV/MG16AZ3T/FKF6KJVMG16AZ3T.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Enjoy' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Bask in the glory of your organised life. If only everything were this simple.</li><li>Some projects where this has come in handy, either because it was messy, or because cost was an issue:</li><li>River Clay for Ceramics: https://www.instructables.com/The-River-Clay-Project-From-Riverbed-to-Dining-Tab/</li><li>Wool Dying: https://www.instructables.com/DIY-Wool-Forage-Spin-and-Dye-Your-Own-Yarns/</li><li>Making Ink: https://www.instructables.com/Home-Made-Ink-From-Nature-Perfect-Purples/</li><li>Storing Left Over Concrete - to make mini blocks: https://www.instructables.com/Mini-Concrete-Blocks-All-Weather-Building/</li><li>Enjoy!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Other Plastic Bottle Projects</strong><p><strong>Étapes :</strong></p><ol><li>If you're interested - I also used HDPE (Milk Jug plastic) to Vac Form:</li><li>https://www.instructables.com/Milk-Jug-Vacuum-Forming-Recycled-HPDE-Plastic/</li><li>Thanks,</li><li>Jude</li><li>https://www.judepullen.com/</li><li>https://www.instagram.com/boredsmart/</li><li>https://www.linkedin.com/in/judepullen/</li><li>PS - I've also been writing about Repair and Design:</li><li>https://www.rs-online.com/designspark/the-fight-to-repair-prologue</li><li>It'd be interesting to consider how this sort of thinking might be useful in other projects, both at home and industry.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

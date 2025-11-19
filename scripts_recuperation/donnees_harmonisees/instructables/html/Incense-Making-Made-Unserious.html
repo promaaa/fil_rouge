@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Incense Making Made Unserious</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Incense Making Made Unserious</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FPE/U7ND/LGMA00AZ/FPEU7NDLGMA00AZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Unprofessional and free spirited incense making for everyone who seeks more experiences to fill their life. This will be lengthy one, but bear with me.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Adventurous mind, even a little</li><li>Dry plant material</li><li>Bonding agent maybe</li><li>Various kitchen tools depending</li><li>Candle, candleholder and some topping</li><li>Gloves, various paper material</li><li>Maybe knitting needles or grill skewers</li><li>Podcasts or music or a movie to entertain you during boring parts</li><li>Plastic wrap and plastic bag</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Introduction to Thinking Differently Here</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FAV/3QQ5/LGMA00KK/FAV3QQ5LGMA00KK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Introduction to Thinking Differently Here' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAV/3QQ5/LGMA00KK/FAV3QQ5LGMA00KK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Introduction to Thinking Differently Here' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>In the internet, incense makind is unnecessarily made scary and difficult. They tell you that you need this and that, you need to measure everything meticulously, keep notes of everything and then they give you endlessly numbers. You don't. You don't need any of that. You need dry plant material and fire. Various things follow, depending of what you want to do. Here I try to explain you what you need when you do what and how you can make this easy and enjoyable.</li><li>I even think that measuring and making notes will not only limit you, distract you, stress you but make you appreciate the end product less, because you can replicate it any time. If you just use the feeling, you will be more mindfull when you burn your scarce stock of some amazing incense.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: What to Burn</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F0A/YTX4/LGMA00Z0/F0AYTX4LGMA00Z0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What to Burn' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSA/T3WQ/LGMA00Z1/FSAT3WQLGMA00Z1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What to Burn' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0A/YTX4/LGMA00Z0/F0AYTX4LGMA00Z0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What to Burn' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSA/T3WQ/LGMA00Z1/FSAT3WQLGMA00Z1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What to Burn' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>First you need to figure out what you want to burn. I warmly recommend you test things yourself. You need a candle, holder that lets air in even if the top is covered, something to cover it and things to burn. I have this fancy tea strainer but I have seen that you can take narrow strip of aluminum foil and wrap it around candle holder, ends under, so the weight holds them and remember not to cover all air holes. I have also seen metal tea strainers used. And spoons. As long as it does not burn, you can hold it somehow ontop of the flame and you don't burn yourself. Or house. Don't burn the house down. I also recommend to do this under kitchen hood, or even outside, because I promise you, some things you test will smell horrible!</li><li>So why to test burn? Like I said, some things smells just horrible. Some things you think would be nice are discusting, some things you don't think would be nice are just amazing. Test burn everything, not poisonous, please don't do that, but everything in your kitchen. Spices, herbs, coffee, tea, and when you go outside, just collect flowers, herbs and stuff and test everything. One of my favourite things is strawberry stems, yes, stems that everyone throws away. I love them. They're great for incense, tea, baths and so on.</li><li>Dry materials are better, but nothing stops you from making blends with fresh plant material and drying it together.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Internet Says I Need This Fancy Base Material</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FBO/A1FE/LGMA03Z9/FBOA1FELGMA03Z9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Internet Says I Need This Fancy Base Material' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBO/A1FE/LGMA03Z9/FBOA1FELGMA03Z9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Internet Says I Need This Fancy Base Material' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>No you don't. You need burnable material, and that can be dried flowers, herbs, wood, spices. Those fancy base materials have some kind of bonding agent either added, like as we put xanthan gum or natually like what is in cinnamon I have been told. I have been adding wood I have grinded filing by hand, but you don't actually even need that. That's just filler, makes more with less aromatics and more you put the more your incense will smell like bonfire. It might even cover delicate smells you have put there. But if you want, you can use wood. I have been taking wood from my garden when we cut trees and so and I have used grill smoking chips. I know they use things like pine bark and needles. Some people also add charcoal, if you do, and take those ment for grill, make sure there's no added lighter fluid or other components, don't take briquets, they're usually full of stuff, so don't take those and all should be fine. Makes really pretty black incense.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: So You Need to Powder Everything</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FF3/00H7/LGMA02D9/FF300H7LGMA02D9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So You Need to Powder Everything' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVX/Z70B/LGMA1BNB/FVXZ70BLGMA1BNB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So You Need to Powder Everything' loading='lazy'></figure><figure><img src='https://content.instructables.com/FF3/00H7/LGMA02D9/FF300H7LGMA02D9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So You Need to Powder Everything' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVX/Z70B/LGMA1BNB/FVXZ70BLGMA1BNB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So You Need to Powder Everything' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If you use things that are not in powder form, like spice powders already are, you will need to make them so. I used to use mortar and pestle but the I bought just for this a coffee grinder with blades. I went to cheap chain store and bought the cheapest one I could find in this city and it cost 15 euros and has been worth of every penny! You can even use hammer if you wish, and herbs and flowers you can just rub between your hands. It doesn't matter how you powder everything, just make sure your tools are clean and don't bring any unwanted material to yout incense.</li><li>So do I need to powder everything? No, you definitely don't need to! There's this thing called loose incense, I use it alot. It's just mix of burnable materials, plant material, plant resins, whatever and you either toss it into fire or onto charcoals or burn like you test burn things. But if you want to make sticks, spirals, cones and stuff it's better the finer the stuff is.</li><li>You should really try the spice ones! Easy to make when you don't need to grind anything, just take powdered spices and if the main ingredient is cinnamon, it should not even need any extra bonding agent. The bark of the cinnamon has some material in itself that helps it stay together.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: What About Resins?</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F8A/VJXR/LGMA1BL2/F8AVJXRLGMA1BL2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About Resins?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8A/VJXR/LGMA1BL2/F8AVJXRLGMA1BL2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About Resins?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Well, you don't need them. You can use them if you want. If you do, remember to use it like a spice to enhance the taste, not to be main ingredient, if you have lots of resins, the incense will burn badly or not burn at all. It will also leave this sticky residue everywhere. I use resin in my loose incenses but not in the dough.</li><li>If you want resins, don't buy cheapest ones, because they will be unclean. You can even go and collect something like spruce resin, but in that you need to mind the law in your country. In my country it's not free to collect for everyone, you can't just go into the forest and harvest it as you like, but I had some spruces in my yard.</li><li>If you want to use resin to incense dough, freeze it first and smash with dried plant material, it will stick to everything and is just pain to handle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: So! Let's Make Incense Dough! Powder and Sieve.</strong><div class='step-images count-12'><figure><img src='https://content.instructables.com/F38/L3WE/LGMA05X7/F38L3WELGMA05X7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6S/B5IF/LGMA05X8/F6SB5IFLGMA05X8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL0/1O18/LGMA05X9/FL01O18LGMA05X9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKI/46U6/LGMA05XC/FKI46U6LGMA05XC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F55/V10Y/LGMA05XD/F55V10YLGMA05XD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBD/AYLT/LGMA05XE/FBDAYLTLGMA05XE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F38/L3WE/LGMA05X7/F38L3WELGMA05X7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6S/B5IF/LGMA05X8/F6SB5IFLGMA05X8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL0/1O18/LGMA05X9/FL01O18LGMA05X9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKI/46U6/LGMA05XC/FKI46U6LGMA05XC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F55/V10Y/LGMA05XD/F55V10YLGMA05XD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBD/AYLT/LGMA05XE/FBDAYLTLGMA05XE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So! Let's Make Incense Dough! Powder and Sieve.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>When you have chosen what you wish to use, let's make some incense dought! Again, you can make this just by mixing pile of cinnamon with a bit of water, or even add some other spices to it, if you add alot, you will be needing bonding agent also, but I ended up with these things today. Into the blender they go, or if you choose to pound it with mortar and pestle, you pound now.</li><li>When it's powder, it needs to be sieved. I use large tea ball, because it's just so handy, but I think any sieve is fine here. What's still too large, just powder, pound or grind again.</li><li>putting a powder through sieve is a certain way to have everyting covered with the powder so I do it inside a large freezer bag. See the pics!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Testing Testing Again</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FIO/8CFY/LGMA07J9/FIO8CFYLGMA07J9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Testing Testing Again' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNH/2F6M/LGMA07JA/FNH2F6MLGMA07JA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Testing Testing Again' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIO/8CFY/LGMA07J9/FIO8CFYLGMA07J9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Testing Testing Again' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNH/2F6M/LGMA07JA/FNH2F6MLGMA07JA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Testing Testing Again' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>When you have powdered everything you might want to test the mix one more time, because now you can still fine tune it if you don't think it's just what you wanted.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Adding Water</strong><div class='step-images count-14'><figure><img src='https://content.instructables.com/FC7/N2CD/LGMA07ZZ/FC7N2CDLGMA07ZZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRE/GFML/LGMA0800/FREGFMLLGMA0800.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPY/ACI8/LGMA0801/FPYACI8LGMA0801.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUZ/C7HH/LGMA0802/FUZC7HHLGMA0802.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGZ/KIAA/LGMA0803/FGZKIAALGMA0803.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/F14/XG1D/LGMA0806/F14XG1DLGMA0806.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/F98/ZU9P/LGMA0807/F98ZU9PLGMA0807.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FC7/N2CD/LGMA07ZZ/FC7N2CDLGMA07ZZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRE/GFML/LGMA0800/FREGFMLLGMA0800.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPY/ACI8/LGMA0801/FPYACI8LGMA0801.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUZ/C7HH/LGMA0802/FUZC7HHLGMA0802.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGZ/KIAA/LGMA0803/FGZKIAALGMA0803.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/F14/XG1D/LGMA0806/F14XG1DLGMA0806.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure><figure><img src='https://content.instructables.com/F98/ZU9P/LGMA0807/F98ZU9PLGMA0807.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adding Water' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Start adding water just a little bit by bit, it's always easier to add more than take off. But not impossible. One dough I got too wet, so I just sat in front of TV with my dough in a bowl, spoon and hair dryer and dry the dough mixing it occasionally while watching TV. It ended up perfect.</li><li>And remember, it does not need to be water. You can put any liquid there you want. Some will be horrible when burned, some will add strong scent that overpower everything and messes your mix and some will be stunning addition. Try coffee, tea, juice, honey (that's sticky and sugary and you don't want to put very much of it there, it will really mess up your incense if you do) wine, maybe even some cola drink! Or mix things or just put a bit and rest is water.</li><li>At first, mix with spoon. Add just a little bit of water, mix until it's uniform and if it needs, add little more and mix more. When it holds when you squeeze, you can start kneating it by hand. Every time you add something, it be water or bonding agent, kneat untill smooth before adding anything else. That way you get better control of your dough.</li><li>Use vinyl or latex gloves, this stuff will stick to hands. When you need to take gloves off, just leave them inside out and when you need to continue, just turn them right side out and use them through the whole process. You don't neet to waste pile of gloves in that way.</li><li>First, add just a thin layer of xanthan gum or any else bonding agent you choose. I use xanthan because I get it from my own grocery store, others I would need to order somewhere. I have been meaning to test with flax seed slime and chia seed slime because they are both vegan substitutes to egg and in that case bonding agents, but I havent got around to it yet. You can find what's most convenient to you. I think that at least gum arabic is quite popular.</li><li>Usually recipes for incense tells you you need to measure bonding agent to your powder after measuring the powder to know how much you need, but this is better, believe me. This way you can *feel* how much you want to put there and it's easier to mix to moistened powder and see how much you really need.</li><li>How you know how much to mix there? You want to get the dough to feel like gingerbread dough. See the pics. When it still crumbels, it needs more. Also add carefully water while you kneat and work the dough. If you make sticks or spirals you want to put a bit more bonding agent but if you put too much it will disturb the burning. You might also want to put a bit more water if you extrude the dough, it will come easier through extruder.</li><li>Use the feeling. Really, literally, feel by touch how it feels, is it easy to sculpt, do you want it more wet or mix more bonding agent. And if it later turns out you have mistaken, it's no problem! Then we just add more what it needs, kneat it again and it's good to go! You don't need to succeed at first try!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Let the Dough Rest for a While</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FSL/KYZK/LGMA0FG4/FSLKYZKLGMA0FG4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let the Dough Rest for a While' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSL/KYZK/LGMA0FG4/FSLKYZKLGMA0FG4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let the Dough Rest for a While' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Wrap the dough to plastic wrap or plastic bag. Let it rest a bit, because now that it's wet, the plant material will blend together. You can clean the kitchen in the meantime, have coffee or lunch or do something else. If you're tired, have to go out, don't want to proceed today, toss the dough into fridge, it is, after all, wet plant material.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: So, What to Make With My Dough Now?</strong><div class='step-images count-16'><figure><img src='https://content.instructables.com/FSI/6X1F/LGMA0GPT/FSI6X1FLGMA0GPT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1S/HL7U/LGMA0K52/F1SHL7ULGMA0K52.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FX0/8QZU/LGMA0GPU/FX08QZULGMA0GPU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWA/JA39/LGMA0GPV/FWAJA39LGMA0GPV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIX/ODJ9/LGMA0GRA/FIXODJ9LGMA0GRA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOK/W2L7/LGMA0GRB/FOKW2L7LGMA0GRB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQC/2A9D/LGMA0GRC/FQC2A9DLGMA0GRC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNM/L0GV/LGMA0GRD/FNML0GVLGMA0GRD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSI/6X1F/LGMA0GPT/FSI6X1FLGMA0GPT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1S/HL7U/LGMA0K52/F1SHL7ULGMA0K52.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FX0/8QZU/LGMA0GPU/FX08QZULGMA0GPU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWA/JA39/LGMA0GPV/FWAJA39LGMA0GPV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIX/ODJ9/LGMA0GRA/FIXODJ9LGMA0GRA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOK/W2L7/LGMA0GRB/FOKW2L7LGMA0GRB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQC/2A9D/LGMA0GRC/FQC2A9DLGMA0GRC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNM/L0GV/LGMA0GRD/FNML0GVLGMA0GRD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='So, What to Make With My Dough Now?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>You can make whatever you want. Don't let people limit your imagination. If you have nothing else but your hands as tools, you still don't have to be limited to cones, make totem animals, cookie cutter figures or whatever you like, just remember that it burns better if it's not too thick.</li><li>I have this cheap polymer clay extruder I have bought from our local hobby store. See the pics. I have put two washers and a riveting part to be the nozzle, because just bare washers don't really work with incense dough it's.. shredded extruded just through washers. And I can change the thickness of the extrusion with different sized nozzles. It's not very tight, but I put few layers of aluminum foil around the piston. It's not very good, but it's what I have and it works. I also have this metal grill skewer I have cut and shaped, I make backflow holes to cones with it (Yes, you can make backflow cones yourself! And it's easy!) but something like knitting needles and even bamboo grill skewers works just fine.</li><li>If you want to make spirals you just extrude one loooooong stick, take the middle of it between your fingers, carefully wind it to spiral and cut the middle part. Now you have two spirals overlapping, when you carefully (they might had sticked together) turn, you can separate them. After drying!</li><li>When you dry spirals, you need to do it under a weight or they will twist and be just a mess. Put a newspaper, clean copypaper on top of that so you don't get ink to your incense spirals, another copy paper, another newspaper and something like cutting board. Change the papers to help drying. First day you need to change them quite a few times, next day less and then maybe twice a day. You can use same ones, just let them dry and they're good to go again. Moving spirals around is easier with a spatula.</li><li>If you want to make sticks with bamboo core, I haven't done that, but I believe you can take bamboo skewer, sharp knife and start to split it thinner and thinner and thinner untill you have cores. Then you just.. incorporate it to the stick? I hope someone in the comments will tell us how it's done :D I just extrude sticks and burn them like that.</li><li>The sticks will twist too when they dry, I let them because they're more fun that way but if you want straight sticks you need to weight them too.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: What About the Backflow Cones You Were Talking About..?</strong><div class='step-images count-12'><figure><img src='https://content.instructables.com/FZV/YTM9/LGMA0R7U/FZVYTM9LGMA0R7U.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUU/RE9X/LGMA0R7V/FUURE9XLGMA0R7V.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMK/KMCJ/LGMA0R7W/FMKKMCJLGMA0R7W.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUW/4BKO/LGMA0R7X/FUW4BKOLGMA0R7X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBD/0CD0/LGMA0R9S/FBD0CD0LGMA0R9S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQ9/A1JY/LGMA0R7Y/FQ9A1JYLGMA0R7Y.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZV/YTM9/LGMA0R7U/FZVYTM9LGMA0R7U.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUU/RE9X/LGMA0R7V/FUURE9XLGMA0R7V.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMK/KMCJ/LGMA0R7W/FMKKMCJLGMA0R7W.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUW/4BKO/LGMA0R7X/FUW4BKOLGMA0R7X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBD/0CD0/LGMA0R9S/FBD0CD0LGMA0R9S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQ9/A1JY/LGMA0R7Y/FQ9A1JYLGMA0R7Y.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='What About the Backflow Cones You Were Talking About..?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>You need a measuring spoon and something to make the hole with. Like grill skewer, knitting needle or anything like that. Actually I lied, you don't even need the measuring spoon, but I like when my batch is even nearly uniform. Keep the dough in the plastic wrap, it will dry. If it gets too dry, just add some water and kneat it to smooth again. I take a teaspoon of dough, form it between my fingers and flat the bottom against the table. You can make any shape of cones you ever like, I like these pyramid ones. Just remeber that thinner ones burn better than thick ones.</li><li>When you have the cone, take the skewer and slowly and carefully, oscillating back and forth, push the skewer into the cone. You can turn the cone in your hands from side to side every few millimeters so you can better control where the skewer is going. This sounds vague, but when you try it, you will understand, you can actually feel where it's going. Don't push it through the tip but try to get it as near as you comfortably can. If you push it through, no big deal! Just pull it down a bit and close the tip. And now when we have the cone on the skewer, why not have a little fun and twist it. See the pics. Slowly, carefully, and you'll get unicorn horn incense cones! That are backflow!</li><li>When you pull the skewer out, do that again slowly, turning back and forth or if you made twisted ones, turn all the way to the direction that twists it closed, not open the twist. Don't squeeze the cone too hard or you'll flatten it. Put it on the paper on it's side. Then make more!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: Have You Heard About Backflow Sticks?</strong><div class='step-images count-16'><figure><img src='https://content.instructables.com/FU6/TL97/LGMA0ZFE/FU6TL97LGMA0ZFE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3A/P5PE/LGMA0ZFF/F3AP5PELGMA0ZFF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJY/BAW4/LGMA0ZFG/FJYBAW4LGMA0ZFG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7O/4K8Y/LGMA0ZFH/F7O4K8YLGMA0ZFH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQ3/IC0S/LGMA0ZFI/FQ3IC0SLGMA0ZFI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F10/6903/LGMA0ZFJ/F106903LGMA0ZFJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXV/PMFH/LGMA0ZFK/FXVPMFHLGMA0ZFK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHT/9HLI/LGO0EYPH/FHT9HLILGO0EYPH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FU6/TL97/LGMA0ZFE/FU6TL97LGMA0ZFE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3A/P5PE/LGMA0ZFF/F3AP5PELGMA0ZFF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJY/BAW4/LGMA0ZFG/FJYBAW4LGMA0ZFG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7O/4K8Y/LGMA0ZFH/F7O4K8YLGMA0ZFH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQ3/IC0S/LGMA0ZFI/FQ3IC0SLGMA0ZFI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F10/6903/LGMA0ZFJ/F106903LGMA0ZFJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXV/PMFH/LGMA0ZFK/FXVPMFHLGMA0ZFK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHT/9HLI/LGO0EYPH/FHT9HLILGO0EYPH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Have You Heard About Backflow Sticks?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Wait, what?!? Well, stick is just a long and narrow cone, why can't we make backflow sticks, then? To the dough I put a bit more bonding agent because sticks are more delicate and harder to handle. Kneat it, maybe add a bit more water because it will make the forming of the sticks a bit easier. I toke few very thin knitting needles. Just start like a cone, make it a bit thinner and longer, put the knitting needle in and stretch and press and squeeze until it covers nearly the whole knitting needle. Just remember to leave the other end closed. You can make it round, but I like spirals and corners, so why not twist these too? See the pics. Don't take the knitting needle out, let it dry like that.</li><li>EDIT: Ok, additional notes concerning of knitting needles used here. I didn't know my thinnest needles are steel, all the else are aluminum. I left them overnight like that and they had corroded some way, and my sticks are ruined, see the dark color inside, last pic. So, if you use steel needles, don't leave them in, take out and dry under weight to prevent twisting.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Step 13: Let It Dry and Burn Them!</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F47/J1QQ/LGMA13IB/F47J1QQLGMA13IB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let It Dry and Burn Them!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F84/1N4S/LGMA13IC/F841N4SLGMA13IC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let It Dry and Burn Them!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FK8/GYBJ/LGMA13KH/FK8GYBJLGMA13KH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let It Dry and Burn Them!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F47/J1QQ/LGMA13IB/F47J1QQLGMA13IB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let It Dry and Burn Them!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F84/1N4S/LGMA13IC/F841N4SLGMA13IC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let It Dry and Burn Them!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FK8/GYBJ/LGMA13KH/FK8GYBJLGMA13KH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let It Dry and Burn Them!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>You want to let them dry around a week or so, that really depends on how humid it is. Remember to turn them so that they dry evenly. You can turn them as often as you like. I usually turn them quite often in the first days, then kind of forget them. The cones with a backflow hole dry faster than without the hole. Don't put them to airtight container even after drying so they don't get moldy, you don't want moldy incense. I usually make origami box for every batch and write on the lid what's in there.</li><li>When you light a handmade incense, especially now that we are not professionals and these might be less than optimal, you need to be patient and sometimes hold the flame quite long, but don't give up, just patienty torch the tip and it propably will light! If the smoke is just a thin wisp, light some more!</li><li>The rule with backflow is that you let it burn untill it has reached the hole before blowing the flame out, then it will flow from there. It's like magic! With handmade ones, that are still not optimal, you might not even need to blow the flame out, it will die by itself but if the incense stays smouldering, that's just what we wanted!</li><li>I made a tutorial for that easy holder: Easy Backflow Incense Holder and not-so-easy metal flower on top of that: Metal Lace Lotus Flower for Backflow Incense Holder</li><li>If you make some, please comment here, show what fun you have made and tell us what amazing ingredients you have tested!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

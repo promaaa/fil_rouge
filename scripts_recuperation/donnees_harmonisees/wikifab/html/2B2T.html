@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>2B2T</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>2B2T</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/1/12/2B2T_IMG20240405120248.jpg/ia-314aebd8ac270ea1a966e4afa300f963-px-2B2T_IMG20240405120248.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Création du jeu 2B2T pour toute sorte d'évènement ( maison en bois avec composants)</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment 2b2t.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 70 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/2B2T" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/2B2T</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>-Bois</li><li>-Carton</li><li>-Polystyrène</li><li>-Métal</li><li>- isolation (paille, laine de verre, autre)</li><li>- bouchon de bouteille en liège</li><li>-carte microbit</li><li>- petit câble</li><li>- bouton poussoir</li><li>- tringle de rideau</li><li>-stylo</li><li>- boites transparentes (plusieurs épaisseurs)</li><li>-fausse argent ( ex: Monopoly)</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- Cutter</li><li>- Règles / Equerre</li><li>- Stylo</li><li>-Scie à métaux</li><li>- découpeuse pour polystyrène</li><li>-colle</li><li>-fer a souder</li><li>pinceaux, peinture</li><li>bouton poussoir</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Faire le socle de la maison</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/f/f2/2B2T_IMG_20240403_195743_927.jpg/ia-fc07de89ef48c9569df14b36fc23f375-px-2B2T_IMG_20240403_195743_927.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/ff/2B2T_IMG_20240403_195747_843.jpg/ia-98bbaf543ef0eaba1c0e57e01ec3ab48-px-2B2T_IMG_20240403_195747_843.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/75/2B2T_IMG_20240403_195750_879.jpg/ia-1c5cc9524f036cac29d306091e90f999-px-2B2T_IMG_20240403_195750_879.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3e/2B2T_IMG20240322114723.jpg/ia-da83fcf4c683f4039a4dc7e8edb6a158-px-2B2T_IMG20240322114723.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- Découpez un morceau de polystyrène en format A3 ( 29,7 x 42 cm)</li><li>2- Creusez ensuite 15cm de large et 42cm de longueur avec une profondeur de 1.5cm</li><li>3- coupez dans le socle (comme a la 4emme photo) un trou qui servira par la suite</li><li>d'une hauteur de 1cm et d'une profondeur de 10cm du cote gauche</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - faire le paysage autour</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/8/8c/2B2T_IMG20240322114743.jpg/ia-56640a87b03e112991a0a6b35f1a12c3-px-2B2T_IMG20240322114743.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c0/2B2T_IMG20240330133423.jpg/800px-2B2T_IMG20240330133423.jpg' alt='2B2T IMG20240330133423.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/04/2B2T_IMG20240330133441.jpg/800px-2B2T_IMG20240330133441.jpg' alt='2B2T IMG20240330133441.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d5/2B2T_IMG20240404201035.jpg/800px-2B2T_IMG20240404201035.jpg' alt='2B2T IMG20240404201035.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3d/2B2T_IMG20240404201042.jpg/800px-2B2T_IMG20240404201042.jpg' alt='2B2T IMG20240404201042.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- coupez une planche de polystyrène avec les même dimensions du trou réaliser a l'étape 1 pour que cela s'emboite parfaitement dedans, faites cela 2 fois</li><li>2- ensuite coupez grâce a découpeuse pour polystyrène enlever une couche de 1cm, comme sur l'image</li><li>3- il ne reste plus cas peindre pour que cela ressemble a une route et une rivière</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - le décor: les lampadaires</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/2/28/2B2T_IMG20240329104439.jpg/800px-2B2T_IMG20240329104439.jpg' alt='2B2T IMG20240329104439.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c6/2B2T_IMG20240329105506.jpg/800px-2B2T_IMG20240329105506.jpg' alt='2B2T IMG20240329105506.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/0e/2B2T_IMG20240329111859.jpg/800px-2B2T_IMG20240329111859.jpg' alt='2B2T IMG20240329111859.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- prenez des tringles de rideau ensuite coupez les a 10,5 cm</li><li>2- tordez les A environ 45° pour que cela ressemble a des lampadaires</li><li>3- enfoncez les sur le bord de la route</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - les éléments : l'éolienne</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/3/31/2B2T_IMG20240404201206.jpg/ia-62bd7c1a39dd28d183b08dbbeb4abfb1-px-2B2T_IMG20240404201206.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/53/2B2T_IMG20240404201154_1_.jpg/800px-2B2T_IMG20240404201154_1_.jpg' alt='2B2T IMG20240404201154 1 .jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/15/2B2T_IMG20240404201227.jpg/800px-2B2T_IMG20240404201227.jpg' alt='2B2T IMG20240404201227.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- prenez un vieux stylo ensuite coller le a un socle comme par exemple un bouchons (il faut que cela ressemble a un socle) et faites un trou en haut du crayon pour insérer une tige de fer.</li><li>2- coupez ensuite trois pale de 11cm dans du bois</li><li>3- percez au milieu un petit trou dans chacune des pales et colle les</li><li>4- insérez les dans le fil fer et mettez un bouchon au bout</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - les elements : chauffe eau/ chaudiere</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/f/fc/2B2T_IMG20240404201306.jpg/800px-2B2T_IMG20240404201306.jpg' alt='2B2T IMG20240404201306.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- prenez un bouchon de bouteille en liège de n'importe qu'elle dimensions</li><li>2- faites qu'il ressemble au maximum a une chaudière</li><li>3- peignez le en blanc et ajouter un petit rectangle noir pour faire le cadran</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - les elements : pompe a chaleur</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/1/14/2B2T_IMG_20240411_204800_599.jpg/800px-2B2T_IMG_20240411_204800_599.jpg' alt='2B2T IMG 20240411 204800 599.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2c/2B2T_IMG20240412081803.jpg/800px-2B2T_IMG20240412081803.jpg' alt='2B2T IMG20240412081803.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/af/2B2T_IMG20240412081828.jpg/800px-2B2T_IMG20240412081828.jpg' alt='2B2T IMG20240412081828.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- Prenez une planche de bois ou de carton de 4sur 2 cm</li><li>2- prenez ensuite 2 équerres en carton déjà fait ( cornière de protection)et assembler les 2partie ensemble</li><li>3- peignez pour qu'il ressemble un maximum a une vrai pompe a chaleur</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - les elements : panneaux solaires</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/b/b7/2B2T_IMG20240404203403.jpg/800px-2B2T_IMG20240404203403.jpg' alt='2B2T IMG20240404203403.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- Découpez un carton d'une grandeur de 7 sur 11,5 cm, (vous pouvez faire plus grand)</li><li>2- peignez en noir ou bleu foncé le carton</li><li>3- Tracez des trait blanc de 2cm de longueur sur 1cm de largeur et ajouter des rond blanc sur chaque sommets des rectangles</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - les elements : le chauffage</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/4/4b/2B2T_IMG20240411085416_1_.jpg/800px-2B2T_IMG20240411085416_1_.jpg' alt='2B2T IMG20240411085416 1 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- prenez un morceau de carton de 5cm sur 2cm</li><li>2- enlevez la première couche de carton (voir image)</li><li>3- mettez comme des tiges/pattes avec de la colle chaude pour que cela appuie sur les capteurs</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - les elements : géothermie</strong><p><strong>Étapes :</strong></p><ol><li>1- prenez du fil de fer de 20cm ( se sera le tuyau sous terrain pour amener la chaleur au chauffage)</li><li>2- enfoncez le ensuite dans le socle car le socle sera découpé préalablement</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - les élément : isolation</strong><p><strong>Étapes :</strong></p><ol><li>pour faire l'isolation de votre maison, nous avons penser a deux isolations( cependant vous pouvez en ajouter )</li><li>1- prenez de la paille</li><li>2- prenez de la laine de verre</li><li>vous pourrez insérer dans les murs</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - construction des murs</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/a/a8/2B2T_IMG20240330191528.jpg/ia-02949136c53985edc8ec717a507d50aa-px-2B2T_IMG20240330191528.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b9/2B2T_IMG20240404202229.jpg/ia-f58fc5e1b7ad70e445108cb846b3ea22-px-2B2T_IMG20240404202229.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/59/2B2T_IMG20240404202928.jpg/ia-417887c32ab09de9266dccc5597f0d33-px-2B2T_IMG20240404202928.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/04/2B2T_IMG20240404202719.jpg/ia-5b7a2ab9ac5b2fcb01f0d0d6bb6daa05-px-2B2T_IMG20240404202719.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>façade d'entrée : prenez une planche de bois assez fine de 10,5cm de largeur sur 24cm de hauteur</li><li>2- coupez une porte de 4cm de largeur sur 8,5 cm de hauteur, coupez la a une distance de 9cm a gauche et 11cm a droite</li><li>3- coupez ensuite une fenêtre de taille 5cm sur 3cm a une distance de 3cm de la porte.</li><li>façade du fond : prenez une planche de bois assez fine de 10,5cm de largeur sur 24cm de hauteur</li><li>1- coupez une fenêtre de 5cm sur 3cm a une distance de 5cm du bord</li><li>façade de gauche : prenez une planche de 17,5 cm sur 10,5 cm</li><li>1- coupez une fenêtre de 4cm sur 3cm a 5cm du bord a gauche</li><li>2- Faites un trou a l'opposer de la fenêtre de ... sur ...cm</li><li>FAITES TOUS CES MURS 2 FOIS</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - construction des support pour fenetre</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/b/b0/2B2T_IMG20240401124311.jpg/800px-2B2T_IMG20240401124311.jpg' alt='2B2T IMG20240401124311.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7a/2B2T_IMG20240401162421.jpg/800px-2B2T_IMG20240401162421.jpg' alt='2B2T IMG20240401162421.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c5/2B2T_IMG20240404203052.jpg/800px-2B2T_IMG20240404203052.jpg' alt='2B2T IMG20240404203052.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/08/2B2T_IMG20240404203057.jpg/800px-2B2T_IMG20240404203057.jpg' alt='2B2T IMG20240404203057.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Support fenêtre :</li><li>1- Découpez 2 rectangle, plus grand que la fenêtre dans du carton assez épais</li><li>2- coupez 3 bout de carton et coller les sur les bord du rectangle , sauf en haut du rectangle (voir image)</li><li>3- et collez le deuxième rectangle sur les bout de carton</li><li>faites cela pour chaque fenêtre</li><li>ATTENTION AUX DIMENSIONS CE NE SONT PAS LES MEMES POUR CHAQUES FENETRES</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - constuction des fenetres</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/5/54/2B2T_IMG20240401122752.jpg/800px-2B2T_IMG20240401122752.jpg' alt='2B2T IMG20240401122752.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/be/2B2T_IMG20240401144849.jpg/800px-2B2T_IMG20240401144849.jpg' alt='2B2T IMG20240401144849.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/12/2B2T_IMG20240401144853.jpg/800px-2B2T_IMG20240401144853.jpg' alt='2B2T IMG20240401144853.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/66/2B2T_IMG20240404203301.jpg/800px-2B2T_IMG20240404203301.jpg' alt='2B2T IMG20240404203301.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vitrage simple :</li><li>1- Prenez une boite transparent pas très épais</li><li>2- Mesurez pour chaque fenêtre les dimensions et tracez</li><li>3- coupez au quetter ou a un un fer a souder</li><li>Vitrage double :</li><li>faites de mêmes pour le vitrage double , cependant prenez une boite transparente plus épais comme par exemple une boite de vis</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - construction des capteurs</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/3/3b/2B2T_IMG20240404201333.jpg/800px-2B2T_IMG20240404201333.jpg' alt='2B2T IMG20240404201333.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- prenez un bout de bois fin de la longueur des support des fenêtres (1,5cm)</li><li>2- collez au 2 extrémités un petit rectangle qui servira a coller au mur</li><li>3- ajoutez par dessus 2 boutons poussoir (attention les deux tiges doivent être en haut car sinon le capteur ne fonctionnera pas, faire comme sur l'image)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - assemblage des étapes 7-8-10 : murs porteurs</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/a/a9/2B2T_IMG20240411084437.jpg/800px-2B2T_IMG20240411084437.jpg' alt='2B2T IMG20240411084437.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/30/2B2T_IMG20240411084431.jpg/800px-2B2T_IMG20240411084431.jpg' alt='2B2T IMG20240411084431.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/38/2B2T_IMG20240411084423.jpg/800px-2B2T_IMG20240411084423.jpg' alt='2B2T IMG20240411084423.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- prenez un des murs fait dans l'étape 7</li><li>2- collez le support des fenêtres avec les bonnes dimensions</li><li>3- collez les capteurs dans le trous fait au préalable dans le murs ( attention il ne faut pas que les capteurs sortent du trou)</li><li>4- collez l'autre murs pour refermer.</li><li>5-il ne reste plus a coller des bords sur les murs pour les refermer</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - construction du toit</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/0/09/2B2T_IMG20240329111925.jpg/ia-456729dec4b44040c7bf0b4c01bd9e6e-px-2B2T_IMG20240329111925.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1- prenez deux planches de bois de 17,5cm sur 12cm</li><li>2- prenez des équerres en carton ( cornière de protection)</li><li>3-collez les ensemble</li><li>4- Ajoutez une autre cornière en dessous pour renforcer</li><li>5- faites 2 trous d'un cote du toit de 1cm en hauteur et 1mm de longueur (voir photo)</li><li>6- prenez des morceaux de cartons et enfoncer les dans les trous ( ce support servira a accrocher les panneaux solaires )</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - fondation dans le socle</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/2/2b/2B2T_IMG20240411084520.jpg/ia-646722a4a7dadc92d588e044175c8974-px-2B2T_IMG20240411084520.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>pour pouvoir insérer les murs porteur dans le socle il faut prendre un fer a souder.</li><li>1- prenez les dimensions de vos murs puis grâce a un Velleda reporter les sur le socle</li><li>2- prenez le fer a souder ou une résistance chauffante pour le faire fondre.</li><li>il faut faire une profondeur de 5mm environ</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - partie programmation</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/4/4c/2B2T_qrcode_makecode.microbit.org.png' alt='2B2T qrcode makecode.microbit.org.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>maintenant place a la programmation :</li><li>1- allez sur le site : make code Microsoft ou flasher le QR code</li><li>2- enregistrez le programme ci joint, pour ensuite l'insérer dans le programme.</li><li>3- branchez cotre carte microbit sur votre ordinateur pour ensuite la programmer</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - relier les capteurs a la carte</strong><p><strong>Étapes :</strong></p><ol><li>pour se faire soudez les capteurs (qui sont insérer dans les murs) a la carte microbit.</li><li>ensuite il faut que vous incrustez dans le programme du dessous</li><li>celui ci (il permettra de détecter ou non si les composants sont bien positionnés) : de plus dans ce programme il y a le budget qui sera augmenter si les composants sont renouvelables.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - regle du jeux</strong><p><strong>Étapes :</strong></p><ol><li>place au règles du jeux :</li><li>1- téléchargez le fichier ci joint "règle du jeu" [1]</li><li>2- téléchargez aussi le fichier " carte pour composants"[2]</li><li>qui servira aux joueur d'avoir plus d'information sur chaque composants</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Fin</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/1/12/2B2T_IMG20240405120248.jpg/800px-2B2T_IMG20240405120248.jpg' alt='2B2T IMG20240405120248.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/0c/2B2T_IMG20240405120313.jpg/800px-2B2T_IMG20240405120313.jpg' alt='2B2T IMG20240405120313.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7f/2B2T_IMG20240405120415.jpg/800px-2B2T_IMG20240405120415.jpg' alt='2B2T IMG20240405120415.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>il ne vous reste plus qu'a jouer entre amis ou en famille<ul><li>https://wikifab.org/wiki/Fichier:2B2T_VID20240405120513.mp4</li><li>https://wikifab.org/wiki/Fichier:2B2T_VID20240405120437.mp4</li><li>https://wikifab.org/wiki/Fichier:2B2T_VID20240405120513_1_.mp4</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

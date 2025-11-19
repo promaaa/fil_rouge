@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Lessive en poudre</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lessive en poudre</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/bb/Lessive_en_poudre_poudre_lave_vaisselle03.jpg/800px-Lessive_en_poudre_poudre_lave_vaisselle03.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Dans ce tuto on t'explique pourquoi et comment faire ta lessive zero-waste maison en poudre en 3 minutes ! Les proportions sont données pour réaliser environ 30 doses soit 30 lavages.</div>
+        
+      </div>
+    
+    
+      
+        <p>En plus d'être chères, polluantes et d'encrasser nos machines, les lessives que nous trouvons en supermarché sont aussi extrêmement toxiques ! Ces substances imprègnent nos vêtements et s'infiltrent ensuite sur notre peau et donc dans notre corps ! Il faut donc être vigilant aux produits que nos lessives contiennent. Le mieux est de faire sa lessive soi-même. On vous explique ici une recette de lessive maison saine, écologique et zéro déchet.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 4 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Lessive_en_poudre" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Lessive_en_poudre</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour environ 30 lavages :<ul><li>340g de savon de Marseille en copeaux (4 doses)</li><li>170g de cristaux de soude (2 doses)</li><li>85g de bicarbonate de soude (1 dose)</li></ul></li><li>Par lavage (optionnel) :<ul><li>55g de percarbonate de soude (si linge blanc)</li><li>70ml de vinaigre blanc + 30 ml d'eau</li><li>Entre 5 et 10 gouttes d'huile essentielle (lavande, citron...)</li><li>Balles de lavage en élastomères</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>3 bocaux en verre hermétiques pour le stockage des différents produits</li><li>1 bocal en verre faire le mélange et le conserver</li><li>Cuillère à soupe</li><li>Râpe</li><li>Balance</li><li>Masque (éventuellement)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Détails sur les ingrédients</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/f/f6/Lessive_en_poudre_cube-de-savon-de-marseille-a-lhuile-dolive.jpg' alt='Lessive en poudre cube-de-savon-de-marseille-a-lhuile-dolive.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les 3 ingrédients de base se trouvent en vrac dans les épiceries/drogueries/magasins écologiques :<ul><li>Savon de Marseille : En bloc ou en copeaux. Compter ~10 euros/kg. Attention à choisir du vrai savon de Marseille, seules 4 entreprises fabriquent l'original "Savon de Marseille".</li><li>Biocarbonate de sodium :de qualité alimentaire : Utilisé ici pour son action désodorisante, il peut-être utilisé pour une multitude d'emploi (produit d'entretien, désodorisant, brûlures d'estomac, blanchissement des dents...) . Fabriqué à partir de calcaire et de sel, ne dégage aucune émanation, ne s'évapore pas. Compter ~3-4 euros/kg</li><li>Cristaux de soude ou carbonate de sodium : Utilisé pour son action dégraissante et désinfectante. Ils constituent un élément chimique obtenu naturellement à partir de gisements de natron, mais que l’on sait désormais fabriquer à partir de sel et de craie. Compter ~3-4 euros/kg.</li></ul></li><li>En option vous pouvez ajouter du :<ul><li>Percarbonate de soude : Détachant efficace, non-toxique et biodégradable, fabriqué à partir d'eau, de sel et de craie, il est principalement utilisé pour le linge blanc. Il se décompose dans l’eau pour donner de l’eau oxygénée (ou peroxyde d’hydrogène) et du carbonate de sodium. Grâce à ses propriétés oxydantes, l’eau oxygénée est un excellent agent blanchissant naturel. Compter ~5-7euros /kg</li><li>Vinaigre blanc : Produit d'entretien aux très nombreuses propriétés, nous l'utilisons ici pour son pouvoir adoucissant et fixateur de couleur pour le linge. Garantie sans risque, ni odeur de vinaigre pour votre linge ! Compter ~1euro/L</li><li>Huiles essentielles (lavande, citron...) pour parfumer votre linge. Utilisez-les néanmoins avec parcimonie car leur fabrication consomme énormément de ressources naturelles.</li><li>Balles de lavage : En caoutchouc naturel, les balles de lavage utilisent la rotation du tambour de la machine pour détasser et remuer le linge, le poussant ainsi à passer et repasser dans l’eau, au lavage comme au rinçage. Elles permettent ainsi, efficacité prouvée, de réduire de 20% l'utilisation de lessive. Certaines personnes utilisent également de vieilles balles de tennis (blanches de préférence).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fabrication de la lessive</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5a/Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_38_.JPG/800px-Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_38_.JPG' alt='Lessive en poudre 20190622 TUTPS COSMETIQUES 38 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_41_.JPG/800px-Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_41_.JPG' alt='Lessive en poudre 20190622 TUTPS COSMETIQUES 41 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_42_.JPG/800px-Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_42_.JPG' alt='Lessive en poudre 20190622 TUTPS COSMETIQUES 42 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_43_.JPG/800px-Lessive_en_poudre_20190622_TUTPS_COSMETIQUES_43_.JPG' alt='Lessive en poudre 20190622 TUTPS COSMETIQUES 43 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Râper votre bloc de savon de Marseille en copeaux à l'aide d'une râpe (à fromage par exemple).</li><li>Peser vos différents ingrédients</li><li>Ajouter les dans le bocal en verre prévu à cet effet.</li><li>Fermer le bocal et mélanger fort</li><li>Conserver le bocal dans un endroit sec</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Avant chaque lavage</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Agitez votre bocal de stockage pour bien homogénéiser votre lessive.</li><li>Mettre 2-3 cuillères à soupe de lessive directement dans le tambour de votre machine (ou dans le compartiment lessive).</li><li>Si vous lavez à froid, il peut être intéressant de diluer votre lessive dans un peu d'eau chaude avant de l'incorporez à la machine mais ce n'est pas obligatoire. N'hésitez à faire vos propres tests, quantités/températures.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

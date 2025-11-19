@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Automatisation d'un concentrateur solaire plan</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Automatisation d'un concentrateur solaire plan</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/b6/Automatisation_d_un_concentrateur_solaire_plan_IMG_2484.JPG/ia-b69fc017ea2d5e66b70a079e8a701ba4-px-Automatisation_d_un_concentrateur_solaire_plan_IMG_2484.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Automatisation sur le mouvement Est-Ouest (azimut) d'un concentrateur solaire sur pivot.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les petits concentrateurs solaires pour l’artisanat (boulangerie, cuisine, brasserie, torréfaction, stérilisation, …) fleurissent de plus en plus ! Ces appareils fonctionnent en concentrant une grande quantité de rayons du soleil dans un petit espace grâce à un jeu de miroirs, apportant une grande quantité d’énergie. Parmi les différents types de concentrateurs, les concentrateurs plans ont besoin d’être déplacés toutes les 5 minutes pour que les rayons réfléchis par les miroirs soient bien dirigés sur la fenêtre de chauffe du four. C’est une contrainte de temps, et pour certaines personnes (pas toutes!), cela constitue un frein pour passer le cap de l’artisanat solaire. Il est donc judicieux de s’intéresser à l'automatisation de ce type de concentrateur, dans le but de rendre l’accès au solaire à concentration plus facile au plus grand nombre. Ces concentrateurs plus ou moins low-tech peuvent donc être associés à un système qui permet de suivre la course du soleil de façon automatique, le “tracking”.</p>
+      
+        <p>Cette étude a donc été menée sur un concentrateur solaire plan type Lytefire Cuiseur collectif. Les plans de fabrication de ce concentrateur sont accessibles ici.</p>
+      
+        <p>Ce mécanisme d’automatisme azimutal (mouvement est-ouest) peut être repris sur n’importe quel type de concentrateur autre que Lytefire. Il fonctionne sur le principe du Shadow Band.</p>
+      
+        <p>Ce document va donc présenter le fonctionnement et la fabrication de l’automatisme (mécanique, motorisation, capteur, électronique, programme Arduino, …).</p>
+      
+        <p>NB : Ce tutoriel est allégé pour plus de lisibilité. Pour plus de détails, vous pouvez télécharger le fichier tutoriel pdf dans l'onglet Fichiers.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 10 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 200 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Automatisation_d_un_concentrateur_solaire_plan" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Automatisation_d_un_concentrateur_solaire_plan</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Mécanique :<ul><li>1 roue arrière vélo enfant</li><li>1 pignon en acier (de préférence avec le plus de dents possible). Celui-ci sera soudé le pignon de la roue de vélo.</li><li>2 cornières solides de 20cm (par exemple 5cmx5cmx4mm)</li><li>6 tubes carrés de 1m (20cmx20cmx2mm)</li><li>6m de chaîne de vélo</li><li>3 boîtier de pédalier incrusté dans un cadre de vélo</li><li>6 manivelles de pédalier</li><li>3 petits pignons</li><li>2 grands plateaux</li><li>6 plaques aciers</li><li>Une vingtaine de boulons M8</li></ul></li><li>Motorisation :<ul><li>Moteur de perceuse (type BOSCH PSR 18</li><li>câblerie basse tension</li><li>driver moteur (BTS7960 High Current 43A H-Bridge Motor Driver)</li></ul></li><li>Shadow Band :<ul><li>3 morceaux de plastique rigide ou autres supports rigides étanches</li><li>2 capteurs de luminosité (photorésistances de ce type)</li><li>2 équerres</li><li>vis et boulons et ressorts (solides)</li></ul></li><li>Electronique :<ul><li>rallonge pour alimentation</li><li>multiprise</li><li>prise mâle 5V pour Arduino (câble alimentation Arduino)</li><li>Chargeur d’ordinateur 18 V</li><li>Câblerie avec gaine pour l’extérieur. Un câble 2 brins (pour le moteur, 3 mètres). Un câble minimum 3 brins (pour les capteurs, 10 mètres).</li><li>Fiches électriques mâle et femelle 2 pôles sans terre (connexion moteur)</li><li>Prise téléphonique en T (connexion capteur)</li><li>Glacière étanche</li><li>Résistances (2 x 12 kOhms et 2 x 18 kOhms)</li><li>Plaque de plastique pour support résistance</li><li>Connecteur d’en-tête pour souder les câbles électriques dessus et les brancher à l’Arduino</li><li>Câble Dupont pour connectique Arduino</li><li>Câble basse tension 5V à souder (multibrins)</li></ul></li><li>Télécommande :<ul><li>Câble VGA de récupération (car il y a beaucoup de brins isolés à l’intérieur du câble, sinon en prendre plein de petit qu’on peut passer dans une gaine).</li><li>Boutons poussoir (2 minimum)</li><li>Un switch</li><li>2 plaques plastiques (pour fermer la télécommande)</li><li>Tasseaux de bois pour faire le cadre de la télécommande</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Boîte à outils classiques</li><li>Boîte outil mécanique vélo</li><li>Perceuse visseuse</li><li>Poste à souder</li><li>Fer à souder</li><li>Pince à dénuder</li><li>Ordinateur pour téléverser le code dans l'Arduino</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Principe et fonctionnement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/c5/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_17-51-40.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 17-51-40.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Comme tout système asservi, cette automatisation est composée de deux parties :<ul><li>une partie commande, composée d’un moteur et d’une transmission (moto-réducteur fabriqué à base de mécanique vélo) permettant de faire pivoter le concentrateur sur son plan azimutal (est-ouest ou ouest-est)</li><li>une partie mesure, composée d’un “shadowband” et d’une chaîne d’acquisition. Le shadowband, comme indiqué sur le schéma, permet de projeter l’ombre de sa partie centrale sur sa partie opposée au soleil si l’alignement avec celui-ci n’est pas bon. La chaîne d’acquisition (mesure) est quant à elle composée de 2 photodiodes (capteur générant une résistance équivalente variable selon l’intensité lumineuse reçue) et de plusieurs ponts diviseurs de tension qui permettent d’acquérir une différence d'intensité lumineuse sur l’Arduino. Dans le mode automatique, si l’écart des flux solaires captés par la partie mesure est trop importante alors la partie commande est actionnée pour aligner le concentrateur. Pour le mode manuel, il permet uniquement d’utiliser la partie commande. Grâce à une télécommande, l’utilisateur peut faire pivoter le concentrateur vers la gauche ou vers la droite . Dans ce cas là, la partie mesure ne sert pas. On rappelle ici que le mouvement d’élévation de soleil (haut-bas) n’est pas traité. Il faudra donc le faire manuellement. Cependant celui-ci est moindre que le mouvement azimutal (est-ouest).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Mécanique</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/9/99/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-05-03.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-05-03.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/92/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-08-46.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-08-46.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/95/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-11-58.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-11-58.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/20/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-12-46.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-12-46.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/76/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-13-25.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-13-25.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f8/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-15-24.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-15-24.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour la mécanique, nous allons réaliser un moto-réducteur. Le poids important et la vitesse lente de rotation du châssis imposent d’utiliser un moteur avec un couple important. Malheureusement, les moteurs “industriels” qui remplissent ces conditions restent chers et gourmands en énergie. Une solution est trouvée en utilisant des moteurs de visseuses du commerce (rotation rapide avec un petit couple) associées à un réducteur (qui va réduire la vitesse et démultiplier le couple). Voici comment faire cette construction pas à pas.</li><li>La première tâche à réaliser est l’installation de la transmission et de la roue.</li><li>Ce module permet de transformer la force du moteur en un déplacement gauche/droite du concentrateur.</li><li>Tout s’effectue à partir de mécanique vélo. On peut donc trouver tous ces éléments de mécanique assez facilement.</li><li>En tout premier, récupérez une roue arrière de vélo d’enfant.</li><li>Soudez un pignon plus grand pour avoir une plus grande force de rotation (équivalent à une vitesse 1 sur la roue arrière d’un vélo standard). Lors de cette soudure, il est important de bien souder le pignon à plat et bien centré sur l’axe de la roue.</li><li>L’étape suivante consiste à solidariser cette roue au châssis du concentrateur.</li><li>Pour cela on installe deux cornières sur le châssis qui vont venir faire office de fourche pour la roue. La roue doit avoir une position tangentielle au mouvement circulaire du concentrateur. C’est-à-dire être parallèle au châssis. Une des cornière est fixée sur une barre transversale. Ces barres transversales servent de support à toute la transmission. On peut prendre des tube carré 20x20 pour ces barres transversales.</li><li>Après avoir monté la roue, on peut réaliser les engrenages.</li><li>Le but de ces engrenages va être de coupler un gros pignon à un petit pignon. Ceci dans le but de faire un réducteur. Ceci est réalisé à partir d’un boîtier de pédalier de vélo avec son support du cadre vélo. Vous pouvez en récupérer sur des vieux cadres de vélo.</li><li>Il n’y a pas trop de soucis à monter un grand plateau sur un boîtier de pédalier, car il est prévu à cet effet. Vissez ce plateau grâce à une manivelle de pédalier. Vous pouvez raccourcir cette manivelle en la coupant et en gardant uniquement la partie “vissante”.</li><li>Pour installer le petit pignon c’est plus délicat car les pignons ne sont pas normalement prévus pour être montés sur un boîtier de pédalier. Ils vont normalement sur les cassettes de roue arrière. Ainsi nous devons usiner une pièce pour recevoir ce pignon.</li><li>(cf le tutoriel PDF pour voir la fabrication et l'usinage du boîtier pour recevoir le petit pignon).</li><li>Une fois que ce boîtier est réalisé, fixez-le sur une plaque de sorte à ce qu’il soit bien mis à plat. Vous pouvez utiliser des boulons pour le fixer.</li><li>Vous pouvez monter 3 chaînes de transmission comme celle-ci. Il vous faudra donc travailler 3 boîtiers de pédalier. Sachant qu’il n’y a pas de plateau sur le dernier. Il y aura seulement une vis qui servira de connexion entre le premier motoréducteur et le moteur de perceuse. Cette vis pourra être soudée car elle reçoit d'importants efforts.</li><li>Lors du montage, il est très important de régler la mécanique pièce après pièce. Commencez par la roue et 3e boîtier. Mettez la chaîne pour relier les deux. Ajustez le boîtier pour tendre la chaîne et faire en sorte que la chaîne soit coplanaire au gros pignon de la roue et au petit pignon du 3e boîtier de pédalier. Pour ajuster cette coplanarité, vous pouvez mettre des petits calles entre entre les plaques et les barres transversales. Si vous pensez que la coplanarité est parfaite. Bougez le concentrateur rapide, ceci entraînera la roue, la chaîne et le 3e boîtier de pédalier. Si la chaîne déraille, c’est que la coplanarité n’est pas respecter entre le gros pignon et le petit pignon. Si ça ne déraille pas, vous pouvez passer au montage de la deuxième chaîne. Et ainsi de suite. jusqu’à la troisième chaîne.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Motorisation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/4/4f/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-20-48.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-20-48.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d7/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-22-39.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-22-39.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour simplifier la motorisation, il est judicieux de prendre une vieille perceuse. Car le mandrin de la perceuse pourra être utilisé pour mettre un embout qui aille sur la vis de connexion. Ainsi il sera facile de tout mettre dans l’axe.</li><li>La motorisation a été faite avec une perceuse BOSCH PSR 18. Elle fait 18V, possède un couple maximal de 30 Nm. Si vous trouvez une perceuse moins puissante, il est probable qu’il faille rajouter un étage sur la motoréduction. Mais ça marchera tout de même.</li><li>Il faut ensuite démonter la perceuse pour en sortir seulement le corps du moteur avec le mandrin. Enlevez toute l’électronique intégrée et gardez uniquement les bornes + et - du moteur.</li><li>La perceuse doit être fixée à une plaque support. Ici, une tige filetée a été tordue pour pouvoir encercler et fixer la perceuse à la plaque.</li><li>Pour que la carte Arduino puisse communiquer correctement avec le moteur, nous avons besoin d’un driver pour le moteur. En effet, la carte Arduino émet des signaux en 5V et le moteur a besoin de 18V pour fonctionner. Le driver utilisé ici peut être acheté ici. Il s’agit du driver moteur BTS7960 High Current 43A H-Bridge. Il est dimensionné pour une intensité maximale de 43A. Si vous avez une perceuse plus puissante, il faudra sûrement trouver un driver qui supporte une intensité plus importante.</li><li>Le câblage de ce driver sera vu dans la section électronique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Shadow Band</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/3/38/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-30-22.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-30-22.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b0/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-31-11.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-31-11.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/35/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-31-34.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-31-34.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le shadow band est le module qui va recevoir les capteurs de luminosité. Le principe de ce shadow band est de générer une ombre grâce à une surface qui est perpendiculaire aux photorésistances. Cette ombre, en fonction de l’orientation du soleil, générera de l’ombre soit sur la photorésistance de droite soit sur la photorésistance de gauche (il est impossible d’avoir de l’ombre sur les deux photorésistance en même temps). Les photorésistances enverront donc des signaux différents à l’Arduino. L’Arduino enverra donc un ordre au moteur de tourner soit dans un sens soit dans l’autre. Une fois le concentrateur repositionné, l’ombre s’enlève sur la photorésistance qui était à l’ombre. A ce moment les photorésistances envoie le même signal, donc l’Arduino ne capte aucun différentiel et donc n’envoie aucun ordre au moteur.</li><li>Voici une vidéo de démonstration d’un shadow band bi-axe.</li><li>La fabrication du shadow band est relativement simple. Il suffit de prendre deux plaques de plastique rigides et de les assembler perpendiculairement grâce à des équerres. La plaque qui fait l’ombre doit être assez longue car cette longueur fera la sensibilité du capteur : plus le plan orthogonal est long, plus l’ombre se générera rapidement. Une longueur de 40/50cm suffit. Cette longueur correspond à la longueur de matière plastique entre les capteurs et le soleil. Si on voulait que cette longueur soit toujours la même, il faudrait découper le support en quart de cercle. Ceci n’a pas été réalisé sur ce shadow band. Il faut ensuite percer des trous pour incorporer les photorésistances. Ces trous doivent être le plus proche du plan orthogonal, ceci améliorera la sensibilité du capteur : l’ombre sera captée plus vite.</li><li>Une fois les photorésistances intégrées, on peut les rallonger en les souder à des câbles de basse tension (5V). Ces câbles seront ensuite connectés à l’Arduino. Il y aura donc 3 câbles : 5V, signal 1 et signal 2.</li><li>Pour que le shadow band puisse être calibré (orientation pour être complètement plan au plan du concentrateur, il doit être monté sur une autre plaque plastique. Celle-ci sera boulonnée sur le cadre du concentrateur.</li><li>La connexion entre le shadowband et son support se fait via 4 boulons et 4 ressorts. Le vissage des boulons permettent de rapprocher les 2 structures et les ressorts permettent de les éloigner. Ainsi on pourra calibrer correctement le shadow band. Ce système de boulon ressort pourra être revus d’une autre manière.</li><li>La calibration du shadow band se fera une fois tout le montage réalisé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Montage électronique</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/3/3a/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-39-37.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-39-37.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/5e/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-41-35.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-41-35.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/61/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-43-20.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-43-20.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/ae/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-44-13.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-44-13.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/Automatisation_d_un_concentrateur_solaire_plan_shadowband_bb.jpg/800px-Automatisation_d_un_concentrateur_solaire_plan_shadowband_bb.jpg' alt='Automatisation d un concentrateur solaire plan shadowband bb.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ec/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-47-59.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-47-59.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous allons maintenant rentrer dans plus de détails sur la partie mesure et la partie commande moteur.</li><li>Alimentation générale</li><li>La partie électronique Arduino est alimentée à 5V que ne pouvons pas changer, malheureusement ce n’est pas suffisant pour alimenter les moteurs, il nous faut donc une deuxième source à 18V (tension nominale de la perceuse choisie). Nous avons utilisé des transformateurs de récupération pour n'utiliser que le réseau électrique domestique comme source de départ.</li><li>Moteur et Driver</li><li>Comme décrit ci-dessus, nous avons dû séparer la partie électronique de la partie puissance car non compatible (le 5V de l’Arduino n’est pas assez puissant pour faire fonctionner le moteur). Pour pouvoir commander les moteurs à notre guise, bi-directionnel et à vitesse variable nous avons choisi d’utiliser un driver de moteur industriel basé sur un pont en H. Pour ceux qui ne sont pas familier avec la commande par PWM (Pulse Width Modulation) de moteur à courant continu, beaucoup de sources sont disponibles pour l’expliquer, il serait bon de faire un bon sur celle-ci avant de continuer à lire. Voici la fiche technique du driver. Il est séparé lui aussi en deux parties, la partie puissance (figure de gauche) permettant de transmettre une tension de contrôle moteur:<ul><li>Pin N°1 et 2 sont les bornes d’alimentation de la partie puissance, entre 6V et 27V. Celle-ci sera modifiée puis transmise en fonction de la commande choisie.</li><li>Pin N°2 et 3 sont reliées au moteur de perceuse.</li></ul></li><li>La partie commande qui est relié à l’Arduino, permettant de faire varier la vitesse et le sens de rotation du moteur de perceuse :<ul><li>Pin N°1 et 2 permettent de faire varier la vitesse de rotation de la perceuse grâce à une modulation PWM de la tension de sortie.</li><li>Pin N°3 et 4 permettent de choisir le sens de rotation de la perceuse (attention ne pas actionner en même temps)</li></ul></li><li>Pour le câble entre le moteur et le driver, un câble solide et robuste serait intéressant. Car celui-ci est amené à rester dehors sous tous types d’intempéries. Par exemple. Le moteur peut être débranché de la glacière par une prise secteur préalablement installée.</li><li>Capteurs (photorésistance)</li><li>En sortie du shadow band, un câble (également robuste pour rester dehors) partira pour aller chercher la glacière. Ce câble est composé d’au minimum 3 fils (correspondant au 5V, signal 1 et signal 2). Celui-ci peut-être déconnecté de la glacière grâce à une prise en T.</li><li>Une fois que le signal des capteurs est rentré dans la glacière, il doit être traité par un jeu de résistances avant d’être envoyé dans l’Arduino. Pourquoi faire un traitement de signal ?</li><li>Une photorésistance est un composant électronique qui a sa résistance qui varie en fonction de l’intensité lumineuse reçue : plus il reçoit une intensité lumineuse élevée plus la résistance est petite. Pour capter les différentes résistances équivalentes que les photodiodes peuvent nous transmettre, nous utilisons différents ponts diviseurs de tensions pour au final capter une tension entre 0 et 5V au bornes d’entrées analogiques de l’Arduino.</li><li>L’Arduino va lire ce signal analogique et le numériser en un signal compris entre 0 et 1023 (ce signal est directement lisible). Cependant il faut que ce signal (de 0 à 1023) corresponde bien à des valeurs d’intensités solaires que l’on va recevoir. Hors ce capteur sera utilisé sur des intensités allant de l’ombre à une forte intensité solaire l’été en passant par un soleil caché derrière un voile nuageux, si on considère qu’une seule résistance équivalente, alors l'acquisition numérique sera saturé à 0 ou 1023 dans beaucoup de cas de figure et donc on n’arrivera pas à capter l’ombre. Nous avons donc choisi d’avoir deux modes d’acquisition, un mode “ombre” et un mode “plein soleil”, chacun de ces modes correspond à une résistance équivalente choisie différente(Réq petit pour le mode soleil et Réq grand pour mode ombre) .</li><li>NB: on peut penser à ajouter d’autres modes si les conditions d’intensité lumineuses sont encore plus changeantes.<ul><li>Ainsi il faut réaliser un traitement de signal pour que celui-ci soit exploitable lorsqu’il y a de l’ombre et un soleil d’été. Chaque photorésistance doit donc être couplée à une résistance R1=12 kOhms et une résistance R2=18 kOhms. Le montage est le suivant.</li><li>On a donc pour le mode ombre une résistance équivalente de R =12+18 kΩ = 30 kΩ et pour le mode soleil R = 18 - 12 kΩ = 6 kΩ.</li></ul></li><li>Ces deux valeurs de résistance ont été calibrées pour un soleil sous le parallèle 45° Nord (Grenoble) en plein été pour ce type de photorésistance (cf référence matériaux). Si l’on change de photorésistance et d’endroit géographique, la valeur de ces résistances pourrait être amenée à changer.</li><li>Télécommande</li><li>Comme indiqué dans l’introduction, si le motoréducteur n’est pas débrayable alors il est nécessaire d’avoir une télécommande pour bouger le concentrateur. Sur notre étude,nous avons choisi d’avoir les fonctionnalités suivantes sur la télécommande : mode Manuel , mode Automatique et pour déplacer les concentrateurs à gauche et à droite. On peut penser à beaucoup d’autres fonctionnalités, notamment un bouton d’arrêt d’urgence sur l’alimentation.</li><li>Nous avons utilisé des boutons poussoirs pour la commande de direction. Un bouton poussoir est composé de 2 bornes, une connectée à la masse, l’autre sera connectée à un port d’entrée digital de l’Arduino. Nous avons utilisé la méthode sans résistance de PULL_UP pour connecter ces boutons, comme notamment décrit ici.</li><li>Nous avons utilisé un interrupteur SPDT pour le contrôle du mode manuel/automatique. Il est composé de 3 bornes : une masse, une 5V et une connectée à une entrée digitale de l’Arduino. Encore une fois beaucoup de sources sont disponibles pour expliquer comment utiliser ces interrupteurs, notammentici.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Programme Arduino</strong><p><strong>Étapes :</strong></p><ol><li>Le code Arduino de l’automatisation fait partie d’un répertoire github public qui est accessible ici : https://github.com/gregp38/Solar-Concentrator-Automatisation. Toute suggestion est la bienvenue, car l’algorithme n’est pas parfait et plusieurs pistes d’amélioration nous sont déjà venues en tête.</li><li>Sinon pour les personnes non familiarisées avec github, vous pouvez accéder directement au code ici :</li><li>https://github.com/gregp38/Solar-Concentrator-Automatisation/blob/main/automatisation/automatisation.ino</li><li>Un copié collé du code (entier!) vers un projet Arduino devrait faire l’affaire. Si vous n’êtes vraiment pas familier avec Arduino, plusieurs sources sur le site Arduino pourront vous aider à comprendre comment compiler/téléverser du code sur votre Arduino :<ul><li>https://docs.arduino.cc/learn/starting-guide/getting-started-arduino/</li><li>https://www.arduino.cc/en/Guide</li><li>https://docs.arduino.cc/software/ide-v2/tutorials/getting-started-ide-v2/</li></ul></li><li>Les différentes pistes d’amélioration auxquelles nous avons pensé sont les suivantes :<ul><li>Amélioration du choix du mode utilisé. L’acquisition commence toujours par le mode ombre par défaut (plus grosse résistance équivalente), la saturation est détectée si la moyenne des 2 valeurs acquises n’est pas comprise entre mean_low = 300 et mean_high=700 pour les raisons évoquées dans la partie montage électronique. Ce choix est arbitraire et mériterait d’être plus amplement réfléchi et dimensionné. D’autres algorithmes (autre que l’écart à la moyenne) pourraient aussi être envisagés.</li><li>Amélioration des paramètres fixes. Nous avons aussi implémenté d’autres paramètres arbitrairement, avec nos observations du système en marche. Ces paramètres ne sont pas parfaits et mériteraient plus mûre réflexion. Délai de rafraîchissement de mesure, dans le cas où le shadowband détecte de l’ombre. Nommé delay_diff (= 200 ms), à modifier en fonction de la vitesse de déplacement de votre système (dépendant du moteur et la motoréducteur utilisé). Vitesse de rotation du moteur, motor_speed (=100), à adapter en fonction du motoréducteur et du moteur utilisé. Cette valeur contrôle le rapport cyclique de la PWM , c’est une valeur 8-bits donc 0 vitesse nulle et 255 vitesse maximum. Délai de rafraîchissement de mesure, dans le cas où le shadowband NE détecte PAS l’ombre. Nommé delay_ok (= 5000 ms = 5s). Le système fonctionne bien avec cette valeur mais il est beaucoup trop réactif comparé à l’ordre de grandeur de la rotation du soleil. Ce délai trop court est peut être la cause des effets de saccadement du système (bouge très souvent pour faire des mouvements dérisoires).</li><li>Délai de rafraîchissement de mesure, dans le cas où le shadowband détecte de l’ombre. Nommé delay_diff (= 200 ms), à modifier en fonction de la vitesse de déplacement de votre système (dépendant du moteur et la motoréducteur utilisé).</li><li>Vitesse de rotation du moteur, motor_speed (=100), à adapter en fonction du motoréducteur et du moteur utilisé. Cette valeur contrôle le rapport cyclique de la PWM , c’est une valeur 8-bits donc 0 vitesse nulle et 255 vitesse maximum.</li><li>Délai de rafraîchissement de mesure, dans le cas où le shadowband NE détecte PAS l’ombre. Nommé delay_ok (= 5000 ms = 5s). Le système fonctionne bien avec cette valeur mais il est beaucoup trop réactif comparé à l’ordre de grandeur de la rotation du soleil. Ce délai trop court est peut être la cause des effets de saccadement du système (bouge très souvent pour faire des mouvements dérisoires).</li><li>Amélioration du saccadement. Avec l’algorithme courant, le système peut avoir tendance à saccader par moments, quand on est dans des conditions limites de l’acquisition : dûes à des conditions extérieures (e.g. passage de nuages pendant l’acquisition) ou par des conditions de mesure limite (e.g. saturation à 0 ou 1023, délai de rafraîchissement de la mesure trop rapide). Pour limiter ces phénomènes, on peut penser à implémenter des mesures par burst avec un moyennage final avant de prendre un décision de faire bouger le système. Ceci permettra de lisser et avoir un résultat auquel on peut être plus confiant pour prendre une décision.</li><li>Délai de rafraîchissement de mesure, dans le cas où le shadowband détecte de l’ombre. Nommé delay_diff (= 200 ms), à modifier en fonction de la vitesse de déplacement de votre système (dépendant du moteur et la motoréducteur utilisé).</li><li>Vitesse de rotation du moteur, motor_speed (=100), à adapter en fonction du motoréducteur et du moteur utilisé. Cette valeur contrôle le rapport cyclique de la PWM , c’est une valeur 8-bits donc 0 vitesse nulle et 255 vitesse maximum.</li><li>Délai de rafraîchissement de mesure, dans le cas où le shadowband NE détecte PAS l’ombre. Nommé delay_ok (= 5000 ms = 5s). Le système fonctionne bien avec cette valeur mais il est beaucoup trop réactif comparé à l’ordre de grandeur de la rotation du soleil. Ce délai trop court est peut être la cause des effets de saccadement du système (bouge très souvent pour faire des mouvements dérisoires).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Calibration, Utilisation, Consommation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/8/8a/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-50-27.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-50-27.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e5/Automatisation_d_un_concentrateur_solaire_plan_Capture_d_cran_du_2024-07-28_18-50-48.png' alt='Automatisation d un concentrateur solaire plan Capture d cran du 2024-07-28 18-50-48.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Calibration</li><li>Une fois tout installé, il suffira de visser/dévisser les vis de réglages du shadowband pour envoyer le point focal exactement dans sa cible.</li><li>Le protocole est le suivant :<ul><li>allumer l’automatisme en mode automatique => le shadowband va se câler pour avoir aucune ombre sur les deux photorésistance</li><li>Une fois calé, regarder la tâche focale est bien dans sa cible.</li><li>Si la tâche focale est trop à gauche de la cible, il faudra serrer les vis de gauche et desserrer les vis de droite</li><li>Si la tâche focale est trop à droite de la cible, il faudra serrer les vis de droite et desserrer les vis de gauche</li><li>Ceci jusqu’à recentrer la tâche focale sur la cible.</li></ul></li><li>Un autre protocole peut se faire en mode Manuel. Il est peut-être plus simple :<ul><li>positionner manuellement (via les boutons gauche droite de la manette) le concentrateur de telle sorte à ce que la tâche focale soit bien sur sa cible</li><li>Régler le shadow de sorte qu’il n’y ait aucune ombre sur les de photorésistance</li><li>Le protocole est terminé</li></ul></li><li>Ceci dans le but de bien avoir le point focal sur la cible. Il peut être judicieux de mettre le point focal un tout petit peu sur la droite de la cible. Ceci pour prendre en compte le décalage de la tâche focale. Pour rappel, la tâche focale se déplace de la droite vers la gauche.</li><li>Ceci est à prendre en compte en fonction du temps de réactivité du shadowband (proximité des photorésistances avec le plan orthogonal et longueur du plan orthogonal).</li><li>Utilisation</li><li>Pour l’utilisation, cela devient un jeu d’enfant. Le mode manuel pour déplacer le concentrateur à gauche ou à droite (sens horaire ou sens anti-horaire). Le mode automatique pour mettre en route le tracking. En fonction de la construction de votre shadowband, le tracking activera le moteur toutes les 4 minutes environ.</li><li>Attention, on rappelle qu’il ne faut pas s’absenter trop longtemps lorsqu’un concentrateur est en marche ! Nous devons toujours garder un œil dessus car c’est une machine puissante. Il ne faut pas la laisser sans aucune surveillance. Un tracking n’est pas une surveillance !</li><li>Consommation</li><li>La puissance totale utilisée pour l’électronique (Arduino, photorésistances, traitement de signal, …) vaut 1W. Il y a donc un 1W en continu qui est consommé.</li><li>Le moteur, lorsqu’il est activé, consomme 110W. Cependant il est activé pendant 2 secondes toutes les 5 minutes environ.</li><li>Au global, sur une heure, nous avons donc une consommation électrique de 2Wh. C’est assez minime comme consommation électrique. C’est pourquoi on pourrait penser à utiliser une batterie se rechargeant par une énergie renouvelable pour entièrement séparer le système du réseau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Conclusion</strong><p><strong>Étapes :</strong></p><ol><li>Cet automatisme est un peu complexe à réaliser. Mais il facilitera l’utilisation d’un concentrateur solaire sur pivot de rotation azimuthal.</li><li>Le reconditionnement de matériaux (mécanique vélo, moteur de perceuse, glaciaire, plaques plastique, …) diminue l’empreinte environnementale par rapport à un tracking neuf. Celui-ci est facilement réparable avec des pièces facilement trouvables. Concernant l’électronique, les composants sont facilement trouvables dans les pays industrialisés.</li><li>Ce tutoriel ainsi que l’automatisme peuvent être largement améliorés ! Si vous souhaitez apporter des améliorations de tout type, merci de nous en faire part (Low-tech Lab Grenoble).</li><li>Et maintenant, que ça chauffe !!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

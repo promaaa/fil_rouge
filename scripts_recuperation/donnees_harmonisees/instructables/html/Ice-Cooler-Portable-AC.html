@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ice Cooler Portable AC</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Ice Cooler Portable AC</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FBT/X5CC/LLTGNRWL/FBTX5CCLLTGNRWL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>I live in Florida and when my wife picks our son up from school, she has to wait in a car line in the hot sun for about an hour each day. She is reluctant to keep the car running all the time just for the AC so I decided to make this portable cooler AC to make the wait more bearable. I wanted to make something small enough to sit on the center console of her minivan. It also had to be powered by a car or a portable battery.</p>
+      
+        <p>I looked at several options. Evaporative coolers do not work well here because the humidity is so high. Other solutions blow air into a cooler filled with ice before exhausting it through a vent. More sophisticated solutions use a fan to blow air through a radiator that has cold water circulating through it. I decided to go with a combination of the last two techniques. I figured blowing air over the ice would melt the ice slower while the radiator option would provide colder air but the ice would melt faster. I wanted to create something that would allow you to choose between the two modes.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Many components for the cooler are used to cool custom computers. I build my own computers so I had some of the parts already but they are readily available on Amazon and computer supply stores. The fan and the radiator I used is 120mm square but it also comes in 80mm. The 80mm will fit a 3-inch vent hose and the 120mm that I used fits a 4-inch vent hose. Using the standard fan sizes allows the fan, radiator, and shroud to all fit together nicely.</li><li>Cooler. I used a small 10-quart cooler from Walmart but any size cooler would work (it must have a flat removable cover)</li><li>120mm aluminum radiator with 8mm pipe connectors (Amazon link)</li><li>12V 120mm high airflow waterproof fan (Amazon link)</li><li>12V DC submersible mini water pump (Amazon link). The pump comes with a 5.5 x 2.1mm jack and bracket.</li><li>120mm fan to 4" ducting shroud (Amazon link)</li><li>4" semi-flexible dryer vent hose (Lowes link)</li><li>Float switch (Amazon link). Optional but prevents the pump from running when the water level is too low.</li><li>2 switches. I used these from Amazon but any small panel mount switch would work</li><li>Car cigarette lighter plug with cable (Amazon link). The cable should have a 5.5 x 2.1mm plug to plug into the cooler.</li><li>5.5 x 2.1mm panel mount jack (Amazon link). This comes with matching plugs.</li><li>Vent covers. Use whatever size fits your cooler (you need at least 4). I used 1.4" covers. (Amazon link)</li><li>3ft of 8mm ID water hose (it should come with the radiator above)</li><li>Zip ties</li><li>Zip tie mounts to attach zip ties to surfaces without holes. Optional but useful (Amazon link)</li><li>Waterproof glue</li><li>Solder iron and solder</li><li>Electrical tape</li><li>Pieces of scrap plastic or aluminum to make brackets for the water level switch and pump base</li><li>Stainless steel screws to replace the ones that come with the radiator (Ace has a great selection)</li><li>Rotary tool</li><li>Drill with spade bits</li><li>Multimeter to test electrical connections</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Prepare the Cover</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F85/NHI4/LLTGNRV3/F85NHI4LLTGNRV3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Cover' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQZ/HGJ9/LLTGNRV4/FQZHGJ9LLTGNRV4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Cover' loading='lazy'></figure><figure><img src='https://content.instructables.com/F85/NHI4/LLTGNRV3/F85NHI4LLTGNRV3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Cover' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQZ/HGJ9/LLTGNRV4/FQZHGJ9LLTGNRV4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Cover' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remove the cover from the cooler. Most likely it is double-layered, maybe with foam insulation. Cut the inner layer out being careful to leave the outer ridge intact to allow the cover to still close properly. Do a rough layout of the radiator, vent caps, switches, and jack on the back side of the cover to determine how much to remove. Use sandpaper to smooth out the cut edges. I used a rotary tool with a cutting wheel to cut the cover.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Cut Hole for Radiator</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F7K/SDQP/LLTGNRVB/F7KSDQPLLTGNRVB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Hole for Radiator' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0P/N4BE/LLTGNRVC/F0PN4BELLTGNRVC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Hole for Radiator' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOA/5ZEW/LLTGNRVG/FOA5ZEWLLTGNRVG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Hole for Radiator' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7K/SDQP/LLTGNRVB/F7KSDQPLLTGNRVB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Hole for Radiator' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0P/N4BE/LLTGNRVC/F0PN4BELLTGNRVC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Hole for Radiator' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOA/5ZEW/LLTGNRVG/FOA5ZEWLLTGNRVG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Hole for Radiator' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The fan will be attached to the back of the radiator so that the air is pushed from the cooler through the radiator and out of a hole in the cover. I found that this produced more air than if the fan was on top of the radiator pulling air through the radiator. A hole is made in the cover and the radiator is screwed on the backside of the cover and then the fan is attached to the radiator. Be sure to position the radiator so that the in and out holes are positioned toward the back (hinge) side of the cover. This will allow the cover to easily open and close when the hoses are attached.</li><li>To cut the hole for the radiator, trace the radiator on a piece of cardboard and cut it out to create a template. Push nails through the screw holes in the radiator and into the template. Draw diagonal lines from the screw holes in the template to find the center of the circle. Use the template to mark the screw holes and the center of the circle on the back side of the cover. The circle should be 4.5" if using a 120mm radiator. I used a compass to draw the circle and used a RotoZip tool with a circle cutter to cut the hole but you can freehand it with a rotary tool. The hole will not be visible when everything is assembled so it can be a bit rough.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Cut Vent Holes</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FXM/6LQ1/LLTGNRV8/FXM6LQ1LLTGNRV8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Vent Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXO/1BY6/LLTGNRVE/FXO1BY6LLTGNRVE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Vent Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXM/6LQ1/LLTGNRV8/FXM6LQ1LLTGNRV8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Vent Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXO/1BY6/LLTGNRVE/FXO1BY6LLTGNRVE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Vent Holes' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Since the air is blowing out of the cooler, you will need to have some vent holes to allow air to enter the cooler. The recommended fan pushes a lot of air so make sure you have enough vents. I initially used only two 35mm holes but it was preventing the fan from operating at full capacity, so I had to add two more (that is why the picture in this step does not match the final version). The holes can be anywhere. I used a spade bit to create the hole and opened it a bit more with the rotary tool. The vent covers snap right in and there is a flange to hide a rough opening.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Cut Holes for Switches and Power Jack</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FON/RD4A/LLTGNRVK/FONRD4ALLTGNRVK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ9/EPQE/LLTGNRVH/FJ9EPQELLTGNRVH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQY/IKPI/LLTGNRVV/FQYIKPILLTGNRVV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRY/S8LW/LLTGNRVU/FRYS8LWLLTGNRVU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FON/RD4A/LLTGNRVK/FONRD4ALLTGNRVK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ9/EPQE/LLTGNRVH/FJ9EPQELLTGNRVH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQY/IKPI/LLTGNRVV/FQYIKPILLTGNRVV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRY/S8LW/LLTGNRVU/FRYS8LWLLTGNRVU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut Holes for Switches and Power Jack' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>One switch will be for the main power to turn on the fan and the water pump. The second switch is in series with the power switch and will turn on and off the power to the water pump. Use a drill and the rotary tool to create holes for the two switches and the jack for the input power. The switches in the supply list have a keyhole slot that prevents them from rotating. You can use a knife and a small file to create a notch in the hole. The switches just snap in the hole. The jack has a nut to hold it in place.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Prepare the Water Pump</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FKN/501J/LLTGNRVD/FKN501JLLTGNRVD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUE/6QV6/LLTGNRVI/FUE6QV6LLTGNRVI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1J/GFGG/LLTGNRW6/F1JGFGGLLTGNRW6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2M/XLOH/LLTGNRW5/F2MXLOHLLTGNRW5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKN/501J/LLTGNRVD/FKN501JLLTGNRVD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUE/6QV6/LLTGNRVI/FUE6QV6LLTGNRVI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1J/GFGG/LLTGNRW6/F1JGFGGLLTGNRW6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2M/XLOH/LLTGNRW5/F2MXLOHLLTGNRW5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Water Pump' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>In order to prevent ice from blocking the inlet of the pump, punch some holes in a small tube (I used a piece of Pex tubing) and glue it over the inlet pipe. I also wrapped some fabric around the pipe (and held it in place with stainless steel wire) to filter out any particles from clogging the radiator.</li><li>To attach the pump to the cooler, you can just glue it in place. However, to create a removable pump, create a platform from a piece of scrap plastic. The platform is glued to the cooler and the bracket that comes with the pump is bolted to the platform. Mark the position on the platform where the bracket screws should go. Get 2 stainless steel flathead bolts and nuts. Drill two holes and bevel them so that the bolts are level with the surface. Insert the bolts and Superglue the heads to the plastic so that they cannot rotate. The pump bracket can now be mounted on the other side of the platform using the nuts. The platform will be glued in the cooler in a later step.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Prepare the Float Switch</strong><div class='step-images count-10'><figure><img src='https://content.instructables.com/FA4/BPWD/LLTGNRVJ/FA4BPWDLLTGNRVJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDY/2IA5/LLTGNRVZ/FDY2IA5LLTGNRVZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOY/C1EG/LLTGNRW3/FOYC1EGLLTGNRW3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXS/91D6/LLTGNRVP/FXS91D6LLTGNRVP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2P/9BNC/LLTGNRW4/F2P9BNCLLTGNRW4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FA4/BPWD/LLTGNRVJ/FA4BPWDLLTGNRVJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDY/2IA5/LLTGNRVZ/FDY2IA5LLTGNRVZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOY/C1EG/LLTGNRW3/FOYC1EGLLTGNRW3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXS/91D6/LLTGNRVP/FXS91D6LLTGNRVP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2P/9BNC/LLTGNRW4/F2P9BNCLLTGNRW4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Float Switch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>This step is optional. The water pump has to be submerged at all times while it is running. You should add the switch if you want to cut the power to the pump when the water level is too low (if the cooler is tilted).</li><li>The switch turns on/off when a float rises to the top of the switch. The switch comes set to on when the float is low and off when the float is high. In order for it to turn on when the float is high, unclip the stop at the bottom of the switch, invert the float, and replace the clip.</li><li>To prevent ice from interfering with the switch, create a protective cylinder around it. I used a pill bottle and punched holes in it along with one at the top to attach the switch. You can just glue this cylinder to the cooler but I wanted to make something removable. Create a plastic bracket by heating a piece of plastic and bending it 90 degrees. Drill a slot in one end of the bracket to attach the switch and the protective cylinder. Make sure to keep the height of the bracket and the cylinder at a minimum so that the float at the top (on) position is just above the height of the pump. You will have to test it to get the right height. The switch bracket will be glued to the cooler in a later step.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Assemble the Cover</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F5V/O7SW/LLTGNRWB/F5VO7SWLLTGNRWB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Cover' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5V/O7SW/LLTGNRWB/F5VO7SWLLTGNRWB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assemble the Cover' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now that all the holes have been cut in the cover, you can start attaching everything. Screw the fan onto the back of the radiator (side with the pipes) making sure the direction of the air is into the radiator (look for the arrows on the side of the fan). I replaced the long screws that came with the radiator with stainless steel screws since the radiator will have condensation that may corrode other screws. Insert the vent covers, switches, and power jack into the cover. Secure the jack with the nut and tighten.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Connect Cover Wires</strong><div class='step-images count-10'><figure><img src='https://content.instructables.com/FOF/FJLV/LLTGNRVX/FOFFJLVLLTGNRVX.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNO/DDHG/LLTGNRVW/FNODDHGLLTGNRVW.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ1/NQG0/LLTGNRW8/FJ1NQG0LLTGNRW8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQU/0ESE/LLTGNRW9/FQU0ESELLTGNRW9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGH/GFGV/LLTGNRWA/FGHGFGVLLTGNRWA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOF/FJLV/LLTGNRVX/FOFFJLVLLTGNRVX.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNO/DDHG/LLTGNRVW/FNODDHGLLTGNRVW.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ1/NQG0/LLTGNRW8/FJ1NQG0LLTGNRW8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQU/0ESE/LLTGNRW9/FQU0ESELLTGNRW9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGH/GFGV/LLTGNRWA/FGHGFGVLLTGNRWA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect Cover Wires' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The switches have LEDs so they require both positive and negative connections.</li><li>Only 2 wires of the fan are used. See the diagram for which wires are positive and negative. Cut off the connector on the fan cable and strip the ends of the negative and positive wires.</li><li>I used the leftover wire from the fan for the last two connections.</li><li>The water pump has a cable with a 5.5 x 2.1mm jack to connect to power. Cut it off but leave enough wire so that it can go from the pump switch to the back of the cover and hang down (see picture). This will allow the pump to be plugged into the cover to get power. Strip the ends of this wire.</li><li>Test to make sure all the connections are correct. With the jack connected to a 12V power source, the main power switch should light up when switched on and the fan should come on. With the main power switch on, turning on the pump switch should light up the LED and provide power to the jack for the pump. Once everything tests ok, solder all the wires to the terminals.<ul><li>Connect the positive wire from the power jack to the middle terminal of the main power switch.</li><li>Connect the negative wire from the power jack to the common (gold) terminal of the main power switch.</li><li>Connect the fan negative to the common (gold) terminal of the main power switch.</li><li>Connect the fan positive wire to the load terminal of the main power switch.</li><li>Connect a wire from the load terminal of the main power switch to the middle terminal of the pump switch.</li><li>Connect a wire from the common (gold) terminal of the main power power switch to the common (gold) terminal of the pump switch.</li><li>Connect the positive (red) wire to the load terminal of the pump switch.</li><li>Connect the negative (black) wire to the common (gold) terminal of the pump switch.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Attach the Pump and Float Switch</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FFS/PI9N/LLTGNRW7/FFSPI9NLLTGNRW7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Pump and Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F89/0XQ4/LLTGNRWJ/F890XQ4LLTGNRWJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Pump and Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFS/PI9N/LLTGNRW7/FFSPI9NLLTGNRW7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Pump and Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F89/0XQ4/LLTGNRWJ/F890XQ4LLTGNRWJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach the Pump and Float Switch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The switch should be close to the pump inlet and the pump should be at the back of the cooler so that the water hose can pivot easily when the cover is opened. I put the pump in the middle of the back wall and the switch next to it. Glue the pump platform to the cooler bottom (roughen the surfaces with some sandpaper) and attach the switch bracket to the back wall. Make sure the height of the bracket is above the pump so that the switch turns on when the water is just above the pump. Once the glue is dry, bolt the pump to the platform and slip the switch and the protective cylinder into the bracket. Make sure everything is tight. Wrap the switch wire around the pump wire to keep things tidy. I used a few zip ties attached to some mounts to keep the wires in place.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Wire Pump and Float Switch</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FDQ/XOSD/LLUW3Q5V/FDQXOSDLLUW3Q5V.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wire Pump and Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQH/XFRJ/LLTGNRWK/FQHXFRJLLTGNRWK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wire Pump and Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDQ/XOSD/LLUW3Q5V/FDQXOSDLLUW3Q5V.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wire Pump and Float Switch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQH/XFRJ/LLTGNRWK/FQHXFRJLLTGNRWK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wire Pump and Float Switch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The water pump and float switch are connected to the power via a plug that connects to the jack hanging from the back of the cover (the jack originally came from the pump). The pump and switch are wired into a plug (the panel jack used for the power came with 5.5 x 2.1mm plugs). Since the jack from the cover provides power when the pump switch is on, the float switch is wired so that it interrupts power to the pump when the water level is low.</li><li>Wrap everything up tightly with electrical tape. I added a coat of liquid electrical tape over everything to waterproof it.<ul><li>Connect one wire of the float switch to the positive (red) wire from the pump.</li><li>Connect the other wire of the float switch to the positive terminal of the jack.</li><li>Connect the negative (black) wire from the pump to the negative terminal of the jack.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Attach Shroud and Hose</strong><div class='step-images count-10'><figure><img src='https://content.instructables.com/F7J/NNAE/LLTGNRVL/F7JNNAELLTGNRVL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEP/AAL9/LLTGNRVN/FEPAAL9LLTGNRVN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/F50/R6AR/LLTGNRVT/F50R6ARLLTGNRVT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN9/LS73/LLTGNRWG/FN9LS73LLTGNRWG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAN/80HS/LLTGNRWC/FAN80HSLLTGNRWC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7J/NNAE/LLTGNRVL/F7JNNAELLTGNRVL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEP/AAL9/LLTGNRVN/FEPAAL9LLTGNRVN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/F50/R6AR/LLTGNRVT/F50R6ARLLTGNRVT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN9/LS73/LLTGNRWG/FN9LS73LLTGNRWG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAN/80HS/LLTGNRWC/FAN80HSLLTGNRWC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Shroud and Hose' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The shroud is fairly tall and I wanted to have the shortest possible hose - just enough to make a 90-degree turn. Cut the shroud leaving about 1.5 inches. Put the hose over the shroud and bend it to 90 degrees. Cut off any excess and bend the foil in to leave a smooth edge. Attach the shroud to the cover and screw it into the radiator. I used 3/8" stainless screws to replace the ones that came with the radiator since those were a little short to go through the shroud and cover.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: Final Assembly</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F31/U668/LLUW453C/F31U668LLUW453C.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F31/U668/LLUW453C/F31U668LLUW453C.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Assembly' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>With the cover complete and the pump and float switch in place, the final connections can be completed. Attach the cover back onto the cooler. Plug the pump into the jack hanging from the cover. Connect a hose from the pump to one of the radiator tubes. You may have to twist it into an S shape so that the cover closes properly. Use the clamps that came with the radiator to clamp the tube to the pump and the radiator. Attach another piece of tubing to the other radiator tube and put it away from the pump. Use zip ties and mounts to hold the return tube in place.</li><li>You are done!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Step 13: Final Thoughts</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F2Z/8XAN/LLTGNRWS/F2Z8XANLLTGNRWS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Thoughts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEX/69CD/LLTGNRWT/FEX69CDLLTGNRWT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Thoughts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FF4/0X9C/LLTGNRWU/FF40X9CLLTGNRWU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Thoughts' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2Z/8XAN/LLTGNRWS/F2Z8XANLLTGNRWS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Thoughts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEX/69CD/LLTGNRWT/FEX69CDLLTGNRWT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Thoughts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FF4/0X9C/LLTGNRWU/FF40X9CLLTGNRWU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Thoughts' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To use, add enough water to cover the pump. I used some ice packs at the bottom of the cooler to take up some space and then added ice blocks on top of that. Plug into a 12V source and enjoy the cool air!</li><li>Test results</li><li>The ambient air was 83 degrees. With just the fan running (pump off), the air from the cooler was 74 degrees. Not bad. When the pump was turned on the air temperature dropped down to a chilly 47 degrees!</li><li>Enhancements</li><li>With such a small cooler, the water flowing through the ice caused the ice to melt very quickly. I will try putting a grate above the water level and have the ice rest on it. That way the water will circulate but not melt the ice as quickly. The ice will cool the water as it melts and drips through the grate. Being able to adjust the pump volume and fan speed may also be useful. I will update these instructions if I try it.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>HOWTO: Moving From Google Voice (GV) to Google Messages (GM)</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>HOWTO: Moving From Google Voice (GV) to Google Messages (GM)</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FP8/9G6C/LO01VGLV/FP89G6CLO01VGLV.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>UPDATE: After I finished with this, I discovered that I also had substantial messaging history in Google Chat. Google Chat started out as Google Hangouts and changed several times as it morphed into a mostly G Suite application. I had kind of forgotten that I used it for a few years before switching over to using Google Voice for texting. I updated the sms.py script to be able to process Google Chat conversations. While I was at it, I made a few other enhancements to the script.</p>
+      
+        <p>(In the following discussion, GV is "Google Voice". GM is "Google Messages". GC is "Google Chat".)</p>
+      
+        <p>If you've been using Google Voice (GV) for a while, you may have thought about switching to use Google Messages (GM). There isn't a well-documented path for doing that without losing a lot of history. This instructable gives you step by step instructions for making that transition. It's a bit long, but take it step by step and you can do it! You don't have to be deeply technical to accomplish it. I went through this process myself before writing this (October/November 2023). I had to figure out some kinks, but in the end I got there, including moving over 22,000 SMS/MMS messages from Google Voice and over 68,000 messages from Google Chat. By following these instructions, you won't have to figure out the same things.</p>
+      
+        <p>This is necessarily a US (or North America) centric description. I don't know the ins and outs of telephone systems in other countries. Since GV is officially a US-centric service, well, you know what I'm saying.</p>
+      
+        <p>Note: I am in no way affiliated with Google nor the creators of the SMS Backup & Restore app. All of the technical details were taken from published information or from reverse engineering by me or by others (upon whose work I am building). A lot of the technical details are not well-documented, so it's subject to being changed on us without notice.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Your Android phone. (I don't know anything about doing something similar for Apple devices.)</li><li>A computer able to run a python script (Windows/Linux/Mac) and with an Internet connection.</li><li>The SMS Backup & Restore app from the Google Play store: https://play.google.com/store/apps/details?id=com.riteshsahu.SMSBackupRestore</li><li>A bit of time and patience. :-)</li><li>This is not a "build something"; it's a "do something". So, your supplies are things you already have or can get for free.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Motivation</strong><p><strong>Étapes :</strong></p><ol><li>I've been using GV for many years, since not long after the service arrived. All of the people in my family use GV numbers on their mobile phones as an alternative to the carrier-assigned "native" number. In fact, most family members don't know from memory what their native phone number is. We all give our our GV numbers for everything. Before we switched to GV, we used GC for a few years.</li><li>There are advantages to having this additional GV number alongside the native mobile number, though capabilities for native numbers have been catching up in recent years.</li><li>Competing against these benefits is the fact that carrier native number services are catching up on most of these fronts. It's also pretty clear that Google has not been making any significant investments in GV for the last few years. Even more clear to everybody is that every Engineering VP at Google has to be in charge of at least one messaging product that has no relationship with the many other messaging products from Google. If anyone starts infringing their turf, they change the name or user interface to throw everyone off the track.</li><li>One of those messaging products, GM, seems to have been created specifically as a client for Rich Communication Services (RCS). It is a frustrating fact that GM cannot work with a GV number, and my guess is that it never will be able. However, it's also true that GM has been getting a lot of developer attention at Google, with handy new features appearing all the time. That doesn't mean that trend will continue or that Google won't quietly abandon GM at some point, but for now it looks pretty good. I've been using GM for about several weeks as of this writing, and the experience is way ahead of GV that I (mostly) left behind.<ul><li>Access the number from multiple devices, including sharing a number among multiple people and having multiple numbers on a single device.</li><li>Texting and voice calls via a web page from a PC or tablet.</li><li>Change carriers at the drop of a hat without the hassle (and risk) of porting your number.</li><li>Make calls over WIFI or mobile data.</li><li>Free or cheap calls to or from other countries.</li><li>For GV, speech to text transcription of voicemails.</li><li>For GV, spam filtering and a few other add-on services.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: TL;DR: the Steps to Come</strong><p><strong>Étapes :</strong></p><ol><li>There are lots of variations in what you could do. Here are the steps that I think most people will want to do:</li><li>Again, GV is "Google Voice" and GC is Google Chat (aka Hangouts). GM is "Google Messages".<ul><li>Download the GM app to your phone and make it the default for SMS/MMS.</li><li>Activate RCS (aka, Advanced Messaging) in GM.</li><li>Port your GV number to your mobile carrier to replace your current carrier native mobile number. I assume you don't care about keeping your current carrier native mobile number.</li><li>Pair your web browser to GM by visiting https://messages.google.com/.</li><li>Get a new GV phone number to use for voicemail.</li><li>Set up conditional call forwarding to send your unanswered mobile calls to GV voicemail.</li><li>Export your message history from GV and GC or both, and import it into GM.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Wait, What Are SMS, MMS, and RCS?</strong><p><strong>Étapes :</strong></p><ol><li>You're probably not that interested in learning a bunch of telecom jargon, though you might already know that SMS is another name for text messaging. Just in case, here's a brief description of these things.</li><li>Behind the scenes, your mobile carrier takes care of getting the messages to customers of other mobile carriers, and the client apps on most phones are highly compatible with each other. In other words, you usually don't have to worry about things if you have someone else's phone number. That's not to say that SMS and MMS delivery are 100% reliable (they aren't), but things usually work seamlessly.</li><li>It's not precisely correct, but you could think of SMS, MMS, and RCS as the first, second, and third generations of mobile telecom messaging. If you are familiar with Apple's iMessage, it is none of these things, though iMessage can interact weakly with them (Apple's business decision).<ul><li>SMS is "short message service". It's the original mobile telecom industry mechanism for sending short plain text messages. SMS messages are able to be carried at very low cost due to the nature of common telecom protocols. In most cases, an SMS is limited to 160 characters, though a texting app might silently divide a long message into multiple shorter SMS messages, or it might automatically convert it to an MMS message.</li><li>MMS is "multimedia messaging service". Before long, people wanted more than plain text, so MMS was invented back in the original flip-phone era. The behind-the-scenes infrastructure is dramatically different from SMS, but in the user experience they seem quite similar. On a modern smart phone, they are blended together. With MMS, you can send attachments of various types (images, audio, etc). You can also have group conversations with more than just two people. MMS does not have the 160 character limit for text.</li><li>RCS is "rich communication services". RCS adds even more features beyond SMS and MMS. For example, with compatible RCS clients on both ends, you can see a visual indication that the other person is typing something, you can get delivery confirmations, you can get end-to-end encryption, and several other features.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Comparing GV, GC, and GM</strong><p><strong>Étapes :</strong></p><ol><li>Superficially, it seems like GV and GM are mostly the same and only differ in cosmetic details. If you take a deeper look, you'll realize they are fundamentally quite different. You can think of GV as an all-inclusive voice and messaging system that can tie into the telephone network. It's sort of like WhatsApp, WeChat, and many others, with that ability to tie into the telephone network being its killer feature. On the other hand, GM is fundamentally intertwined with the mobile telephone network and is only concerned with messages, not calls. The GM client on mobile phones also does voice calls, but it does that by seamlessly handing off to the phone's voice application (usually called "Phone"). So, with GV, it's a single mobile app for everything; with GM it's two or more cooperating apps blended together in the user interface so you don't have to worry about it.</li><li>GC is a truly closed system, like WhatsApp or Slack. It's mainly concerned with messages of various kinds. Although it has features for voice and video calls (or maybe it doesn't; I've kind of lost track in all the changes over time), it's not involved with the telephone network at all.<ul><li>The GM android app will only work with your carrier-assigned native mobile number, so it can only work on one mobile phone. The app can also work on tablets and other devices that don't have a voice line, but you have to go through a gentle pairing process with your mobile phone. GV has to be associated with a mobile number, but you can use the android app on any number of devices, including things like tablets, without any pairing process.</li><li>Since GM is using your native phone number, you will have to port that number if you want to change carriers and keep the number.</li><li>Both GM and GV have web interfaces, but technically you can only use GM on a single web interface at a time. If you try to open it on more than one device or browser tab, it detects it and asks you which one you want to use at the moment. In practice, this is not a big deal. A pop-up just asks you to confirm that you're using what you intend. Except for the one-time pairing and occasional pop-up confirmations, you can generally forget about the restriction.</li><li>The GM web interface is only for messaging, not for phone calls. The GV web interface can make phone calls if you have a GV phone number; it can make video calls without a GV number. (The GM mobile app can make phone calls, but it does it by using the configured phone call app on your device.)</li><li>With GV, you can make calls to or from other countries using Google-provided rates (often free if using WIFI). With GM, you will get whatever your mobile carrier provides. If this matters to you, you could get a new GV number just for international calls, though having multiple phone numbers is obviously inconvenient.</li><li>GV can natively make phone calls over WIFI. GM doesn't make phone calls at all, but your mobile carrier probably provides WIFI calling (which might or might not count against your mobile plan quotas). Ditto for texting.</li><li>GV provides voicemail as part of your Google account. Since GM doesn't really do voice at all, the voicemail will be whatever your mobile carrier provides for your native number or whatever 3rd party voicemail you set up.</li><li>GV offers cloud-based transcription for voicemail, with the transcript showing up in the app or web interface along with the audio. GM isn't really tied into voice calls, so it only offers phone-based transcription of voice messages. Voice messages are not the same thing as voicemail. A voice message is when someone records a message and sends it to you as an attachment to a text message. See more comments about voicemail later.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Will GM Work for You?</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F3D/IJHU/LO01VK50/F3DIJHULO01VK50.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Will GM Work for You?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL3/6EVB/LO01VK4A/FL36EVBLO01VK4A.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Will GM Work for You?' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3D/IJHU/LO01VK50/F3DIJHULO01VK50.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Will GM Work for You?' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL3/6EVB/LO01VK4A/FL36EVBLO01VK4A.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Will GM Work for You?' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>First things first: If your phone doesn't already have it, download the GM client app and see if your phone will let you use it as the default app for SMS/MMS. The answer is probably yes unless you are on a pretty old version of Android. If the answer is no, there's no point in going any further (unless you can upgrade your phone or something like that). Alternatively, Samsung and 3rd parties have messaging clients that can use RCS. Search the Google Play store for "rcs messages" and similar terms; you'll have to read the various app descriptions to see if they really use RCS. There are zillions of alternative texting apps, but most of them do not do RCS. The other RCS messaging apps probably do most or all of the things the GM app does and possibly have other added features. If your phone came with a messaging application that is not Google Messages, there is a decent chance that it really is and is just wearing a skin to make it look like it comes from your carrier. For simplicity, the rest of this discussion assumes you are using the GM app.</li><li>Whether you use GM or another app, you want to do two things after you download it:</li><li>Why am I making a big deal about RCS? Without RCS features, the value of switching from GV to GM is greatly diminished. Without RCS, I wouldn't even have bothered.<ul><li>Make it the default app for SMS and MMS (it will probably prompt you for that if it isn't already the default).</li><li>Enable RCS. Unfortunately, this also goes by a couple of different names. It might be called "chat" or "advanced features" or something similar.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Porting Your Number</strong><p><strong>Étapes :</strong></p><ol><li>GM only works with the native number on your mobile device. (Have I said that enough times yet?) Therefore, if you want to keep the same number, you will have to port your GV number from Google to your carrier.</li><li>Porting a number from one mobile carrier to another is a federally-mandated process in the US. It used to take a variable amount of time, from a day to a couple of weeks, and you might have had to talk with specially trained support reps on both ends. These days, it's much smoother, at least for the major mobile carriers in the US. The process can happen as quickly as a few minutes, though there are still ways for it to go sideways. You will want to carefully read the steps both for GV and for the carrier that will be receiving the number. For the receiving carrier, they might have different procedures for porting a number when activating a new line versus replacing the existing native number on a mobile phone. I can't stress enough that you should thoroughly understand the steps and get clarification from your carrier's support for anything that's not crystal clear. There are missteps you can take that will lead to losing your cherished GV number.</li><li>Even though the actual port from GV to your carrier can happen nearly instantly, there can still be a period of confusion (both technical and mental) where various systems are in transition from knowing you with your old number to knowing you with your new number. This shouldn't last more than a day or three before things settle down. If you can do it, it might be worth doing the porting step during a more or less idle period for texts and phone calls, but it's not critical.</li><li>Your old native number will stop working and will go back into a pool to eventually be assigned to someone else. So, if you have been using it for receiving one-time security codes or whatever (because some websites are too dumb to send them to a VoIP number and are also so dumb that they have to send the codes via SMS instead of letting you use an app), be sure to fix all that up. (Good luck remembering those places. :-( )</li><li>Depending on the provenance of your GV number, you might have to pay Google a one-time US$3 fee for porting it out to a mobile carrier. I don't think any US mobile carriers charge for porting a number into their system. Once you have ported it out, your Google account will no longer have a GV number. Your texts, voicemails, and call history will still be available in the GV mobile client and the GV website, so don't worry about that for now. GV will give you occasional reminders that you can get a GV number. You don't have to do that, but you might want to (see the voicemail discussion below).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Voicemail</strong><p><strong>Étapes :</strong></p><ol><li>Since GM does not do voice, it does not provide voicemail. Your mobile carrier probably does provide free voicemail in your mobile plan, though you might have to do some steps to enable it. Your mobile carrier might also provide voicemail transcription to text, though it may be an add-on feature that might require payment.</li><li>There are 3rd party voicemail providers (free, ad-supported, or paid) that work with most mobile carriers via a feature called Conditional Call Forwarding. It sometimes goes by other names, because marketing. The idea is that you set up call forwarding for the times when you want the call to go to voicemail: when you are already on a call, when you don't answer (or decline) a call, or when you are not on the network. Setting up conditional call forwarding is done from your mobile phone, either via settings or by dialing some special codes. Many 3rd party voicemail providers take care of this when you set up their mobile apps. The codes to dial are the same for most carriers and are standardized as MMI codes. It's possible that your carrier does not support conditional call forwarding, but most do support it (maybe not for pre-paid plans). The 3rd party voicemail provider will give you a number for a "voice mailbox", and you want to use conditional call forwarding to send callers to that number.</li><li>The most common way to set up conditional call forwarding, for the example voicemail number 123-456-7890, is by dialing from your phone dialpad:</li><li>(If that doesn't work, try it again with a single "*" at the beginning.)</li><li>Interestingly, one of those 3rd parties providing voicemail is Google Voice. So, if you were happy with that aspect of GV, you can continue using it for voicemail. Google provides information about it here. Since you just ported your number out of GV, your GV account no longer has a phone number. You can select a new number for GV via the web interface. You will only be using this number for the voicemail feature (or maybe to use Google rates for international calling), so you really don't care what area code it's in or if it's a particularly memorable number. You probably want to change GV settings to not ring your phone or web browser since that will just add additional time before your caller gets diverted to voicemail.</li><li>Once you have your 3rd party voicemail number (either GV or someone else), set up conditional call forwarding from your phone. I've used a few different mobile carriers over the years and have found this thing finicky with all of them. If you try it and it fails with a cryptic error message, wait a while and try again later, maybe even a day or two later. It may also help if you turn off WIFI to make sure your interactions are going over the mobile network. Of course, you can also call your carrier's support line to make sure they support conditional call forwarding and to troubleshoot any problems if you just can't get it to work.</li><li>With any of the 3rd party voicemail solutions, you will probably have to have an additional app on your phone just for interacting with voicemail. The app will probably give you notifications when you have a new voicemail message. If they do give you those notifications, resist the temptation to text or call back from the notification panel since it will probably show the other person your voicemail phone number (which you are trying to not publicize) instead of your native mobile phone number. The exception is if your voicemail app gives you the option to always make calls from your carrier native number. (Even if it does, test it to make sure it does what it says.)</li><li>Your phone is pretty likely to assume your voicemail is your carrier's native voicemail, and if there is a special way of calling into voicemail (for example, press and hold "1" on the dialpad), it will almost certainly take you to your carrier voicemail instead of the 3rd party voicemail you set up. So, don't do that.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Messages and Call History</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FQG/IACQ/LOWX0ZRQ/FQGIACQLOWX0ZRQ.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Messages and Call History' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHU/WDUS/LOWX0ZRR/FHUWDUSLOWX0ZRR.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Messages and Call History' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQG/IACQ/LOWX0ZRQ/FQGIACQLOWX0ZRQ.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Messages and Call History' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHU/WDUS/LOWX0ZRR/FHUWDUSLOWX0ZRR.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Messages and Call History' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Your message and call histories in GV are associated with your Google account, not the specific phone number. They will still be there even after you have ported your GV number to your carrier, and they will still be there after you have gotten a new GV number. On the other hand, new messages will be coming into your GM history, and it doesn't know anything about your GV history. To avoid the inconvenience of needing to consult two different places for your existing conversations, you can export your message history from GV and import it into GM. It's a little bit complicated, but you only have to do it once. If you are not comfortable with the steps, find a trustworthy geek to help you out. As you will see, you can do the same thing with your call history and voicemail messages, but you might find those less interesting.</li><li>Your GC history is also associated with your Google account, and you can similarly export it an import it into GM. The steps are closely related to doing it for GV.</li><li>You might like to delete junk conversations from GV and GC before you export things. By "junk", I mean things like wrong number messages, one-time security code messages, shipment tracking you no longer care about, and so on. Both GV and GM have pretty reasonable spam filtering, so there is probably not much of true spam in your GV message list. Likewise, you may have a lot of "junk" voicemail messages that you want to delete.</li><li>By the way, the GM app has a feature that can automatically delete those one-time security code messages after 24 hours, which is a nice de-clutter helper.</li><li>To export your GV message and call history and your GC message history, visit https://takeout.google.com/. Deselect everything, then scroll down until you find Google Chat and Voice, and select them. Follow the directions to create a one-time export. The default is to create one or more ZIP files limited in size to 2GB. For convenience, if you have a lot of messages or voicemail in your history, you may want to boost that maximum size so that you don't have to later combine those multiple ZIP files. The export is a background procedure, and Google will send you an email notification with a link when the export is ready for download.</li><li>While you are waiting, install the SMS Backup and Restore app on your phone. You can try some backups and restores while you are waiting to get familiar with the app. The app has both a free ad-supported version and a paid version; the choice is yours, but I liked it and appreciated the work that went into it so much that I paid for it.</li><li>When Google notifies you that the export is ready, download the ZIP file or files. Unzip them in some convenient location, preserving the folder hierarchy from the ZIP file. If there are multiple ZIP files, unzip them all to the same target location. The top-level folder will be "Takeout", and it will contain "Voice" and "Google Chat" subfolders. It also contains a file "archive_browser.html" which you can open in your browser to examine things (you can skip that unless you are curious.)</li><li>The "Voice" subfolder contains a few files and folders. Of interest for this is the subfolder "Calls". The Calls subfolder contains a collection of HTML and other file types with names like "+12065550253 - Received - 2017-06-14T21_31_42Z.html". The phone number might be replaced with a name if it was one of your Contacts, and it might be "Group Conversation" if multiple parties were involved or there were MMS attachments. Where you see "Received" in the example, the word tells you what kind of file it is:</li><li>There might be other file types that I didn't happen to come across.</li><li>The "Google Chat" subfolder contains a "Groups" subfolder, and things under there are organized quite a bit differently from how the "Voice" files are arranged. Each subfolder of "Groups" represents a conversation with a specific other party or group of parties. For each conversation, which might span years, there is a JSON file "group_info.json" that identifies the participants (one if them will be you) and a "messages.json" that represents all the messages in the conversation. For attachments like images, they are stored as individual files in the subfolder and referenced from "message.json".</li><li>Download the sms.py script from https://github.com/wjcarpenter/gvoice-sms-takeout-xml. Although that script is in a public repository of mine, it's an evolution of work originally done at https://github.com/calyptecc/gvoice-sms-takeout-xml and https://github.com/karlrees/gvoice-sms-takeout-xml.The README.md file in that same repository tells you how to use the script, and we're providing just a summary here. Refer to that README.md if you hit any snags. Using this script is the somewhat complicated part, where you might use a lifeline to consult your geeky friend(s).<ul><li>You can now use the resulting output files as backup files to be restored with the SMS Backup and Restore app (https://play.google.com/store/apps/details?id=com.riteshsahu.SMSBackupRestore). The app gives you several options for where it can look for the backup file you just created. The script produces four output files in the /someplace/t/ folder. You can decide which of these files you want to use in a restore operation in the app, and you can do them as a single combined restore operation or use them separately. Upload that file or files to the location where the app will look for them.</li></ul></li><li>You are likely to want to restore your SMS/MMS messages to give you the convenience of seeing those conversations all in one place, in your GM app. The case for the call history and voicemails is not as compelling since you probably consult that information much less frequently, and they still exist intact in your GV app. If you are using a new GV number for voicemail, then any new voicemail messages will continue to show up in GV. The choice is yours.</li><li>Once you have successfully restored your SMS and MMS messages, they will show up in the GM app and GM web page in the proper conversation threads and timestamps. The originals will also still be in your GV/GC apps and GV/GC web pages. You can delete them from GV and GC if you choose. As long as you keep a copy of the Google Takeout file that you downloaded earlier, it can act as a permanent back-up for your GV and GC messages. You might find it less confusing to have the messages in just one place.<ul><li>Received: An incoming call that was answered or resulted in a voicemail.</li><li>Voicemail (HTML): The transcript of a voicemail message.</li><li>Voicemail (MP3): The recorded audio of a voicemail message.</li><li>Missed: An incoming call that was not answered and did not result in a voicemail.</li><li>Placed: An outgoing call. (There are also some files lacking any of these words in their names. They seem to be the same as "Placed".)</li><li>Text (HTML): A single text message or a collection of text messages that are part of a conversation.</li><li>Text (JPG, MP3 or other file types): Images, audio, and other objects sent via MMS.</li><li>Save sms.py in some convenient location. Let's call that location /some/bin/sms.py. It is a python script that requires Python 3.</li><li>Use Google Takeout to download Google Voice messages. That will give you a file named takeout-something.zip. (you did this earlier)</li><li>Unpack that ZIP file in some convenient location. Let's call that location /someplace/t/. The Google Voice files will be in a directory Takeout/Voice/Calls/, aka /someplace/t/Takeout/Voice/Calls/. The Google Chat files will be in a directory Takeout/Google Chat/Groups/, aka /someplace/t/Takeout/Google Chat/Groups/.(you did this earlier)</li><li>In a terminal window, go to directory /someplace/t/Takeout/.</li><li>Run the python script, for example, python /some/bin/sms.py or python3 /some/bin/sms.py.</li><li>If you get python errors, it is most likely because you are missing some of the imported modules. Use PIP to install them until python stops complaining. For example, pip install bs4.</li><li>When the script starts running correctly, it will announce the locations of inputs and outputs and other helpful information.</li><li>It's possible that you will have some SMS/MMS messages for which the script cannot figure out the contact phone number. That's because of characteristics of the Google Takeout format. The script tries hard, but if it can't figure it out, it tells you with messages like this:</li><li>If you get any of those messages, add entries for those contacts into a JSON file /someplace/t/contacts.json. For the last example, you can add an entry for either the name or the email address; you don't need both. That will give you something like the following. We're omitting an explanation of JSON files because the requirement here is quite simple and obvious. For more detailed possibilities, see the README.md in the script repository.</li><li>Add the contact name exactly as shown in the warning message. Don't forget to include the + and the country code with the phone number. The quotation marks are not optional. The order of items in that file doesn't matter, but the python JSON parser requires a comma after each item except the final one.</li><li>Rerun the script until you get no errors about missing contact phone numbers.</li><li>sms-gvoice.xml: This file contains SMS and normal MMS messages from GV, including data for all MMS attachments.</li><li>sms-vm-gvoice.xml: This file contains MMS messages fabricated from GV voicemail files. They include a text transcript (if available) and the voicemail recording as an attachment.</li><li>sms-chat.xml: This file contains SMS and MMS messages from GC, including data for all referenced attachments.</li><li>calls-gvoice.xml: This file contains call history records from GV, for incoming, outgoing, missed calls, etc. It also contains a call history record for each GV voicemail; they are categorized as a missed call in this file.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Let's Recap</strong><p><strong>Étapes :</strong></p><ol><li>What have you done by following these instructions?</li><li>You can now us the extended features of GM for your text messaging.<ul><li>You ported your Google Voice number to your mobile carrier, and it is now the native phone number on your phone.</li><li>You set up a voicemail box using Google Voice or some other 3rd party.</li><li>You started using Google Messages for texting.</li><li>You also paired with the web page so you can do messaging from your computer.</li><li>You exported your Google Voice messages and call history using Google Takeout. Likewise for your Google Chat message history.</li><li>You imported some or all of that into Google Messages using the SMS Backup and Restore app.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fabriquer de la matiere textile a partir des orties communes (urtica dioica) Partie 1 (version 2025)</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Fabriquer de la matiere textile a partir des orties communes (urtica dioica) Partie 1 (version 2025)</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/3/3a/Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_filasse_peign_e_ortie_format_paysage.jpg/800px-Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_filasse_peign_e_ortie_format_paysage.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Dans ce tutoriel partie 1, nous verrons comment créer de la filasse d’ortie. La filasse est la matière textile brute, non raffinée et rugueuse, mais solide.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce tutoriel est créé dans le carde des recherches sur les matériaux écologiques, d’abord avec le projet Ortissage, puis par la suite avec le projet Artisanat Végétal.</p>
+      
+        <p>Plusieurs anciennes versions sont disponibles sur la page facebook Ortissage, mais cette version 2025 a été simplifiée suite à l’expérience acquise au fil du temps et les redécouvertes successives des procédés permettant de transformer les tiges d’ortie en matière textile utilisable.</p>
+      
+        <p>Dans ce tutoriel partie 1, nous verrons comment créer de la filasse d’ortie. La filasse est la matière textile brute, non raffinée et rugueuse, mais solide.</p>
+      
+        <p>Informations générales sur l’ortie : Les tiges d’orties sèches contiennent environ 10 % de matière fibreuse en poids sec. 10 kg de tiges sèches = environ 1 kg de matière fibreuse.</p>
+      
+        <p>Servez-vous de ce tutoriel comme d’un guide général, mais pas comme une référence absolue.</p>
+      
+        <p>Certaines méthodes peuvent marcher pour vous, d’autres non : n’hésitez pas à adapter les méthodes selon votre expérience, les orties de votre région, les conditions climatiques, votre capacité à avoir accès à un atelier de bricolage, vos possibilité de stocker les orties, etc. il est bien évidemment possible de rendre ces méthodes plus efficaces en les simplifiant, mécanisant, etc...</p>
+      
+        <p>Sommaire :</p>
+      
+        <p>1/ Récolte, rouissage et séchage.</p>
+      
+        <p>2/ Teillage</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 20 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes__urtica_dioica__Partie_1__version_2025_" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes__urtica_dioica__Partie_1__version_2025_</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récolte, rouissage et séchage.</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/be/Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_tiges_d_ortie_rouies.jpg/800px-Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_tiges_d_ortie_rouies.jpg' alt='Fabriquer de la matiere textile a partir des orties communes urtica dioica Partie 1 version 2025 tiges d ortie rouies.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Récolte :</li><li>Les tiges d’orties (urtica dioica) peuvent être récoltées de juin à août. Il faut toujours récolter des tiges qui font minium 1 mètre de haut. En dessous de cette taille la fibre est trop fine et trop peu présente dans la tige. Idéalement, il faudrait récolter quand les tiges sont les plus hautes possibles (1m50, 2m de haut).</li><li>Prenez toutes vos tiges d’orties et enlevez les feuilles en partant du bas de la tige (la partie de la tige qui est près du sol) vers le sommet (la partie de la tiges qui la plus en hauteur).</li><li>Si vous récoltez seul.e avec un sécateur par exemple, faite petit à petit : inutile de couper des centaines de tiges si vous ne pouvez pas tout transformer le jour même. Procédez par étapes et faites environ 100 tiges par jour sur une zone de votre jardin/ terrain.</li><li>Une fois toutes les feuilles enlevées, faites des fagots de tiges : prenez des élastiques en caoutchouc, et mettez 2 élastiques par fagot pour assurer une bonne stabilité de l’ensemble. Un fagot est un groupe de tiges. Mettez environ 10 tiges par fagot pour assurer un bon séchage.</li><li>Rouissage :</li><li>Le rouissage est un mot ancien, qui vient du francique rotjan, qui signifie pourrir (source : Rouissage — Wikipédia ).</li><li>Ce procédé va nous servir à commencer à libérer la matière fibreuse présente dans les tiges d’ortie.</li><li>Voici le procédé de rouissage le plus long mais le plus simple et nécessitant le moins d’outils : le rouissage en plein champ.</li><li>Si vous n’avez pas de champ, rassurerez-vous, un endroit à l’extérieur au soleil fera très bien l’affaire. Dans le cas de l’ortie en particulier, les tiges d’orties craignent beaucoup la pluie et l’humidité.</li><li>Au moindre signe de pluie, rentrez vite vos fagots de tiges ou elles pourraient pourrir et vous perdriez alors toute la récolte. Mettez vos fagots contre un mur, bien espacés entre eux, car il leur faut un maximum de lumière et d’air pour commencer le processus de rouissage et de séchage, qui va durer environ 2 à 3, 4 semaines, selon la météo.</li><li>C’est en grande partie le soleil qui fait le travail de rouissage. Vous savez que vous orties sont rouies quand elles passent d’une couleur verte à une belle couleur jaune paille (voir image).</li><li>Cherchez à mettre vos fagots verticaux (contre un mur ou une rampe, ou contre des tréteaux) et pas trop en contact avec le sol (source d’humidité), de préférence ne les couchez pas contre le sol.</li><li>Séchage :</li><li>Au bout de 2 semaines de rouissage environ, une fois vos tiges d’orties bien rouies, couleur jaune paille pour l’essentiel, vous pouvez les mettre au sec. Mettez les de préférence dans un endroit fermé et chauffé, comme un grenier, dans la maison ou un atelier bien isolé et chauffé. Évitez les bâtiments mal isolés et humides car toute votre récolte pourrait alors moisir.</li><li>Bien conservées, les tiges d’orties peuvent se garder des années avant d’être transformées.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Teillage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_teilleuse_sp_ciale_ortie.jpg/800px-Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_teilleuse_sp_ciale_ortie.jpg' alt='Fabriquer de la matiere textile a partir des orties communes urtica dioica Partie 1 version 2025 teilleuse sp ciale ortie.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le teillage est l’action de teiller, c’est-à-dire écraser des tiges fibreuses pour donner 2 co-produits :</li><li>Premièrement la filasse qui a une haute teneur en fibres. Et deuxièmement des copeaux de bois, qui pourront être valorisés en paillage pour les plantes, combustibles, ingrédient pour éco-matériau, etc.</li><li>Je vais vous donner 3 méthodes pour teiller les orties de la plus efficace (mais nécessitant plus de matériel à fabriquer) à la plus longue (mais nécessitant le moins de matériel à fabriquer)</li><li>Dans les 2 première méthodes, vous devrez TOUJOURS sécher au maximum vos tiges d’orties :</li><li>avec un séchoir solaire, un soufflant de chantier, déshumidificateur d’air,… il faut que les orties craquent lorsqu’on les teille. Si elles ne sont pas suffisamment sèches, rien ne se passe (ou très peu) les tiges d’orties resteront entières.</li><li>Le teillage peut se faire de 3 manières différentes :</li><li>Méthode 1-Avec une teilleuse spéciale ortie qui possède des dents d’engrenage rondes (voir image)</li><li>Méthode 2-Avec la méthode du sac de battage.</li><li>Méthode 3 -Avec la méthode de la cuisson/ épluchage.</li><li>Procédés et explications:</li><li>Méthode 1-Avec une teilleuse spéciale ortie vous pouvez écraser les tiges d’orties très sèches en tournant la manivelle et en faisant de multiples passages. Les copeaux tombent au sol peu à peu et il vous restera la filasse.</li><li>En moins d’une heure vous avez de la filasse d’ortie.</li><li>Méthode 2-Avec la méthode du sac de battage. Prenez un grand sac en tissu très simple (pas un sac de voyage, plutôt une grande housse de couette qui ne sert plus), mettez des tiges d’orties très sèches dedans, fermez bien le sac et battez le sac sur une surface solide, de préférence solide et irrégulière (une palette de bois avec des espaces entre les planches par exemple). Battez avec une planche à bord arrondi ou un manche à balai. Testez différentes choses selon votre matériel. Cette méthode a ses avantages et ses inconvénients : la majorité de la poussière des tiges d’ortie aura tendance à rester dans le sac. Malgré tout faites très attention lorsque vous ouvrez le sac, la poussière en suspension peut être présente.</li><li>Il se passe un phénomène intéressant lors du battage : la filasse a tendance à se mettre au dessus, et les copeaux en dessous. Vous pouvez donc régulièrement (toutes les 10min environ) enlever des copeaux pour remplir une boîte avec des copeaux et refermer le sac, battre à nouveau, changer le sac de position pour varier l’angle de battage, ré-ouvrir le sac pour vider les copeaux, etc.</li><li>L’entièreté du processus dire environ 2h, mais cela varie selon la quantité de tiges que vous avez à teiller.</li><li>Méthode 3 -Avec la méthode de la cuisson/ épluchage. Prenez vos tiges d’orties. Pour cette méthode, pas besoin de séchage important car il faut immerger les orties à moitié avec de l’eau dans un grand faitout, casserole à bord très haut, couscoussier,… (plus les bords sont haut mieux c’est). Plonger les orties dans l’eau et faites cuire 30 min à feu moyen. Laissez refroidir. Éplucher à la main, la filasse se détache très facilement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Stockage et conservation de la filasse, peignage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ad/Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_filasse_peign_e_ortie_etape_trois.jpg/800px-Fabriquer_de_la_matiere_textile_a_partir_des_orties_communes_urtica_dioica_Partie_1_version_2025_filasse_peign_e_ortie_etape_trois.jpg' alt='Fabriquer de la matiere textile a partir des orties communes urtica dioica Partie 1 version 2025 filasse peign e ortie etape trois.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Votre filasse est extraite des tiges d’orties mais il reste des copeaux, et la matière obtenue est très rugueuse. Il vous suffit de la peigner : un peigne à clous avec des clous de taille moyenne ou grande dans une planche de bois de 2cm d’épaisseur ou plus, et 5mm d’espace entre chaque clou est suffisant (mais pensez à percer bien droit). Accrochez fermement votre peigne à une table solide et peignez votre filasse en commençant par le bout de votre poignée de filasse et remontez progressivement vers le centre. La filasse qui reste dans votre main sera faite de fibres longues. La filasse qui reste coincée dans le peigne est faite de fibres moyennes à courtes. Faites 2 tas : un de filasse longue, et un de filasse courte/ moyenne. C’est un processus long et délicat, ne forcez pas, si la filasse coince, mettez-en moins et recommencez.</li><li>L a filasse se conserve des années au sec, en attendant d’autres transformations.</li><li>Félicitations ! Vous avez maintenant une belle filasse d’ortie pour faire des cordages et des projets textiles écologiques !</li><li>Pour aller plus loin et voir comment affiner votre filasse et en faire une belle fibre fine, voir la partie 2 du tutoriel : « matière textile orties, partie 2 (version 2025) » sur le wiki low tech lab.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

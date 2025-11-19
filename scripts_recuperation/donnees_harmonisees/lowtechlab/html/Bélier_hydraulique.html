@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bélier hydraulique</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Bélier hydraulique</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/9/95/B_lier_hydraulique_P2251150.JPG/800px-B_lier_hydraulique_P2251150.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a pour objectif de faciliter la compréhension, le dimensionnement, la fabrication et l'installation d'un système d'élévation d'eau appelé "Bélier hydraulique".</div>
+        
+      </div>
+    
+    
+      
+        <p>Le système du bélier hydraulique a été inventé en 1797 par Joseph-Michel Montgolfier, celui qui construisit la première montgolfière en 1782 avec son frère, Jacques-Étienne. Il fut tout de suite très critiqué par ses contemporains qui l’associent aux théories du mouvement perpétuel, alors considérées comme des hérésies.</p>
+      
+        <p>Il faut attendre 1857 pour qu’un brevet soit déposé par Ernest Sylvain Bollée qui améliore et concrétise l’invention de Montgolfier.</p>
+      
+        <p>Dès lors beaucoup utilisé dans les campagnes françaises et européennes, il est maintenant implanté en Amérique et en Afrique dans des régions pour lesquelles l'approvisionnement en combustible est difficile ou onéreux.</p>
+      
+        <p>Le bélier hydraulique est un système d’élévation d’eau dont le fonctionnement dépend uniquement de la force motrice de l'eau, sans aucune autre intervention extérieure. Concrètement cela permet de pomper l’eau d’une source (rivière, lac, ruisseau) et de l’utiliser plus haut pour irriguer des cultures, abreuver des bêtes ou pour toute autre utilisation domestique.</p>
+      
+        <p>Le bélier hydraulique présente plusieurs avantages :<ul><li>Il est relativement peu coûteux</li><li>Il fonctionne de façon entièrement automatique, sans électricité, sur une longue durée, certains béliers fonctionnant depuis plusieurs dizaines d'années</li><li>Il ne nécessite aucun graissage, aucun entretien autre que les soins de propreté</li><li>Les réparations sont peu fréquentes, nécessitées seulement par l'usure inévitable des pièces mobiles</li><li>Il est déclinable en pratiquement toutes les tailles pour s’adapter aux débits et aux hauteurs voulues</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 100 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Bélier_hydraulique" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Bélier_hydraulique</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Ne pas utiliser de matière plastique pour le bélier, que ce soit vannes ou clapets, car ceux ci vont d'user très rapidement en fonctionnement.</li><li>A acheter:<ul><li>Vanne en 26/34</li><li>1 Coude en 26/34</li><li>3 Mamelons mâles en 26/34</li><li>1 Té en 26/34</li><li>1 Crépine en 26/34 ou un clapet anti-retour intérieur plastique (voir étape 5)</li><li>1 Clapet anti-retour en 26/34 avec intérieur inox/laiton</li><li>2 Vannes en 20/27 ou 1 vannes avec robinet de vidange</li><li>1 Croix en 20/27</li><li>1 Réduction 26/34 vers 20/27</li><li>1 ou 2 Rouleaux de téflon pour l'étanchéité de tout l'assemblage</li><li>Du frein filet pour la fixation de la tige filetée</li><li>4 Tiges avec écrous papillons</li><li>Une dizaine de rondelles de diamètre intérieur 6mm</li><li>2 Ecrous pour tige filetée M5</li></ul></li><li>A récupérer:<ul><li>1 Extincteur de 7 ou 9 litres</li><li>1 Chambre à air ou autre caoutchouc pour faire un joint</li><li>Clous</li><li>1 Planche en bois</li><li>Fer plat de largeur 20 ou 30 mm, environ 60 cm</li><li>1 chalumeau (selon étape 5)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Pince multiprise</li><li>Pince à griffe pour ouvrir la crépine</li><li>Ciseaux</li><li>Marteau</li><li>Perceuse + 1 Foret de 6 ou 7</li><li>Taraud ( ici M5)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Comment marche un bélier hydraulique?</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/69/Pompe-belier-hydrolique_Capture.PNG/800px-Pompe-belier-hydrolique_Capture.PNG' alt='Pompe-belier-hydrolique Capture.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>À l'amorçage, l'eau qui s'engouffre dans la canalisation d'arrivée s'écoule dans le déversoir à travers la soupape primaire.</li><li>L'accélération de l'eau provoque la brusque fermeture de la soupape primaire.</li><li>Freinée brutalement, la colonne d'eau génère une surpression dans le corps de pompe (coup de bélier), qui ouvre le clapet interne.</li><li>Sous l'effet de cette surpression, l'eau s'écoule dans le ballon (et le conduit de refoulement), comprimant le volume d'air jusqu'à équilibrage des pressions.</li><li>L'inversion des pressions referme le clapet interne.</li><li>L'eau emprisonnée sous pression dans le ballon se vide dans la canalisation de refoulement jusqu'à équilibrage des pressions (déterminée par la hauteur du conduit).</li><li>La fermeture du clapet interne ayant fait chuter la pression, la soupape primaire s'ouvre à nouveau. Un nouveau cycle commence…</li></ul></li><li>Sans accident, ce processus se renouvelle perpétuellement, tant qu'il est alimenté en eau.</li><li>Voir des explications en vidéo</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Evaluer un site et dimensionner le bélier</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/e/e5/Pompe-belier-hydrolique_sch_ma_L_h_H.PNG' alt='Pompe-belier-hydrolique sch ma L h H.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6f/Pompe-belier-hydrolique_Table_des_chutes.PNG/ia-d44a06bd1031e60cd2bb081e1fd1414d-px-Pompe-belier-hydrolique_Table_des_chutes.PNG.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/10/Pompe-belier-hydrolique_B_lier.PNG/ia-fabdaef6a7b785f1ba7e8e48ae4657e5-px-Pompe-belier-hydrolique_B_lier.PNG.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tout d’abord il faut trouver de l’eau en surface qui coule continuellement sur une pente suffisamment vive (de l’ordre de 10% minimum). Si il s’agit d’un barrage ou d’un lac, s’assurer qu’il existe des positions en contrebas.</li><li>Pour bien connaitre un site, il faut ensuite estimer 4 paramètres (voir schéma) :<ul><li>q le débit de la source</li><li>H la hauteur d’élévation</li><li>L la longueur de la conduite motrice</li><li>h la hauteur de chute</li></ul></li><li>La hauteur d’élévation correspond à la différence de hauteur entre le bélier et le réservoir d’arrivée de l’eau. Concrètement il suffit de décider de l’endroit voulu pour l’arrivée d’eau et de mesurer les dénivelés entre ce point et le cours d’eau (en moyenne). Cette mesure est encore une fois indicative et sera affinée plus tard. Pour les mesures de dénivelés le site https://www.geoportail.gouv.fr/carte est assez fiable et précis. Il faut simplement placer les points GPS sur la carte et effectuer un profil asymétrique. Cela correspond à une courbe montrant l’altitude (en m) en fonction de la distance (en m).</li><li>La longueur de la conduite motrice et la hauteur de chute sont directement reliées à la pente de la rivière ou à la pente avale du lac (si c’est un lac). Il est la aussi intéressant d’établir un profil asymétrique afin de se rendre compte des distances et des dénivelés.</li><li>Une fois que les paramètres du site sont mieux connus, il va falloir dimensionner le bélier pour avoir le débit voulu à l’arrivée et un coût minimal d’installation (plus le bélier est petit moins il coûte cher!).</li><li>Trouver L, H et h:<ul><li>Formule générale: q=((h*Q)/(h + H))0.70</li></ul></li><li>Ou 0.70 est le rendement de la pompe et Q le débit d’arrivée</li><li>En pratique il faut:<ul><li>H/10<h<H/2</li><li>3H <L<15H</li></ul></li><li>On peut aussi s’aider d’un Diagramme de chute comme celui proposé ci-contre pour déterminer H et h.</li><li>Dimensionner la pompe:</li><li>Pour dimensionner la pompe en elle même il faut choisir le débit voulu en arrivée selon les besoins. Une des manières les plus pratiques est d’utiliser le tableau ci-contre qui donne la taille finale de tuyauterie en fonction du débit de la source, du rapport d’élévation (h/H) et du débit final.</li><li>Celui-ci permet de procéder comme suis:</li><li>-choisir le débit de sorti voulu correspondant aux besoins en eau</li><li>-trouver la case correspondante en fonction des rapports d'élévations possibles avec votre terrain</li><li>-ne pas hésiter à surdimensionner en cas de doute</li><li>-vérifier que le débit de votre cours d'eau est bien supérieur à celui indiqué dans la ligne choisie</li><li>-lire sur la même ligne les dimensions du bélier pertinente avec votre configuration</li><li>On obtient donc le diamètre D du tuyau de batterie (ou conduite motrice) qui est le même pour tous les composants de la pompe.<ul><li>L’ensemble de la pompe est donc de même dimension sauf le tuyau de sortie (ou conduite de refoulement) qui est de telle sorte que son diamètre D’ soit égal à la moitié du diamètre du tuyau de batterie : D’=D/2</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Choisir son type de montage</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/0/0d/Pompe-belier-hydrolique_xUzrUg04GUZPxYPOMmM2yPs4-2w.jpg' alt='Pompe-belier-hydrolique xUzrUg04GUZPxYPOMmM2yPs4-2w.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/1a/Pompe-belier-hydrolique_1aQH6Ymk9cC77591OqMGlCA0cWI.jpg' alt='Pompe-belier-hydrolique 1aQH6Ymk9cC77591OqMGlCA0cWI.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/56/B_lier_hydraulique_P2251120.JPG/800px-B_lier_hydraulique_P2251120.JPG' alt='B lier hydraulique P2251120.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Lors de la fabrication d'une pompe bélier, il existe 2 configurations qui jouent sur le rendement du bélier. Ces différents montages concernent les positions du clapet de choc, de la cloche à air et du clapet anti-retour.</li><li>Montage en répartition (voir image 1):</li><li>Il s'agit d'un montage ou le clapet de choc est située avant la cloche à air, cela peut donner au bélier une allure plate comme sur la photo de présentation. Selon certaine source ce montage aurait 20% de rendement en plus par rapport à l'autre mais cela reste à prouver.</li><li>Montage en butée (voir image 2):</li><li>C'est celui présenté dans ce tuto, il est aussi beaucoup utilisé et donne au bélier une allure verticale.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Cloche à air</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/26/B_lier_hydraulique_P2240938.JPG/800px-B_lier_hydraulique_P2240938.JPG' alt='B lier hydraulique P2240938.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/23/B_lier_hydraulique_P2240942.JPG/800px-B_lier_hydraulique_P2240942.JPG' alt='B lier hydraulique P2240942.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8e/Pompe-belier-hydrolique_zoVIu2n-CRXjlY6SD21nyRATmCU.jpg/800px-Pompe-belier-hydrolique_zoVIu2n-CRXjlY6SD21nyRATmCU.jpg' alt='Pompe-belier-hydrolique zoVIu2n-CRXjlY6SD21nyRATmCU.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour démonter l’extincteur il faudra dévisser l'embout à l'aide d'une clef multiprise puis sortir la cartouche de CO2 contenue à l'intérieur.</li><li>Il faut ensuite retirer de la bombone la lance ainsi qu'un tube plastique.</li><li>La sortie est normalisé 20x27 ce qui permettra le raccord par vissage avec le corps du bélier.</li><li>Pour obtenir une cloche à air en état de fonctionner il reste à vider la poudre et à laver minutieusement l'intérieur.</li><li>Le trou de lance doit être bouché par quelque chose qui résiste à la pression! Trouver un bouchon voir souder une pièce ronde dessus peut être une solution.</li><li>Souder une pièce ronde ou trouver un bouchon pour fermer le trou de la lance. Il faut que ça puisse tenir la pression.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Clapet de choc</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/B_lier_hydraulique_P2241054.JPG/800px-B_lier_hydraulique_P2241054.JPG' alt='B lier hydraulique P2241054.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/06/Pompe-belier-hydrolique_image41.jpg' alt='Pompe-belier-hydrolique image41.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/75/B_lier_hydraulique_P2241048.JPG/800px-B_lier_hydraulique_P2241048.JPG' alt='B lier hydraulique P2241048.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/1a/Pompe-belier-hydrolique_52199-28971-medium.jpg' alt='Pompe-belier-hydrolique 52199-28971-medium.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ea/Pompe-belier-hydrolique_Clapet_1.jpg' alt='Pompe-belier-hydrolique Clapet 1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0c/Pompe-belier-hydrolique_one.JPG' alt='Pompe-belier-hydrolique one.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Première technique à l'aide d'une crépine (image 1):</li><li>Cette technique est la plus robuste mécaniquement mais présente plus de difficulté lors de la construction.</li><li>Il faut d'abord démonter la crépine à l'aide d'une pince à griffe.</li><li>Une fois le clapet extrait, le donner à un tourneur dans un atelier pour qu'il perce au centre avec un foret de 4mm, sur 7 à 10 mm de profondeur.</li><li>Tarauder à 5mm.</li><li>Percer avec foret de 6 ou 7 mm au centre du haut de la crépine</li><li>Insérer la tige avec un peu de frein filet dans le trou de 5 mm.<ul><li>[1]Je vous conseille de regarder ceci : https://www.youtube.com/watch?v=HZNX5r4G-cs</li></ul></li><li>Deuxième technique à l'aide d'un clapet anti-retour (image 4):</li><li>Cette technique est moins solide mais plus accessible car ce type de clapet en plastique se trouve dans tous les magasins en france.</li><li>Pour ouvrir le clapet anti-retour:</li><li>-Placer des raccords mâles de chaque côté pour éviter de l'abîmer pendant la manipulation</li><li>- Distinguer une ligne (très fine) séparant les deux partie du clapet</li><li>- Chauffer à l'aide d'un chalumeau au niveau de cette ligne pour faire fondre la colle à l'intérieur (ne pas trop chauffer non plus).</li><li>- Dévisser la clapet (à l'aide d'une pince à griffe et d 'un étau par exemple)</li><li>Il suffit ensuite d'enlever le clapet en plastique contenu à l'intérieur et de le remplacer par une rondelle, des écrous et une tige filetée comme sur la quatrième image.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Assemblage</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/B_lier_hydraulique_P2240987.JPG/800px-B_lier_hydraulique_P2240987.JPG' alt='B lier hydraulique P2240987.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/B_lier_hydraulique_P2230925.JPG/800px-B_lier_hydraulique_P2230925.JPG' alt='B lier hydraulique P2230925.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/B_lier_hydraulique_P2241013.JPG/800px-B_lier_hydraulique_P2241013.JPG' alt='B lier hydraulique P2241013.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant d'assembler le système, il recouvrir les filetages de téflon ou de tout autre moyen permettant d'assurer l'étanchéité.</li><li>Voici une vidéo explicative pour la pose du téflon.</li><li>Il suffit ensuite d'assembler le bélier selon le schéma ci-contre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Support</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/f/f6/Pompe-belier-hydrolique_support.png' alt='Pompe-belier-hydrolique support.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2b/B_lier_hydraulique_P2251107.JPG/800px-B_lier_hydraulique_P2251107.JPG' alt='B lier hydraulique P2251107.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e5/B_lier_hydraulique_P2251112.JPG/800px-B_lier_hydraulique_P2251112.JPG' alt='B lier hydraulique P2251112.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour choisir un support il faut prendre en compte la taille du dispositif et en particulier de la cloche à air car c'est elle qui risque de faire basculer l'ensemble. Le socle peut être en bois ou en métal mais pour des bélier sensés résister dans le temps l'idéal est de couler une dalle de béton pour fixer l'ensemble.</li><li>Découper les fers plats en fonction des longueurs désirées.</li><li>Fabriquer 2 ou 3 pièces en arc avec la méthode des clous (en traçant l'arc au diamètre du raccord choisi pour la fixation).</li><li>Percer les pièces en arc et le socle aux bons endroits afin d'obtenir un serrage conséquent mais pas démesuré (pour ne pas abîmer les conduites).</li><li>Fixer les pièces en arc au socle avec le bélier grâce à des tige filetées et des écrous papillon.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Mise en fonctionnement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0e/B_lier_hydraulique_P3031416.JPG/800px-B_lier_hydraulique_P3031416.JPG' alt='B lier hydraulique P3031416.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tout d'abord, placer le bélier dans un endroit plat et régulier, s'aider d'un niveau si nécessaire. Installer en suite la conduite de chute ainsi que celle de refoulement et effectuer les branchements (sans oublier le téflon).</li><li>Initialement, le bélier est vide d'eau et toutes les vannes sont fermées. On commence par ouvrir un peu la vanne de refoulement vers la citerne, puis en totalité celle d'arrivée d'eau. Normalement l'eau va pousser sur le clapet de choc et le mettre en marche.</li><li>S'il n'est pas encore en mouvement, il est utile de l'actionner plusieurs fois à la main afin d'avoir suffisamment de contre-pression dans la conduite de refoulement pour lancer le système. Il est possible que ça ne marche pas si le poids des rondelles est trop grand ou si le réglage de la course du clapet n'est pas adapté, c'est pourquoi ce modèle vous permet de faire ces réglages en changeant la position du premier écrou et le nombre de rondelles. Le réglage impactera aussi sur la quantité d'eau remontée par rapport à celle perdue.</li><li>Vous devrez vidanger régulièrement le bélier. En effet, le principe de fonctionnement implique qu'il doit y avoir toujours de l'air sous pression, poussée par l'eau, dans la cloche, or cet air se videra au fur et à mesure. Il faudra donc couper la vanne d'arrivée et de refoulement, ouvrir celle de vidange et réamorcer comme initialement.</li><li>Vidéo ici</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Donnez-nous votre avis</strong><p><strong>Étapes :</strong></p><ol><li>Comme tout le travail du Low-tech Lab, ce tutoriel est participatif, n'hésitez pas à ajouter les modifications qui vous semblent importantes, et à partager vos réalisations en commentaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

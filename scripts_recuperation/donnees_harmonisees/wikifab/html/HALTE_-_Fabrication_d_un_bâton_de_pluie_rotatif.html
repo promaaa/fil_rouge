@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>HALTE - Fabrication d'un bâton de pluie rotatif</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>HALTE - Fabrication d'un bâton de pluie rotatif</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/8/80/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_P1.jpg/ia-74771c268ea4b952aa432df5d46e2ac2-px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_P1.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">HALTE est un bâton de pluie conçu pour rafraîchir les usagers de l’espace public sans recours à l’eau ni à l’électricité. Il fonctionne de manière autonome et peut être installé dans tout type d’environnement extérieur. Accessible à tous, jour et nuit, HALTE permet de créer une sensation de fraîcheur lors des épisodes de chaleur, grâce au son apaisant de la pluie qu’il simule. Ce dispositif repose sur une approche low-tech et durable, en lien avec les problématiques de réemploi des matériaux. Il a été réalisé dans le cadre d’un projet de design autour du thème Precious Plastic, en partenariat avec l’atelier de La Belle Déchette à Rennes (35), par Méline Lahuppe et Théo Ferré.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment halte - fabrication d'un bâton de pluie rotatif.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/HALTE_-_Fabrication_d_un_bâton_de_pluie_rotatif" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/HALTE_-_Fabrication_d_un_bâton_de_pluie_rotatif</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Un vélo pour enfant (même abîmé) avec pédales et roues</li><li>Un tuyau de piscine (diamètre : 4 cm)</li><li>Une tige filetée</li><li>Des écrous adaptés</li><li>Un tasseau de bois (3 cm de large, 45 cm de long)</li><li>Une plaque Precious Plastic</li><li>Des pastilles de plastique broyées</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Clé anglaise</li><li>Meuleuse</li><li>Poste à souder</li><li>Brosse métallique</li><li>Scie sauteuse</li><li>Ponceuse ou papier abrasif</li><li>Perceuse (mèches de 0,4 cm et 0,8 cm)</li><li>Décapeur thermique</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récupération de la jante</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/4/45/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A1.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A1.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/08/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A2.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A2.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A2.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7a/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A3.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A3.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A3.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/85/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A4.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A4.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A4.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/5d/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_-A5.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_-A5.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif -A5.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Prenez un vélo pour enfant.</li><li>2. Démontez la roue avant (plus facile d’accès).</li><li>3. Mettez le reste du vélo de côté.</li><li>4. Retirez le pneu et la chambre à air.</li><li>5. Conservez uniquement la jante (la partie métallique de la roue).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Démontage de l’axe</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/a/a8/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B1.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B1.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif B1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/07/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B2.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B2.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif B2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Démontez l’axe de la jante.</li><li>2. Ne conservez que les deux extrémités de roulement.</li><li>3. Mettez-les de côté pour une utilisation ultérieure.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Soudure de la pédale</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/a/a9/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C1.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C1.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e8/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C2.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C2.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C2.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/85/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C3.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C3.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C3.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/85/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C4.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C4.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C4.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Démontez ou découpez une pédale avec une clé anglaise ou une meuleuse.</li><li>2. Soudez la pédale au centre de la jante à l’aide d’un poste à souder.</li><li>3. Nettoyez et poncez la soudure avec une brosse métallique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Création du tambour transparent</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/b/b5/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_1.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_1.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d0/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_2.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_2.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 2.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b0/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_3.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_3.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 3.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f7/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_4.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_4.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 4.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Prenez un tuyau de piscine de 4 cm de diamètre.</li><li>2. Coupez-le à la taille du périmètre de la jante + 5 à 10 cm supplémentaires.</li><li>3. Introduisez les pastilles de plastique broyées dans le tuyau.</li><li>4. Refermez le tuyau sur lui-même autour de la jante pour un bon ajustement.</li><li>Le tuyau doit épouser la forme de la jante.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Préparation du tasseau</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/3/3a/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A01.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A01.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/44/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A02.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A02.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A02.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/dd/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A03.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A03.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A03.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8c/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A04.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_A04.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif A04.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Prenez un tasseau de bois de 3 cm de large, 45 cm de long (à ajuster selon la taille de la roue).</li><li>2. Arrondissez les deux extrémités avec une scie sauteuse.</li><li>3. Poncez pour un rendu propre et sécuritaire.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Perçages</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/5/50/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B01.jpg/ia-c9087f8d449253ca24a523b77f8474b4-px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B01.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e4/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B02.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B02.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif B02.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/79/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B03.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B03.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif B03.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/80/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B04.jpg/ia-ade51d4a323a8541ec15bd3b6c95a321-px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B04.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1d/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B05.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B05.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif B05.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/10/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B06.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_B06.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif B06.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Percez un trou de 0,8 cm de diamètre à 3 cm de l’une des extrémités (le haut du support).</li><li>2. Percez deux trous de 0,4 cm sur l’autre extrémité, espacés de 5 cm (à 3 cm et 8 cm), pour fixer le support à un banc.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Montage de la roue</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/4/4f/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C01.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C01.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/ce/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C02.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C02.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C02.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2b/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C03.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C03.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C03.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2e/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C04.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C04.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C04.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/26/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C05.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_C05.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif C05.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Vissez une des extrémités de roulement sur la tige filetée, à 10 cm du bord.</li><li>2. Insérez la roue.</li><li>3. Vissez la seconde extrémité de roulement.</li><li>4. Serrez les fixations à l’aide d’une clé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Fixation du tasseau</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/e/e0/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D01.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D01.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif D01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/48/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D02.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D02.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif D02.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2c/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D03.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D03.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif D03.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/16/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D04.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D04.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif D04.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/85/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D05.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_D05.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif D05.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Découpez la tige filetée pour laisser 20 cm après la roue.</li><li>2. Vissez un écrou à 3 cm de la roue.</li><li>3. Insérez le tasseau en bois.</li><li>4. Ajoutez un second écrou de l’autre côté du tasseau et serrez.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Finitions</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/0/0a/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E01.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E01.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif E01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/41/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E02.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E02.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif E02.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f5/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E03.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E03.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif E03.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/71/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E04.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_E04.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif E04.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Coupez l’extrémité restante de la tige filetée à l’aide d’une meuleuse.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Façonnage de la plaque plastique</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/8/81/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_01.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_01.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/53/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_02.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_02.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 02.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e9/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_03.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_03.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 03.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c6/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_04.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_04.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 04.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d7/HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_05.jpg/800px-HALTE_-_Fabrication_d_un_b_ton_de_pluie_rotatif_05.jpg' alt='HALTE - Fabrication d un b ton de pluie rotatif 05.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Prenez une plaque Precious Plastic préalablement fabriquée.</li><li>2. Reproduisez la forme du tuyau (mis à plat) sur la plaque.</li><li>3. Découpez la forme avec une scie sauteuse.</li><li>4. Chauffez la plaque avec un décapeur thermique.</li><li>5. Moulez la plaque autour de la pédale soudée, pour un bon ajustement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

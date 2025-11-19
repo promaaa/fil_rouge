@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bartop 2 joueurs - Découpe laser</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Bartop 2 joueurs - Découpe laser</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/d/d1/Bartop_2_joueurs_-_D_coupe_laser_DSC0021_incrust_ok.png/ia-d488102758d01a619bd7174e2d2ffbb2-px-Bartop_2_joueurs_-_D_coupe_laser_DSC0021_incrust_ok.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Borne d'arcade bartop et Découpe laser</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce tuto vous propose de réaliser un Bartop arcade 2 joueurs totalement réalisé en découpe laser.</p>
+      
+        <p>En parallèle de ce tutoriel, vous pouvez aussi trouver un modèle de Stick Arcade de cette création (sans écran ni haut-parleurs). Le stick arcade moins chère convient à un usage plus mobile ou pour utilisez vos contrôles sur ordinateur.</p>
+      
+        <p>----------------</p>
+      
+        <p>Pour réaliser ce tuto il vous faudra en tout premier lieu vous renseigner sur le lieu où vous pourrez réaliser les 6 découpe laser nécessaire à la réalisation de votre borne. Pour cela, pensez à contacter le fablab le plus proche de chez vous !</p>
+      
+        <p>Les autres outils nécessaires à la fabrication sont listés dans les photos ci-contre.</p>
+      
+        <p>Vous trouverez aussi une liste de matériel complète sur des éléments nécessaires à votre projet. Les prix des divers éléments ont été volontairement arrondis à la hausse. Voyez donc le prix annoncé comme un maximum.</p>
+      
+        <p>Enfin pour accompagner votre fabrication nous serons accompagnés tout au long du tutoriel par les photographies des enfants de la Maison de Quartier la Bellangerais (Rennes - France), qui se sont frotté avec succès à la fabrication de cet objet en mai/juin 2019, accompagné de leur animateur Jérémie Leroy.</p>
+      
+        <p>----------------</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 16 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 342 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Bartop_2_joueurs_-_Découpe_laser" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Bartop_2_joueurs_-_Découpe_laser</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Voir le document ci joint</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Voir le document ci joint</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Matériel en détail</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/9/9b/Bartop_2_joueurs_-_D_coupe_laser_controles.png/800px-Bartop_2_joueurs_-_D_coupe_laser_controles.png' alt='Bartop 2 joueurs - D coupe laser controles.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e3/Bartop_2_joueurs_-_D_coupe_laser_afficahges.png/800px-Bartop_2_joueurs_-_D_coupe_laser_afficahges.png' alt='Bartop 2 joueurs - D coupe laser afficahges.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/67/Bartop_2_joueurs_-_D_coupe_laser_electronique.png/800px-Bartop_2_joueurs_-_D_coupe_laser_electronique.png' alt='Bartop 2 joueurs - D coupe laser electronique.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/45/Bartop_2_joueurs_-_D_coupe_laser_alim.png/800px-Bartop_2_joueurs_-_D_coupe_laser_alim.png' alt='Bartop 2 joueurs - D coupe laser alim.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/13/Bartop_2_joueurs_-_D_coupe_laser_visserie.png/800px-Bartop_2_joueurs_-_D_coupe_laser_visserie.png' alt='Bartop 2 joueurs - D coupe laser visserie.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de commander la fabrication, il va vous falloir un peu de matériel !</li><li>Vous trouvez ci-contre la liste entière des éléments à achetés divisés en 5 catégories : Boutons, Affichage/audio, Électronique, Câblerie et Menuiserie.</li><li>Vous l'aurez surement remarqué certains éléments sont à choisir dans cette liste. Il s'agit des boutons et de l'écran.</li><li>Côté boutons vous aurez le choix entre un set de boutons avec un diamètre de perçage Ø24mm (option B), un set de boutons avec un diamètre de perçage de Ø28mm (option C) ou un set de boutons de Ø30mm et Ø24mm de diamètre (option A). Vous devrez donc choisir l'un de ces cas auprès de votre fournisseur.</li><li>Côté écran, vous aurez le choix entre un écran 19 pouces en 16/10e (option 1) ou un écran 19 pouces en 16/9e (option 2).</li><li>Aussi soyez vigilant sur la connectique présente sur votre écran, si ce dernier n'a pas d'HDMI vous devrez acheter un adaptateur VGA/HDMI pour le brancher à votre Raspberry Pi (ordinateur).</li><li>Vous pouvez donc passer commande de l'ensemble du matériel décrit ci-contre. Les prix indiqués sont arrondis au supérieur, considérer donc le prix total des éléments comme un maximum.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparer les plans pour une découpe laser</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/d/d8/Bartop_2_joueurs_-_D_coupe_laser_lasercuttinh.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_lasercuttinh.jpg' alt='Bartop 2 joueurs - D coupe laser lasercuttinh.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/51/Stick_Arcade_2_joueurs_-_D_coupe_laser_she_ma.png/800px-Stick_Arcade_2_joueurs_-_D_coupe_laser_she_ma.png' alt='Stick Arcade 2 joueurs - D coupe laser she ma.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant que vous avez passé commande et en attendant que vous récupériez tout votre matériel, préparez -vous à trier (et peut-être à modifier) les plans correspondant à votre matériel.</li><li>Commençons donc par le tri dans les plans téléchargeable, choisissez :</li><li>- Pad option A pour un set de boutons de Ø24 et Ø30mm</li><li>ou</li><li>- Pad option B pour un set complet de boutons de Ø30mm</li><li>ou</li><li>- Pad option C pour un set complet de boutons de Ø 28mm</li><li>- Screen option 1 pour un écran 16/10e (conseillé)</li><li>ou</li><li>- Screen option 2 pour un écran 16/9e</li><li>Dans un second temps, vérifiez que votre modèle de joystick soit compatible avec votre set de plans :</li><li>Pour cela, trouvez les plans de modèle de votre joystick avec un moteur de recherche (les plans ressemblent au schéma ci-contre). Si vous ne le connaissez pas, vous pouvez mesurer directement la distance des trous de votre joystick avec une règle une fois que vous l'aurez.</li><li>L'implantation joystick des plans orignaux sont basés sur les joysticks les plus fréquents disponibles sur internet (comme sur le schéma : 4 trous disposés en rectangle d'environ 80x40mm), vous n'aurez probablement pas besoin de modifier vos plans. Cependant, si ceux-ci diffèrent trop, il vous faudra modifier les plans, pour cela passer par un logiciel vectoriel de votre choix. Vous pouvez demander conseil à votre fablab ou sur internet. Attention alors de bien modifier les deux couches du panel de boutons pour éviter de mauvaises surprises au montage.</li><li>Enfin, une fois le matériel collecté et les plans modifiés, vous pourrez découper au laser, en fablab ou par vos propres moyens, le set de plans nécessaire à la fabrication de votre Stick.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Fraisez les trous</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/f/fc/Bartop_2_joueurs_-_D_coupe_laser_0b-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_0b-01.jpg' alt='Bartop 2 joueurs - D coupe laser 0b-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1a/Bartop_2_joueurs_-_D_coupe_laser_0-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_0-01.jpg' alt='Bartop 2 joueurs - D coupe laser 0-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/61/Bartop_2_joueurs_-_D_coupe_laser_AA0aOB2.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA0aOB2.JPG' alt='Bartop 2 joueurs - D coupe laser AA0aOB2.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e8/Bartop_2_joueurs_-_D_coupe_laser_AA0aOB3.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA0aOB3.JPG' alt='Bartop 2 joueurs - D coupe laser AA0aOB3.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f3/Bartop_2_joueurs_-_D_coupe_laser_AA0aOB4.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA0aOB4.JPG' alt='Bartop 2 joueurs - D coupe laser AA0aOB4.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois vos pièces en bois sorties de la découpe laser, munissez-vous d'une visseuse équipée d'une fraise à encastrer. Avec la visseuse, biseautez légèrement tous les points marqués en rouge sur le plan.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblez l'arrière</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/f/fc/Bartop_2_joueurs_-_D_coupe_laser_1A-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_1A-01.jpg' alt='Bartop 2 joueurs - D coupe laser 1A-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/6f/Bartop_2_joueurs_-_D_coupe_laser_AA1aa.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA1aa.JPG' alt='Bartop 2 joueurs - D coupe laser AA1aa.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/57/Bartop_2_joueurs_-_D_coupe_laser_AA0aOB.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA0aOB.JPG' alt='Bartop 2 joueurs - D coupe laser AA0aOB.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois les pièces fraisées, vous pouvez commencer par assembler les deux pièces du dos ensemble par des vis 10mm. Attention toutefois à bien aligner les deux pièces du dos par le bord plat du haut (voir photo).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Assemblez le dessus</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/e/ec/Bartop_2_joueurs_-_D_coupe_laser_1B-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_1B-01.jpg' alt='Bartop 2 joueurs - D coupe laser 1B-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/fb/Bartop_2_joueurs_-_D_coupe_laser_AA1b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA1b.JPG' alt='Bartop 2 joueurs - D coupe laser AA1b.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ensuite, assemblez les deux pièces du dessus du bartop avec des vis de 10mm. Encore une fois, il vous faudra bien aligner les deux pièces sur le bord plat (voir photo).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Assemblez le bloc enceintes</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/a/a1/Bartop_2_joueurs_-_D_coupe_laser_1C-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_1C-01.jpg' alt='Bartop 2 joueurs - D coupe laser 1C-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/31/Bartop_2_joueurs_-_D_coupe_laser_AA1cA.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA1cA.JPG' alt='Bartop 2 joueurs - D coupe laser AA1cA.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/9/92/Bartop_2_joueurs_-_D_coupe_laser_AA1cC.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA1cC.JPG' alt='Bartop 2 joueurs - D coupe laser AA1cC.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/df/Bartop_2_joueurs_-_D_coupe_laser_AA1cE.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA1cE.JPG' alt='Bartop 2 joueurs - D coupe laser AA1cE.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/5f/Bartop_2_joueurs_-_D_coupe_laser_AA1cF.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA1cF.JPG' alt='Bartop 2 joueurs - D coupe laser AA1cF.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Enfin, nous allons assembler le "bloc enceinte". Dans notre exemple nous avons pris des enceintes d'ordinateurs récupérés. Si c'est votre cas, il vous faudra les sortir de leur boitier et récupérer les pièces nues (à partir du moment où elles seront à nus, il est très dangereux de brancher ces enceintes, ne le faites donc que pour tester, hors de portée d'éventuelles enfants). Il ne vous suffira plus que de viser les enceintes ainsi que les composants sur l'envers de la grille d'enceinte en bois (voir photo).</li><li>Si vous avez choisi des enceintes en kit de Ø 10cm, vous pouvez vous aider des supports d'enceintes en bois (sur le schéma) pour les installer contre la grille. Il ne vous restera donc plus qu'à connecter vos deux enceintes à votre préampli.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Commencez le montage !</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/1/10/Bartop_2_joueurs_-_D_coupe_laser_2-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_2-01.jpg' alt='Bartop 2 joueurs - D coupe laser 2-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/57/Bartop_2_joueurs_-_D_coupe_laser_AA2a.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA2a.JPG' alt='Bartop 2 joueurs - D coupe laser AA2a.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/03/Bartop_2_joueurs_-_D_coupe_laser_AA2b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA2b.JPG' alt='Bartop 2 joueurs - D coupe laser AA2b.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C'est à partir de maintenant qu'on attaque le montage de la borne :</li><li>Pour commencer, placer un côté sur une table et insérer en suivant le schéma les pièces suivant : Bloc dos, bloc enceinte, avant de la borne, support d'écran ...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Assemblez un côté et éléments de face</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/1/1d/Bartop_2_joueurs_-_D_coupe_laser_3-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_3-01.jpg' alt='Bartop 2 joueurs - D coupe laser 3-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/63/Bartop_2_joueurs_-_D_coupe_laser_AA3a.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA3a.JPG' alt='Bartop 2 joueurs - D coupe laser AA3a.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>... plus ajoutez-y le bloc du dessus, et le "marquee" (chapiteau en français), l'un s'emboitant dans l'autre (voir photo). À ce moment-là la borne ne tient pas encore debout,</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Préparer l'assemblage des deux côtés avec les tasseaux</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/8/8a/Bartop_2_joueurs_-_D_coupe_laser_4-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_4-01.jpg' alt='Bartop 2 joueurs - D coupe laser 4-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1d/Bartop_2_joueurs_-_D_coupe_laser_AA4b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4b.JPG' alt='Bartop 2 joueurs - D coupe laser AA4b.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/00/Bartop_2_joueurs_-_D_coupe_laser_AA4c.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4c.JPG' alt='Bartop 2 joueurs - D coupe laser AA4c.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/be/Bartop_2_joueurs_-_D_coupe_laser_AA4e.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4e.JPG' alt='Bartop 2 joueurs - D coupe laser AA4e.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f1/Bartop_2_joueurs_-_D_coupe_laser_AA4f.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4f.JPG' alt='Bartop 2 joueurs - D coupe laser AA4f.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Coupez un total de 6 tasseaux de 44,3cm. Sur chaque extrémité de chaque tasseau, marquez le centre de chaque côté. Munissez-vous de votre visseuse équipée d'une mèche bois de Ø 3mm et faites prétrouez l'ensemble des tasseaux aux endroits marqués.</li><li>Enfin, saisissez le deuxième côté du bartop et commencez à fixer les quatre premiers tasseaux (voir photo).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Assemblez les deux côtés donnez corps au bartop !</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/7/74/Bartop_2_joueurs_-_D_coupe_laser_AA4g.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4g.JPG' alt='Bartop 2 joueurs - D coupe laser AA4g.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/58/Bartop_2_joueurs_-_D_coupe_laser_AA4h.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4h.JPG' alt='Bartop 2 joueurs - D coupe laser AA4h.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d7/Bartop_2_joueurs_-_D_coupe_laser_AA4i.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4i.JPG' alt='Bartop 2 joueurs - D coupe laser AA4i.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7b/Bartop_2_joueurs_-_D_coupe_laser_AA4k.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4k.JPG' alt='Bartop 2 joueurs - D coupe laser AA4k.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/71/Bartop_2_joueurs_-_D_coupe_laser_AA4l.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA4l.JPG' alt='Bartop 2 joueurs - D coupe laser AA4l.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avec ce côté renforcé de tasseaux, venez la faire s'insérer sur le montage resté sur la table. Faites en sorte que tous les créneaux s'encastrent bien sur le dessus et sur le dessous de la borne.</li><li>Une fois que tout est bien emboité, retournez la borne (attention à ne pas la lâcher, sinon vous aurez l'étape tout à refaire), puis visez les tasseaux sur le côté fraichement retourné pour que le squelette de la borne soit bien terminé et solide !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Préparez l'écran</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/e/e6/Bartop_2_joueurs_-_D_coupe_laser_5-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_5-01.jpg' alt='Bartop 2 joueurs - D coupe laser 5-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/cf/Bartop_2_joueurs_-_D_coupe_laser_AA5a.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA5a.JPG' alt='Bartop 2 joueurs - D coupe laser AA5a.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Étape importante, ô combien importante, nous allons désormais, placez l'écran dans le Bartop. Pour cela nous pouvons nous y prendre de différentes façons. Mais avant toute chose :</li><li>Tentez de rentrer l'écran avec son boitier dans le bartop (voir étape 11).</li><li>Si cela rentre c'est parfait, vous n'aurez pas besoin des règles en bois cale-écran. Sinon, vous allez devoir retirer la coque de l'écran pour récupérer la dalle nue.</li><li>Ensuite, vous pourrez fixer les vis à tête creuses dans les règles cale écrans, nous vous conseillons alors d'en mettre deux, mais si vous n'avez pas la place une suffira (voir photo de l'étape). Attention, si les vis à tête creuses ne traversent pas la règle entièrement, vous pouvez fraiser plus fort leur trou.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Assemblez l'écran</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/1/1b/Bartop_2_joueurs_-_D_coupe_laser_6-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_6-01.jpg' alt='Bartop 2 joueurs - D coupe laser 6-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/14/Bartop_2_joueurs_-_D_coupe_laser_AA5b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA5b.JPG' alt='Bartop 2 joueurs - D coupe laser AA5b.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/ad/Bartop_2_joueurs_-_D_coupe_laser_AA5c2.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA5c2.JPG' alt='Bartop 2 joueurs - D coupe laser AA5c2.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2a/Bartop_2_joueurs_-_D_coupe_laser_AA5e.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA5e.JPG' alt='Bartop 2 joueurs - D coupe laser AA5e.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a9/Bartop_2_joueurs_-_D_coupe_laser_AA5d.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA5d.JPG' alt='Bartop 2 joueurs - D coupe laser AA5d.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Encore une fois, si votre écran rentre avec son boitier, glissez-le simplement dans le Bartop comme sur les photos. Sinon, vous devrez passer l'écran nue avec sa règle en bois fixée dans le Bartop. Ensuite il vous faudra bien centrer l'écran depuis l’intérieur de la pour qu'aucun bord ne puisse dépasser sur la face extérieure côté joueur. Une fois centré, fixez 4 équerres aux tasseaux centraux et à la règle de l'écran.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Complètez le boitier</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/1/1d/Bartop_2_joueurs_-_D_coupe_laser_7-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_7-01.jpg' alt='Bartop 2 joueurs - D coupe laser 7-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/76/Bartop_2_joueurs_-_D_coupe_laser_AA6b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA6b.JPG' alt='Bartop 2 joueurs - D coupe laser AA6b.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1a/Bartop_2_joueurs_-_D_coupe_laser_AA6c.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA6c.JPG' alt='Bartop 2 joueurs - D coupe laser AA6c.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a0/Bartop_2_joueurs_-_D_coupe_laser_AA6e.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA6e.JPG' alt='Bartop 2 joueurs - D coupe laser AA6e.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Votre écran maintenant en place, vous pouvez assembler les quelques pièces de consolidation du Bartop (voir schéma). Commencez par ajouter un cinquième tasseau au-devant de la borne, puis visez-le de chaque côté. Vissez ensuite le Marquee en façade et les côtés et fixez leur décoration personnalisée, gravée dans le bois 3mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Installez le panel de bouton</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/e/ed/Bartop_2_joueurs_-_D_coupe_laser_8-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_8-01.jpg' alt='Bartop 2 joueurs - D coupe laser 8-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/62/Bartop_2_joueurs_-_D_coupe_laser_AA7a.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7a.JPG' alt='Bartop 2 joueurs - D coupe laser AA7a.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/04/Bartop_2_joueurs_-_D_coupe_laser_AA7b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7b.JPG' alt='Bartop 2 joueurs - D coupe laser AA7b.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/4f/Bartop_2_joueurs_-_D_coupe_laser_AA7c.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7c.JPG' alt='Bartop 2 joueurs - D coupe laser AA7c.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant, il va être temps de s'attaquer au coeur de la fabrication de votre Bartop : le montage des contrôles.</li><li>Premièrement, il vous faudra installer le panel de boutons. Pour cela, installez la première couche du panel (avec les créneaux) et insérez-la à son emplacement (voir photo). Ensuite, visez cette première partie au reste du Bartop. Une fois fait, posez la seconde couche par-dessus la première comme sur les photos.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Fixez le premier joystick P2</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/1/1b/Bartop_2_joueurs_-_D_coupe_laser_AA7d.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7d.JPG' alt='Bartop 2 joueurs - D coupe laser AA7d.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a8/Bartop_2_joueurs_-_D_coupe_laser_AA7e.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7e.JPG' alt='Bartop 2 joueurs - D coupe laser AA7e.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8a/Bartop_2_joueurs_-_D_coupe_laser_AA7f.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7f.JPG' alt='Bartop 2 joueurs - D coupe laser AA7f.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8b/Bartop_2_joueurs_-_D_coupe_laser_AA7g.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7g.JPG' alt='Bartop 2 joueurs - D coupe laser AA7g.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3e/Bartop_2_joueurs_-_D_coupe_laser_AA7h.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7h.JPG' alt='Bartop 2 joueurs - D coupe laser AA7h.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour fixer le panel bois, nous allons installer les joysticks. Pour cela munissez-vous des joysticks, retirez le "balltop" visé ainsi que les caches en plastiques.</li><li>À l’intérieur du Bartop (posé sur le dos), insérez le premier joystick face aux 4 trous correspondants du côté "P2", puis passez rapidement les 4 boulons côté panel pour finir visez les boulons par et fixer votre joystick.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Fixez le second joystick P1 (avec manipulation optionnelle)</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/6/65/Bartop_2_joueurs_-_D_coupe_laser_AA7i.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7i.JPG' alt='Bartop 2 joueurs - D coupe laser AA7i.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a2/Bartop_2_joueurs_-_D_coupe_laser_AA7j.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7j.JPG' alt='Bartop 2 joueurs - D coupe laser AA7j.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le Joystick P1 s'insère de la même manière que le joystick P2. Or il peut y avoir une petite subtilité. Si vous avez avec vous un joystick avec 5 pins sortant un côté du joystick* vous n'avez qu'à insérer votre joystick de manière à pointer les pins vers ce centre de la borne.</li><li>Si vous possédez (comme sur les photos) un joystick de type Zippy, avec 2 pins sortant de chaque côté du joystick, vous devrez vous livrer à une petite manipulation. Prenez votre joystick et tordez délicatement les pins de l'un des côtés de sorte que vous puissiez le fixer dans le coin gauche du Bartop sans être gêné.</li><li>*5 pins pour : (-) (+haut) (+bas) (+gauche) (+droite)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Serrez les joysticks</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/1/17/Bartop_2_joueurs_-_D_coupe_laser_AA7k.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7k.JPG' alt='Bartop 2 joueurs - D coupe laser AA7k.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/06/Bartop_2_joueurs_-_D_coupe_laser_AA7l.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7l.JPG' alt='Bartop 2 joueurs - D coupe laser AA7l.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/65/Bartop_2_joueurs_-_D_coupe_laser_AA7m.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7m.JPG' alt='Bartop 2 joueurs - D coupe laser AA7m.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois les deux joysticks en place, place au serrage. Avec une clée adaptée au diamètre du boulon ou une pince multiprise, retenez les boulons uns à uns pendant que quelqu'un d'autre serre de l'autre côté. A noté que si vous avez les boulons conseillé (boulon à tête ronde) vous devrez visez sur le boulon et une tierce personne ne sera pas nécessaire.</li><li>Aussi, même si le serrage peut être laborieux, nous vous conseillons de bien serrer les boulons au risque de voir vos joysticks "nager" dans le vide au fur et à mesure des parties.</li><li>Enfin finissez par revissez, remettre la rondelle en plastique noir sur l'axe du joystick et revisser le "balltop" au sommet de ce dernier. Pour vous aidez vous pouvez, avec une tourne-vis plat, maintenir la bar du joystick pour un visage plus ferme.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Installez les boutons</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/e/ed/Bartop_2_joueurs_-_D_coupe_laser_AA7o.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7o.JPG' alt='Bartop 2 joueurs - D coupe laser AA7o.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/10/Bartop_2_joueurs_-_D_coupe_laser_AA7p.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7p.JPG' alt='Bartop 2 joueurs - D coupe laser AA7p.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1f/Bartop_2_joueurs_-_D_coupe_laser_AA7q.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7q.JPG' alt='Bartop 2 joueurs - D coupe laser AA7q.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/18/Bartop_2_joueurs_-_D_coupe_laser_AA7r.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7r.JPG' alt='Bartop 2 joueurs - D coupe laser AA7r.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant que le plus dur est passé, nous allons un peu respirer en installant les boutons. Pour ce faire, prenez les boutons et retirez les parties visée ou flottante. Passez les boutons dans les trous du panel bois dans l'ordre de votre choix. Puis fixez les boutons par l’intérieur du Bartop.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - Branchez le GND des botuons</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/5/5c/Bartop_2_joueurs_-_D_coupe_laser_AA7t.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7t.JPG' alt='Bartop 2 joueurs - D coupe laser AA7t.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/25/Bartop_2_joueurs_-_D_coupe_laser_AA7u.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7u.JPG' alt='Bartop 2 joueurs - D coupe laser AA7u.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/75/Bartop_2_joueurs_-_D_coupe_laser_AA7v.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7v.JPG' alt='Bartop 2 joueurs - D coupe laser AA7v.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ensuite, munissez-vous des deux câbles prenant souvent la forme de guirlandes (voir photo) et connectez l'ensemble des "boutons et des directions" joystick (appelés "microswitchs") du P1 et avec le second câble l'ensemble des boutons et des directions P2. Il doit alors y avoir une pin restante sur chaque bouton et chaque microswitch des joysticks, nous très rapidement les connecter ...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - Branchez le GND du second joystick (manipulation optionnelle)</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/3/36/Bartop_2_joueurs_-_D_coupe_laser_AA7w.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7w.JPG' alt='Bartop 2 joueurs - D coupe laser AA7w.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2f/Bartop_2_joueurs_-_D_coupe_laser_AA7w1.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7w1.JPG' alt='Bartop 2 joueurs - D coupe laser AA7w1.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f6/Bartop_2_joueurs_-_D_coupe_laser_AA7w2.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7w2.JPG' alt='Bartop 2 joueurs - D coupe laser AA7w2.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/57/Bartop_2_joueurs_-_D_coupe_laser_AA7w3.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7w3.JPG' alt='Bartop 2 joueurs - D coupe laser AA7w3.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/37/Bartop_2_joueurs_-_D_coupe_laser_AA7w5.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7w5.JPG' alt='Bartop 2 joueurs - D coupe laser AA7w5.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/cc/Bartop_2_joueurs_-_D_coupe_laser_AA7w6.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7w6.JPG' alt='Bartop 2 joueurs - D coupe laser AA7w6.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Mais il se peut que vous rencontriez des difficultés pour brancher les câbles sur le joystick "P1".</li><li>Si c'est votre cas, nous vous conseillons de démonter le joystick en dévissant sa plaque de métal (cette dernière maintenant les "micro-switchs") (voir photo). Une fois démonté vous pouvez branchez plus facilement les pins du joystick. Quand vous aurez terminé, il ne vous restera plus qu'à refermer le joystick avec ses microswitchs branchés.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Branchez les pins restantes des boutons et des joysticks</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/3/37/Bartop_2_joueurs_-_D_coupe_laser_AA7x.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7x.JPG' alt='Bartop 2 joueurs - D coupe laser AA7x.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/81/Bartop_2_joueurs_-_D_coupe_laser_AA7y.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA7y.JPG' alt='Bartop 2 joueurs - D coupe laser AA7y.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Prenez connaissance du schéma de branchement de l'étape suivante (étape 22). Vous pouvez maintenant raccorder avec les câbles (souvent rangés en paquets de 2 ou 4 pins) à l'ensemble des boutons et des microswitchs des joysticks.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>22. Étape 22 - Branchez l'ensemble des pins à votre interface</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/9/9d/Bartop_2_joueurs_-_D_coupe_laser_guide_branchements_2.png/800px-Bartop_2_joueurs_-_D_coupe_laser_guide_branchements_2.png' alt='Bartop 2 joueurs - D coupe laser guide branchements 2.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/55/Bartop_2_joueurs_-_D_coupe_laser_guide_branchements.png/800px-Bartop_2_joueurs_-_D_coupe_laser_guide_branchements.png' alt='Bartop 2 joueurs - D coupe laser guide branchements.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/ee/Bartop_2_joueurs_-_D_coupe_laser_AA777b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777b.JPG' alt='Bartop 2 joueurs - D coupe laser AA777b.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/05/Bartop_2_joueurs_-_D_coupe_laser_AA777c.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777c.JPG' alt='Bartop 2 joueurs - D coupe laser AA777c.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de brancher la tête dans le guidon votre Bartop, vérifiez bien le modèle de votre interface. Nous vous proposons ici les modèles de branchements des interfaces Xin-mo (les interfaces "zero-delay" également très répandues n'ont pas besoin de plans).</li><li>Il existe deux modèles de Xin-mo 2players : un avec un micro USB (et un total de 44pins) et un avec un USB standard (et un total de 36pins). Choisissez donc le plan correspondant au modèle de votre interface et branchez l'ensemble des contrôles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>23. Étape 23 - Fixez des USB supplémentaires à votre Bartop</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/d/d0/Bartop_2_joueurs_-_D_coupe_laser_AA777d.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777d.JPG' alt='Bartop 2 joueurs - D coupe laser AA777d.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/09/Bartop_2_joueurs_-_D_coupe_laser_AA777e.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777e.JPG' alt='Bartop 2 joueurs - D coupe laser AA777e.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant que vos contrôles sont branchés (nous les vérifions plus tard) passons à la connectique de votre Bartop.</li><li>Pour cela, commencez par vous munir de vos deux rallonges USB et à l'aide d'une pince "troisième main" (ou de votre propre main) maintenez le câble pendant que vous fixez le côté femelle de votre rallonge à l'arrière de la borne. Pour fixer le tout nous utilisons un pistolet à colle, mais libre à vous d'utiliser quelque chose d'autre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>24. Étape 24 - Installez l'alimentation de votre Bartop</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/9/91/Bartop_2_joueurs_-_D_coupe_laser_AA777h.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777h.JPG' alt='Bartop 2 joueurs - D coupe laser AA777h.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1f/Bartop_2_joueurs_-_D_coupe_laser_AA777f.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777f.JPG' alt='Bartop 2 joueurs - D coupe laser AA777f.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/13/Bartop_2_joueurs_-_D_coupe_laser_AA777g.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777g.JPG' alt='Bartop 2 joueurs - D coupe laser AA777g.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/0e/Bartop_2_joueurs_-_D_coupe_laser_AA777j.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777j.JPG' alt='Bartop 2 joueurs - D coupe laser AA777j.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c4/Bartop_2_joueurs_-_D_coupe_laser_AA777k.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777k.JPG' alt='Bartop 2 joueurs - D coupe laser AA777k.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b6/Bartop_2_joueurs_-_D_coupe_laser_AA777l.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA777l.JPG' alt='Bartop 2 joueurs - D coupe laser AA777l.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant que les USBs secondaires ont été fixés, prenez votre multiprise et l'embase bipolaire (sur les photos nous avons utilisé une embase tripolaire).</li><li>Coupez votre multiprise comme sur la photo et sortez les 3 fils du câble d'alimentation que vous dénuderez. Dans ces 3 fils seuls, les fils rouge et bleu nous intéressent. Ensuite, connectez les fils bleu et rouge dans n'importe quel sens de sur l'envers de votre embase bipolaire sans le troisième fil (vert et jaune) (ce dernier ne pas obligatoire pour votre usage, mais si vous avez une embase tripolaire comme sur les photos, vous pouvez la mettre sur l'embase sans problèmes).</li><li>Une fois les deux (ou trois) fils placés sur les deux (ou trois) bornes de l’embase, soudez-les au fer à souder. Enfin pour protéger le tout et que personne ne mette les doigts directement sur la prise : il est IMPRERATIF d'isoler les fils soudés sur l'embase. Pour ce faire nous les avons coulés dans du plastique avec le pistolet à colle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>25. Étape 25 - Branchez votre Raspberry pi</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/c/cf/Bartop_2_joueurs_-_D_coupe_laser_AA789a.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789a.JPG' alt='Bartop 2 joueurs - D coupe laser AA789a.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/50/Bartop_2_joueurs_-_D_coupe_laser_AA789b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789b.JPG' alt='Bartop 2 joueurs - D coupe laser AA789b.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2e/Bartop_2_joueurs_-_D_coupe_laser_AA789c.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789c.JPG' alt='Bartop 2 joueurs - D coupe laser AA789c.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c3/Bartop_2_joueurs_-_D_coupe_laser_AA789d.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789d.JPG' alt='Bartop 2 joueurs - D coupe laser AA789d.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/22/Bartop_2_joueurs_-_D_coupe_laser_AA789e.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789e.JPG' alt='Bartop 2 joueurs - D coupe laser AA789e.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous y sommes, maintenant que tous les branchements sont prêts, il ne vous reste plus qu'à connecter l'ensemble sur votre Raspberry pi. Pour faire tout ça : branchez d'abord les deux rallonges USB aux ports USB de la Rasberry, puis branchez la prise des enceintes sur la multiprise et le jack de ces derrières sur le port jack de la carte. Branchez ensuite l'HDMI de l'écran au microordinateur.</li><li>Si votre écran est équipé d'un port VGA, vous aurez besoin d'un boitier VGA/HDMI pour vous connecter à la Raspberry pi.</li><li>Prenez maintenant l'USB de l'interface boutons pour la branche à l'un des 2 USB restants de la Raspberry pi.</li><li>Enfin, vous pouvez raccorder l'alimentation de la carte à la multiprise.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>26. Étape 26 - Installez la multiprise</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/d/d4/Bartop_2_joueurs_-_D_coupe_laser_AA789f.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789f.JPG' alt='Bartop 2 joueurs - D coupe laser AA789f.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b5/Bartop_2_joueurs_-_D_coupe_laser_AA789g.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789g.JPG' alt='Bartop 2 joueurs - D coupe laser AA789g.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/ee/Bartop_2_joueurs_-_D_coupe_laser_AA789h.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789h.JPG' alt='Bartop 2 joueurs - D coupe laser AA789h.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Normalement vous devez compter 3 prises branchées sur la multiprise (enceintes, écran et raspberry pi). Prenez la multiprise et à l'aide du pistolet à colle fixez-la au fond du Bartop.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>27. Étape 27 - Installez une Image SD pour votre Raspberry pi !</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/8/80/Bartop_2_joueurs_-_D_coupe_laser_recalbox-6.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_recalbox-6.jpg' alt='Bartop 2 joueurs - D coupe laser recalbox-6.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ça y est vous y êtes arrivé, votre Bartop est quasiment terminé !</li><li>Pour faire fonctionnez votre Rasberry pi, il vous faudra un système d'exploitation dédié à l'émulation de jeux vidéo. Pour cela remettez-vous sur votre ordinateur muni d'un support SD et vous munissant de votre carte mémoire.</li><li>Pour connaitre comment installer ce système d'exploitation rendez-vous sur le lien de Recalbox, système très connu de la communauté francophone et relativement facile à mettre en place :</li><li>https://www.recalbox.com/fr/diyrecalbox/</li><li>Il existe d'autres systèmes comme le très célèbre Retropie, soyez donc curieux et testez-en si vous en avez l'envie.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>28. Étape 28 - Testez les boutons avant de fermer le Bartop</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/6/64/Bartop_2_joueurs_-_D_coupe_laser_AA789i.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA789i.JPG' alt='Bartop 2 joueurs - D coupe laser AA789i.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Reposez le Bartop normalement sur la table et branchez le câble d'alimentation à l'arrière de ce dernier. Patientez et croisez les doigts pour que le tout démarre bien.</li><li>Si votre Raspberry-pi démarre bien et que vous tombez dans l'interface d’émulation (Recalbox ou Retropie). Testez les contrôles pour voir si ceux-ci répondent bien. Vérifiez dans un premier temps que le J1 se comporte de la même manière que le J2. Si c'est le cas, vous pouvez affiner vos tests dans un jeu comprenant l'ensemble des boutons du Bartop (un jeu de combat, type Street Fighter est parfait pour ce genre de test).</li><li>Après avoir testé, si les contrôles dysfonctionnent, il vous faudra réviser les branchements boutons/joysticks.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>29. Étape 29 - Fermer le Bartop</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/7/77/Bartop_2_joueurs_-_D_coupe_laser_9-01.jpg/800px-Bartop_2_joueurs_-_D_coupe_laser_9-01.jpg' alt='Bartop 2 joueurs - D coupe laser 9-01.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8d/Bartop_2_joueurs_-_D_coupe_laser_AA8a.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA8a.JPG' alt='Bartop 2 joueurs - D coupe laser AA8a.JPG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/41/Bartop_2_joueurs_-_D_coupe_laser_AA8b.JPG/800px-Bartop_2_joueurs_-_D_coupe_laser_AA8b.JPG' alt='Bartop 2 joueurs - D coupe laser AA8b.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les contrôles fonctionnent ? Parfait ! vous avez presque fini !</li><li>Coupez un dernier tasseau de 95mm et fixez-le à la dernière pièce encore de côté (le dessous de la borne). Puis fermer le dessous de la borne au Bartop.</li><li>Voilà votre Bartop est fin prêt pour de longues heures de jeu !!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

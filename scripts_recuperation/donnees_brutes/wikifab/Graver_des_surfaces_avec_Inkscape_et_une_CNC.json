@@ -1,0 +1,431 @@
+{
+    "Graver des surfaces avec Inkscape et une CNC": {
+        "titre": [
+            "Graver des surfaces avec Inkscape et une CNC"
+        ],
+        "image": [
+            {
+                "url": "https://wikifab.org/images/thumb/5/54/Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png/ia-ed484d380dc05167d70dfa77401621e9-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png.png",
+                "alt": "",
+                "description": "Utilisation de l'extension Gcode de Inkscape pour graver des surfaces avec une CNC"
+            }
+        ],
+        "difficulté": [
+            "Medium Moyen"
+        ],
+        "durée": [
+            "1 hour(s) heure(s)"
+        ],
+        "coût": [
+            "0 EUR (€)"
+        ],
+        "liens": [
+            "https://wikifab.org/wiki/Graver_des_surfaces_avec_Inkscape_et_une_CNC"
+        ],
+        "introduction": [
+            {
+                "titre": "Graver des lignes avec la mêche d'un CNC est assez simple.",
+                "sous_items": []
+            },
+            {
+                "titre": "Cela se complique lorsqu'il faut graver toute une surface, voire en relief.",
+                "sous_items": []
+            },
+            {
+                "titre": "L'extension GcodeTools de Inkscape permet de faire cela, mais elle nécessite quelques explications.",
+                "sous_items": []
+            },
+            {
+                "titre": "On va essayer de faire le plus claire possible. Cette page va expliquer comment graver une surface plane en plusieurs couches.",
+                "sous_items": []
+            },
+            {
+                "titre": "L'extension vient de club-cnc.ru mais elle n'est guère documentée. Ce tuto est issu de tests empiriques. Il peut contenir des erreurs d'interprétation.",
+                "sous_items": []
+            },
+            {
+                "titre": "Il y a juste un forum:",
+                "sous_items": []
+            },
+            {
+                "titre": "https://www.cnc-club.ru/forum/viewtopic.php?t=35",
+                "sous_items": []
+            }
+        ],
+        "mentions légales": [],
+        "matériaux": [],
+        "outils": [],
+        "étapes": [
+            {
+                "numero": 1,
+                "titre": "Étape 1 - L'extension GCodeTools",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Elle est installée dans Inkscape",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/thumb/9/98/Graver_des_surfaces_avec_Inkscape_et_une_CNC_menu-gcodetools.png/ia-58b5e86c0fe7c55afb4d9d4a18ad9cfc-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_menu-gcodetools.png.png",
+                                "alt": "",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 2,
+                "titre": "Étape 2 - Orientation Points (OP)",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Défini le XY 0,0 et la profondeur Z",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Z depth: profondeur total de la gravure, toutes passes confondues"
+                                ]
+                            },
+                            {
+                                "titre": "Attention: \"Scale along Z axis\" dans Option est un facteur qui sera aussi appliqué. Voir EXEMPLE plus bas",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/ia-5a7b52a6261b63bd82a5eedf96cf6f5d-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png.png",
+                                "alt": "",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 3,
+                "titre": "Étape 3 - Outil / Tool Library",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Set tool shape. Ajoute un encart éditable (diametre...)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Déplacer le nouveau cadre. Editer dedans:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "diameter, la taille de l'outil",
+                                    "feed: la vitesse XY, par exemple 50 pour une vitesse lente de test",
+                                    "depth step: le nombre de mm entre 2 passes"
+                                ]
+                            },
+                            {
+                                "titre": "EXEMPLE: OP \"Z depth\" = 1.1mm, \"depth step\" = 0.3. Il y aura 3 passes de 0.3mm + 1 passe de 0.2mm pour faire 1.1 mm",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Mais, si \"Scale along Z axis\" de Zone/Options est à 3, il y aura 3 passes de 0.9mm + 1 passe de 0.6mm pour faire 3.3 mm",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/ia-110ffe565a0a04154a8d98f0dbead263-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png.png",
+                                "alt": "",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 4,
+                "titre": "Étape 4 - Zone / Area",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Onglets:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Area: Peu utile. Toujours désactiver Live Preview",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Maximum area cutting curves: n/a",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Area width: si négatif grave autour, si positif grave dans la surface",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Area Tool Overlap: avec la diametre de l'outil, défini le nombre de lignes",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Fill area: Très utile pour ajouter les chemins",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Activer le Preview -> Montre le résultat, il doit y avoir des lignes sur toute la surface"
+                                ]
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Area fill shift: 0 à 1, sans effet"
+                                ]
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "APPLY: Ajoute les chemins"
+                                ]
+                            },
+                            {
+                                "titre": "=> Les chemins sont ajoutés en bleu. Les selectionner. Il faut voir chaque extrémité délimitée par un losange.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Option:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Scale along Z axis: Facteur appliqué au Z"
+                                ]
+                            },
+                            {
+                                "titre": "Voir EXEMPLE après \"Tools Library\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Offset along Z axis: juste un décalage vers le haut, c'est tout"
+                                ]
+                            },
+                            {
+                                "titre": "Select all paths is nothing selected: peu aider pour ne pas avoir à sélectionner",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Préférence :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "chemin du fichier gcode",
+                                    "Z safe height: hauteur pour les déplacements sans gravure. Le facteur \"Scale along Z axis\" s'applique aussi."
+                                ]
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC 02-A-NoApply.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/e/e5/Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC 03-FA-Apply.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/8/82/Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC 04-Options-Zep.png",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 5,
+                "titre": "Étape 5 - Zone / Area onglet Path to Gcode",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "C'est là que le fichier GCODE est généré.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Il faut avoir sélectionner les chemins avec \"Node Tool\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Live Preview: (après sélection, il faut parfois changer une valeur) les lignes passent en rose, sinon sélectionner les chemins.",
+                                    "APPLY: crée les chemins en plus, affichés en rose, et sauve le gcode"
+                                ]
+                            },
+                            {
+                                "titre": "On peut faire glisser les chemins créés avec \"Selector Tool\" pour les supprimer.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/thumb/c/ca/Graver_des_surfaces_avec_Inkscape_et_une_CNC_06-P2G-APPLY.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_06-P2G-APPLY.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC 06-P2G-APPLY.png",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 6,
+                "titre": "Étape 6 - Ouverture dans Candle",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "On voit le Z min et max qui doivent correspondre à la profondeur et à la hauteur de sécurité, pondéré du facteur \"Scale along Z axis\" de \"Zone/Options\".",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/thumb/5/54/Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC star-all.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/4/4a/Graver_des_surfaces_avec_Inkscape_et_une_CNC_candle-star.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC candle-star.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/3/37/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC 10-candle-3passes.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/2/20/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png",
+                                "alt": "Graver des surfaces avec Inkscape et une CNC 10-Candle-5passes-02mm.png",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 7,
+                "titre": "Étape 7 - Plus de tutos CNC:",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "https://wikifab.hatlab.fr/Graver_un_PCB_avec_une_CNC_3018",
+                                    "https://wikifab.hatlab.fr/Graver_au_laser_avec_une_CNC_3018",
+                                    "https://wikifab.hatlab.fr/R%C3%A9aliser_un_circuit_avec_Kicad_pour_ensuite_le_graver"
+                                ]
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            }
+        ],
+        "annexes": []
+    }
+}

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Lower Body Workout</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lower Body Workout</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F5D/HKPS/LD33THTE/F5DHKPSLD33THTE.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Hey, My name is Tyler and i love to work out, made this plan so I can help you get stronger and fast on the pitch or court, or for whatever sport you play. This workout will push you physically if you follow the steps.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>For this workout, you are going to need a part of</li><li>Running shoes</li><li>Workout clothes</li><li>The workout room needs a good amount of space.</li><li>Weights of your choice, Got a local gym if you gave, and also can work without weights and without a gym.</li><li>This workout will take about 60 minutes, to 120 minutes.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Weighted Squat Box's Jumps</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FWM/PSIM/LD33TBCB/FWMPSIMLD33TBCB.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Weighted Squat Box's Jumps' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRU/2CJO/LD33TBCC/FRU2CJOLD33TBCC.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Weighted Squat Box's Jumps' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWM/PSIM/LD33TBCB/FWMPSIMLD33TBCB.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Weighted Squat Box's Jumps' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRU/2CJO/LD33TBCC/FRU2CJOLD33TBCC.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Weighted Squat Box's Jumps' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Pick a heavy but comfortable weight, Dumbbell are great for this.</li><li>Squat,</li><li>explode up, Get as high as you can,</li><li>land comfortably</li><li>Repeat For 5-7 Reps, 3-6 Sets</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Lunge Jump Switch's</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F0T/4LWT/LD33TBL4/F0T4LWTLD33TBL4.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Lunge Jump Switch's' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSS/84Y3/LD33TBL5/FSS84Y3LD33TBL5.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Lunge Jump Switch's' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0T/4LWT/LD33TBL4/F0T4LWTLD33TBL4.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Lunge Jump Switch's' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSS/84Y3/LD33TBL5/FSS84Y3LD33TBL5.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Lunge Jump Switch's' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Pick a lightweight but still challenge yourself. Dumbbells are great for this.</li><li>Get a low position, put one leg ahead of the other try to get into a 90, 90 position {90 vertical and 90 horizontal}</li><li>Load Up then jump as high as you can,</li><li>Try and land on the opposite foot as the one you started on.</li><li>Then load up and go back and forth switching the foot you land on every time. For this exercise try to do 90, 90 every time so you get the best workout possible.</li><li>Do this for 15 seconds, 2-5 Times</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Hamstring Curls</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F7U/P2N9/LD33TC8O/F7UP2N9LD33TC8O.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Curls' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2D/JQ87/LD33TC8P/F2DJQ87LD33TC8P.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Curls' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7U/P2N9/LD33TC8O/F7UP2N9LD33TC8O.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Curls' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2D/JQ87/LD33TC8P/F2DJQ87LD33TC8P.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Curls' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>step up your seat and leg curl up</li><li>set a weight, go heavy, more then usual,</li><li>Get comfortable</li><li>Pull your ankles/ legs, as quickly to you as possible.</li><li>Slowly go back up</li><li>Do this for 4-7 Reps 3 sets</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Hamstring Thrusters</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FB9/V9OG/LD33TD4P/FB9V9OGLD33TD4P.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Thrusters' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1T/V0ID/LD33TD4Q/F1TV0IDLD33TD4Q.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Thrusters' loading='lazy'></figure><figure><img src='https://content.instructables.com/FB9/V9OG/LD33TD4P/FB9V9OGLD33TD4P.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Thrusters' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1T/V0ID/LD33TD4Q/F1TV0IDLD33TD4Q.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hamstring Thrusters' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Get a heavyweight, two dumbbells are great Still trying to be explosive.</li><li>set the weights about half a foot away front you</li><li>bend down pick the weights up in both</li><li>Explode up, not off the ground, but try and get your heels off the ground.</li><li>Do this for about 3-5 Reps 3 sets</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Squat</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F52/SGS1/LD33TE8Y/F52SGS1LD33TE8Y.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Squat' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0T/EMNL/LD33TE9L/F0TEMNLLD33TE9L.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Squat' loading='lazy'></figure><figure><img src='https://content.instructables.com/F52/SGS1/LD33TE8Y/F52SGS1LD33TE8Y.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Squat' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0T/EMNL/LD33TE9L/F0TEMNLLD33TE9L.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Squat' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Just a normal squat, you only need one weight for this one,</li><li>Get the weight, I would recommend dumbells</li><li>When you have the weight stand up straight</li><li>Squat down and stand back up straight, try and keep a straight during this process.</li><li>Do 5-7 Reps 3 Set's</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Half Squat</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FKY/PTC8/LD33TEHJ/FKYPTC8LD33TEHJ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Half Squat' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW7/ERT5/LD33TEHK/FW7ERT5LD33TEHK.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Half Squat' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKY/PTC8/LD33TEHJ/FKYPTC8LD33TEHJ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Half Squat' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW7/ERT5/LD33TEHK/FW7ERT5LD33TEHK.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Half Squat' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Half squat, you only need one weight for this one, try and go as heavy as you can</li><li>Get the weight, I would recommend dumbells</li><li>When you have the weight stand up straight</li><li>Squat down and stand back up straight, try and keep a straight during this process.</li><li>Do this for 8-10 reps 6 Sets</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Sitting Jump Squat's</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F3I/U47B/LD33TEKV/F3IU47BLD33TEKV.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sitting Jump Squat's' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7O/D1I8/LD33TEKW/F7OD1I8LD33TEKW.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sitting Jump Squat's' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3I/U47B/LD33TEKV/F3IU47BLD33TEKV.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sitting Jump Squat's' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7O/D1I8/LD33TEKW/F7OD1I8LD33TEKW.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sitting Jump Squat's' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Sitting Jump squats, you only need two weights for this one</li><li>Get the weight, I would recommend dumbells</li><li>lean back and when you are ready</li><li>lean, Foursefully put both feet into the ground try and jump as high as you can.</li><li>Try this for 3-6 Reps and 5 Sets</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

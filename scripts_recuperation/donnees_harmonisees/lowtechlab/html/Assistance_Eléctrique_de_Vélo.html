@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Assistance Eléctrique de Vélo</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Assistance Eléctrique de Vélo</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/d/d1/Assistance_El_ctrique_de_V_lo_IMG-20230627-WA0010.jpg/ia-23e8ef0e938b408366638e43c35baa9d-px-Assistance_El_ctrique_de_V_lo_IMG-20230627-WA0010.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Conception et Prototypage Low-tech d’une Assistance Électrique de Vélo dans le cadre d'un projet étudiant CentraleSupélec avec le Low-Tech Lab Boulogne-Billancourt. --- Nommé Kit VALTER (Vélo à Assistance Low-Tech Et Responsable) --- Par Théo, Raphaël et Maxime --- Un remerciement particulier à Gilles, notre encadrant du Low-Tech Lab de Boulogne-Billancourt; Morgan notre encadrant de CentraleSupélec; le fab lab de CentraleSuépelec La Fabrique pour les composants, les matériaux, les outils et l'expertise; et enfin la Siredom (Syndicat pour l'Innovation, le Recyclage et l’Energie par les Déchets et Ordures Ménagères) pour les récupérations en déchetterie.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment assistance eléctrique de vélo.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 70 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Assistance_Eléctrique_de_Vélo" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Assistance_Eléctrique_de_Vélo</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Adaptation du pédalier</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/3/3c/Assistance_El_ctrique_de_V_lo_P_dalier.png' alt='Assistance El ctrique de V lo P dalier.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ici, on va chercher à récupérer la manivelle droite avec plateau(x) du vélo récupéré, pour la mettre à la place de la manivelle gauche du vélo qu’on cherche à équiper.</li><li>Pour se faire, on retire d’abord la pédale de la manivelle droite du vélo récupéré ainsi que son cache-poussière.</li><li>Puis, il existe généralement un écrou ou une vis à retirer qui sécurise le maintien de la manivelle à l’axe, pour ensuite utiliser l’extracteur de manivelle (chercher autres tutoriels en ligne) afin d’obtenir l’ensemble manivelle + plateau(x) du vélo récupéré.</li><li>On extrait de la même manière la manivelle gauche du vélo à équiper</li><li>On remplace cette manivelle par l’ensemble manivelle + plateau(x) du vélo récupéré en resserrant bien les sécurités et les cache-poussières, puis on peut remettre la pédale (il n’est généralement pas possible de mettre une pédale gauche sur une manivelle droite à cause du sens des pas de vis).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fixation du pignon au renvoi d’angle</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/16/Assistance_El_ctrique_de_V_lo_IMG-20230627-WA0010_bis.jpg/800px-Assistance_El_ctrique_de_V_lo_IMG-20230627-WA0010_bis.jpg' alt='Assistance El ctrique de V lo IMG-20230627-WA0010 bis.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/fc/Assistance_El_ctrique_de_V_lo_Pignon.png' alt='Assistance El ctrique de V lo Pignon.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/bb/Assistance_El_ctrique_de_V_lo_Renvoi_d_angle.png' alt='Assistance El ctrique de V lo Renvoi d angle.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/58/Assistance_El_ctrique_de_V_lo_Assemblage.png' alt='Assistance El ctrique de V lo Assemblage.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour retirer le pignon ou la cassette d’une roue arrière, il existe des outils spécifiques mais dont on peut facilement se passer, il existe de nombreux tutoriels en ligne expliquant comment les retirer.</li><li>Cependant, nous avons choisi dans notre cas de garder le tube de la roue pour conserver le filetage permettant la fixation du pignon, car le tube de la roue est fait pour accueillir des diamètres de tiges plus petits et plus adaptés au renvoi d’angle.</li><li>On coupe donc au plus proche de la fin de course du filetage pour le pignon, en conservant la butée pour le pignon si elle existe.</li><li>Au niveau du renvoi d’angle, un des côtés disposait d’un mandrin de perceuse, qui une fois retiré, laissait place à une tige filetée qui nous a finalement permis d’y fixer le pignon libre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Rangement pour le moteur et la commande</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d7/Assistance_El_ctrique_de_V_lo_IMG-20230626-WA0005.jpg/800px-Assistance_El_ctrique_de_V_lo_IMG-20230626-WA0005.jpg' alt='Assistance El ctrique de V lo IMG-20230626-WA0005.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9f/Assistance_El_ctrique_de_V_lo_Tube_moteur_command.png/800px-Assistance_El_ctrique_de_V_lo_Tube_moteur_command.png' alt='Assistance El ctrique de V lo Tube moteur command.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Assistance_El_ctrique_de_V_lo_Tube_moteur_command_2.png/800px-Assistance_El_ctrique_de_V_lo_Tube_moteur_command_2.png' alt='Assistance El ctrique de V lo Tube moteur command 2.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/20/Assistance_El_ctrique_de_V_lo_Guide_anti-rotation.png/800px-Assistance_El_ctrique_de_V_lo_Guide_anti-rotation.png' alt='Assistance El ctrique de V lo Guide anti-rotation.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On coupe une longueur de tube PVC assez longue respectant les conditions suivantes<ul><li>Longueur amplement suffisante pour le moteur avec son système de réduction et l’électronique de commande</li><li>Longueur permettant de mettre le tube au niveau du tube de cadre oblique, tout en laissant une bonne distance entre l’axe avec pignon et les plateaux pour permettre une bonne transmission.</li></ul></li><li>On modifie ensuite ce tube avec :<ul><li>Un guide pour le renvoi d’angle afin de fixer son mouvement</li><li>Une zone aménagée pour l’accueil des commandes avec Des trous pour les interrupteurs Des trous pour les LEDs Des trous pour un accès aux câbles</li><li>Des trous pour les interrupteurs</li><li>Des trous pour les LEDs</li><li>Des trous pour un accès aux câbles</li><li>Des trous permettant d’attacher le tube au cadre avec des colliers</li><li>Des trous pour les interrupteurs</li><li>Des trous pour les LEDs</li><li>Des trous pour un accès aux câbles</li></ul></li><li>Pour empêcher la rotation du tube, il est également nécessaire de réaliser une autre pièce qui viendra se fixer à deux tubes du vélo, et dans laquelle on viendra insérer la pièce précédente à l’aide de deux fourches et d’une coupe en biais.</li><li>Cette autre pièce se compose d’un tube PVC de même diamètre</li><li>que précédemment, coupé en deux en longueur et d’une longueur comprenant les diamètres des deux tubes contre lesquelles elle vient se poser et la longueur que l’on veut entre ces deux tubes.</li><li>On y aménage alors :<ul><li>Des encoches pour venir épouser le diamètre des tubes de cadre</li><li>Des trous pour permettre d’attacher le tube aux deux tubes de cadres</li><li>Des trous pour venir passer les câbles du capteur à effet Hall</li><li>Des trous pour venir insérer la pièce précédente Ces trous doivent être placés à une distance de sorte que la pièce précédente vienne s’y insérer au bon angle du tube oblique de cadre</li><li>Ces trous doivent être placés à une distance de sorte que la pièce précédente vienne s’y insérer au bon angle du tube oblique de cadre</li><li>Ces trous doivent être placés à une distance de sorte que la pièce précédente vienne s’y insérer au bon angle du tube oblique de cadre</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Stockage de la batterie</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/86/Assistance_El_ctrique_de_V_lo_IMG-20230626-WA0002.jpg/800px-Assistance_El_ctrique_de_V_lo_IMG-20230626-WA0002.jpg' alt='Assistance El ctrique de V lo IMG-20230626-WA0002.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/56/Assistance_El_ctrique_de_V_lo_20230419_161436.jpg/800px-Assistance_El_ctrique_de_V_lo_20230419_161436.jpg' alt='Assistance El ctrique de V lo 20230419 161436.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/37/Assistance_El_ctrique_de_V_lo_20230419_161419.jpg/800px-Assistance_El_ctrique_de_V_lo_20230419_161419.jpg' alt='Assistance El ctrique de V lo 20230419 161419.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Assistance_El_ctrique_de_V_lo_20230419_161514.jpg/800px-Assistance_El_ctrique_de_V_lo_20230419_161514.jpg' alt='Assistance El ctrique de V lo 20230419 161514.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/81/Assistance_El_ctrique_de_V_lo_20230419_161351.jpg/800px-Assistance_El_ctrique_de_V_lo_20230419_161351.jpg' alt='Assistance El ctrique de V lo 20230419 161351.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On va se servir ici d'un tube en PVC en théorie plus large pour pouvoir y loger la batterie.</li><li>Il suffit alors de :<ul><li>Couper le tube à une longueur légèrement plus grand que la batterie</li><li>Tailler une encoche pour passer le bout de connexion de puissance de la batterie</li><li>Faire des trous pour les colliers de serrage</li><li>Mettre des mousses au fond et à l'intérieur pour maintenir la batterie (Ne pas hésiter à en mettre pour que la batterie soit maintenue)</li></ul></li><li>Le tout s'attache ensuite au cadre horizontal du vélo.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Principe général des circuits électriques</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8d/Assistance_El_ctrique_de_V_lo_Principe_circuits.png/800px-Assistance_El_ctrique_de_V_lo_Principe_circuits.png' alt='Assistance El ctrique de V lo Principe circuits.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il existe un circuit de commande et un circuit de puissance qui communiquent à l’aide d’un relais mécanique (ou d’un transistor) qui ouvre ou ferme le circuit de puissance selon les ordres du circuit de commande comme le montre le schéma ci-dessous.</li><li>Au niveau de la sécurité, il faut s’assurer la séparation des circuits car le circuit de commande est à faible intensité et tension (inferieur à 5V), donc peu dangereux, au contraire du circuit de puissance est à grande intensité (∽10A) et grande tension (∽20V) très dangereux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Composition et articulation du circuit de commande</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Assistance_El_ctrique_de_V_lo_Fonctions_commande.png/800px-Assistance_El_ctrique_de_V_lo_Fonctions_commande.png' alt='Assistance El ctrique de V lo Fonctions commande.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’objectif de ce circuit est d’ouvrir et fermer le relais ou le transistor selon les informations des interrupteurs et capteurs disponibles.</li><li>L’idée est d’utiliser une carte ARDUINO très répandu, bon marché et peu gourmande en énergie afin de commander ce circuit, c’est le cerveau de notre projet.</li><li>Notre circuit de commande va capter plusieurs informations :<ul><li>La demande d’allumage du système via un interrupteur ON/OFF (sert aussi d’arrêt d’urgence)</li><li>Le pédalage de la part de l’utilisateur via un capteur à Effet Hall (obligation légale)</li><li>La demande de motorisation via un interrupteur ON/OFF (si relais mécanique) ou un potentiomètre (si commande PWM via un transistor)</li></ul></li><li>De plus, afin de communiquer avec l’utilisateur, nous utiliserons 3 LEDS (verte, bleue et rouge pour chaque fonctions) pour lui indiquer lorsque chaque circuit sont activés.</li><li>Une remarque concernant la dernière fonction selon si vous êtes capable de récupérer le système de commande d’origine du moteur électrique.<ul><li>Si vous êtes capables de le récupérer, celui-ci se situera dans le circuit de puissance et il faudra quand même utiliser un relais pour activer ce circuit</li><li>Sinon, nous pouvons le construire dans le circuit de commande (fonction de demande de motorisation) avec un relais (commande ON/OFF) et un transistor (commande PWM avec un potentiomètre)</li></ul></li><li>Notre circuit s’articule autour de trois petits circuits d’alimentation pour les trois fonctions primaires qui s’activent lorsque la fonction présente est valide.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Schéma électrique du circuit de commande</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Assistance_El_ctrique_de_V_lo_Circuit_de_commande.png/800px-Assistance_El_ctrique_de_V_lo_Circuit_de_commande.png' alt='Assistance El ctrique de V lo Circuit de commande.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voici le schéma électrique de notre circuit de commande. On remarque bien ici les 3 circuits liés à nos trois fonctions et les 3 LED de communications avec l’utilisateur.</li><li>Enfin, dans les deux autres cas de figures (récupérations de composants ou utilisation d’un transistor), le circuit de commande est assez peu modifié. Dans ces deux cas, le code de commande est inchangé puisque les seuls changements sont sur la captation de l’information et le type d’instrument pour communiquer avec le circuit de puissance<ul><li>Cas où nous récupérons un système de de commande de moteur d’origine : le circuit de commande reste identique et seul le circuit de puissance est modifié via l’ajout de ce système</li><li>Cas où nous voulons faire varier la demande du moteur : nous changerons l’interrupteur ON/OFF de la demande de motorisation avec un potentiomètre et nous changerons le relais par un transistor</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Capteur à Effet à Hall</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Assistance_El_ctrique_de_V_lo_P_dalier_Hall.png/800px-Assistance_El_ctrique_de_V_lo_P_dalier_Hall.png' alt='Assistance El ctrique de V lo P dalier Hall.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/85/Assistance_El_ctrique_de_V_lo_Code_Hall.png/800px-Assistance_El_ctrique_de_V_lo_Code_Hall.png' alt='Assistance El ctrique de V lo Code Hall.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il faut ensuite configurer le capteur à Effet Hall, comprendre comment celui-ci peut capter le pédalage du pédalier.</li><li>Ce capteur est composé de 2 éléments : des aimants situés sur le pédalier et du capteur en lui-même sur le cadre. En détectant chaque aimant, on va pouvoir déduire une période de détection entre deux aimants et à partir d’une période seuil, on va pouvoir détecter que le pédalier tourner.</li><li>De plus, on peut compter le nombre d’aimants que le capteur voit et on veillera à que le pédalier fasse plusieurs tours (pour éviter un trou à l’arrêt par erreur) avant de démarrer.</li><li>Nous avons un pédalier avec 5 branches donc un tour de pédalier correspond à un comptage de 5. Donc durant les 10 premiers comptages (2 tours), nous prenons soins d’avoir de système à l’arrêt pour éviter ces tours de pédaliers accidentels.<ul><li>Enfin, il faut fixer la période de rotation limite pour activer ou non le système, sachant qu’un cycliste pédale à environ 1 tour par seconde, nous avons mis la limite entre 2 aimants à 2 secondes (i.e si l’on fait plus de 5*2=10 secondes pour un tour de pédalier, on considère que nous avons pas envie d’accélérer, donc nous arrêtons le moteur).</li></ul></li><li>On voit bien que dans le programme, on incrémente le comptage des aimants et on actualise la valeur de la variable période.</li><li>Certaines variables d’affichages sont volontairement désactivées, elles seront activées durant la phase de mise au point.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Communication avec l'utilisateur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/e1/Assistance_El_ctrique_de_V_lo_Communication.png' alt='Assistance El ctrique de V lo Communication.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La communication avec l’utilisateur se faire à l’aide d’interrupteur pour récupérer les demandes de l’utilisateur et de LED afin de lui signifier les états du système.</li><li>L’utilisation de nos LED de communication est résumée dans le tableau ci-dessous.</li><li>* Dans les trois fonctions, les LED peuvent être reliées à leur composant et peuvent être activées électriquement (i.e si le composant renvoie un signal à 5V, nous pouvons allumer la LED avec) afin de réduire le nombre de pin impliqués sur l’ARDUINO. Nous avons décidé pour des raisons d’emplacement et de praticité de commander les LED rouge et bleue avec des pins séparés.</li><li>Il ne faudra pas oublier de brancher une résistance avec la LED pour éviter les surintensités dans ces composants fragiles. Cette résistance ne devra pas être trop élevée afin d’ avoir la luminosité suffisante pour être vues par l’utilisateur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Code général de la carte Arduino</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Assistance_El_ctrique_de_V_lo_Code_de_contr_le.png/800px-Assistance_El_ctrique_de_V_lo_Code_de_contr_le.png' alt='Assistance El ctrique de V lo Code de contr le.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le code de la carte ARDUINO reprend l’idée des 3 circuits et aussi ajoute des compléments sécuritaires<ul><li>Le passage de l’interrupteur de démarrage de 1 à 0 assure l’arrêt total du système (i.e. comme un arrêt d’urgence)</li><li>Nécessité d’une fréquence de démarrage élevé et de plusieurs tours pour démarrer (ex : un tour de pédale à l’arrêt ne suffira pas).</li><li>Quelques éléments d’affichages qui peuvent être enlevés dans le cas de l’utilisation régulière mais qui sont intéressant à conserver durant la phase de conception.</li></ul></li><li>On va d’abord définir les PIN selon leur type (Entrée ou Sortie) et les variables de comptage (initialisé à 0) et de période (initialiser à 10000 pour éviter le démarrage imprévue).</li><li>Ensuite, le circuit est articulé autour d’une boucle vérifiant les trois fonctions vues il y a quelques pages.</li><li>On remarque bien les trois fonctions ( verte pour le démarrage, bleue pour le pédalage et rouge pour l’activation de la motorisation).</li><li>Enfin, nous pouvons voir les blocs de sécurité, que ce soit afin l’arrêt d’urgence avec l’interrupteur ou bien pour éviter de faire un seul tour accidentel (en noir ).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Conclusion de la partie commande</strong><p><strong>Étapes :</strong></p><ol><li>Pour conclure cette partie, nous somme capable à l’aide du circuit de commande d’activer un relais via un interrupteur de demande de motorisation (ou de commander une PWM via un transistor et un potentiomètre) avec le code précédent.</li><li>Nous avons vu qu’avec un capteur à Effet Hall, nous pouvons mesurer la fréquence de rotation pour assurer une bonne sécurité et le démarrage du système.</li><li>En piste d’amélioration, nous pouvons imaginer un calcul de la vitesse linéaire du vélo (via le capteur à Effet Hall ou un système GPS).</li><li>Nous omettons volontairement la phase de réalisation qui fera l’objet d’un paragraphe spécifique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Circuit de puissance</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5c/Assistance_El_ctrique_de_V_lo_Commande_relais.png/800px-Assistance_El_ctrique_de_V_lo_Commande_relais.png' alt='Assistance El ctrique de V lo Commande relais.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/c6/Assistance_El_ctrique_de_V_lo_Commande_transistor.png' alt='Assistance El ctrique de V lo Commande transistor.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/aa/Assistance_El_ctrique_de_V_lo_Commande_relais_r_cup_ration.png/800px-Assistance_El_ctrique_de_V_lo_Commande_relais_r_cup_ration.png' alt='Assistance El ctrique de V lo Commande relais r cup ration.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’objectif de ce circuit d’utiliser la commande via le transistor et le relais afin d’allumer le moteur.</li><li>Afin de garantir le maximum de sécurité<ul><li>Nous essayerons de limiter le nombre de composants dans le circuit de puissance (car à forte intensité et fort voltage).</li><li>Nous utiliserons une diode de roue libre placée en parallèle du moteur la cathode reliée au « + » du moteur afin d’éviter les arcs électriques lors de la coupure car le bobinage du moteur va imposer la continuité du courant et nous avons besoin d’une diode pour pouvoir « décharger » le moteur.</li><li>Nous utiliserons un condensateur en parallèle de la batterie affin de garantir la continuité de la tension lors de la coupure</li></ul></li><li>Les deux derniers dispositifs de protection du moteur et de la batterie sont nécessaires si nous ne sommes pas en mesure de récupérer le système de commande d’origine du moteur (qui permet un arrêt plus doux qu’un interrupteur de demande de motorisation), cependant, afin d’éviter tout risques, nous conseillons d’utiliser ces systèmes dans les deux cas.</li><li>Voici les schémas électriques des circuits de puissance :<ul><li>Commande relais et pas de récupération du système de commande d’origine</li><li>Commande transistor et pas de récupération du système de commande d’origine</li><li>Commande relais (transistor inutile dans ce cas-là) et possibilité de récupération du système de commande d’origine</li></ul></li><li>Pour conclure cette partie sur le circuit de puissance, nous avons vu que ce circuit est très simple pour des raisons de sécurité et que même si nous récupérons le système de commande d’origine du moteur, ce circuit ne varie peu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Intégration du système de communication avec l'utilisateur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Assistance_El_ctrique_de_V_lo_Placement_communication.png/800px-Assistance_El_ctrique_de_V_lo_Placement_communication.png' alt='Assistance El ctrique de V lo Placement communication.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’objectif principal de ce sous-système est de pouvoir communiquer intelligiblement avec l’utilisateurs. Les interrupteurs devront être facilement accessible par l’utilisateur et les LED visibles par ce même utilisateur.</li><li>Pour ce faire, nous placerons LED et interrupteurs sur le cadre du vélo, proche de l’utilisateur (similaire à l’emplacement du contrôle du dérailleur sur les anciens vélos). De plus, nous veillerons à prendre une résistance associée à la LED petite (∽ 100 Ω) afin de garder ces LED visibles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Aparté sur le système de commande d'origine du moteur</strong><p><strong>Étapes :</strong></p><ol><li>Cette partie concerne seulement les personnes ayant été capables de récupérer le système de commande d’origine du moteur.</li><li>Ce système, principalement à gâchette sur les perceuses, devra être situé proche du cycliste idéalement sur le côté gauche du guidon.</li><li>Une remarque sur les soudures de ce système : si vous avez besoin d’allongement du câble entre la gâchette et la batterie et le moteur (à coup sûr nécessaire car une perceuse est bien plus compacte qu’un vélo), ne pas toucher aux soudures d’origine entre les câbles et la commande d’origine. On pourra privilégier la coupure des câbles en leur centre et l’insertion d’un câble au milieu. Cela permettra de conserver les soudures d’origine, souvent bien plus solide et fiable.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Intégration de l'Arduino</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/2/21/Assistance_El_ctrique_de_V_lo_1er_lieu_Arduino.png' alt='Assistance El ctrique de V lo 1er lieu Arduino.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/53/Assistance_El_ctrique_de_V_lo_2_me_lieu_Arduino.png' alt='Assistance El ctrique de V lo 2 me lieu Arduino.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La carte ARDUINO peut être assez grande, il faut donc prévoir un emplacement pour elle et son alimentation.</li><li>Une des premières idées et d’insérer cette carte dans le tube sur le cadre. Nous avons pensée à installer 2 planches afin de caler notre carte ARDUINO.</li><li>Cependant, il était impossible de positionner la carte ARDUINO dans cet emplacement, de plus il y aurait pu avoir des problèmes de réchauffement dans le tube.</li><li>Après plusieurs recherche & investigations, nous avons donc imaginé une solution meilleure: celle d’utiliser une sacoche afin de placer l’ARDUINO au niveau du cadre.</li><li>Au-delà d’avoir un emplacement suffisant, nous avons l’avantage de pouvoir découpler physiquement les circuits de commande et de puissance.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Intégration du circuit électronique et du câblage</strong><p><strong>Étapes :</strong></p><ol><li>L’idée du circuit électronique est de positionner le circuit de commande proche de la carte Arduino. Le circuit de puissance est lui situé proche du moteur (sauf dans le cas ou vous avez réussi à récupérer la commande d’origine du moteur qui doit être situé proche du guidon afin d’avoir un contrôle plus simple de la part de l’utilisateur).</li><li>Nous décomposerons nos remarques sur les deux circuits (commande et puissance) :</li><li>La principale difficulté de ce circuit a été d’agencer tous les composants de manière fiable et sécuritaire en protégeant les connections et les contacts à l’Arduino (on privilégiera un shield arduino permettant de viser les pin plutôt que de les clipser).</li><li>Ci circuit, malgré sa simplicité apparente devra être brancher de manière extrêmement prudente car il est un circuit de forte intensité et voltage. Les deux composants à brancher (diode roue libre et condensateur de protection) devront être placer proche des éléments qu’ils protègent (respectivement moteur & batterie). On fera attention à qu’ils aient l’espace nécessaire afin de respirer et de se refroidir correctement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Placement du capteur à Effet Hall</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7d/Assistance_El_ctrique_de_V_lo_Placement_Hall.png/800px-Assistance_El_ctrique_de_V_lo_Placement_Hall.png' alt='Assistance El ctrique de V lo Placement Hall.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Plusieurs solutions sont envisageables afin de satisfaire l’exigence de la captation du pédalage.<ul><li>Mesurer la fréquence de rotation du pédalier avec un capteur à Effet Hall et des aimants positionné sur le pédalier</li><li>Mesure la vitesse linéaire avec un GPS par exemple</li><li>Mesure la force sur le pédalier via un capteur de force situé sur le pédalier</li></ul></li><li>Pour des raisons de coûts, de simplicité de montage et de fiabilité, nous avons décidé d’opter pour la solution avec un capteur à Effet Hall.</li><li>On a donc deux composants à bien installer :<ul><li>Le capteur : il doit être protégé et bien fixé, il faut donc installer un boitier de protection. Celui-ci devra être positionné dans l’espace creux sous le tube.</li><li>Les aimants devront être fixé sur chaque branche du pédalier afin d’avoir plus de précision. Cependant, si les aimants sont positionnés à un seul endroit, cela ne remet pas en cause la viabilité de notre système.</li></ul></li><li>NB : Le capteur ayant une faible porté, il devra être positionné au plus proche des aimants. De plus, nous pouvons utiliser plusieurs aimants en superpositions (sur chaque branche) afin d’augmenter le champ de détection possible.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

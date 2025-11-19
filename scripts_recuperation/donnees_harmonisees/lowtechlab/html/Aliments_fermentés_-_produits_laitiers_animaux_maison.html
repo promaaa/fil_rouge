@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Aliments fermentés - produits laitiers animaux maison</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Aliments fermentés - produits laitiers animaux maison</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/e1/Aliments_ferment_s_-_produits_laitiers_animaux_maison_produits_laitiers.jpg/ia-7e69298a1e1662c4a40422965552c570-px-Aliments_ferment_s_-_produits_laitiers_animaux_maison_produits_laitiers.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Plusieurs recettes de produits laitiers animaux fermentés facilement réalisable à la maison, pour pouvoir profiter de yaourts, faisselles, et fromages fabriqués en low-tech.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les aliments fermentés sont des aliments qui ont été transformés par des micro-organismes: bactéries, levures, champignons. Ce processus s'effectue souvent sans oxygène, en milieu anaérobique. Les microbes se multiplient normalement en présence d'oxygène. Mais lorsqu'ils en sont privés, ils luttent en fabriquant des molécules pour prendre l'avantage sur les microbes concurrents: alcool, acide lactique, acide acétique. Cela donne lieu à divers types de fermentation: lactique, alcoolique, acétique, etc... Même si nous avons parfois tendance à l'oublier, de nombreux aliments du quotidien sont en réalité fermentés: pain, fromages, yaourts, choucroute, saucisson, vin, bière... La liste est longue. Et cela tombe bien puisque leurs effets sont bénéfiques pour la santé ! Elles facilitent la digestion, participent au bon fonctionnement de l’intestin, sont sources de vitamines et de minéraux, renforcent notre système immunitaire...</p>
+      
+        <p>Enfin comme le rappelle Virginie Geres avec son site HappyBiote, sans microorganismes nous serions morts ! Tout simplement ! Nous ne pourrions pas fonctionner sans la présence de milliards de bactéries, levures et autres microbes (non pathogènes) qui tapissent notre corps. Ils assurent d’importantes tâches comme nous protéger des agressions d’autres microbes (pathogènes), nous permettent de nous alimenter, d’avoir une odeur distincte des autres individus (et donc facilite de tomber amoureux quand on n’est pas trop crade), ils participent à notre système immunitaire… Et dans chacune de nos cellules se trouve un microorganisme que nous avons incorporé au fil des millénaires : la mitochondrie, qui permet la respiration cellulaire ! Cette super vidéo pour en savoir plus.</p>
+      
+        <p>Donc, non seulement les microorganismes sont nécessaires à notre survie mais en en apportant une grande diversité par une alimentation saine et variée (notamment avec des aliments riches en fibres -prébiotiques- et microorganismes -probiotiques-) nous améliorons notre santé immunitaire et psychique. Ceci est aux antipodes des standards occidentaux modernes, rendant les gens littéralement malades, entre autres par un microbiote faible. Pour plus d’informations je vous conseille ce reportage d’Arte, ou celui-ci un peu plus ancien sur le même thème.</p>
+      
+        <p>Autant de bonnes raisons d'en consommer de manière régulière (attention à ne pas manger que ça pour autant!)</p>
+      
+        <p>Nous vous donnons ici plusieurs recettes de fermentations de produits laitiers animaux pour que vous puissiez essayer à la maison !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 30 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Aliments_fermentés_-_produits_laitiers_animaux_maison" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Aliments_fermentés_-_produits_laitiers_animaux_maison</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour les yaourts<ul><li>Lait entier</li><li>yaourt ou ferments</li><li>bocaux en verre</li><li>yaourtière ou cocotte large</li><li>thermomètre de cuisson</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Pour les fromages</li><li>kéfir ou présure ou autre ferment</li><li>lait entier</li><li>bocal</li><li>étamine ou passoire fine</li><li>moules type faisselle ou petites passoires</li><li>sel</li><li>thermomètre de cuisson</li><li>présure</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Règles d'hygiènes pour tout produit laitier cru</strong><p><strong>Étapes :</strong></p><ol><li>Il n'est pas nécessaire de travailler dans un champ stérile lorsqu'il s'agit de fermentation mais il est crucial d'être le plus propre possible.</li><li>Travaillez sur un plan de travail nettoyé (si besoin/possible aseptisé au vinaigre blanc ou à l'alcool). Utilisez des ustensiles et récipients propres, lavés à l'eau chaude (ou passés au lave-vaisselle), manipulez avec des mains propres et essuyez-les avec un torchon PROPRE... bien entendu.</li><li>Lorsque vous travaillez avec des souches microbiennes spécifiques, afin d'éviter toute contamination avec d'autres microorganismes veillez à bien stériliser les ustensiles avant de toucher autre chose. Il est également recommandé de les isoler, à minima de les couvrir pour éviter la migration des spores de moisissures d'un fromage à l'autre. Ceci est particulièrement important pour le bleu (penicilum roqueforti) qui nécessite même de changer de vêtement avant de manipuler d'autres types de fromages... Sous peine d'avoir des départs de bleu partout. Ce n'est pas dangereux mais ça fait peut au consommateur ;)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Mise au clair sur l'appelation yaourt (ferments thermophiles)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cd/Aliments_ferment_s_-_produits_laitiers_animaux_maison_yaourts.jpg/800px-Aliments_ferment_s_-_produits_laitiers_animaux_maison_yaourts.jpg' alt='Aliments ferment s - produits laitiers animaux maison yaourts.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>En France il est obligatoire de respecter plusieurs critères pour appeler son produit « yaourt ». Il faut que le produit final contienne obligatoirement ces deux bactéries lactiques (a minima) vivantes : Lactobacillus bulgaricus et Streptococcus thermophilus. Le produits au bifidus et autres bactéries n’ont pas le droit à ce nom (ex : activia, actimel), de même que les yaourts ayant subi un traitement thermique tuant les bactéries avant la vente du produit. On trouve des noms du genre « dessert lacté, spécialité fromagère, gourmandise laitière… ». Si le mot yaourt n’est pas écrit en toute lettre sur le produit, c’est que ce n’en est pas… Et donc qu’il ne contient pas les probiotiques nécessaires pour produire des yaourt maison chez vous.</li><li>Autre information importante : les yaourts et fromages ayant été fermentés ils ont naturellement peu de lactose. Suivant le niveau d'intolérance, on peut donc en consommer sans difficulté. Par contre, un lait sans lactose ne peut pas donner de yaourt ou de fromage par fermentation, car il manque le sucre nécessaire au fonctionnement des microorganismes. Pour des yaourts 100% sans lactose voici une recette.</li><li>Voici un article sur les différents yaourts d’après les spécialités culturelles des 4 coins du monde : https://revolutionfermentation.com/blogs/yogourt/yaourts-traditionnels-monde/</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Les outils indispensables pour commencer</strong><p><strong>Étapes :</strong></p><ol><li>Commencer par bien choisir son lait ! Le mieux pour réussir ses yaourts et obtenir une belle texture est de prendre du lait entier cru de ferme, c-a-d non écrémé ni pasteurisé/stérilisé, bref un lait vivant. Il se trouve au rayon frais du supermarché, en vente directe ou sur les marchés, attention il se conserve au frigo 1 semaine max. Les autres laits du commerce peuvent être utilisés mais donneront des résultats moins satisfaisants, les pires étant le lait écrémé UHT). Pour les personnes qui souhaitent un yaourt + riche en protéine on peut ajouter un peu de lait en poudre (optionnel) mais attention, contrairement aux idées reçues ça ne le rendra pas plus ferme. Si on utilise du lait entier de ferme on peut écrémer tout ou une partie pour s’en servir pour autre chose, ou le garder tel quel, les yaourts seront aussi fermes… Ce qui n’est pas le cas en utilisant un lait demi-écrémé du commerce (procédés différents). Pour écrémer le lait : le laisser reposer au moins 24h et la crème remonte à la surface, enlever à la petite cuillère. On peut récupérer entre 10 et 12cl de crème par litre de lait fermier.</li><li>Si vous n'avez que du lait homogénéisé : C'est à dire que le lait de plusieurs élevages ont été mélangés et que la crème ne remonte plus à la surface. Ceci peut poser problème suivant la structure des fromages que vous visez. Il est recommandé de prendre du lait 100% écrémé puis de rajouter de la crème fraiche liquide jusqu'à retrouver la teneur en crème d'un lait entier (500ml de crème à 35% de matière grasse pour 4L de lait). On cherche un lait à 3.8% de matière grasse.</li><li>Un thermomètre de cuisine : obligatoire pour trouver les bonnes températures adaptées au lancement de vos bactéries (trop chaud elles meurent, trop froid elles ne travailleront pas).</li><li>Des pots : pas obligatoire de prendre des pots spécialement faits pour les yaourts même s’il est dit que les pots en céramique marchent mieux. On évitera le plastique pour ne pas trop manger de microparticules libérées par la chaleur et polluer la planète. Le plus simple est de réutiliser des bocaux en verre (type pesto, gingembre japonais, tapenade) pas trop grand si on veut des portions individuelles, ou au contraire immense, tout est une question de choix personnel. L’idée est par contre d’avoir des pots de même allure afin de faciliter une fabrication homogène, mais ça marche aussi avec des gabarits différents.</li><li>Une yaourtière… Ou système D ! Il existe aujourd’hui une grande gamme de yaourtières électriques +/- hightech et chères, mais rappelons-nous qu’il y a quelques décennies toutes les familles produisaient leurs yaourts, sans investir et sans électricité ! Préférons donc le système D. Le plus simple est de prendre une grande casserole, marmite ou cocotte puis de l’enrober de plein de couvertures afin de la rendre quasi isotherme et allonger dans le temps la baisse de température. Sinon, on peut aussi utiliser un grand thermos ou une glacière.</li><li>Des ferments lactiques, avec au minimum ces deux bactéries : Lactobacillus bulgaricus et Streptococcus thermophilus. Pour les trouver on peut :</li><li>- Acheter des ferments spécialisés en pharmacie ou en ligne (ex : laboratoire Yalacta)</li><li>- Acheter un yaourt du commerce (avec la vraie appellation yaourt)</li><li>- Acheter des compléments alimentaires probiotiques en pharmacie (en vérifiant que les microorganismes contenus fonctionnent pour produire des yaourts)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Réutiliser son petit lait</strong><p><strong>Étapes :</strong></p><ol><li>Lors de la préparation de yaourts et de fromages on récupère comme "déchet" le petit lait, peu importe les ferments (commerce, kéfir, probiotiques...). En réalité il y a de nombreuses utilisation à ce liquide très riche en probiotique!<ul><li>En garder de côté pour refaire du fromage le jour suivant. Plusieurs professionnel.le.s gardent le petit lait d'un jour à l'autre (pas plus pour éviter de trop déséquilibrer la composition) afin d'avoir un "levain" complèxe et spécifiquement adapté à leur environnement, à leur lait. En effet, en gardant leur petit-lait le mélange de ferments est plus complèxe que les ferments du commerce, mais lorsqu'un déséquilibre se déclare (notamment des virus de bactérie lactique) il faut alors repartir de zéro avec des ferments achetés pour limiter la propagation.</li><li>le boire tel quel : certaines personnes aiment, mais il peut être assez acide.</li><li>Le boire en boisson pétillante : on peut facilement faire pétiller des boissons avec les ferments présents dans le petit lait, même si la boisson ne contient pas de lait animal! Vous pouvez en mettre un fond dans une bouteille de jus de fruit, dans un sirop, une infusion surée... Le principe est d'avoir une boisson sucrée afin que les microorganismes du petit-lait puissent le manger pour libérer du CO2 afin de former les bulles, en créant au fil du temps une légère acidité</li><li>L'utiliser pour nourrir des animaux : courrament le petit-lait est donné à des cochons, il peut aussi être donné à d'autres animaux en petite quantité</li><li>L'utiliser pour nourrir la vie du sol : avec ces nombreux microorganismes certaines personnes épandent le petit-lait dans les champs, il a récemment été prouvé que répandre régulièrement du petit-lait et autres liquides fermentés (non salés ou alors bien dilués) favorise la bonne santé du sol. Vous pouvez aussi choisir de le mettre dans votre compost (attention toute fois à ne pas détremper le compost pour son bon fonctionnement)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Recette simplissime de "yaourt" sans ferments et sans cocotte/yaourtière : L'Incir Uyutmasi Turque</strong><p><strong>Étapes :</strong></p><ol><li>Recette de NiCruNiCuit</li><li>Ingrédients :<ul><li>1L de lait cru entier</li><li>10 figues</li><li>casserole et feu</li><li>thermomètre cuisson</li><li>mixeur</li><li>pots</li></ul></li><li>Mettez les figues à tremper si elles sont séchées dans un bol d'eau chaude pendant 30 min. Coupez la queue et détaillrez les figues en petits morceaux.</li><li>Chauffez le lait dans une casserole à 80°c (ou à vue d'oeil juste avant ébullition) puis laissez refroidir entre 45-50°C (cela doit sembler chaud sans brûler le doigt). A partir de là il faut aller vite tant que le lait est chaud.</li><li>Ajoutez les figues dans le lait et mixez au mixeur plongeant ou passez au blender. Répartissez le lait chaud dans des pots et couvrez d'un capuchon ou d'aluminium/film étirable. Pour garder la chaleur vous pouvez retourner un saladier par dessus et/ou ajouter des torchons-couvertures.</li><li>Au bout de 3-4h les yaourts ont pris et sont devenus fermes, mais vous pouvez les laisser au chaud toute une nuit/journée. Placez-les au frigo pour déguster bien frais.</li><li>Il ne s'agit pas réellement d'un yaourt car les bactéries lactiques de références n'ont pas été utilisées. Mais concernant la texture on retrouve une texture bien ferme et un gout légèrement sucré de figue. La texture épaisse et crémeuse est possible grâce à la ficine, une enzyme de la figue qui gélifie le lait.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Faire ses yaourts en système D, repiquage et cocotte</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>1L de lait = 1L de yaourt, il n’y a aucune perte. Pour les plus pressé.e.s il est possible de faire ses yaourts en 3h30, 30min de préparation (en comptant le refroidissement) et 3h d’incubation (+ un peu de temps au frais, c’est quand même meilleur).</li></ul></li><li>Contrairement à ce que l’on pense, pas besoin de mettre un yaourt entier pour refaire une tournée d’un litre, 3 cuillères à café bombées ou 1 grosse cuillère à soupe suffit. En mettre plus ne rendra pas les yaourts plus fermes et ne les fera pas prendre plus vite. Attention, contrairement aux ferments en sachets, les yaourts du commerce ne peuvent pas se réutiliser aussi longtemps. Au bout de quelques dizaines de fois le ferment va dégénérer : devenir acide et gluant. Vous pouvez racheter un yaourt pour repartir avec une souche neuve ou choisir une autre solution.</li><li>Etapes à suivre pour toute confection de yaourt :<ul><li>Faire chauffer le lait dans une casserole (en touillant régulièrement pour éviter la formation de peau et de brûler le lait) jusqu’à le faire bouillir (environ 85°C). Cela permet de tuer certaines bactéries potentiellement indésirables.</li><li>Une fois la formation de mousse, baisser le feu (feu doux) pour garder le lait autour de 80°C entre 15-20 minutes (on peut directement refroidir mais plus on laisse chauffer plus le yaourt sera ferme) afin d’aider à la formation de protéines longues, donnant le maillage ferme.</li><li>Laisser refroidir jusqu’à atteindre 55°C. Si on est pressé poser la casserole dans un saladier d’eau froide, en parallèle verser de l’eau bouillante dans la cocotte (voir point suivant). Ajouter les cuillères de yaourt à la casserole de lait et mélanger avec un fouet pour homogénéiser. L’ensemencement doit se faire entre 60°C et 45°C (attention éviter d’aller à 60°C car risque de tuer les bactéries par mégarde et donne un yaourt très acide). Verser le mélange dans des petits pots (sans mettre de couvercle).</li><li>Déposer les yaourts dans la cocotte en ayant au préalablement versé de l’eau bouillante dedans afin de faire monter la température du récipient et obtenir une eau à 55-60°C au moment d’y déposer les yaourts. Bien fermer la cocotte et enrober de nombreuses couvertures pour garder la chaleur et avoir une baisse de la température douce. Il est important que la température descende graduellement et ne remonte pas, sinon cela affecte la texture.</li><li>Laisser au moins 3h, facilement toute la nuit. Suivant la température externe et votre envie de texture on peut laisser plus de 3h afin d’avoir plus de fermeté et plus d’acidité. Il est impossible avec cette méthode de faire surfermenter ses yaourts.</li><li>Tadaaa les yaourts ont pris ! Un petit liquide peut s’être formé dessus, le petit lait. Il peut se manger, ou se conserver pour aider au démarrage d’autres fermentations.</li></ul></li><li>Une fois vos yaourts produits vous pouvez les conserver 7-10j au frigo. Pensez à en garder un de côté si vous souhaitez faire un autre repiquage pour votre prochaine fournée de yaourts maison. Pour les autres fournées on peut réutiliser un de ses yaourts, à condition qu’il ait moins de 6 jours, s’il est plus vieux la texture sera moins intéressante, plus gluante et il faudra plusieurs fournées en respectant bien les 6 jours d’écart pour retrouver un ferment bien actif. Plus vous gardez longtemps les yaourts plus ils auront tendance à s'acidifier, à vous de voir ce que vous préférez. Il est tout à fait possible d'aromatiser ses yaourts pendant ou après le passage en cocotte (plus simple après) en y ajoutant de la vanille, des sirops, de la confiture... L'imagination est sans limite.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Faire ses yaourts avec des ferments du commerce et une yaourtière électrique</strong><p><strong>Étapes :</strong></p><ol><li>Les ferments en poudre sont des mélanges de bactéries déshydratées. On peut trouver des ferments français par le laboratoire Yalacta en pharmacie, ou en acheter en supermarché de la marque Alsa. Mais ces derniers ont tendance à mettre des informations fausses sur l’emballage alors je m’en méfie. Par exemple, ils disent qu’on ne peut pas réutiliser le ferment d’un yaourt à l’autre et que les yaourts ne se conservent qu’une semaine au frigo… C’est doublement faux, on peut repiquer ses yaourts plusieurs centaines de fois et plus d’un mois au frigo (et résistent en dehors du frigo d’ailleurs (ayant été inventés avant les frigos). On en trouve aussi en ligne, la marque NatAli est très bien.</li><li>Pour la première fournée utilisez une dose diluée dans un petit peu de lait à température ambiante puis mélangez une fois que la température du lait a refroidi à 55°C. Pour les autres fournées on peut réutiliser un de ses yaourts, à condition qu’il ait moins de 6 jours, s’il est plus vieux la texture sera moins intéressante, plus gluante et il faudra plusieurs fournées en respectant bien les 6 jours d’écart pour retrouver un ferment bien actif. On peut faire plusieurs centaines de fournées avec la même dose de départ, on change lorsque la texture devient gluante ou le goût trop acide.</li><li>Si vous avez une yaourtière électrique les températures sont un peu différentes. L’ensemencement se fait à 55°C réels (donc verser le lait dans les pots à 57°C, légère perte au contact des pots froids). Déposer dans la yaourtière et brancher en réglant sur 55°C (vérifiez de temps en temps avec un thermomètre), ils seront prêts en 3h et bien fermes au bout de 5-7h.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Faire ses yaourts avec des compléments alimentaires</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/bd/Probiotique_yaourt.png' alt='Probiotique yaourt.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’avantage de certains probiotiques compléments alimentaires et ferments c’est qu’ils contiennent une grande diversité de microorganismes… Et peuvent souvent fermenter plusieurs choses. Par exemple, le probiotique « Bioprotus 7000 » associe 7 ferments lactiques lyophilisés et des prébiotiques (fibres). Utilisé à la base pour faciliter la digestion et rééquilibrer la flore intestinale il peut aussi permettre la fabrication de yaourts, fromages, avec du lait animal, végétal y compris sans soja ! Le blog Cfaitmaison l’a testé et cela semble être une réussite, on trouve plusieurs sites web qui disent qu’il est tout à fait indiqué de l’utiliser comme ça.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Faire un yaourt/fromage blanc express sans ferment</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6f/Aliments_ferment_s_-_produits_laitiers_animaux_maison_yaourt_citron.png/800px-Aliments_ferment_s_-_produits_laitiers_animaux_maison_yaourt_citron.png' alt='Aliments ferment s - produits laitiers animaux maison yaourt citron.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour avoir un fromage blanc top chrono, sans passer par une fermentation on peut le faire cailler avec un élément acide.</li><li>Faire chauffer 50cl de lait 2 min à la casserole ou 20 secondes au micro-ondes et y verser ensuite quelques gouttes de jus de citron ou de vinaigre blanc. Ce mélange fera cailler le lait en fromage frais. Conservez ensuite le mélange dans un saladier fermé au frigo, une fois refroidi vous pouvez déguster !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Faire un yaourt à boire au kéfir de lait (ferment mésophile)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/e2/K_firlait.png' alt='K firlait.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voir le tutoriel dédié au kéfir de lait à boire en cliquant ici : Boissons fermentées - Kéfir, kombucha et vinaigres</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Faire des yaourts au matsoni (ferment mésophile)</strong><p><strong>Étapes :</strong></p><ol><li>Le matsoni, parfois appelé matzoun ou matsou est un produit laitier fermenté similaire au yaourt originaire d'Arménie et de Géorgie. Les yaourts au matsoni sont des produits laitiers fermentés avec une souche mésophile, qui n'a donc pas besoin de monter en température pour transformer le lait en yaourt.</li><li>Proportions : 1 cuillère à soupe de matsoni pour 200ml de lait cru entier.</li><li>Laisser fermenter en aérobie (bocal ouvert mais couvert d'un linge pour éviter la poussière et les contaminations par d'autres microorganismes). Laisser fermenter à température ambiante jusqu'àce que la texture ressemble à celle d'un yaourt.</li><li>Comptez environ 48h de fermentation pour une température oscillant entre 16 et 18°C</li><li>Comme les autres ferments, il est possible de repiquer ensuite les yaourts suivant en en gardant un de la tournée précédente. Il est arrivée à Laly Mazeres de partir en voyage en laissant jusqu'à 3 semaines un yaourt au frigo et s'en servir ensuite pour relancer une production. Il devient très acide mais au bout de quelques repiquage il retrouve sa saveur initiale.</li><li>Pour conserver son ferment de matsoni il est mieux de le garder dans un bocal avec joint en cahoutchouc pour éviter qu'il soit contaminé par d'autres microorganismes.</li><li>Comment se procurer un ferment Matsoni?</li><li>C'est comme les grains de kéfir, le partage se fait par don. Vous trouverez dans le commerce des cultures qui sont en fait des ferments cultivés en laboratoire et ça ne comporte pas la totalité microbienne du matsoni authentique car, tout comme les grains de kéfir, les scientifiques n'ont pas réussi à reconstituer cette souche dans son intégralité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Yaourts nordiques filmjolk, lattfil, A-fil, langfil (ferment mésophile)</strong><p><strong>Étapes :</strong></p><ol><li>Recette partagée par Ferment'Nation</li><li>Aussi connu sous le nom de "fil", le filmjölk est un produit laitier fermenté traditionnel suédois. Il obtenu par la fermentation de lait de vache par des bactéries bien particulières : la Lactococcus lactis, et la Leuconostoc mesenteroides. L'avantage de cette fermentation est que ces deux bactéries métabolisent le lactose (le sucre naturellement présent dans le lait, qui est difficilement digéré à l'âge adulte) et le transforme transforme en acide lactique, ce qui le rend beaucoup plu assimilable pas l'organisme.</li><li>Les autres noms de yaourts suédois sont réalisés de manière similaire mais avec d'autres souches de ferments.</li><li>Recette :</li><li>On mélange simplement une càs de filmjölk avec 250ml de lait, on recouvre avec un tissu et on laisse 12h à température ambiante (ce sont des ferments mesophiles), puis on le met au frigo 6h au moins avant de la consommer. Et on en garde un peu pour la fois suivante.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Faire du fromage "frais" à partir de kéfir de lait</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2c/Aliments_ferment_s_-_produits_laitiers_animaux_maison_fromages.jpg/800px-Aliments_ferment_s_-_produits_laitiers_animaux_maison_fromages.jpg' alt='Aliments ferment s - produits laitiers animaux maison fromages.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir fait son kéfir à boire comme indiqué dans l'autre tutoriel on laisse le kéfir s’épaissir et le petit lait se séparer du laitage.</li><li>Astuce pour récupérer les grains facilement les mettre dans un petit sachet en nylon : une fois la séparation du petit lait visible on dépose le fromage frais dans une passoire recouverte d’un filtre à café ou d’un linge et on laisse s’égoutter environ 6h. Le petit lait peut être utilisé pour lancer d’autres fermentations.</li><li>Après ce temps on obtient un fromage frais de type faisselle / fromage blanc que l’on peut consommer sucré ou salé (il sera légèrement naturellement plus sucré que ceux du commerce).<ul><li>1L de lait = 500g de fromage blanc environ pour du lait entier, il faut plus de lait s’il est écrémé mais ça fonctionne.</li></ul></li><li>On peut ajouter quelques cuillérées de crème fraîche au kéfir avant de l'égoutter pour avoir un résultat plus crémeux.</li><li>Pour avoir ce qui ressemble à un petit crottin de fromage frais on laisse l’égouttage se faire sur plusieurs jours. Ensuite on moule le fromage pour lui donner une forme et on laisse encore affiner légèrement au frigo (6j d'après Cfaitmaison) ou à température ambiante (pour que ce soit plus rapide, mais bien le protéger des insectes !)</li><li>On peut en faire des variantes avec des noix, des fruits séchés, des herbes (inspiration boursin ail et fines herbes)…</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Affiner son fromage</strong><p><strong>Étapes :</strong></p><ol><li>Voici quelques conseils de @Mongromagemaison concernant l'affinage des fromages.</li><li>"La température idéale pour affiner une grande partie des fromages se situe aux alentours de 10°c. Affiner un fromage à une température excessivement basse peut poser problème car le froid ralentit l'activité des champignons et des bactéries. A une température trop froide les moisissures auront du mal à se développer et l'affinage sera long et périlleux. Au contraire si on affine un fromage à une température trop élevée, les champignons et les bactéries risquerons d'être trop stimulés, le fromage vas s'affiner très vite en surface, devenir coulant et difficilement manipulable, avant de pouvoir s'affiner correctement en profondeur.</li><li>Pour un affinage parfait je conseil de commencer à température ambiante/froide pendant quelques jours pour permettre aux moisissures blanches (naturellement présentes dans le lait cru et dans le Kéfir) de bien s'établir et de prendre pied sur le fromage. Quand les moisissures font leur apparition en surface au bout d'une semaine, on a deux options : soit continuer l'affinage à température ambiante/froide pendant 1 ou 2 semaines pour un affinage court, soit placer le fromage à une température plus froide (10°c) pour ralentir le développement des moisissures et permettre un affinage plus doux et homogène sur une plus longue durée. Si on a pas de cave, et c'est le cas de la plupart d'entre nous, le bac à légume du réfrigérateur convient très bien, il sera alors à une T° proche des 10°c (environs 8°c), l'affinage prendra juste un peu plus de temps.</li><li>Pour un bon affinage il faut aussi tenir compte de deux autres facteurs : l'humidité ambiante et l'aération. Disposer le fromage dans une boite en plastique partiellement ouverte permet d'avoir un contrôle parfait de l'hygrométrie tout en permettant aux moisissures de respirer."</li><li>Une fois le fromage frais produit à partir de kéfir ou par de la présure et des bactéries lactiques l'affinage est similaire. Si on prolonge plus longtemps le filtrage, qu'on le laisse égoutter deux jours au lieu d'un, il devient plus épais, un peu plus acide aussi. En l'égouttant tous les jours et en retournant la masse, en la salant légèrement sur les deux faces, on obtient un fromage à consistance de plus en plus épaisse et dure, pas vraiment sec, au goût plus prononcé, assez proche du fromage italien dit "stracchino".</li><li>Pour obtenir un fromage sec, il faut le mettre dans un endroit aéré, frais mais non humide. On peut également y ajouter des herbes au début.</li><li>Pour obtenir un fromage à pâte dure 2 options, après avoir obtenu un fromage sec<ul><li>Le presser avec une presse à fromage et laisser mûrir entre 2 et 6 semaines dans un endroit frais et ventilé dans un bocal ouvert. Une fois par jour, il faut sortir le fromage et le retourner. Pour éviter la prolifération de moisissures en surface, on peut appliquer du vinaigre ou de l'huile d'olive.</li><li>Le sécher (si on n’a pas de presse). Placer le fromage dans un linge avec du sel et le pendre plusieurs jours. Il faut ouvrir la mousseline chaque jour et asperger le fromage avec un mélange de vinaigre/huile d'olive pour éviter la propagation de moisissure en surface. Laissez mûrir quelques semaines dans un lieu frais et ventilé.</li></ul></li><li>Le fromage dur - fait avec la presse à fromage - peut être placé dans de l'eau fortement salée (où on aura ajouté du sel jusqu'au moment où il ne se dissout plus). Laissez 2 semaines au frigo. Et on obtient du fromage dur à râper style parmesan. (N'utilisez pas le fromage séché dans la mousseline car il s'effriterait dans la solution saline).</li><li>Une recette de « parmesan » de kéfir de lait simplissime : https://revolutionfermentation.com/blogs/kefir-de-lait/flocons-de-parmesan-de-kefir/</li><li>Voici plusieurs recettes pas-à-pas de fromage affinés à partir de kéfir de lait ou de yaourt :<ul><li>Crotins de chèvre : https://www.facebook.com/groups/250871642949849/permalink/483631016340576</li><li>Fromage de vache semi-affiné crémeux : https://www.facebook.com/groups/250871642949849/permalink/457354415634903</li><li>Tuhp, fromage séché du Tadjikistan au gout similaire au parmesan : https://www.instagram.com/p/CRE7s3foQ0K/ et https://www.instagram.com/p/CFU0Vo9o5Ey/</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Faire un fromage frais à partir de yaourt</strong><p><strong>Étapes :</strong></p><ol><li>Il est possible de laisser s'affiner un yaourt afin d'en faire un fromage frais que l'on peut aromatiser type boursin fines herbes ou bien façonner en petits crotins roulés ensuite dans les aromates.</li><li>Voici les précieux conseils de @Monfromagemaison :</li><li>1) Faire égoutter le yaourt 24 heures dans un tissu, ajouter du sel (1 cuillère à café par litre de yaourt) puis le laisser s'égoutter 24 heures de plus.</li><li>2) Au terme des 48 heures le yaourt est bien plus malléable, on peut alors l'assaisonner, si on le souhaite, et le mettre dans une faisselle doublé d'un tissu (pour pouvoir ensuite le sortir plus facilement de la faisselle sans l'abîmer). Laissez-le sécher pendant environs 5 heures dans la faisselle de préférence dans un endroits bien aérée pour qu'il sèche plus rapidement. Au bout de 5 heures vous pouvez le tourner sur lui même et le remettre en faisselle 5 heures de plus pour lui donner une belle forme régulière des deux côtés.</li><li>3) Pour finir vous pouvez le recouvrir avec l'épice ou l'herbe aromatique de votre choix !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Faire sa faisselle / fromage frais à la présure et aux bactéries mésophiles</strong><p><strong>Étapes :</strong></p><ol><li>Article illustré de NiCruNiCuit ici</li><li>Vidéo de Fred le Fromager urbain, et celle sur les Petits Suisses.</li><li>Afin de réaliser une coagulation plus rapide et obtenir un fromage frais plus ferme qu'un yaourt il est nécessaire d'utiliser de la présure (achetée en pharmacie ou en grande surface à côté des yaourts ou des aides patisserie). La présure est une enzyme, la chymosine, tirée de la caillette du veau (un de ses estomacs). Il existe aussi de la présure végétale : le suc de figuier, la grassette, certains chardons, mais il est plus difficile de s'en procurer. Très peu de présure est nécessaire pour produire du fromage : 1 à 3 gouttes par litre de lait suffisent amplement.Plus vous en mettez plus la prise sera rapide et la consistance ferme/granuleuse, mais trop et cela devient caoutchouteux.</li><li>Pour donner un fromage qui a du gout la présure ne suffit pas. Un lait emprésuré va coaguler mais le fromage sera insipide. Pour lui donner du gout il est nécessaire d'y apporter des bactéries qui travaillent à température ambiantes "mésophiles", celles du yaourt sont "thermophiles" car elles sont actives à haute température.</li><li>Plusieurs possibilités pour obtenir des bactéries mésophiles :<ul><li>Réutiliser le petit lait d'un fromage frais du commerce, de préférence fermier ou artisanal</li><li>Réutiliser le petit lait d'un kéfir de lait</li><li>Réutiliser un peu de liquide de lactofermentation (attention, il peut apporter un gout de légume)</li><li>Utiliser la méthode "express" en faisant cailler un peu de lait avec un liquide acide (ex: jus de citron) avec quelques gouttes de présures, récupérer le petit lait et le laisser "maturer" 48h à 20°C dans un bocal.</li><li>Acheter un ferment mésophile dans le commerce (les entreprises Yalacta et NatAli en proposent).</li></ul></li><li>Dans toutes les options ci-dessus SAUF celle des ferments du commerce on ajoutera ensuite la présure (les sachets du commerce contiennent souvent déjà de la présure, pensez à vérifier).</li><li>Avec 1L de lait de vache entier cru on obtient 500g de fromage blanc et 500g de petit lait en moyenne. Plus le lait est écrémé moins vous aurez de fromage. Plus l'égouttage est long plus le fromage est concentré et petit, de la taille d'un crottin de chèvre.</li><li>La recette pour 1L de lait cru entier :<ul><li>1 cuillère à soupe de petit lait (ou de ferment)</li><li>1 à 3 gouttes de présure selon la température (plus il fait chaud moins la présure est nécessaire)</li><li>Un grand récipient de plus d'1L pour mélanger</li><li>Plusieurs moules à faisselle ou étamines pour égoutter + une soucoupe pour récupérer le petit lait</li><li>1 grande cuillère / louche</li><li>1 grand couteau</li></ul></li><li>Maturation : Si le lait a plus de 24h après la traite il n'est pas nécessaire de faire la maturation. Si le lait est très frais, versez le lait dans un récipient et couvrez d'une assiette. Laissez maturer à température ambiante fraiche (15-20°C) pendant 12-24h afin que le lait s'acidifie et que les bactéries naturellement présentes dans le lait commencent à travailler.</li><li>Ajoutez ensuite le petit lait (sauf si vous utilisez un ferment du commerce) et mélangez.</li><li>Emprésurage : Faites tiédir le lait vers 38-40°C (température interne de la vache). Ajoutez les gouttes de présure et mélangez bien. Laissez à température ambiante. La coagulation prend entre 24h et 48h suivant la température et la dose de présure.</li><li>Coupe du caillé : Lorsque le lait sest solidifié et que le liquide clair surnage (petit lait) coupez en croisillon avec un grand couteau afin de favoriser la remontée du petit lait</li><li>Remplissage des faisselles : Mettre le moule à faisselle dans une soucoupe pour récupérer le petit lait. Avec une grosse cuillère ou louche remplir le moule de caillé. Attendez que le caillé s'agoute et continuez à remplir au fur et à mesure que le niveau descend. Remplissez jusqu'en haut, remettez du caillé jusqu'à ce que le niveau se stabilise.</li><li>Laissez ensuite le fromage s'agouter jusqu'à la texture désirée.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Variation de fromages lactiques</strong><p><strong>Étapes :</strong></p><ol><li>Saviez-vous que la préparation d'ensemencement et de présure est la même que l'on fasse du fromage blanc, de la faisselle, des petits crotins frais, crémeux, secs ou même des buchettes de chèvre?? Et bien entendu on peut aromatiser de manière très variées les lactiques : imitation tartare ail et fines herbes, au poivre, citron-curcuma...</li><li>Alors une fois que vous avez produit votre caillé en suivant la recette précédente tentez donc quelques variations!</li><li>Remarque : pour une version zéro déchet vous pouvez tout à fait utiliser un fromage blanc ou une faisselle qui a trop vieilli pour être mangé en salé. Si par exemple vous remarquez que la surface se plisse (présence de geotrichum candidum), c'est bon signe! Cela devient un fromage affiné. Pour réellement le transformer en fromage affiné, ajoutez 1-2 pincées de sel pour 50g et versez votre fromage blanc/faisselle dans un linge posé sur une passoire. Laissez égoutter entre 1/2 journée à 2j (suivant la texture que vous aimez). L'ajout de sel facilite la sortie du petit lait, vous pouvez en rajouter en retournant votre pâte à fromage si vous désirez un rendu plus dense et plus salé/sec. Attention, lors de la maturation la teneur en sel augmente légèrement.</li><li>Une fois le fromage égoutté vous pouvez choisir le format que vous aimez : façonnez-le à la main ou dans un moule, mélangez lui des aromates... Puis laisser affiner pendant 2 semaines. Suivant votre gout vous pouvez laisser à température ambiante (affinage très rapide mais texture parfois difficile à manier) ou au frigo (affinage très lent mais bonne tenue) ou faire 1 semaine l'un puis l'autre. Attention à conserver un peu d'humidité (en couvrant d'un bol ou d'un couvercle entrouvert. Trop d'humidité n'est pas bon non plus (vider le jus restant au pied du fromage et limitez la condensation.</li><li>Pour réaliser des buchettes de chèvres il faut bien égoutter et bien saler le fromage. Une fois la texture d'une pâte à modeler atteinte vous pouvez rouler un pâton ou bien vous aider d'une feuille de papier cuisson et d'un tapis (type sushi). Ces tapis en bambou sont d'ailleurs très intéressant pour affiner les fromages car leur texture ne colle pas trop au fromage et favoriser une bonne circulation de l'air.</li><li>Pour réaliser des fromages crémeux, n'égouttez pas trop (voire ajoutez un peu de crème au fromage blanc) et gardez dans un endroit bien humide.</li><li>Pour ceux plus secs, égouttez plus longtemps et aérez un peu plus la zone d'affinage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Faire sa mozzarella</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/e4/Aliments_ferment_s_-_produits_laitiers_animaux_maison_mozza.png' alt='Aliments ferment s - produits laitiers animaux maison mozza.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour environ 200g de mozzarella<ul><li>2L de lait cru entier de bufflonne ou de vache</li><li>2 doses de ferment mésophile (ou 4 cuillères à soupe de petit lait)</li><li>1/4 de cuillère à café (ou 3-6 gouttes) de présure</li><li>50g de sel</li><li>1 thermomètre de cuisson</li><li>1 long couteau</li><li>1 écumoire + grand saladier</li><li>1 moule à fromage de la taille d'un camembert</li></ul></li><li>Ensemencement : Après avoir laissé maturé le lait (s'il a moins de 24h après la traite), chauffez le lait à 32°C et ajouter le ferment/petit lait. Couvrez et laissez incuber 1h en maintenant à température.</li><li>Emprésurage : Ajoutez la présure préalablement diluée dans 5cl d'eau. Mélangez soigneusement et laissez reposer encore 11h minimum, toujours à 32°C. Attendez de voir le lait se solidifier et le petit lait remonter.</li><li>Coupe du caillé : Toujours à 32°C, coupez le caillé avec un grand couteau en cubes d'environ 2cm. Mélangez délicatement pour faire remonter plus de petit lait. Remuez toutes les 5 min pendant 30-60 min jusqu'à ce que le caillé s'affermisse et prenne la texture d'un oeuf poché. A ce moment là, laissez reposer 10 min afin de que caillé tombe au fond. Videz le petit-lait et gardez le de côté.</li><li>Maturation : Transférez le caillé dans le moule et laissez reposer 1h jusqu'à ce que les grains s'agglomèrent. Démoulez le fromage et plongez-le dans le petit lait réservé, couvrir et laisser fermenter 8 à 12h à 20°C minimum. Testez la maturité du caillé : chauffez de l'eau à 66°c et plongez un petit morceau de caillé pendant 1 min puis étirez-le. S'il s'étire facilement en long fil, il est prêt. S'il se casse attendez encore 1h et recommencez.</li><li>Mise en forme : Lorsque le caillé est prêt préparez une grande cassrole d'eau entre 66-70°C. A côté, dans un petit saladier dissoudre 50g de sel dans 1L de petit lait. Submergez le caillé dans l'eau chaude pendant 15 min. Sotrez-le avec une écumoire, il doit être soyeux et maléable. Etirez le fromage et roulez-le sur lui-même en boule puis replongez-le 5 min dans l'eau chaude. Recommencez l'opération : étirez et roulez sur lui-même et imergez-le 2-3 min dans l'eau chaude. Formez une boule serrée en repliant les bords par dessous et en pinçant pour lui donner sa forme finale. Plongez le fromage aussitôt dans la saumure de petit-lait et laissez-le refroidir.</li><li>Conservation : Les italiens la consomment le jour-même et ne la conservent surtout pas au frigo. Elle se conserve dans sa saumure à température ambiante 3-4 jours.</li><li>Astuce : vous voulez faire de la burrata? La version ultracrémeuse de la mozzarella? Il suffit d'y mélanger de la mascarpone et des filaments de mozzarella au coeur de poches de mozzarella. Une vidéo de Fred le Fromager urbain pour savoir la faire.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - Faire sa feta</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/ef/Feta.png' alt='Feta.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette et photo de @Monfromagemaison</li><li>La recette pour fabriquer de la Feta comporte un certain nombre d'étapes mais ca reste malgré tout, un fromage simple à faire chez soi.</li><li>Il suffit de faire un caillé présure classique, mettre le caillé dans une passoire pour le débarrasser de son petit lait, le saler (2 c.a.s pour 4 litres de lait), le mettre dans une presse.</li><li>Une fois le caillé refroidi et raffermi, le couper en tranche d'1,5 cm de large, saler légèrement la surface des tranches, les faire secher 1 ou 2 jours sur un paillon en les tournant de temps en temps, puis les mettre en saumure (préparé avec son petit lait et 7 % de sel).</li><li>Laissez affiner ainsi entre 2 semaines et 2 mois avant de déguster. Le résultat est super, je vous encourage vivement à essayer chez vous !</li><li>Vous pouvez aussi essayer de faire un fromage type feta à partir de kéfir de lait, en respectant les temps de presse et d'affinage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - Faire des boules d'Edam (type gouda)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/5/59/Boule_edam_type_gouda.png' alt='Boule edam type gouda.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette et photo de @Monfromagemaison.</li><li>Quatre belles boules d'Edam au cumin faites maison avec du lait cru et ciré avec de la cire d'abeille 100 % naturelle, après 2 mois d'affinage...Un délice !</li><li>Recette :<ul><li>Chauffez 4 litres de lait à 32°c, ajoutez le ferment (100cl de Kéfir de lait), laissez incuber pendant 30 minutes. Ajoutez la présure mélangez soigneusement, et attendez (1 heure ou plus s'il le faut) jusqu'à la cassure net (quand vous essayez de prélever du caillé avec une cuillère la marque de la cuillère reste bien net) en maintenant la T° à 32°c.</li><li>Coupez le caillé en cube de 2,5 cm. Le caillé vas plonger au fond de la casserole. Mélanger délicatement et régulièrement les grains avec vos mains pour éviter qu'ils s'agglomèrent au fond de la casserole, pendant 30 min. Ils vont rétrécir et de raffermir.</li><li>Laissez reposer 20 min. Le caillé vas retomber au fond de la casserole. Prélevez du petit lait à la louche jusqu'à voir apparaître les grains. Gardez ce petit lait de côté. Versez de l'eau très chaude dans la casserole de caillé pour atteindre 37°c. Laissez reposer 20 min.</li><li>Transférez le caillé dans une passoire tapissé d'une toile à fromage. Laissez égouter 5 min. Saupoudrez 1 c. à café de sel. Rassemblez les 4 coins de la toile. Façonnez le caillé en forme de boule à travers la toile. Pressez bien, faite un nœud et suspendez là pendant 30min.</li><li>Versez le petit lait précédemment mis de côté dans une casserole et chauffez à 50°c. Coupez le feu, retirez la boule de la toile et plongez la dans le petit-lait pendant 20min. Tournez la boule toutes les 5 minutes.</li><li>Replacez le fromage dans la toile et suspendez le encore 6h.</li><li>Préparez une saumure avec 1 litre d'eau et 70g de sel. Plongez y la boule. Laissez 24h au frais.</li><li>Sortez la boule, (vous y êtes presque 😉), épongez la avec un torchon propre. Placez la sur un paillon pendant 2 jours à T° ambiante, en la tournant de temps en temps.</li><li>Quand elle est bien séche en surface vous pouvez la cirer en appliquant 3 couches de cire 👍</li></ul></li><li>Une bonne expérience à faire pendant les vacances 😉</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Recettes de fromages pour réutiliser le surplus de petit lait</strong><p><strong>Étapes :</strong></p><ol><li>Le petit lait est riche en protéines, sels minéraux et pauvre en matières grasses. Il est difficile à évacuer dans les stations d'épurations. Si traditionnellement il est donné aux animaux (porcs, chats, chiens, parfois aux laitiers s'ils aiment), il est possible de chercher à en tirer à nouveau un peu de fromage avant de le jeter.</li><li>Les recettes de NiCruNiCuit permettent d'essayer de faire de la ricotta ou des fromages de type sérac ici : https://nicrunicuit.com/faire/fermenter/comment-faire-de-la-ricotta/</li><li>Voici le retour d'expérience de @Monfromagemaison concernant le Sérac.</li><li>--> 15L de petit lait donne 1kg de ricotta</li><li>--> 4L de petit lait donne 1-2 séracs</li><li>Il semblerait que cela fonctionne aussi avec du petit lait issu de kéfir de lait.</li><li>Le Sérac ou serra est un fromage originaire des Alpes. Il était, à l'origine, fabriqué avec le petit-lait résultant de la fabrication des gros fromages Alpins (Gruyère, beaufort, abondance, comté...). Son nom viens justement du "Serum" de "Lacto-Serum" le nom scientifique du petit-lait. C'était un peu le fromage du pauvre... Il est pourtant très bon et sain! Il est pauvre en matière grasse et riche en albumine, une protéine soluble qui reste dans le petit-lait lors de la fabrication de fromages présurés. On peut l'aromatiser avec des herbes, des épices, le fumer ou le griller. J'ai pu aussi lire que dans le temps on l'affinait avec du vin blanc mais je cherche plus de renseignements avant d'essayer.</li><li>Recette du Sérac<ul><li>4 litres de petit-lait</li><li>1 litre d'eau non chloré</li><li>60g de sel</li><li>Quand vous fabriquez un fromage, récupérez le petit-lait et laissez-le s'acidifier naturellement pendant 24h à température ambiante.</li><li>Mettez le petit-lait dans une casserole, chauffez-le et coupez le feu dès qu'il commence à bouillir. Vous devriez voir des petits flocons blanc nager dans le petit-lait.</li><li>Passez le petit-lait dans une passoire ou un chinois doublé d'une étamine. Laissez le fromage s'égoutter complément. Ajoutez des aromates ou des épices si vous le souhaitez!</li><li>Quand il ne goûte plus, transvasez-le dans une faisselle et posez une autre faisselle de la même taille sur le dessus et ajoutez un peu de poid pour presser le fromage légèrement pendant 24 heures.</li><li>Préparer une saumure saturé en mélangeant 1 litre d'eau et 60g de sel.</li><li>Sortez le fromage du moule et plongez-le dans la saumure pendant 3 jours en conservant le bocal au frais.</li><li>Sortez le fromage de la saumure, placer sur un paillon pour qu'il s'égoutte un peu et votre Sérac est prêt à déguster !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>22. Étape 22 - Recette type "Dulce de leche" pour gourmandise à base de petit lait</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Dulce_de_leche_scandinave_-_petit_lait_Mysost.png/800px-Dulce_de_leche_scandinave_-_petit_lait_Mysost.png' alt='Dulce de leche scandinave - petit lait Mysost.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voici la super recette (et photo) de @monfromagemaison de Mysost</li><li>Le Mysost est un fromage de petit-lait scandinave. "Avec sa consistance et son goût de caramel, il évoque plus une friandise qu'un fromage : étalé sur un toast, c'est le petit-déjeuner rêvé de tout petit scandinave !" - David Asher</li><li>On l'obtient en cuisant lentement du petit-lait doux jusqu'à évaporation totale du liquide. Les lipides et les protéines se concentrent, le lactose se caramelise et le résultat donne une pâte épaisse comme sur la photo. Quand le petit-lait est réduit à un quart vous pouvez ajouter un peu de crème. J'ai fait ce mysost avec 8 litres de petit-lait cuit plus de 10 heures à feu doux et 400g de crème. Essayez chez vous, c'est vraiment pas compliqué 😉</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>23. Étape 23 - Ricotta au miso</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Ricotta_au_miso.png/800px-Ricotta_au_miso.png' alt='Ricotta au miso.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette et photo de Ferment'Nation</li><li>"J'ai tenté la recette du livre Koji Alchemy à base de koji de riz, de ricotta, et de sel. On mixe les 3 ensemble, on met le mélange dans un bocal à joint et on attend 2 mois.</li><li>Les auteurs recommandent de réaliser la fermentation au frais, en expliquant que le taux relativement élevé de graisse de la ricotta peut faire qu'en étant décomposées par les enzymes du koji en acides gras, ces graisses peuvent donner un goût rance désagréable au mélange.</li><li>Mais, à ma connaissance, la ricotta n'est pas particulièrement grasse. On retire généralement la crème du lait avant de le transformer en fromage, puis cuit le 're-cuit' le petit lait qu'on a récupéré de ce processus pour n'en récupérer que les flocons de ricotta. Je crois qu'il n'y a quasiment plus de graisse à ce moment là. C'est en tout cas comme ça que je réalisé celle qui a servi ici.</li><li>Je crois que la différence vient du fait qu'aux Etats-Unis, ils ne s'y prennent pas de la même façon, ils font de la ricotta rapide à partir de lait entier, le lait contient donc encore tout son gras.</li><li>J'ai voulu réaliser l'expérience de mettre un pot au frais et un pot à température ambiante pour comparer le résultat.</li><li>En effet je n'ai eu aucune trace de rancidité dans les deux pots, par contre le pot qui était au frais était nettement meilleur. Celui que j'ai laissé à température ambiante était vraiment acide !</li><li>En fait, je crois que le fait d'avoir mis le bocal au frais a permis de laisser agir tranquillement les enzymes du koji, alors que le bocal à température ambiante a en plus favorisé l'activité des bactéries lactiques, qui ont transformé les sucres complexes décomposés par les enzymes en sucres simples en acide lactique. C'est pour la même raison qu'on recommande de commencer la fermentation du shoyu (sauce soja 🇯🇵) au frais.</li><li>La ricotta qui a fermenté au frais est vraiment délicieuse. Après 2 mois de fermentation, les enzymes ont libéré un bouquet de saveur incroyable, qui va de la mousse de canard au parmesan, avec un goût légèrement sucré, et une texture ultra-crémeuse.</li><li>Prochain test : séchage du « miso » de ricotta en le suspendant à un filet pendant 1 mois</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>24. Étape 24 - Faire sa crème fraiche et son beurre sans baratte</strong><p><strong>Étapes :</strong></p><ol><li>Il est très facile de récupérer de la crème fraiche de lait entier de vache (ou encore plus riche, de lait de brebis).</li><li>Il suffit de laisser décanter (reposer) la bouteille de lait pendant quelques heures pour voir se former en haut de lait un liquide plus jaune et plus épais. Il s'agit de la crème. Vous pouvez donc verser ou récupérer délicatement la crème fraiche à la cuillère. Toutefois si vous souhaitez utiliser ce lait pour en faire du fromage il est intéressant de ne pas écrémer totalement le lait afin de garder de l'onctueux (idem pour les yaourts à moins de chercher des yaourts pauvres en matière grasse).<ul><li>Il est possible de faire fermenter cette crème fraiche crue, si cela vous intéresse. Il semble que cela améliore sa conservation. Pour cela il vous suffit d'ajouter quelques grains de kéfirs (dans un sachet en nylon il est ensuite plus facile de les séparer de la crème) quelques jours. Ou bien ici, avec des ferments à fromages : https://www.youtube.com/watch?v=C4z0MpZcuOg</li></ul></li><li>Vous pouvez aussi utiliser cette crème pour la fouetter et en faire de la crème chantilly (dans un bol très froid, sortant du congélateur) ou fouetter encore plus jusqu'à obtenir du beurre. Vous pouvez laisser tel quel pour avoir un beurre crémeux facile à tartiner ou bien laisser égoutter quelques heures le beurre afin qu'il soit ferme et facile à mouler.</li><li>La crème fraiche crue, fermentée et le beurre se conservent au frigo quelques semaines. Si vous souhaitez voir une recette pour conserver le beurre en dehors du frigo allez à la dernière recette</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>25. Étape 25 - Faire du mascarpone (simplissime sans fermentation)</strong><p><strong>Étapes :</strong></p><ol><li>Recette SIMPLISSIME de @Monfromagemaison</li><li>Il existe plusieurs manières de faire du mascarpone, voici la version simple/rapide et sans équipement particulier.<ul><li>Versez 1 litre de crème liquide dans une casserole. Chauffez à 90°c en remuant régulièrement pour éviter que la crème ne brûle au fond de la casserole.</li><li>Quand la crème à atteint les 90°c, coupez le feu et versez 5 cuillères à soupe de vinaigre blanc dans la crème chaude. La crème devrait cailler instantanément. Mélangez brièvement pour bien repartir le vinaigre dans toute la crème et n'y touchez plus jusqu'à ce que la crème ait totalement refroidi.</li><li>Disposez une passoire ou un chinois doublé d'une étamine au dessus d'une casserole et versez y la crème à l'aide d'une louche.</li><li>Laissez égoutter le mascarpone pendant 12h à 24h en fonction de la consistance désirée. Et voilà ! Vous savez faire votre mascarpone à la maison, ça peut toujours être utile surtout avec les fêtes de fin d'année qui arrivent à grands pas 😉</li></ul></li><li>Le mascarpone se conserve 10 jours au frais</li><li>Astuce : vous voulez faire de la burrata? La version ultracrémeuse de la mozzarella? Il suffit d'y mélanger de la mascarpone et des filaments de mozzarella au coeur de poches de mozzarella. Une vidéo de Fred le Fromager urbain pour savoir la faire.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>26. Étape 26 - Smen - beurre fermenté d'Orient</strong><p><strong>Étapes :</strong></p><ol><li>Recette de @Monfromagemaison</li><li>Le Smen est un beurre fermenté traditionnel qui peut presque être considéré comme un condiment tellement il est parfumé et savoureux. On trouve cette recette dans la cuisine Nord-Africaine et Moyen-Orientale. Il en existe plusieurs version mais à chaque fois le principe reste à peu près la même : malaxer le beurre dans une infusion d'herbes aromatiques, le saler, le mettre en pot et le laisser maturer à température ambiante pendant des mois et même, pour bien faire, des années.</li><li>Le beurre se conserve très bien, certains agriculteurs Berbères enterrent un pot de Smen le jour de la naissance d'un enfant et le déterrent pour aromatiser les plats le jour de son mariage ! Pendant ce temps le beurre, à l'abris de l'air et de la lumière, développe des arômes incroyables, un fin mélange de fromage et d'herbes de Provence... Au Yémen et en Israël on prépare aussi du Smen mais cette fois-ci en le faisant fumer avec des herbes aromatiques avant de le laisser maturer.</li><li>En plus d'apporter un délicieux parfum à vos plats, ce genre de beurre est bien meilleur pour la santé grâce à l'acide Butyrique qui y est produit pendant la fermentation.</li><li>RECETTE<ul><li>Faire infuser pendant 15 minutes 40g d'origan dans 50cl d'eau. Laisser l'infusion refroidir complètement et filtrer le liquide.</li><li>Mettre 500g de beurre (si possible maison ou de bonne qualité) et 4 cuillères à soupe de sel dans un bol et verser l'infusion dessus.</li><li>Pétrir le beurre à la main, dans l'infusion, pendant 10 minutes.</li><li>Sortir le beurre du bol, le mettre dans un torchon et au frais pendant 1 heure pour absorber l'excès d'humidité.</li><li>Tassez le beurre dans un pot en grès ou dans un bocal à joint, fermez et laissez maturer à temperture ambiante pendant au moins 6 mois. Il faut être patient mais le résultat est vraiment exquis. Il suffira d'une petite cuillère dans une poêlé de légumes ou dans votre couscous pour l'aromatiser.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Pin Calendar</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Pin Calendar</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FYZ/Y1EQ/M37BJMYF/FYZY1EQM37BJMYF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>When my children were really small, I made them this pin calendar to mark the birthdays of our friends and family. I wanted to spark their interest in learning the names of the months and checking regularly whose birthday it is.</p>
+      
+        <p>The pin calendar is a nice decoration and it's really cheap to make as you can use things you probably already have at home. I made it my mission to find stuff in our basement to use for this and not buy anything and had I not found any paint, I would have left the pins unpainted, as they are wooden and look nice. It took me a little while to gather the pins but the family helped.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>string or even wire - should be thicker than usual sewing thread</li><li>laundry pins, one for each date you want to use - I used old wooden pins but it will work also with plastic pins and they do not need to be all the same size and material</li><li>optional: flat brush and acrylic pains (you can use the original color of the pins and not paint them)</li><li>thin permanent marker (or thin brush and dark paint)</li><li>1/2 sheet of heavyweight paper</li><li>colored pencils</li><li>scissors</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Find a Good Spot</strong><p><strong>Étapes :</strong></p><ol><li>First, you need to find a good spot for your calendar. It can be as wide as you like, or as wide as the month with the most pins (if you don't understand this reference, read the whole instructable first). And as for the height, you'll need to hang 12 rows of string and the space between them should be a little larger than the length of the pins.</li><li>Also, consider how long you'd like the calendar to last. Do not pick places you need to clean or move often. I chose the railing of our staircase and I find that wall would also be a great spot, just maybe on a cardboard board.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Fasten Strings</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F6W/CJZA/M37BJ1SG/F6WCJZAM37BJ1SG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fasten Strings' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Z/Q25F/M37BJ1ST/F3ZQ25FM37BJ1ST.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fasten Strings' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Y/6URW/M37BJ1QI/F3Y6URWM37BJ1QI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fasten Strings' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6W/CJZA/M37BJ1SG/F6WCJZAM37BJ1SG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fasten Strings' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Z/Q25F/M37BJ1ST/F3ZQ25FM37BJ1ST.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fasten Strings' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Y/6URW/M37BJ1QI/F3Y6URWM37BJ1QI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fasten Strings' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If you chose a place on the wall or a board that you're going to hang on the wall, first put some pushpins which you're going to attach the string to.</li><li>If you - like me - chose a railing, you can tie the string to it without any pushpins or nails.</li><li>Cut the strings as long as you wish, tie one end, extend the string, make sure it's perfectly horizontal and tie the other end. Attach 12 strings in total, making sure the space between them is a bit more than the length of the pins (the longest pin you have).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Month Labels</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FQ7/S5PN/M37BJ1QO/FQ7S5PNM37BJ1QO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Month Labels' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQU/W7GJ/M37BJ1RI/FQUW7GJM37BJ1RI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Month Labels' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQ7/S5PN/M37BJ1QO/FQ7S5PNM37BJ1QO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Month Labels' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQU/W7GJ/M37BJ1RI/FQUW7GJM37BJ1RI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Month Labels' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cut out 12 labels from the paper, any shape you want, one for each month. You can just write the name of the months, I made a small drawing also. The names in our calendar are in Czech because that's the language I speak to my kids (notice that the Czech month names are completely different from English).</li><li>Punch a small hole on top of each label (for example with scissors) and use a piece of string to attach it to the beginning of each string you have extended.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Paint and Mark Pins</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FPC/LVJB/M37BJ1R1/FPCLVJBM37BJ1R1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Paint and Mark Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FU9/8QR0/M37BJ1R9/FU98QR0M37BJ1R9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Paint and Mark Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPC/LVJB/M37BJ1R1/FPCLVJBM37BJ1R1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Paint and Mark Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FU9/8QR0/M37BJ1R9/FU98QR0M37BJ1R9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Paint and Mark Pins' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If you want to paint the pins, now is the time. I use only acrylic paint because I don't want the paint to rub off on our fingers when we handle them. You can also use watercolors or tempera but you'll need to spray-varnish the pins then. Let the paint dry properly.</li><li>Assign one pin to each person/date in your future calendar, write just the day number at the front of the pin and the name of the person/event at the long end of it. I used a thin permanent markers for the writing but you can do it with black paint and a very thin brush.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Hang Pins</strong><div class='step-images count-14'><figure><img src='https://content.instructables.com/FIG/V6AC/M37BJ1U4/FIGV6ACM37BJ1U4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/F25/Z1YE/M37BJ1QU/F25Z1YEM37BJ1QU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN2/Q3J8/M37BJ1RT/FN2Q3J8M37BJ1RT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FK0/SU82/M37BJ1S4/FK0SU82M37BJ1S4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVM/TT7N/M37BJ1WT/FVMTT7NM37BJ1WT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRA/XKIM/M37BJ1XF/FRAXKIMM37BJ1XF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0I/FWLU/M37BJ23G/F0IFWLUM37BJ23G.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIG/V6AC/M37BJ1U4/FIGV6ACM37BJ1U4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/F25/Z1YE/M37BJ1QU/F25Z1YEM37BJ1QU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN2/Q3J8/M37BJ1RT/FN2Q3J8M37BJ1RT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FK0/SU82/M37BJ1S4/FK0SU82M37BJ1S4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVM/TT7N/M37BJ1WT/FVMTT7NM37BJ1WT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRA/XKIM/M37BJ1XF/FRAXKIMM37BJ1XF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0I/FWLU/M37BJ23G/F0IFWLUM37BJ23G.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang Pins' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>And now's finally the time to hang the pins. Pin the pins to the string of the corresponding month in chronological order. The labels will tell you the month and the number on each pin the day. Enjoy!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Culture de la spiruline</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Culture de la spiruline</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/5/57/Culture_de_la_spiruline_IMG_5066.jpeg/800px-Culture_de_la_spiruline_IMG_5066.jpeg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">La culture domestique d'une micro-algue très nutritive</div>
+        
+      </div>
+    
+    
+      
+        <p>La spiruline est une micro-algue, plus précisément une cyanobactérie spiralée d’environ ¼ de millimètre. Elle s’épanouit dans les régions chaudes et désertiques depuis plus de trois milliards d’années. A l’origine de la vie végétale et animale, la spiruline a largement participé à la création de l’atmosphère terrestre en produisant de l’oxygène à partir du dioxyde de carbone. Si elle nous intéresse particulièrement aujourd’hui c’est qu’elle est également un super-aliment. La riche constitution de la spiruline tient du fait que sa paroi cellulaire est en protéine. A l’inverse, dans le monde végétal, les cellules ont une paroi en cellulose, difficile à digérer. La spiruline a également une forte concentration en vitamines et Fer. Cette composition idéale et sa facilité d’assimilation font de la spiruline un complément alimentaire convoité par les grands sportifs. Mais la spiruline se vend cher alors qu’elle est simple et rapide à cultiver. Son rendement est très bon : sur un même espace la spiruline produit cinq cents fois plus de protéines qu’un élevage bovin. De même il faut environ 13 500 litres d’eau pour produire un kg de protéines bovines alors que seulement 2 500 litres sont nécessaires pour la micro-algue. De nombreuses associations et ONG (Univers la Vie, Antenna, etc) en font culture pour lutter contre la famine et la malnutrition dans le monde. Elle existe d’ailleurs à l’état naturel autour de la ceinture tropicale (Pérou, Mexique, Tchad, Ethiopie, Madagascar, Inde…) et même en France, en Camargue. La culture familiale permet d’intégrer la spiruline à son alimentation quotidienne. La Fédération des Spiruliniers de France recommande une consommation de cinquante grammes de spiruline fraiche par jour, soit environ 10 grammes de sèche. Dans cet objectif de production locale, il faut 1m² de bassin de culture par personne.</p>
+      
+        <p>Informations préalables</p>
+      
+        <p>Le milieu de culture</p>
+      
+        <p>La spiruline vit naturellement dans des lacs volcaniques, riches en sel et bicarbonate de soude, avec un PH élevé, proche de 10. Ce milieu constitue son environnement mais pas son alimentation, comme les poissons ne se nourrissent pas du sel de la mer. Dans la culture de spiruline, l’objectif est de récréer au plus proche l’environnement natif de la spiruline. A l’état naturel, la spiruline est peu prélevée sinon par des cueilleurs et flamants roses. En bassin les récoltes sont beaucoup plus lourdes, il faut donc apporter régulièrement de la nourriture à la culture pour permettre son renouvellement. Dans la culture de spiruline, il faut donc dissocier le milieu culture du milieu de vie et de l’alimentation :</p>
+      
+        <p>milieu de culture = milieu de vie + alimentation</p>
+      
+        <p>L’environnement de développement</p>
+      
+        <p>La spiruline vit naturellement dans des climats chauds. Quand la température de son milieu de vie est inférieure à 18°C, elle hiberne. Dès 20°C elle commence à se développer. A partir de 30°C sa production s’intensifie fortement. A 37°C, température optimale du milieu, la population augmente d’un quart toutes les huit heures. Au-dessus de 42°C, la spiruline meurt. En France, la culture en extérieure, avec un capot translucide, est possible dès mi-Avril. La profonde couleur verte de la spiruline est obtenue par photosynthèse. Pour cela, la spiruline a besoin d’une forte luminosité mais pas d’exposition longue au soleil. Il est important d’agiter le bassin pour éviter que les spirulines en surface ne brulent et permettre à celles en profondeur de profiter de la lumière. La culture doit faire 20cm de profondeur maximum pour que toute la spiruline bénéficie d’un bon ensoleillement.</p>
+      
+        <p>La concentration</p>
+      
+        <p>Un des indicateurs de santé de la spiruline est sa concentration. Pour la mesurer il existe un instrument très simple : le spirumètre ou disque de Secchi. Il s’agit d’un disque blanc au bout d’un axe gradué en centimètres. On mesure la concentration de la spiruline en plongeant le disque dans la solution de culture. Lorsque celui-ci disparait, on relève la graduation à la surface, c’est l’indice de concentration de Secchi. Plus l’indice est faible, plus la spiruline est concentrée. Pour une spiruline en bonne santé, la concentration doit être entre 2 et 4. A 2 elle est très concentrée, elle peut être récoltée. A 4 elle est à sa concentration de culture minimale, par exemple après une récolte.</p>
+      
+        <p>Ce tutoriel est réalisé en collaboration avec Gilles Planchon, spécialiste de la culture familiale de spiruline, formateur et chercheur sur les milieux de vie naturel de la micro-algue.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 6 month(s) mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 80 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Culture_de_la_spiruline" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Culture_de_la_spiruline</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Spirumètre<ul><li>Bouchon en plastique blanc</li><li>Vis</li><li>Tige en bois ou en plastique ou règle</li></ul></li><li>Milieu de culture<ul><li>Eau potable</li><li>Sel marin</li><li>Bicarbonate de soude</li></ul></li><li>Alimentation minérale<ul><li>Nitrate de Potassium</li><li>Phosphate Monoammoniaque</li><li>Sulfate de Fer</li><li>Sulfate de Potassium (facultatif)</li><li>Sulfate de Magnésium (facultatif)</li></ul></li><li>ou<ul><li>Nourriture pré-pesée à la vente N50 et N250</li></ul></li><li>Alimentation naturelle<ul><li>Vinaigre blanc</li><li>100g clous rouillés</li><li>5 à 10 citrons ou acide citrique</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li>Spirumètre<ul><li>Règle</li><li>Tournevis</li></ul></li><li>Milieu de culture<ul><li>Bac de 200l ou plus</li></ul></li><li>Alimentation minérale<ul><li>Bidon alimentaire (>10litres)</li><li>Balance</li></ul></li><li>Alimentation naturelle<ul><li>2 bouteilles d’un litre</li><li>Balance</li></ul></li><li>Ensemencement, culture et entretien<ul><li>Tuyaux d’arrosage</li><li>Passoire</li><li>Pompe d’aquarium (500 à 1000 litres/heure)</li><li>Bidons de volume différents (de 20 à 200 litres par exemple)</li><li>Verre mesureur</li><li>Balance</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Construire un spirumètre ou disque de Secchi</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f2/Culture_de_la_spiruline_Secchi.jpg/800px-Culture_de_la_spiruline_Secchi.jpg' alt='Culture de la spiruline Secchi.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Culture_de_la_spiruline_Secchi_2.jpg/800px-Culture_de_la_spiruline_Secchi_2.jpg' alt='Culture de la spiruline Secchi 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Visser un bouchon en plastique blanc au bout d’une règle ou d’une tige en plastique ou bois d’une vingtaine de centimètres,</li><li>Graduer la tige de 0 à une dizaine de centimètres, avec le 0 au niveau du bouchon.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparer le milieu de culture : le milieu de vie</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ed/Culture_de_la_spiruline_Gilles_-_milieu_de_vie.png/800px-Culture_de_la_spiruline_Gilles_-_milieu_de_vie.png' alt='Culture de la spiruline Gilles - milieu de vie.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Remplir un bidon de grand volume (100 à 200L) d’eau, dans l’idéal de pluie ou de source peu calcaire</li><li>Ajouter le bicarbonate de soude à raison de 1kg/100litres d’eau</li><li>Ajouter le sel marin à raison de 500g/100litres d’eau</li><li>Bien agiter pour les dissoudre</li><li>Transférer le volume du bidon dans le bassin de culture avec une pompe (type aquarium ou siphon naturel). Réitérer l’opération jusqu’à faire le plein du bassin</li><li>Faire un repère à 20 cm du fond pour voir si l’eau s’évapore et compléter avec de l’eau au besoin.</li></ul></li><li>ATTENTION Si eau du robinet : Agiter (pompe ou bulleur) pendant ½ journée : le chlore de l’eau s’évapore et le calcaire précipite avec le bicarbonate de soude, lors du transfert du milieu de vie vers le bassin, le calcaire reste au fond du bidon. Si eau de pluie : filtrer</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Préparer le milieu de culture : l'alimentation</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/77/Culture_de_la_spiruline_Jus_de_clou.jpg/800px-Culture_de_la_spiruline_Jus_de_clou.jpg' alt='Culture de la spiruline Jus de clou.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Culture_de_la_spiruline_N250.jpg/800px-Culture_de_la_spiruline_N250.jpg' alt='Culture de la spiruline N250.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/75/Culture_de_la_spiruline_alimentation_global.jpg/800px-Culture_de_la_spiruline_alimentation_global.jpg' alt='Culture de la spiruline alimentation global.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/47/Culture_de_la_spiruline_alimentation_vinaigre.jpg/800px-Culture_de_la_spiruline_alimentation_vinaigre.jpg' alt='Culture de la spiruline alimentation vinaigre.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La riche composition de la spiruline provient de son alimentation, elle est principalement composée d’azote, de phosphore, de potassium de magnésium et de fer. L’alimentation utilisée dans la culture familiale peut être d’origine minérale ou naturelle. Les engrais minéraux obtenus par synthèse chimique ou par l'exploitation de gisements naturels sont moins écologiques que la nourriture naturelle produite localement. Les deux préparations sont présentées.</li><li>Alimentation minérale Les composants de cette préparation sont des engrais agricoles, ils doivent être hydrosolubles. On les trouve dans les coopératives agricoles ou magasins de jardinage. Pour environ 10 litres de nourriture (‘’Milieu LIB extrait du livre La Spiruline pour Tous – Culture Familiale’’) :<ul><li>Mettre 10 litres d’eau dans un seau</li><li>Ajouter 1kg de Nitrate de Potassium</li><li>Ajouter 100g de Phosphate Monoammoniaque</li><li>Ajouter 10g de Sulfate de Fer</li><li>Ajouter 50 g de Sulfate de Potassium (facultatif)</li><li>Ajouter 50g de Sulfate de Magnésium (facultatif)</li><li>Bien agiter jusqu’à dilution de tous les composants</li><li>Transvaser dans un récipient fermé</li><li>Étiqueter et conserver à l’abri du soleil</li></ul></li><li>Ou<ul><li>Nourriture pré-pesée à la vente N50 et N250</li></ul></li><li>Alimentation naturelle Les composants présentés dans l’alimentation minérale se retrouvent en proportion idéale dans l’urine [1]. En ajoutant une solution d’oxyde de fer ou « jus de clous rouillés » la spiruline profite d’une alimentation locale et organique idéale pour sa productivité et sa résistance. Le pH et la salinité élevés du milieu de culture réduisent les risques de contamination. Il ne faut cependant utiliser que de l’urine « bio », de personne avec une alimentation saine (non-fumeur, sans médicament ni contraceptif). L’urine humaine est aujourd’hui largement utilisée dans l’agriculture et de nombreuses études existent sur le sujet [2]. Pour 1 litre de nourriture à base d’urine :<ul><li>Mettre 10cl de vinaigre blanc dans une bouteille d’un litre. Il permet d’éliminer les odeurs, d’éliminer les bactéries et de conserver l’ammoniac.</li><li>Compléter avec de l’urine saine</li><li>Étiqueter et conserver à l’abri du soleil</li></ul></li><li>Jus de clous rouillés : pour 1litre de jus de clou<ul><li>Mettre 100g de clous dans une bouteille. (Idéalement des clous déjà rouillés, ils indiquent une composition uniquement ferreuse et non d’autres alliages)</li><li>Ajouter un litre de vinaigre blanc</li><li>Ajouter le jus de 5 à 10 citrons ou une cuillère à soupe d’acide citrique</li><li>Attendre 10 jours (durée nécessaire à obtenir la concentration adéquate en oxyde de fer)</li><li>Filtrer le jus, étiqueter et conserver à l’abri du soleil</li><li>Mettre les clous de côté pour une prochaine utilisation</li></ul></li><li>ATTENTION Préparer la solution de fer au moins 10 jours avant la date de début de culture de la spiruline. Si vous laissez les clous plus de 10 jours dans la solution, la concentration en oxyde de fer va grimper. Il faudra diluer le jus dans de l’eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Préparer le milieu de culture : dosage de l’alimentation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/68/Culture_de_la_spiruline_Jus_de_clou_dosage.jpg/800px-Culture_de_la_spiruline_Jus_de_clou_dosage.jpg' alt='Culture de la spiruline Jus de clou dosage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f3/Culture_de_la_spiruline_alimentation_transfert.jpg/800px-Culture_de_la_spiruline_alimentation_transfert.jpg' alt='Culture de la spiruline alimentation transfert.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le bassin a été rempli avec le milieu de vie dans l’étape précédente. Il faut maintenant apporter la nourriture :<ul><li>Minérale : 2 litres/100litres de milieu de culture</li></ul></li><li>Ou<ul><li>Organique : 1 litre d’urine + 200ml de solution de Fer/100 litres de milieu de culture</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Mettre en culture : acquisition</strong><p><strong>Étapes :</strong></p><ol><li>Le milieu de culture est prêt à accueillir la spiruline, il n’y a plus qu’à s’en procurer. Il est possible de récupérer de la spiruline à quiconque possède une culture familiale. Il est également possible de contacter un producteur près de chez soi pour savoir s’il peut fournir de la spiruline fraiche ou concentrée (Gilles Planchon peut faire des envois en France). Un kilogramme de spiruline fraiche pressée coûte normalement autour de 50€.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Mettre en culture : ensemencement rapide avec de la spiruline fraiche pressée</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/27/Culture_de_la_spiruline_ensemencement.jpg/800px-Culture_de_la_spiruline_ensemencement.jpg' alt='Culture de la spiruline ensemencement.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avec de la spiruline fraiche pressée, on peut commencer la culture dès la phase de récolte, pour cela il faut introduire directement dans le bassin une grande quantité de spiruline, non lavée. Elle se conserve 3 à 5 jours dans un réfrigérateur. Il faut environ 500g de spiruline fraiche pressée pour ensemencer un bassin de 500 litres. On obtiendra une concentration au spirumètre d‘environ 4cm. La première récolte sera possible une semaine plus tard.<ul><li>Délayer la spiruline fraiche pressée dans un petit volume de solution de culture (autour de 30l) d’abord à la main puis avec une passoire pour défaire les grumeaux.</li></ul></li><li>ATTENTION De la mousse indique une augmentation de protéine donc de la spiruline qui se casse : laisser reposer et agiter plus doucement.<ul><li>Transférer délicatement la spiruline concentrée dans le bassin, de préférence le soir. Il est possible de verser directement le contenu du bidon dans le bassin en douceur ou d’utiliser une pompe d’aquarium ou un siphon naturel.</li><li>Contrôler la concentration et ajouter du milieu de culture si elle est supérieure à 3</li><li>Assurer une bonne agitation pendant les 4 premiers jours (mais pas la nuit)</li><li>Ombrager le bassin pour les premiers jours</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Mettre en culture : ensemencement rapide avec de la spiruline concentrée</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f6/Culture_de_la_spiruline_ensemencement_transfert.jpg/800px-Culture_de_la_spiruline_ensemencement_transfert.jpg' alt='Culture de la spiruline ensemencement transfert.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est possible d’ensemencer son bassin avec de la spiruline concentrée. A la différence de la spiruline pressée, la spiruline n'a pas été séparée de son milieu de vie. Elle a une concentration très élevée, il faut rapidement la transférer dans son nouveau bassin de culture. Elle ne doit pas rester plus de 12h en transfert.<ul><li>Transférer délicatement la spiruline concentrée dans le bassin, de préférence le soir. Il est possible de verser directement le contenu du bidon dans le bassin en douceur ou d’utiliser une pompe d’aquarium ou un siphon naturel.</li><li>Contrôler la concentration et ajouter du milieu de culture si elle est supérieure à 3</li><li>Assurer une bonne agitation pendant les 4 premiers jours (mais pas la nuit)</li><li>Ombrager le bassin pour les premiers jours</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Mettre en culture : phase de croissance</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Culture_de_la_spiruline_croissance.jpg/800px-Culture_de_la_spiruline_croissance.jpg' alt='Culture de la spiruline croissance.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est également possible de démarrer la culture de spiruline avec un plus petit volume et la mettre en croissance pour arriver au volume final du bassin. En conditions idéales, il faut 30 jours pour passer d’un litre de culture à 500 litres. La phase de croissance est plus économique car il faut très peu de spiruline au départ. La phase de croissance peut commencer en intérieur dès début Avril.<ul><li>Se procurer de la spiruline fraiche ou concentrée (cf étapes ci-dessus)</li><li>La diluer avec du milieu de culture pour obtenir une concentration de 3 à 4 au disque de Secchi (Pour 100 litres de solution de culture il faut 2 litres d’alimentation minérale ou 1 litre d’urine et 200ml de solution de fer)</li><li>Quand la concentration s’approche de 2, augmenter le volume de culture d’1/4. Changer de récipient si nécessaire.</li><li>Recommencer les deux étapes ci-dessus jusqu’à obtenir un volume équivalent à 10 cm de hauteur dans le bassin final, transférer dans le bassin. En conditions idéales, l’augmentation du volume de culture peut être réalisée chaque jour.</li><li>Continuer à ajouter du milieu de culture jusqu’à arriver jusqu’au volume final de culture, soit 20 cm.</li><li>Faire un repère à 20 cm du fond pour voir si l’eau s’évapore et compléter avec de l’eau au besoin.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Cultiver la spiruline : agitation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6f/Culture_de_la_spiruline_Programmateur.jpg/800px-Culture_de_la_spiruline_Programmateur.jpg' alt='Culture de la spiruline Programmateur.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bd/Culture_de_la_spiruline_pompe.jpg/800px-Culture_de_la_spiruline_pompe.jpg' alt='Culture de la spiruline pompe.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La spiruline a besoin d’une grande luminosité mais ne doit pas rester longtemps en exposition directe au soleil. Pour cela, il fait agiter le milieu de culture régulièrement dans la journée. La solution la plus simple est d’utiliser une pompe d’aquarium, que l’on trouve en animalerie. Une pompe idéale doit pouvoir faire passer le volume du bassin en une heure. Dans notre cas, la pompe a un débit de 1000l/heure pour un bassin de 500 litres.<ul><li>Installer la pompe sous l’eau, au plus proche de la surface pour permettre un bon brassage</li><li>Installer un programmateur pour ne pas trop stresser la spiruline : alterner 15minutes d’agitation pour 30 minutes de repos d’agitation</li><li>Éteindre la pompe durant la nuit pour la phase de respiration de la spiruline</li></ul></li><li>ASTUCE Pour des petits volumes, l’agitation peut être faite à la main, avec une passoire, au moins quatre fois par jour.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Cultiver la spiruline : concentration</strong><p><strong>Étapes :</strong></p><ol><li>Vérifier régulièrement la concentration de la spiruline, dans l’idéal une fois par jour.<ul><li>Si la concentration de Spiruline dépasse Secchi 2 le PH devient trop élevé et la spiruline risque de mourir : récolter</li><li>Si la concentration de Spiruline tombe en dessous de Secchi 4, le milieu de culture est trop lumineux : ombrer.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Cultiver la spiruline : évaporation</strong><p><strong>Étapes :</strong></p><ol><li>Avec la chaleur du bassin, l’eau s’évapore mais la nourriture le sel et le bicarbonate de soude restent dans le bassin.<ul><li>Ajouter régulièrement de l’eau pour revenir au volume initial, indiqué par une repère à 20cm du fond.</li></ul></li><li>RAPPEL L’eau du robinet peut être calcaire, il faut l’adoucir ou utiliser de l’eau de pluie ou de l’eau osmosée (cf Préparer le milieu de culture : le milieu de vie).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Cultiver la spiruline : ombrage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Culture_de_la_spiruline_ombrage.jpg/800px-Culture_de_la_spiruline_ombrage.jpg' alt='Culture de la spiruline ombrage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La spiruline a besoin de beaucoup de lumière mais pas d’exposition directe au soleil fort.<ul><li>Ajuster l’ombrage en fonction des saisons, de la luminosité et de la température</li></ul></li><li>ATTENTION Si la spiruline est exposée à une forte luminosité alors que le milieu de culture est à basse température, par exemple en sortie d’hiver, il y a un risque de photolyse (la spiruline se brise et meurt). Ombrer le bassin quand le milieu de culture est frais.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Cultiver la spiruline : purge</strong><p><strong>Étapes :</strong></p><ol><li>Avec le temps le bassin se charge en matière organique (spiruline morte, autres algues...). Pour garder un milieu de culture sain il faut en remplacer ¼ une à deux fois par an :<ul><li>Récolter la spiruline au-dessus d’un bac et non pas du bassin de culture. Ainsi le milieu de culture ne retourne pas dans le bassin.</li><li>Refaire un milieu de culture comme vu dans la partie 'phase de croissance' et l’ajouter au bassin</li><li>Se débarrasser de l’ancien milieu de culture (non dilué on peut s’en servir de désherbant, dilué à 10% il enrichit le compost, sinon le mettre à l’égout)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Cultiver la spiruline : Hivernage</strong><p><strong>Étapes :</strong></p><ol><li>Lorsque la température extérieure devient trop faible pour la culture (température du bassin inférieur à 18°C) il faut mettre la culture en hivernage<ul><li>Isoler le bassin par l’extérieur (carton, paille, etc)</li><li>Couvrir le bassin pour que la luminosité soit faible. La spiruline ne doit pas être dans l’obscurité totale sinon elle meurt.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Cultiver la spiruline : Conservation</strong><p><strong>Étapes :</strong></p><ol><li>Lorsque l’on se procure de la spiruline ou pour l’hivernage, on peut en mettre une partie, pressée mais non lavée, au réfrigérateur. On pourra la remettre en culture en suivant la phase d’ensemencement rapide.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Récolter</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4c/Culture_de_la_spiruline_Recolte_-_cadre.jpg/800px-Culture_de_la_spiruline_Recolte_-_cadre.jpg' alt='Culture de la spiruline Recolte - cadre.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/95/Culture_de_la_spiruline_Recolte_-_presse.jpg/800px-Culture_de_la_spiruline_Recolte_-_presse.jpg' alt='Culture de la spiruline Recolte - presse.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f1/Culture_de_la_spiruline_r_colte_seau.jpg/800px-Culture_de_la_spiruline_r_colte_seau.jpg' alt='Culture de la spiruline r colte seau.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Culture_de_la_spiruline_Recolte_-_filtration.jpg/800px-Culture_de_la_spiruline_Recolte_-_filtration.jpg' alt='Culture de la spiruline Recolte - filtration.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Culture_de_la_spiruline_Recolte_-_1.jpg/800px-Culture_de_la_spiruline_Recolte_-_1.jpg' alt='Culture de la spiruline Recolte - 1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Contrôler la concentration de la spiruline, si le Secchi est supérieur à 2,5 (si le disque de Secchi n’est plus visible à partir de 2,5 cm ou moins), la récolte est possible.</li></ul></li><li>ASTUCE La récolte est plus efficace le matin. Tant que le bassin n’a pas été agité, la spiruline est en plaques à la surface du bassin.</li><li>Récolter<ul><li>Installer un support (cadre, passoir) au-dessus du bassin de culture</li><li>Déposer dans le support un tissu de nylon 30micron qui fera office de filtre.</li><li>Pomper le milieu de culture (ou utiliser un pichet) et le faire passer dans le filtre, le milieu de culture retourne dans le bassin, la spiruline reste dans le filtre. Récolter au maximum ¼ du bassin.</li></ul></li><li>ASTUCE Avec une pompe de 1000/heure et un bassin de 500 litres, on peut filtrer jusqu’à 125 litres soit environ 8 minutes de pompage</li><li>ATTENTION Contrôler la concentration pendant la phase de récolte, agiter le bassin et prélever un pichet, la concentration doit rester supérieure à 4. Si concentration inférieure, stopper la récolte et ombrer.<ul><li>Rassembler la spiruline au centre du filtre</li></ul></li><li>ATTENTION Une fois la spiruline récoltée, éviter de la toucher à la main, son milieu de culture (forte concentration de sel et de bicarbonate de soude) la protégeait des agressions bactériennes<ul><li>Presser la spiruline à la main en faisant tourner le tissu de nylon et en appuyant sur la biomasse. Le pressage doit être progressif. Maintenir la pression jusqu’à ce que le liquide qui s’échappe devienne légèrement vert/</li><li>Mettre la spiruline au frais</li><li>Rincer le matériel (nylon, cadre, passoir) au-dessus du bassin cela permet de compenser l’évaporation</li><li>Peser la spiruline pressée</li><li>Compenser en nourriture par rapport à la spiruline récoltée pour qu’elle puisse se développer à nouveau et revenir à la concentration maximale pour une nouvelle récolte :</li><li>Nourriture minérale : 200 ml pour 100 grammes de spiruline fraiche pressée</li></ul></li><li>ou<ul><li>Nourriture organique : 200 ml d’urine + 10ml de solution de fer pour 100 grammes de spiruline fraiche pressée</li><li>Pour une bonne répartition de la nourriture, agiter le bassin à la main, avec une passoire.</li></ul></li><li>ATTENTION La spiruline respire la nuit, il ne faut pas la nourrir le soir. Privilégiez les récoltes le matin.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/b2/Culture_de_la_spiruline_Spirulin.JPG' alt='Culture de la spiruline Spirulin.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab à l'occasion de l'exposition "En Quête d'un Habitat Durable" dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux")</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 -</strong><p><strong>Étapes :</strong></p><ol><li>Vous avez deux minutes ? Que vous souhaitiez ou non réaliser cette low-tech, votre réponse à ce formulaire nous aiderait à améliorer nos tutos. Merci d'avance pour votre aide !</li><li>Comme tout le travail du Low-tech Lab, ce tutoriel est participatif, n'hésitez pas à ajouter les modifications qui vous semblent importantes, et à partager vos réalisations en commentaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

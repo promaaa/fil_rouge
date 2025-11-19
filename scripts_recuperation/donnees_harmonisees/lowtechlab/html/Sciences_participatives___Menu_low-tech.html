@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sciences participatives : Menu low-tech</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sciences participatives : Menu low-tech</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/11/Sciences_participatives_-_Menu_low-tech_Capture_d_e_cran_2025-02-24_a_12.46.22.png/ia-95f138e19f3114b3ca6660ec015163c8-px-Sciences_participatives_-_Menu_low-tech_Capture_d_e_cran_2025-02-24_a_12.46.22.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a été créé dans le cadre de la mission #3 “Menu low-tech” du programme de sciences participatives porté par l'association Biosphère Expérience. Il présente la documentation et le protocole suivi par les volontaires du programme durant la semaine d’expérience du 9 au 15 septembre 2024.</div>
+        
+      </div>
+    
+    
+      
+        <p>Projet</p>
+      
+        <p>En parallèle de l'expérience urbaine menée à Boulogne Billancourt par Caroline Pultz, Corentin de Chatelperron et des voisins, Emma Bousquet-Pasturel a conduit un programme de sciences participatives afin d’évaluer la pertinence de 8 systèmes et pratiques low-tech dans le quotidien de citoyens, entreprises et écoles en France et à l’étranger. Au total, 699 expériences ont été menées entre septembre et octobre 2024. Ces expériences citoyennes ont permis de collecter un large panel de données techniques, ergonomiques, sociologiques et psychologiques sur la mise en place et la pratique de ces low-tech au quotidien.</p>
+      
+        <p>Mission #3 : Menu low-tech</p>
+      
+        <p>La mission consistait à expérimenter un régime alimentaire sain, durable, accessible et désirable. En se basant sur le livret de recettes fourni, les volontaires ont ainsi pu composer des menus sains ; réduire leurs impacts environnementaux en optant pour un régime végétarien composé de produits locaux (Français), de saison et issus de l’agriculture biologique ; limiter leur utilisation d’emballages jetables ; réutiliser leurs restes organiques pour tendre vers une cuisine zéro déchet ; le tout en restant désirable, économique et accessible à tout un chacun.</p>
+      
+        <p>Objectifs</p>
+      
+        <p>L’objectif était d’étudier la capacité des volontaires à adopter de nouvelles pratiques alimentaires, d’évaluer les éventuels changements d’habitude alimentaire et gains financiers engendrés par cette expérience. La première semaine de septembre, les participants n’ont pas modifié leur alimentation et les questionnaires nous ont permis de comprendre le profil et le quotidien des volontaires avant leurs expériences. Le menu low-tech a été testé durant la deuxième semaine de septembre.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 13 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Sciences_participatives___Menu_low-tech" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Sciences_participatives___Menu_low-tech</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Démarrez l'expérience !</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Pour plus de détail sur les expériences citoyennes, consultez le rapport d'expérience (en cours d'écriture).</li><li>Retrouvez toutes les informations dans le déroulé de l'expérience dans le livret de recettes disponible dans la section "Fichiers" du tutoriel.</li><li>Nous vous invitons à rejoindre le groupe Facebook "Biosphère - Cuisiner low-tech" dédié à cette pratique pour faciliter l'organisation (achats groupés, rencontres sur le territoire) et les échanges avec d'autres expérimentateurs.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Menu low-tech type</strong><p><strong>Étapes :</strong></p><ol><li>Le petit déjeuner<ul><li>Apporter des protéines riches en tyrosine : des œufs (2 oeufs par personne avec le jaune coulant), des légumineuses (lentilles, haricots), des légumes (poivron vert, champignon, betterave, persil, radis...).</li><li>Consommer une portion de 30 à 40 g d’un mélange d’oléagineux (noix, noisette, amande européenne) pour apporter des oméga 3, des fibres et des minéraux.</li><li>S’abstenir de glucides pour éviter de créer un important pic de glycémie.</li><li>Un fruit, du pain complet, des flocons d’avoine</li><li>Une boisson sans sucre ajouté : le thé vert notamment car très riche en antioxydants</li></ul></li><li>Exemples de recettes du livret : Shakshuka ; Yaourt fruité & biscuits protéinés ; Porridge lactofermenté…</li><li>Le déjeuner</li><li>Associer des protéines avec des légumes (cuits et crus selon la tolérance) en suivant les conseils suivants :<ul><li>1/2 de légumes : des crudités et des légumes cuits</li><li>1/4 de protéines : légumineuses, œuf ou produits laitiers (pas indispensable)</li><li>1/4 de céréales à indice glycémique bas : pain au levain, quinoa, riz complet, pâtes complètes al dente</li><li>Une cuillère à soupe d’huile de colza</li><li>Une portion de fruits ou oléagineux en dessert</li></ul></li><li>Exemples de recettes du livret : Duo riz lentille et sa brunoise de crudités ; Linguine, ragù de lentille ; Socca tiède au fromage, figue & basilic…</li><li>L’encas</li><li>Il n’est pas nécessaire, mais si vous avez besoin d’une petite collation en fin d’après-midi, choisissez les bons aliments comme un fruit ou une portion d’oléagineux (amandes, noix, noisettes).</li><li>Exemples de recettes du livret : Salade de fruits au kéfir ; Carpaccio de fruits & biscuits protéinés…</li><li>Le repas du soir</li><li>Vous pouvez suivre la même composition que pour le déjeuner, en allégeant les quantités et en évitant les protéines animales (œufs et produits laitiers).</li><li>Exemples de recettes du livret : Minestrone ; Salade fraîcheur & tartinades ; Lasagne revisitée…</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - FAQ</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>C’est quoi une lacto-fermentation ?</li></ul></li><li>La lacto-fermentation est un processus de fermentation mené par des bactéries lactiques, qui transforment les sucres en acide lactique. Malgré son nom, le terme «lacto» n’a aucun rapport avec le lait ou le lactose. Cliquez ici pour plus d'informations.<ul><li>Pourquoi réaliser des lacto-fermentation ?</li></ul></li><li>La lacto-fermentation est une technique courante pour préserver divers aliments. Parmi les fermentations lactiques les plus connues, on retrouve:<ul><li>Les légumes comme la choucroute, le kimchi, les cornichons, la sauce piquante, les olives.</li><li>Les produits à base de lait (yaourt, kéfir, fromage…).</li><li>Certaines charcuteries (saucisson sec, jambon cru, etc.).</li></ul></li><li>Les produits fermentés apportent de nombreux bénéficient pour la santé notamment, ils apportent des probiotiques qui favorisent l'équilibre du microbiote intestinale.<ul><li>Comment réussir ses lacto-fermentations ?</li></ul></li><li>1) Choisir le bon contenant qui permettent de respecter les conditions nécessaires à une bonne fermentation (laisser sortir le CO₂, limiter l’oxygène et garder les légumes immergés) : bocal en verre type Mason ou Le Parfait, jarre en céramique, sachets sous vide...</li><li>2) Ajouter 2% de sel : cette proportion est idéale pour la plupart des recettes. Le poids du sel dépend du poids des légumes ou du volume du pot.</li><li>3) 2 méthodes d’ajout du sel : salage à sec (il est utilisé quand les légumes peuvent rendre leur propre eau après avoir été coupés finement (chou, oignons…), saumure (il est utilisée quand les légumes ne peuvent pas rendre leur propre eau, par exemple, quand on veut faire fermenter des légumes entiers (ail) ou coupés en gros morceaux (carottes).</li><li>4) Pas d’oxygène : une lacto-fermentation est une fermentation anaérobique, ce qui signifie qu’elle ne nécessite pas d’oxygène. Si de l’oxygène rentre en contact avec les légumes, des moisissures peuvent se développer et rendre la préparation impropre à la consommation.</li><li>5) Laisser sortir le CO₂ : la fermentation va créer du gaz carbonique (CO₂), ce qui est normal. Si le pot est fermé hermétiquement, la pression va augmenter, le pot peut se fendre, ou dans le pire des cas, exploser. Plusieurs techniques existent, notre préférence en termes de simplicité et de taux de succès est d’utiliser des pots à leviers de qualité.</li><li>6) Maintenir à la bonne température : la température de la pièce où se trouve votre fermentation a une grande influence sur celle-ci. En général, les températures ambiantes sont parfaitement adaptées à la fermentation à la maison. Plus la température est chaude, plus la fermentation sera rapide. Cependant, il est important de noter que si la température est inférieure à 15°C, la fermentation sera très lente et si elle est supérieure à 30°C, la fermentation sera trop rapide et pourrait donner de mauvais résultats.</li><li>Cliquez ici pour plus d'informations.<ul><li>Comment savoir si ma fermentation est réussie ?</li></ul></li><li>Une lacto-fermentation réussie est facile à identifier:</li><li>- Goût acidulé et parfois pétillant</li><li>- Odeur légèrement vinaigrée</li><li>- Saumure parfois trouble</li><li>En revanche, une lacto-fermentation ratée sera reconnaissable à:</li><li>- Présence de moisissures vertes, blanches, roses ou bleues à la surface</li><li>- Odeur de pourriture marquée<ul><li>Combien de temps dure la lacto-fermentation?</li></ul></li><li>Pour qu’il y ait une fermentation lactique, la durée minimale est d’environ 4 jours. Après ça, la durée de la fermentation dépend de vos préférences gustatives et de certains facteurs tels que la température, la taille et type de légumes, et la quantité de sel.<ul><li>Puis-je ouvrir mon bocal en cours de fermentation?</li></ul></li><li>Il ne faut pas ouvrir les bocaux en cours de fermentation. En effet, cela risquerait d’exposer le contenu à l’air, et donc aux divers microorganismes présents dans l’environnement, qui pourraient contaminer votre préparation. Si jamais vous avez ouvert un bocal, il est recommandé de le conserver au réfrigérateur par la suite.<ul><li>Quand retirer les poids ?</li></ul></li><li>Vous pouvez retirer les poids, inserts et autres accessoires juste avant de mettre le bocal au réfrigérateur.<ul><li>Est-ce normal si l'eau est trouble ou qu'il y a un dépôt blanc au fond du bocal ?</li></ul></li><li>Oui pas de problème : les dépôts que vous observez au fond de la jarre sont un mélange de résidus de légumes, de sel et de diverses bactéries et levures qui sont naturellement présentes lors du processus de fermentation. Si votre lacto-fermentation est ratée, les signes sont inratables : odeurs répugnantes, moisissures poilues en surface, couleurs spectaculaires, etc.<ul><li>Comment fabrique-t-on du jus de fruit/légume fermenté ?</li></ul></li><li>En récupérant le jus d’un bocal déjà fermenté ! Sinon, utilisez du lait de faisselle si vous n’en avez pas.<ul><li>Est-ce que les produits fermentés apportent trop de sel dans l'alimentation ?</li></ul></li><li>Ce n’est pas sensé vous apporter trop de sel car on consomme qu’une petite quantité de produits fermentés chaque jour, c'est comme un condiment. Cliquez ici pour plus d'informations.<ul><li>Par quoi peut-on remplacer le poids sac de congélation + eau ?</li></ul></li><li>Pour éviter que les légumes ne remontent, placez une carotte de bied, une feuille de chou ou tout autre légume adapté puis pressez le contenu afin que le jus se retrouve au-dessus de ce légume.<ul><li>Comment obtenir de l'eau non chlorée ?</li></ul></li><li>En la laissant reposer au moins 30 minutes.<ul><li>Pourquoi le sel doit être non iodé ?</li></ul></li><li>L’ajout d’iode peut inhiber les bactéries bénéfiques et perturber la fermentation.<ul><li>Pourquoi met on les fermentations au frigo après la phase à température ambiante ?</li></ul></li><li>Il est conseillé de conserver vos lactofermentations dans un endroit suffisamment frais pour stopper la fermentation et conserver le produit pendant des mois. Hormis le frigo, vous pouvez les placer dans une cave si vous connaissez et maîtrisez la température.<ul><li>Où trouvez des graines de kefir ?</li></ul></li><li>Magasin bio, le boncoin, geev, facebook (groupe de la ville).<ul><li>Existe-t-il un guide pour m'accompagner dans mes premières expériences de bioponie ?</li></ul></li><li>Retrouvez de nombreuses informations dans le document "Kesako la facto-fermentation?" disponible dans l'onglet "Fichiers" du tutoriel. De nombreux conseils et astuces de cette FAQ ont été pioché sur le site internet Revolution Fermentation. Aussi, découvrez leur chaine YouTube ! N'hésitez pas à ajouter des astuces dans cette FAQ.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

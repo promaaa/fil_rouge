@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Reupholster a Couch With Old Jeans</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Reupholster a Couch With Old Jeans</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FZ7/Q6UF/LCNDYESD/FZ7Q6UFLCNDYESD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>I enjoy using old jeans to make new things. Denim is an extremely sturdy fabric. I've made throw pillows and purses out of old jeans but this was a very complicated project.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>You will need the following items:</li><li>A couple dozen (at least) old pairs of jeans</li><li>Several yards of medium weight denim</li><li>Staple gun (I used an electric one and it made all the difference)</li><li>Upholstery tacks</li><li>Hammer</li><li>Pliers</li><li>Flat head screwdriver</li><li>Sewing machine</li><li>Dark Blue thread</li><li>measuring tape</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Acquire an Old Couch</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F1H/GE31/LCNDYESF/F1HGE31LCNDYESF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Acquire an Old Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1H/GE31/LCNDYESF/F1HGE31LCNDYESF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Acquire an Old Couch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Before you remove the old upholstery, measure each section and make a list of how many you'll need. For example, the front of the back section is 1, the arm rests are 2, the side pieces are 2, the back of couch is 1 and the cushions are 3.</li><li>Remove the cushions. Set aside for later.</li><li>Carefully remove the old upholstery and use it to make a pattern for the denim patchwork. Or you can just measure each piece at the widest point.</li><li>Removing the old upholstery tacks and staples was very time consuming. Give yourself enough time to do this. Just when you think you have all the staples out, look again. This is where the screwdriver, hammer and pliers comes in to work.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Front of the Back Section</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F3H/TO6F/LCNDYESG/F3HTO6FLCNDYESG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Front of the Back Section' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3H/TO6F/LCNDYESG/F3HTO6FLCNDYESG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Front of the Back Section' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To cover the front of the back section, Measure horizontally and vertically, adding several inches on each side for the stapling. Cut out the old jeans into 7" squares. You will need at least a couple of weeks to do this step. When you think you have enough squares to get started, Sew them into a row using 1/2" seam allowances. Press the seam allowances open and sew a 1" wide x 7" long piece of fabric (it doesn't matter what color it is because it will be on the underside.) Place it under the seam and top stitch. This will reinforce each seam. Cut 3" wide strips from the medium weight denim and sew the rows together to construct a piece large enough to cover the front of the back section. Begin by stapling to the back of couch, then pull the fabric down tight and staple to the underside of the couch frame. On the sides of the back section, you may need to clip the fabric at the curves and at the point where the back meets the arm rests. Pull the fabric tight and staple to the back of couch.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Arm Rests</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FO4/M11X/LCNDYESH/FO4M11XLCNDYESH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Arm Rests' loading='lazy'></figure><figure><img src='https://content.instructables.com/FO4/M11X/LCNDYESH/FO4M11XLCNDYESH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Arm Rests' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Measure the Arm rests at the widest points. sew the squares together, reinforcing the seams as in step 2. Depending on how your couch (or chair) is made, you may need to Sew the arm rests together before attaching to the couch. I learned how to do basic upholstery by watching several YouTube videos. The widest point of the arm rests of my couch was at the bottom so I ended up trimming off quite a bit of denim at the top front section of the arm rests.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Sides of Couch</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FDS/W4VJ/LCNDYESK/FDSW4VJLCNDYESK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sides of Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDS/W4VJ/LCNDYESK/FDSW4VJLCNDYESK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sides of Couch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To cover the sides of couch I sewed 2 rows of squares and started stapling at the top edge, turning the denim fabric under 1" and overlapping the fabric from the top of the arm rests. Stretch and staple to the underside of the couch.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Front of the Bottom Section</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FST/2LD3/LCNDYESI/FST2LD3LCNDYESI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Front of the Bottom Section' loading='lazy'></figure><figure><img src='https://content.instructables.com/FST/2LD3/LCNDYESI/FST2LD3LCNDYESI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Front of the Bottom Section' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I made one long strip of squares and then sewed a row of medium weight denim to the top and bottom of this. It's very important to reinforce the seams because even though the denim is strong, you don't want it coming apart at the seams after all of your work.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Under the Cushions</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F1C/8NLF/LCNDYESJ/F1C8NLFLCNDYESJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Under the Cushions' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1C/8NLF/LCNDYESJ/F1C8NLFLCNDYESJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Under the Cushions' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Since the fabric under the cushions won't be visible, I used the medium weight denim. I had an old blanket that I cut to fit and placed it under the fabric. Staple it to the frame on the backside of the front section. Pull fabric tightly and staple it to the back of the couch.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Back of Couch</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FLO/G11Z/LCNDYESM/FLOG11ZLCNDYESM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Back of Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUN/3M1R/LCNDYESP/FUN3M1RLCNDYESP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Back of Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZX/4E3B/LCNDYESO/FZX4E3BLCNDYESO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Back of Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLO/G11Z/LCNDYESM/FLOG11ZLCNDYESM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Back of Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUN/3M1R/LCNDYESP/FUN3M1RLCNDYESP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Back of Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZX/4E3B/LCNDYESO/FZX4E3BLCNDYESO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Back of Couch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I covered the back of the couch with the medium weight denim. The electric staple gun came in really handy here. Start at center top. Turn under top edge of fabric 1" work your way out to the sides. Next staple the sides of the back starting at the top and working your way down toward the bottom. Lastly, staple the bottom edge to the underside of the bottom of couch.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Details</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FGL/JI2J/LCNDYESN/FGLJI2JLCNDYESN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Details' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJT/8IDF/LCNDYESQ/FJT8IDFLCNDYESQ.png?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Details' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGL/JI2J/LCNDYESN/FGLJI2JLCNDYESN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Details' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJT/8IDF/LCNDYESQ/FJT8IDFLCNDYESQ.png?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Details' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The smaller pieces on the front of the arm rests and the top of the sides are for covering the places where the ends of the fabric are. Cut some denim about 2" larger than each piece and tack the denim around it. You can attach these with new upholstery tacks. I found it helpful to hold the upholstery tacks with needle nose pliers while hammering, that way you don't hit your thumbs.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Cushions</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FDM/W58Z/LCNDYWBD/FDMW58ZLCNDYWBD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cushions' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDM/W58Z/LCNDYWBD/FDMW58ZLCNDYWBD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cushions' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The top of the cushion is the only part that I made from the patchwork, the sides and bottom are constructed from the medium weight denim. You may choose to make the underside of each cushion patchwork so you could flip them over. You could also add a zipper on the back of each cushion for removal and washing but I couldn't find zippers long enough. Don't forget to add 1/2" for seam allowances. Sew 3 sides and place the foam cushion inside cover and then hand stitch closed.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Finished Couch</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FMN/G6Z4/LCNDYESL/FMNG6Z4LCNDYESL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finished Couch' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMN/G6Z4/LCNDYESL/FMNG6Z4LCNDYESL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finished Couch' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>This was a huge project and at times I wondered if I was in over my head but I just focused on one section at a time and am pleased with the way it turned out.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

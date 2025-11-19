@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Listen to TV Without a TV Set</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Listen to TV Without a TV Set</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FX1/AT2H/KV3TEQH8/FX1AT2HKV3TEQH8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>I find that it is often easier to go to sleep in front of the television set than than in bed.</p>
+      
+        <p>Watching TV in bed would be nice, but my wife does not share my preference.</p>
+      
+        <p>I have discovered a way to escape to TV land without disturbing my loving spouse. This method does not provide video, but since I have my eyes closed anyway, what difference does that make. This Instructable will let you to listen to any available broadcast TV show privately and for free.</p>
+      
+        <p>If you look around a bit, this Instructable should cost you very little, if anything at all; but you may have to raid your father’s/grandfather’s closet to find some of the parts.</p>
+      
+        <p>Background - About 20 years ago, TV broadcasting moved from analog to digital, and everyone ran out and bought a digital converter box so they could watch the new format on their old set. Some of us, and probably your grandpa, still have one or more of these sitting on a shelf somewhere.</p>
+      
+        <p>On the back of the digital converter, you should find a right and left audio output.</p>
+      
+        <p>I was surprised to learn that these are both live whenever the converter is on.</p>
+      
+        <p>In order to get this project working, all you have to do is plug an antenna (rabbit ears should work) into the “antenna in” port of the converter, do an autoscan to tune in available channels, and hook up earbuds.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Materials:</li><li>Digital to Analog Converter ($15 and up on eBay)</li><li>Antenna (Less than $10 on eBay) (or build your own for free; this one works very well!--</li><li>https://www.popularmechanics.com/culture/tv/how-to/a6608/build-your-own-digital-tv-antenna/)</li><li>3.5mm Stereo Plug/2 RCA Plug Cable ($2.50 and up on eBay)</li><li>“One to Two” Earphone splitter ($1 at Dollar Tree or eBay)</li><li>Earphones ($1 at Dollar Tree, but you probably already have these.)</li><li>TV and short coax cable (for setup only. Needed only to find available channels.)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Attach Antenna to Antenna Input of Converter.</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F94/BP9Q/KV3TEQH2/F94BP9QKV3TEQH2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Antenna to Antenna Input of Converter.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F94/BP9Q/KV3TEQH2/F94BP9QKV3TEQH2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Antenna to Antenna Input of Converter.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Attach the cable running from the antenna to the "Antenna In" input on the converter.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Temporarily Attach a TV Set</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FJG/7T58/KV3TEQH3/FJG7T58KV3TEQH3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Temporarily Attach a TV Set' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5W/R2C2/KV3TEQHG/F5WR2C2KV3TEQHG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Temporarily Attach a TV Set' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJG/7T58/KV3TEQH3/FJG7T58KV3TEQH3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Temporarily Attach a TV Set' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5W/R2C2/KV3TEQHG/F5WR2C2KV3TEQHG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Temporarily Attach a TV Set' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>In order to set up the converter and find available channels, you will have to attach the converter to a TV set using a short coaxial cable.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Set Up the Converter</strong><p><strong>Étapes :</strong></p><ol><li>Tune the TV to analog channel 3 or 4. (Your converter should give you a choice between these two.)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Scan for Available Channels</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FHZ/D7N5/KV3TEQHE/FHZD7N5KV3TEQHE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Scan for Available Channels' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHZ/D7N5/KV3TEQHE/FHZD7N5KV3TEQHE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Scan for Available Channels' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>With the converter and TV both on and the antenna aimed in a suitable direction and the TV tuned to the appropriate channel (3 or 4), press “menu” on the converter remote and autoscan for available channels.</li><li>Check to see which channels were found, and write down the available channels and any other helpful information (e.g. channel number, network, type of programming, and whatever else might help you to choose what you will want to listen to.) Remember that you will not have access to the converter menu while your TV set in unhooked and off.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Connect the Adapter</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FGI/GZKY/KV3TEQHH/FGIGZKYKV3TEQHH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Adapter' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGI/GZKY/KV3TEQHH/FGIGZKYKV3TEQHH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connect the Adapter' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Unhook the TV, and plug the two RCA ends of the 3.5mm/2 RCA adapter into the converter.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Attach Earphones</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FC0/6KRX/KV3TEQHC/FC06KRXKV3TEQHC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Earphones' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2Y/7N4Y/KV3TEQHD/F2Y7N4YKV3TEQHD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Earphones' loading='lazy'></figure><figure><img src='https://content.instructables.com/FC0/6KRX/KV3TEQHC/FC06KRXKV3TEQHC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Earphones' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2Y/7N4Y/KV3TEQHD/F2Y7N4YKV3TEQHD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Earphones' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Plug the other end of the 3.5mm/2 RCA adapter into one of the female ports of the “One to Two” earphone jack.</li><li>Plug your earphones into the other end of the “One to Two” earphone jack. (Note that the male end of the “One to Two” earphone jack is not plugged into anything.)</li><li>If your converter is powered on, you should now be able to hear the audio part of whatever TV station to which your converter is tuned.</li><li>Bonus!</li><li>Plugging a powered speaker instead of an earphone into the “one to two” earphone jack is also an option if you want to listen to the audio in another setting (such as a workshop) in which you do not want to use earphones.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

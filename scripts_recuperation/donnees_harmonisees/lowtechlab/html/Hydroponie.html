@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Hydroponie</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Hydroponie</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/d/d7/Hydroponie_IMG_2667.JPG/800px-Hydroponie_IMG_2667.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a pour but de présenter la culture en hydroponie et de construire un système pour particulier. Cette technologie a été documentée lors du passage à Singapour de l'expédition "Nomade des Mers". Nous y avons rencontré l'entreprise Comcrop qui cultive des plantes aromatiques (Basilic, menthe...) sur une zone habituellement inutilisée et sans valeur: les toits des immeubles !</div>
+        
+      </div>
+    
+    
+      
+        <p>L'hydroponie est la culture de plantes et végétaux hors-sol et dans l'eau. Les racines sont plongées dans un substrat neutre et inerte (type billes d'argile, sable...) qui sert de support. Elles captent directement les nutriments nécessaires à leur croissance dans l'eau enrichie par une solution nutritive. Contrairement à l'hydroponie classique, la bioponie (hydroponie+biologique) permet de cultiver des fruits et légumes de façon biologique sans avoir recours à des engrais chimiques de synthèse. Ceux-ci sont remplacés par des fertilisants organiques comme les purins, thés de lombric, urine et thé de compost oxygéné.</p>
+      
+        <p>En bioponie, la solution nutritive n’est pas stérile et des bactéries, micro-organismes et champignons peuvent s’y développer. Ces micro-organismes actifs vont permettre de transformer certaines substances telles que l'ammoniac en nitrate, un des nutriments essentiels à la croissance des plantes. Dans notre cas nous utilisons une solution organique en mélangeant de l'eau à de l'urine humaine (1% d'urine par rapport au volume d'eau).</p>
+      
+        <p>L'hydroponie présente de nombreux avantages dans certains contextes:<ul><li>Dans les régions arides où les terres fertiles et l'eau se font rares. L'hydroponie permet de faire économiser de 7 à 10 fois les volumes d'eau nécessaires à l'irrigation en comparaison avec l'agriculture conventionnelle. Elle permet également d'éviter les stress hydriques.</li><li>Dans les villes et zones urbaines où peu d'espaces sont disponibles à la culture en terre. Elle convient particulièrement à la culture dans des espaces restreints (toits d'immeubles, appartements, usine désaffectée...). Pouvant être développée de manière verticale, l'hydroponie permet également d'obtenir une production au mètre carré bien supérieure à l'agriculture en terre. Elle peut également permettre un retour à la culture chez les citadins, souvent déconnectés de la nature.</li><li>En cas de pollution des sols.</li><li>Permet de mieux contrôler les insectes invasifs.</li></ul></p>
+      
+        <p>Mais l'hydroponie peut aussi présenter des inconvénients :<ul><li>Peut s'avérer coûteuse et peu écologique si elle est mise en place sous serre avec éclairage artificiel et chauffage.</li><li>Dans un système d'hydroponie non biologique, la solution nutritive doit être renouvelée régulièrement. De l'eau riche en minéraux et oligo-éléments est alors rejetée et peut affecter l'écosystème. Dans ce tutoriel, nous présentons une méthode permettant d'éviter les intrants chimiques.</li><li>Le milieu étant humide et chaud, les bactéries ou maladies peuvent se propager très rapidement. L'hydroponie demande une attention particulière et quotidienne à la bonne santé des plantes.</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Hydroponie" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Hydroponie</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>1. Gouttières de cultures<ul><li>Tasseaux (10cm de largeur minimum)</li><li>Bâche plastique</li><li>Agrafes</li><li>Billes d'argiles</li><li>Équerres</li><li>Vis à bois</li><li>Jeunes pousses et boutures</li></ul></li><li>2. Système d'irrigation<ul><li>1 Pompe immergée (pompe d'aquarium)</li><li>5 m de tuyau plastique fin (Sortie pompe)</li><li>1 Embout avec 4 sorties pour tuyau fin</li><li>50 cm de tuyau plastique large (Lien entre le filtre et le bio-filtre)</li><li>1 Embout de tuyau large (à fixer sur le bac du filtre)</li><li>1 Bulleur</li></ul></li><li>3. Filtre et bio-filtre<ul><li>2 Bacs en plastique de 60L</li><li>Gros gravier</li><li>Sable</li><li>10L Billes d'argile</li><li>40L d'eau</li></ul></li><li>4. Système de commande<ul><li>Prise de courant avec minuterie programmable ou Arduino</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Perceuse/visseuse ou tournevis</li><li>Scie</li><li>Agrafeuse</li><li>Scie cloche</li><li>Cutter ou ciseaux</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Fabrication des gouttières de culture</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3e/Hydroponie_IMG_2695.JPG/800px-Hydroponie_IMG_2695.JPG' alt='Hydroponie IMG 2695.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/56/Hydroponie_IMG_2625.JPG/800px-Hydroponie_IMG_2625.JPG' alt='Hydroponie IMG 2625.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ab/Hydroponie_IMG_20190216_091357.jpg/800px-Hydroponie_IMG_20190216_091357.jpg' alt='Hydroponie IMG 20190216 091357.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3a/Hydroponie_IMG_2673.JPG/800px-Hydroponie_IMG_2673.JPG' alt='Hydroponie IMG 2673.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f5/Hydroponie_IMG_2678.JPG/800px-Hydroponie_IMG_2678.JPG' alt='Hydroponie IMG 2678.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le système utilisé mesure 2m de long par 50cm de large. Le squelette est formé de 4 tasseaux/bambous fixés en parallèle à 15 cm d'écart grâce à des tasseaux de bois. Il est recouvert d'une bache agricole (largeur 1m) de manière à former 3 gouttières d'une profondeur de 10cm environ. Ces gouttières sont remplies de billes d'argile. Une pompe d'aquarium immergée dans le bac du biofiltre propulse la solution nutritive du coté haut de ces gouttières (inclinaison d'environ 10 degrés) afin qu'elle s'écoule à travers les billes d'argile jusqu'à retourner dans le bac de stockage (biofiltre). La table a une hauteur d'environ 1,2m de hauteur (ergonomique pour s'occuper des plantes). Une toile d'ombrage est fixée comme une jupe sur les côtés, afin de protéger du soleil les biofiltres, le bac de stockage de solution nutritive et la champignonnière.<ul><li>Fabrication du support</li><li>Dans ce modèle nous expliquons le procédé pour 3 gouttières mais il est bien-sûr possible de le dupliquer à volonté !</li><li>Découper 4 tasseaux de mêmes longueurs (190 cm pour nous)</li><li>Les fixer parallèlement sur un support grâce aux équerres et aux vis à intervalle régulier (15 cm)</li><li>Agrafer la bâche sur le côté du premier tasseau puis l'étendre pour recouvrir les 3 suivants (Possibilité de doubler la bâche pour plus de résistance)</li><li>Former des gouttières avec la bâche jusqu'à ce qu'elle touche le support</li><li>Agrafer la bâche sur chaque tasseau puis découper là.</li><li>Récupération de l'eau</li></ul></li><li>2. Récupération d'eau</li><li>Le système d'eau fonctionne en circuit fermé. L'eau est pompée dans le biofiltre qui sert de réservoir, sort à une extrémité de la gouttière puis est recollectée à l'autre extrémité avant de passer par un filtre et de retourner au réservoir initial.</li><li>Afin de récupérer l'eau, on perce très finement la bâche (pour éviter que les billes d'argiles ne s'échappent) à l'extrémité opposée de l'arrivée d'eau. En dessous de cette extrémité, on agrafe une autre bâche de manière à former une poche pour collecter et canaliser l'eau avant qu'elle se déverse dans le filtre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Filtre et Biofiltre</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/43/Hydroponie_IMG_2663.JPG/800px-Hydroponie_IMG_2663.JPG' alt='Hydroponie IMG 2663.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/61/Hydroponie_IMG_2701.JPG/800px-Hydroponie_IMG_2701.JPG' alt='Hydroponie IMG 2701.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/05/Culture_en_hydroponie_IMG-20190216-WA0000.jpg/800px-Culture_en_hydroponie_IMG-20190216-WA0000.jpg' alt='Culture en hydroponie IMG-20190216-WA0000.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Hydroponie_Dessin_hydroponie2.jpg/800px-Hydroponie_Dessin_hydroponie2.jpg' alt='Hydroponie Dessin hydroponie2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois passée par les plantes, l'eau se déverse dans deux bacs distincts: le filtre et le biofiltre.</li><li>- Le filtre a pour but de bloquer toutes les particules grossières qui pourraient boucher les pompes (résidus de racines, de feuilles, érosion des billes d'argiles...). Le filtre compte trois étages de filtrations, du plus fin au plus grossier.</li><li>- Le biofiltre constitue le réservoir d'eau, auquel on ajoute environ un quart du volume en billes d'argiles. Celles-ci servent de milieu de culture aux bactéries qui vont permettre la transformation des intrants naturels (urine, jus de compost..) en nutriments assimilables par les plantes. En particulier, la transformation de l'ammoniac en nitrite puis en nitrate, essentiel pour le développement foliaire (développement des feuilles). Les bactéries se développent naturellement au bout de 6 semaines ou peuvent être achetées en culture sur des sites spécialisés en hydroponie.</li><li>Pour leur bon développement, les bactéries ont besoin:<ul><li>d'humidité, apportée par l'eau</li><li>d'ombre</li><li>d’oxygène, installer un bulleur afin de remuer régulièrement l'eau du biofiltre.</li><li>de nourriture, les intrants naturels</li></ul></li><li>Pour notre part, nous utilisons uniquement de l'urine humaine comme intrant (Dosage: ~1% d'urine par rapport au volume d'eau) !<ul><li>Filtre</li><li>En bas du premier bac, percer un trou avec la scie cloche du diamètre de votre tuyau de sortie vers le deuxième bac.</li><li>Installer l'embout et le tuyau sur le bac</li><li>Étaler une couche de gravier assez gros au fond (1/4 du volume du filtre)</li><li>Ajouter une couche de billes d'argile de la même épaisseur</li><li>Ajouter une couche de sable un peu plus fine au dessus</li><li>Installer le filtre sous la poche d'eau en sortie de la gouttière, et le surélever par rapport au biofiltre pour permettre à l'eau de s'écouler par gravité.</li></ul></li><li>2. Biofiltre<ul><li>Remplir le second bac d'eau (40L) et ajouter environ un quart du volume d'eau en billes d'argiles (10L)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Système d'irrigation et bulleur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/34/Culture_en_hydroponie_IMG_20190216_091357.jpg/800px-Culture_en_hydroponie_IMG_20190216_091357.jpg' alt='Culture en hydroponie IMG 20190216 091357.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/99/Hydroponie_IMG_2703.JPG/800px-Hydroponie_IMG_2703.JPG' alt='Hydroponie IMG 2703.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir été filtrée, oxygénée et rechargée en nutriments, l'eau est prête à être réinjectée dans le système. Pour cela, on utilise une petite pompe submersible. La puissance de la pompe dépend de la taille de votre système.<ul><li>Mesurer une longueur de tuyau en plastique (d'un diamètre adapté à votre pompe) allant du biofiltre à l'extrémité des gouttières.</li><li>Connecter une extrémité à la pompe et l'autre, à un embout à 4 sorties (à adapter en fonction du nombre de gouttières), placé à l’extrémité des gouttières</li><li>Fixer cet embout au niveau de la gouttière centrale.</li><li>Connecter des tuyaux aux sorties de l'embout afin d'irriguer toutes les gouttières.</li><li>Plonger la pompe dans le biofiltre</li><li>Plonger le bulleur dans le biofiltre</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Système de commande</strong><p><strong>Étapes :</strong></p><ol><li>Afin de gagner en autonomie, il est possible d'installer un système de minuterie grâce à une prise électrique programmable ou un arduino permettant de programmer les mises en route de la pompe et du bulleur.<ul><li>En effet, pour un meilleur développement des plantes, il est conseillé de procéder à un arrosage régulier alterné avec des temps de pauses sèches. Ce stress hydrique permettra un renforcement des racines.</li></ul></li><li>Pour cela, nous conseillons un allumage de la pompe pendant 30 min toutes les 2h, durant la journée. Pas d'arrosage la nuit.<ul><li>Le biofiltre a besoin d'être aéré régulièrement pour une bonne croissance et la survie des bactéries.</li></ul></li><li>Nous conseillons un allumage du bulleur 1 minute toutes les 5 minutes, 24h/24.</li><li>Toutes les informations sur le système de commande Arduino:</li><li>Gestion énergétique d'un système d'hydroponie/fr</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Choix des cultures et récolte</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b6/Hydroponie_IMG_2648.JPG/800px-Hydroponie_IMG_2648.JPG' alt='Hydroponie IMG 2648.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Toutes les cultures ne sont pas adaptées à l'hydroponie. Il est plus simple, notamment sans engrais chimiques, de préférer les légumes feuilles (salade, choux, épinards, patates douces...) et les aromates (menthe, basilic, coriandre).</li><li>"Planter" les dans les billes d'argiles en veillant à bien immerger les racines.</li><li>Il faut toujours intégrer les plantes après les avoir semées ou bouturées afin qu'elles aient développé un système racinaire assez long et résistant.</li><li>Quelques conseils:<ul><li>Préférer la lumière directe si possible mais ne pas hésiter à ajouter de l'ombrage en cas de grosses chaleurs</li><li>Bien aérer le système et contrôler la température. Ne pas hésiter à ajouter un petit ventilateur en cas de grosses chaleurs.</li><li>Vérifier régulièrement que les racines soient sous les billes d'argiles.</li><li>Vérifier régulièrement la couleur des feuilles: si celles-ci jaunissent, cela peut être dû à un arrosage excessif, un manque de nutriments, un mauvais pH ou un trop fort ensoleillement.</li><li>Les semis : effectuer le repiquage des pousses quand elles ont au moins 5 feuilles. Il faut ensuite arroser. Effectuer le repiquage des pousses plutôt en fin de journée.</li><li>Les boutures : pour la menthe et les patates douces, par exemple, couper une ou plusieurs branches. Enlever les feuilles sur environ les 2/3 de la branche. Enfouir cette partie dégagée sous les billes d'argiles. Il faut ensuite arroser.</li><li>Effectuer la récolte plutôt en matinée, peu de temps après le lever du soleil. Choisir les feuilles les plus anciennes, les plus abîmées ou les feuilles qui se développent en parallèle de pousses auxiliaires.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/ee/Hydroponie_Hydro.JPG' alt='Hydroponie Hydro.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab à l'occasion de l'exposition "En Quête d'un Habitat Durable" dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux")</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

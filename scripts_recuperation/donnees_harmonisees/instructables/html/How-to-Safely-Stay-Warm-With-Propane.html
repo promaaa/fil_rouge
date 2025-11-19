@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>How to Safely Stay Warm With Propane</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>How to Safely Stay Warm With Propane</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FB4/L6KR/LTLIY0UM/FB4L6KRLTLIY0UM.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>A few years ago, a severe Texas snowstorm caught us off guard. Like many others who relied on electricity for heat, we found ourselves struggling to stay warm and safe as the power went out and temperatures plummeted. It was a painful reminder of how important it is to be prepared.</p>
+      
+        <p>The solution for us was to invest in propane heaters. LP (liquid propane) heaters are very efficient and safe. In this Instructable, you'll see the propane heaters I've tested and installed, providing us peace of mind during any power outage.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Mr. Heater</li><li>Mr. Heater Hose</li><li>1-lb Propane Tank</li><li>20-lb Propane Tank (from your local grocery store)</li><li>Co2 Detector (to be extra safe)</li><li>Gas Leak Detector (to be really safe)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Get a Mr. Heater or Two</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FZA/66CN/LTLIY2Y4/FZA66CNLTLIY2Y4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Get a Mr. Heater or Two' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZA/66CN/LTLIY2Y4/FZA66CNLTLIY2Y4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Get a Mr. Heater or Two' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>After weeks of research, I finally found the perfect indoor heater called the Mr. Heater Portable Buddy My main concern was the safety of having a propane heater indoors. I've watched countless videos and have read everything I could find on those Mr. Heaters.</li><li>I've come across a video showcasing the performance of the Mr. Heater in a small RV. In the video, it ran on HIGH for over 8 hours while being monitored by a CO2 detector. Throughout this duration, the CO2 level remained at ZERO, which confirms the heater's reliability and safety.</li><li>These Mr. Heaters have their own built in safety feature called the Oxygen Depletion Sensor (ODS). If it detects low oxygen in the room, the heater will automatically shut off. The heater will also shut off if accidentally tipped over.</li><li>In the picture above, I have two Mr. Heaters running in my very poorly insulated workshop. Despite outside temperatures being as low as 21 °F (-6 °C), I can maintain a cozy 75 °F (24 °C) inside.</li><li>If I ever get around to insulating the workshop, I'm sure one Mr. Heater will be more than enough.</li><li>I also placed the heaters on 1-foot square cement pads for added safety, although it wasn't really necessary.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Choose Your Propane Tank Size</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FH3/NDOU/LTLJ209I/FH3NDOULTLJ209I.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Choose Your Propane Tank Size' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUE/QL6C/LTLJ1ZTJ/FUEQL6CLTLJ1ZTJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Choose Your Propane Tank Size' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE3/Y2BA/LTLIY3OF/FE3Y2BALTLIY3OF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Choose Your Propane Tank Size' loading='lazy'></figure><figure><img src='https://content.instructables.com/FH3/NDOU/LTLJ209I/FH3NDOULTLJ209I.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Choose Your Propane Tank Size' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUE/QL6C/LTLJ1ZTJ/FUEQL6CLTLJ1ZTJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Choose Your Propane Tank Size' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE3/Y2BA/LTLIY3OF/FE3Y2BALTLIY3OF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Choose Your Propane Tank Size' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>You'll need propane to run the heater.</li><li>I like having several 1-pound tanks on standby along with a few 20-pound tanks (the standard outdoor grill tank size).</li><li>Using the small 1-pound propane tanks will allow these heaters to remain completely portable, easily shifting the heater from one room to another as needed.</li><li>This heater has a LOW (~4000 BTU) and HIGH (~9,000 BTU) setting.</li><li>Here are some run-time calculations depending on the tank size your using:</li><li>Note: A 20-pound tank holds 4.6 gallons of propane. A 1-pound tank holds .236 gallons of propane.</li><li>The only issue using the larger 20-pound tank is that the tank itself must remain outside.</li><li>If you plan on using a 20-pound LP tank or any external tank, you need a special Mr. Heater Hose to run through a window or hole keeping the heater inside and the tank outside. Do not use any other type of hose. That hose is made specifically for Mr. Heaters.<ul><li>1-pound tank will run the heater on HIGH for about 3 hours (9,000 BTU)</li><li>1-pound tank will run the heater on LOW for about 6 hours (4,000 BTU)</li><li>20-pound tank will run the heater on HIGH for about 51 hours (9,000 BTU)</li><li>20-pound tank will run the heater on LOW for about 105 hours (4,000 BTU)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Hook It Up</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FFY/4GS4/LTLJ27NX/FFY4GS4LTLJ27NX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure><figure><img src='https://content.instructables.com/FO7/R1AX/LTLIY1R2/FO7R1AXLTLIY1R2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJF/1BCW/LTLIYGC5/FJF1BCWLTLIYGC5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFI/KT60/LTLIYGRW/FFIKT60LTLIYGRW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFY/4GS4/LTLJ27NX/FFY4GS4LTLJ27NX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure><figure><img src='https://content.instructables.com/FO7/R1AX/LTLIY1R2/FO7R1AXLTLIY1R2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJF/1BCW/LTLIYGC5/FJF1BCWLTLIYGC5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFI/KT60/LTLIYGRW/FFIKT60LTLIYGRW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hook It Up' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If you're using the 1-pound tanks, there's not much you need to do. Simply screw the tank into the Mr. Heater, and you're good to go! For those upgrading to the 20-pound tanks, you'll need to either cut a hole or run the hose through a window, ensuring the tank remains outside.</li><li>As you can see, I'm using two heaters and two hoses, which I routed through two holes I created on the side of the workshop shed. Additionally, I acquired an LP gas splitter to connect both heaters to a single tank.</li><li>While CO2 detectors are not necessary, they certainly won't hurt. If you decide to purchase them, they can be easily mounted on a wall about 5-20 feet from the heater. Additionally, I used a gas leak detector to double check all of the hose connections.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Upgrade If Needed</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F00/ZA89/LTLIY3Z5/F00ZA89LTLIY3Z5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Upgrade If Needed' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGB/F56K/LTLIYG4S/FGBF56KLTLIYG4S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Upgrade If Needed' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPK/IB03/LTLJ24RP/FPKIB03LTLJ24RP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Upgrade If Needed' loading='lazy'></figure><figure><img src='https://content.instructables.com/F00/ZA89/LTLIY3Z5/F00ZA89LTLIY3Z5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Upgrade If Needed' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGB/F56K/LTLIYG4S/FGBF56KLTLIYG4S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Upgrade If Needed' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPK/IB03/LTLJ24RP/FPKIB03LTLJ24RP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Upgrade If Needed' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If you think you may be without power for an extended period of time, you could upgrade to a 250 gallon propane tank or bigger.</li><li>A 250 gallon propane tank can be filled to 80% capacity which equals 200 gallons of propane. That would run a Mr. Heater on high for 2,217 hours or 92 days!</li><li>There are lots of different LP tank sizes.</li><li>Continuing our backup heating project, we'll be relocating the two workshop heaters into the main house and utilizing the new larger model, known as the Big Buddy Mr. Heater for the workshop. This heater operates at 18,000 BTU, which is twice as powerful as the standard Mr. Heater model. I can't wait to try it!</li><li>Please reach out if you have any questions with this Instructable.</li><li>Stay Warm!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

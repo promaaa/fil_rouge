@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Laptop Cooling Stand</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Laptop Cooling Stand</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FUR/G4X1/LTIO2PD1/FURG4X1LTIO2PD1.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Ever had to shut your computer off because you're doing something resource-intensive during a trip? What about a gaming hobby? This is the solution to all your heat-related problems; Introducing... The Ultimate... Laptop Cooling Stand!</p>
+      
+        <p>NOTE: Steps8&9 are only if your printer can't fit the fully made stand. At step 7, check if you need to proceed.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Fusion 360</li><li>3d Printer</li><li>Superglue</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Init</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FAE/IHUF/LTIO2RHT/FAEIHUFLTIO2RHT.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Init' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAE/IHUF/LTIO2RHT/FAEIHUFLTIO2RHT.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Init' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Here, we make the initial sketch. Select the right (YZ) plane and click "Create Sketch". Next, copy the image above to make it and them filet it.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Elongate</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F15/Y80M/LTIO2T5N/F15Y80MLTIO2T5N.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Elongate' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ4/3IIZ/LTIO2U90/FJ43IIZLTIO2U90.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Elongate' loading='lazy'></figure><figure><img src='https://content.instructables.com/F15/Y80M/LTIO2T5N/F15Y80MLTIO2T5N.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Elongate' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ4/3IIZ/LTIO2U90/FJ43IIZLTIO2U90.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Elongate' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Next, extrude your sketch. Extrude it 10 inches and make sure that your selections for the "edit feature" match the two images above. Then, click "OK".</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Loops</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F32/P4IV/LTIO2V7J/F32P4IVLTIO2V7J.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Loops' loading='lazy'></figure><figure><img src='https://content.instructables.com/F83/GDIZ/LTIO2V96/F83GDIZLTIO2V96.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Loops' loading='lazy'></figure><figure><img src='https://content.instructables.com/F32/P4IV/LTIO2V7J/F32P4IVLTIO2V7J.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Loops' loading='lazy'></figure><figure><img src='https://content.instructables.com/F83/GDIZ/LTIO2V96/F83GDIZLTIO2V96.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Loops' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Here, create a sketch on top of your stand. Make a center point circle 6.50 mm in diameter like shown above.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Holes</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FYB/S2DJ/LTIO2W2A/FYBS2DJLTIO2W2A.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRJ/5K4S/LTIO2W41/FRJ5K4SLTIO2W41.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYB/S2DJ/LTIO2W2A/FYBS2DJLTIO2W2A.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRJ/5K4S/LTIO2W41/FRJ5K4SLTIO2W41.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Holes' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Next, extrude the circle inwards, but instead of selecting "join" on the bottom, change it to "cut". Extrude it in -10 mm, as shown above.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Dizzy</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FIX/6I0U/LTSO5XQE/FIX6I0ULTSO5XQE.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Dizzy' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIX/6I0U/LTSO5XQE/FIX6I0ULTSO5XQE.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Dizzy' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Okay, this might lag your computer a bit: select "Rectangular Pattern", change the top dropdown from "objects" to "Features", select our hole for "Objects" and two perpendicular edges for "Axes". For the longest axis:</li><li>For the shortest Axis:</li><li>!IMPORTANT!<ul><li>Compute Type = Adjust</li></ul></li><li>you may get a warning to change your compute type. IGNORE THIS!!!<ul><li>Quantity(text box) = 15;</li><li>Distance(text box) = 470.00 mm;</li><li>Direction(dropdown) = One Direction.</li><li>Quantity(text box) = 8;</li><li>Distance(text box) = 240.00 mm;</li><li>Direction(dropdown) = One Direction.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Rim</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FSK/GLX3/LTSO5XVJ/FSKGLX3LTSO5XVJ.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Rim' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSK/GLX3/LTSO5XVJ/FSKGLX3LTSO5XVJ.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Rim' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now, create a sketch and make a corner rectangle that lines the top of our stand.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: RimMaker</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FMN/3C30/LTSO5Y2M/FMN3C30LTSO5Y2M.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='RimMaker' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMN/3C30/LTSO5Y2M/FMN3C30LTSO5Y2M.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='RimMaker' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now, we are going to extrude the rim. Select Thin Extrude for type and then select "Sketch 3". Then, change wall thickness to 1.00 mm and distance to 2 mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Slicer</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FAE/I3RE/LTSO5Y94/FAEI3RELTSO5Y94.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Slicer' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAE/I3RE/LTSO5Y94/FAEI3RELTSO5Y94.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Slicer' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Finally, make a sketch on the top face of our stand and make a bunch of lines on the thing. The goal is to get a bunch of sections that we print seperately. I personally found this amount of cuts to work.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Cuts</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F0G/UH6N/LTSO613U/F0GUH6NLTSO613U.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cuts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTT/MX5V/LTSO6162/FTTMX5VLTSO6162.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cuts' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0G/UH6N/LTSO613U/F0GUH6NLTSO613U.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cuts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTT/MX5V/LTSO6162/FTTMX5VLTSO6162.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cuts' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now, use the Split Body feature and select the lines you made in Step 8 that are going in the same direction under "Splitting Tools". Select "Body 1" under "Bodies to Split". Select "Okay". Then repeat, this time selecting all of the bodies for "Bodies to Split" and the lines going the other way. Good job! You completed it!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

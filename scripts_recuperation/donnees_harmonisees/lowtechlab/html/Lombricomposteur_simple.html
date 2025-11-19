@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Lombricomposteur simple</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lombricomposteur simple</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/ee/Lombricomposteur_simple_assemblage_2.jpg/800px-Lombricomposteur_simple_assemblage_2.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Lombricompost simple réalisé dans seaux plastiques alimentaires.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce turoriel présente la fabrication d'un lombricomposteur simple réalisé dans des seaux plastiques. De petite contenance, il est par exemple adapté à un usage pédagogique.</p>
+      
+        <p>Ce modèle fonctionnel, étant peu esthétique, retrouvez ici, la vidéo du "Tuto des Makers" pour un modèle plus élégant.</p>
+      
+        <p>L'utilisation de vers pour le compostage permet d’accélérer le processus de décomposition de la matière organique.</p>
+      
+        <p>Les vers utilisés sont des vers de fumiers (Eisenia fetida) (notamment utilisés pour la pêche).</p>
+      
+        <p>Les vers redoutent les fortes chaleurs, les fortes humidités et la lumière, il faudra donc les en protéger.</p>
+      
+        <p>Le compostage</p>
+      
+        <p>L'idée de base est de copier le fonctionnement de la nature qui fabrique de l'humus sur le sol des forêts.</p>
+      
+        <p>Le compostage s'effectue par actions de micro-organismes (bactéries, champignons) et macro-organismes comme les vers de fumier, qui sont capables de digérer 1 à 2 fois leur masse par jour.</p>
+      
+        <p>Un bon compost nécessite 30 fois plus de matière carbonée (feuilles mortes, paille, etc) que de matière azotée (épluchures, déjections, etc), ceci dans une atmosphère riche en oxygène. Il faut donc que le compost soit bien aéré.</p>
+      
+        <p>Deux stades se succèdent dans le compostage.</p>
+      
+        <p>Tout d'abord, la phase de "fermentation" permet de consommer les éléments comme les sucres grâce aux bactéries mésophiles puis thermophiles, la température du compost monte durant cette phase, jusqu'à 60°C. Cette phase dure quelques jours/semaines.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 20 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Lombricomposteur_simple" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Lombricomposteur_simple</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>3 seaux alimentaires de récupération (5 à 15L) et leur couvercle (restauration collective par exemple).</li><li>Un robinet de cuve.</li><li>Une poignée de vers de fumiers.</li><li>3 vis.</li><li>Déchets organiques type épluchure</li><li>Déchets organiques type feuilles sèches, pailles.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Perceuse.</li><li>Foret de 2mm.</li><li>Foret de 8mm.</li><li>Crayon.</li><li>Cutter.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Réceptacle</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Lombricomposteur_simple_fixation_robinet_de_cuve.jpg/800px-Lombricomposteur_simple_fixation_robinet_de_cuve.jpg' alt='Lombricomposteur simple fixation robinet de cuve.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6f/Lombricomposteur_simple_couvercle_perce.jpg/800px-Lombricomposteur_simple_couvercle_perce.jpg' alt='Lombricomposteur simple couvercle perce.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Lombricomposteur_simple_couvercle_coupe.jpg/800px-Lombricomposteur_simple_couvercle_coupe.jpg' alt='Lombricomposteur simple couvercle coupe.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ab/Lombricomposteur_simple_receptacle.jpg/800px-Lombricomposteur_simple_receptacle.jpg' alt='Lombricomposteur simple receptacle.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>A l'aide du cutter, Insérer le robinet de cuve dans le bas d'un des seaux.</li><li>Dans l'un des couvercles, percer de nombreux trous de 2mm.</li></ul></li><li>Remarque : Les trous de 2mm permettent le passage du jus de compost mais pas des vers.<ul><li>Découper le pourtour du couvercle pour qu'il puisse s'insérer dans le seau réceptacle.</li><li>A l'aide de 3 vis, créer un plan support afin que le couvercle tienne juste au dessus du robinet de cuve.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Étages</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3c/Lombricomposteur_simple_etage.jpg/800px-Lombricomposteur_simple_etage.jpg' alt='Lombricomposteur simple etage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Percer le fond des 2 autres seaux de nombreux trous de 8mm.</li></ul></li><li>Remarque : Ces trous permettent le passage des vers d'un étage à l'autre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Couvercle</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Percer un couvercle de nombreux trous de 2mm.</li></ul></li><li>Remarque : Ces trous permettent l'entrée d'air dans le lombricomposteur sans que les vers puissent sortir.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/80/Lombricomposteur_simple_assemblage.jpg/800px-Lombricomposteur_simple_assemblage.jpg' alt='Lombricomposteur simple assemblage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Placer un des étages sur le réceptacle avec le couvercle par dessus.</li><li>Garder l'autre étage de coté pour le moment.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Démarrage</strong><p><strong>Étapes :</strong></p><ol><li>Dans les premiers jours d'utilisation, les lombrics ne sont pas encore bien adaptés à leur nouvel environnement. Pour éviter un stress trop important, il est recommandé de démarrer le lombricomposteur tout doucement, étape par étape.<ul><li>Dans un premier temps, remplissez le bac de cartons, papiers, d'un peu de terreau (bio de préférence, en tout cas sans engrais ou autres produits chimiques), de marc de café, de sachets de thé et de quelques épluchures ou feuilles de salades (pas de gros morceaux, les lombrics n'arriveront pas à les manger et ils moisirront).</li></ul></li><li>Le "mélange" doit être bien aéré.<ul><li>Placez directement par dessus une couche de paillis ou de feuilles mortes, riche en carbone.</li><li>Après environ une semaine, placez les lombrics dans le bac et humidifiez abondamment.</li><li>N'ajoutez pas de matières organiques pendant les 15 premiers jours. Observez les lombrics manger et essayez de doser leur appétit. Ils devraient commencer à manger doucement, puis plus abondamment.</li></ul></li><li>Enlevez du bac toute matière organique moisie !<ul><li>Une fois que les lombrics se sont bien acclimatés (après 2 à 3 semaines), commencez à ajouter des épluchures et des morceaux et légumes / fruits en petite quantité.</li><li>Augmentez les doses à mesure que la population de lombrics augmente.</li><li>Par la suite, dès que vous placez des matières organiques, placez automatiquement dessus une couche de paillis.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Utilisation</strong><p><strong>Étapes :</strong></p><ol><li>Remarques : 1) Les épluchures sont la nourriture des vers, le paillis sert de "maison" au sec où ils peuvent pondre. Le mélange matière azotée/matière carbonée permet un bon compostage, bien aéré. Il faut environ 30 fois plus de matière carbonée qu'azotée.</li><li>2) Évitez d'ajouter des pelures d'oignons, des peaux d'agrumes, des aliments cuits avec du sel, des restes de viande ou poisson.<ul><li>Replacez bien le couvercle après chaque utilisation.</li><li>Quand le premier étage est plein, placez le deuxième par dessus et répéter le processus. Les vers vont migrer naturellement dans cet étage quand ils auront fini le travail dans le premier.</li><li>Récoltez le jus de compost régulièrement. Riche en nutriment, il est utilisable en arrosage par dilution à 5% dans l'eau.</li><li>Quand le compost d'un étage est prêt, utilisez le pour du rempotage de plants par exemple.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Tapis d'humidification</strong><p><strong>Étapes :</strong></p><ol><li>Les lombrics sont très demandeurs en humidité. Une technique simple et efficace consiste à placer un tapis d'humidification dans le bac, afin d'y maintenir une humidité relativement constante.</li><li>On peut trouver ce genre de tapis ou "matelas" d'humidification en chanvre dans le commerce (pour environ 5€ les trois), qui ont une durée de vie d'environ 2 mois.</li><li>Toutefois un simple carton trempé posé à la surface du bac peut faire l'affaire. Sa durée de vie est probablement (quoique pas encore vérifé) inférieure, mais bon, c'est low-tech. On pensera bien à le réhumidifer régulièrement (tous les jours si possible), à l'aide par exemple d'un brumisateur (type bouteille de produit ménager).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

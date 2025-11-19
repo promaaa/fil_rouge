@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mesure de l'ensoleillement-luminosité avec un ordinateur monocarte (raspberry-orangepi)</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Mesure de l'ensoleillement-luminosité avec un ordinateur monocarte (raspberry-orangepi)</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/0/08/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_IMG_20240109_123457_400.jpg/800px-Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_IMG_20240109_123457_400.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Comme vous ne le savez peut être pas, les données météorologiques d'observations issues des messages internationaux d’observation en surface (SYNOP, disponibles ici: https://donneespubliques.meteofrance.fr/?fond=produit&id_produit=90&id_rubrique=32) ne prennent pas en compte l'ensoleillement/la luminosité. Les données d'ensoleillement/luminosité peuvent être intéressantes à recueillir pour divers usages (confort interieur, mesures de production photovoltaïque, soin des plantes,...). Pour le photovoltaïque, malgré la vieillesse de la technologie, mes recherches ne m'ont pas permis de trouver des mesures fiables de la production par temps nuageux. On trouve des vidéos de mesures, telle que celle-ci : https://www.youtube.com/watch?v=H_Aow78MFmQ&ab_channel=TopeSosanya qui laissent à penser que les panneaux produisent à 50% de leur valeurs nominales. Mes instruments de mesure faisant l'objet d'interférences ne me permettant pas de faire des mesures fiables, j'ai pensé à produire un code simple que d'autres utilisateurs moins sujets à interférences pourraient réutiliser à leur convenance. Ce tutoriel vous permettra donc, avec seulement deux commandes (apres installation de l'os et de docker), d'utiliser votre ordinateur monocarte comme une station météo qui enregistre l'ensoleilement/la luminosité toutes les minutes dans une base de données et produit une page web où on peut récupérer les résultats avec la possibilité de requeter par date. démo visible ici: https://vpn.matangi.dev/lum Note: ne vous fiez pas à mes mesures affichées sur la démo visible au lien ci-dessus : comme indiqué précedemment à demi mots, la doctrine de l'Interieur contre les "ecoterroristes" détruit la possibilité de faire de la science convenablement en France avec des ordinateurs. Je n'ai pas les moyens financiers, techniques ni l'envie de passer du temps a déjouer des attaques et entraves informatiques récurrentes. L'intégrité logique du code est bonne. Si le système change ou si vous n'êtes pas trop ciblé, ça pourra toujours être utile. Et publier sur lowtechlab, c'est un signal pour t'inciter a faire tes mesures avec un multimetre et une vieille caméra pas connectée et l'uploader sur youtube ou peertube. Si tu lis ce tuto et que tu n'es pas encore une cible éco terroriste, tu as un superpouvoir : la cape d'invisibilité</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment mesure de l'ensoleillement-luminosité avec un ordinateur monocarte (raspberry-orangepi).</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 140 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Mesure_de_l_ensoleillement-luminosité_avec_un_ordinateur_monocarte__raspberry-orangepi_" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Mesure_de_l_ensoleillement-luminosité_avec_un_ordinateur_monocarte__raspberry-orangepi_</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>ordinateur monocarte (raspberry ou autre) : environ 100€</li><li>clé usb: 10€</li><li>capteur de luminosité yoctopuce yoctolight v4: environ 30€</li><li>vidéo : mesure accréditant l'hypothèse d'une production à 50% de la puissance nominale par temps nuageux (https://www.youtube.com/watch?v=H_Aow78MFmQ)</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - installation de l'ordinateur monocarte</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/2/2f/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_orange-pi-5.jpg' alt='Mesure de l ensoleillement-luminosit avec un ordinateur monocarte raspberry-orangepi orange-pi-5.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/62/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_Capture_d_cran_du_2024-01-08_19-53-10.png' alt='Mesure de l ensoleillement-luminosit avec un ordinateur monocarte raspberry-orangepi Capture d cran du 2024-01-08 19-53-10.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Installer dietpi</li><li>Pour l'installation, je vous conseille d'utiliser dietpi. L'interet de dietpi est notamment la legereté du systeme pour des ordinateurs monocartes, mais aussi l'installation automatique de logiciels libres par un menu relativement "user friendly". On peut mentionner parmis tous les logiciels installables automatiquement au démarrage du systeme (https://dietpi.com/dietpi-software.html) des applis de domotique, interessante pour économiser de l'énergie en fonction de la meteo, mais aussi les relais "tor" pour contribuer au réseau relativement anonymisant tor, interessant pour les "éco terroristes" que nous sommes.</li><li>https://dietpi.com/#download</li><li>Selectionner votre ordinateur monocarte (orange pi dans le cas présent) puis telecharger</li><li>Dezipper l'archive obtenue.</li><li>Utiliser ensuite balena etcher pour créer une clé usb bootable pour installer dietpi sur votre ordinateur monocarte (orange pi 5 dans le cas présent mais ca fonctionne pareil sur d'autres ordinateurs monocartes).</li><li>https://etcher.balena.io/#download-etcher</li><li>Double cliquer sur le fichier téléchargé</li><li>Selectionner l'image de dietpi téléchargée, selectionner votre clé usb, cliquer sur flash.</li><li>Il ne vous reste plus qu'à brancher la clé usb sur le orangepi et il bootera automatiquement sur la clé usb.</li><li>Pour un raspberry pi, on utilise une carte sd mais on peut configurer le boot usb également (voir ici : https://makerhelp.fr/booter-un-raspberry-pi-4-sur-un-disque-dur-ou-un-ssd-en-usb/).</li><li>Allumer votre orangepi/raspberrypi avec la clé usb branchée.</li><li>Suivre les menus que vous propose dietpi au premier démarrage pour installer le dietpi sans autre logiciel. C'es très facile, c'est en anglais et tout est automatisé.</li><li>Vous pouvez vous déplacer dans les menus au clavier avec les fleches et la touche tab.</li><li>Selectionner avec espace et valider avec entree.</li><li>Ne pas installer de logiciels optionnels tels que nextcloud.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - brancher le capteur de luminosité yoctopuce yoctolight v4</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3f/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_IMG_20240108_194725_812.jpg/800px-Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_IMG_20240108_194725_812.jpg' alt='Mesure de l ensoleillement-luminosit avec un ordinateur monocarte raspberry-orangepi IMG 20240108 194725 812.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La led bleu du capteur clignote lentement lorsque le capteur est branché</li><li>Attention à ne pas débrancher le capteur lors des mesures, sinon, il faut</li><li>relancer le serveur (docker compose down && docker compose up)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - installer le serveur django</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_Capture_d_cran_du_2024-01-08_17-46-13.png/800px-Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_Capture_d_cran_du_2024-01-08_17-46-13.png' alt='Mesure de l ensoleillement-luminosit avec un ordinateur monocarte raspberry-orangepi Capture d cran du 2024-01-08 17-46-13.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/47/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_Capture_d_cran_du_2024-01-08_17-46-42.png/800px-Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_Capture_d_cran_du_2024-01-08_17-46-42.png' alt='Mesure de l ensoleillement-luminosit avec un ordinateur monocarte raspberry-orangepi Capture d cran du 2024-01-08 17-46-42.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_Capture_d_cran_du_2024-01-08_17-46-48.png/800px-Mesure_de_l_ensoleillement-luminosit_avec_un_ordinateur_monocarte_raspberry-orangepi_Capture_d_cran_du_2024-01-08_17-46-48.png' alt='Mesure de l ensoleillement-luminosit avec un ordinateur monocarte raspberry-orangepi Capture d cran du 2024-01-08 17-46-48.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1.installer docker:</li><li>taper dans votre terminal :</li><li>sudo apt -y update && sudo apt -y upgrade</li><li>sudo apt install git lsb-release gnupg2 apt-transport-https ca-certificates curl software-properties-common -y</li><li>curl -fsSL https://download.docker.com/linux/debian/gpg<ul><li>sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/debian $(lsb_release -cs) stable"</li></ul></li><li>sudo apt update</li><li>sudo apt install docker-ce docker-ce-cli containerd.io docker-compose-plugin</li><li>sudo usermod -aG docker $USER</li><li>newgrp docker</li><li>sudo systemctl start docker && sudo systemctl enable docker</li><li>2.suivre les étapes du dépot https://gitlab.com/aurelpere/lux (logiciel libre que j'ai codé pour faciliter l'utilisation de la yoctolight):</li><li>taper dans votre terminal</li><li>git clone https://gitlab.com/aurelpere/lux.git</li><li>taper dans votre terminal</li><li>cd lux && docker compose up</li><li>C'est prêt, votre ordinateur monocarte enregistre les mesures de luminosité</li><li>mesurées en lux toutes les minutes et fait tourner un site internet</li><li>accessible sur le port 4000 qui permet d'afficher les mesures enregistrées dans une</li><li>base de données toutes les minutes et sélectionner les mesures en fonction des</li><li>dates entrées par l'utilisateur (avec export excel possible).</li><li>Pour rendre le site internet accessible à d'autres ordinateurs, se réferrer</li><li>aux étapes 6 à 11 de ce tutoriel :</li><li>Serveur orangepi-raspberry nextcloud en photovoltaïque autonome</li><li>Le serveur est accessible aux adresses http://adresse_ip:4000 en local et http://adresse_ip_publique sur internet</li><li>Ce tutoriel sera mis à jour avec les capteurs yoctopuce de tension et d'intensité lorsque j'aurai le temps, la motivation et le budget :)</li><li>A noter que si vous préférez utiliser les stats d'ensoleillement du modele jrc,</li><li>vous pouvez vous reporter à mon autre tuto sur le dimensionnement photovoltaïque en site isolé-autonome ici: Dimensionner une installation photovoltaïque autonome</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Aliments fermentés - kéfir de laits végétaux et fromages vegan</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Aliments fermentés - kéfir de laits végétaux et fromages vegan</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/2/21/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_lait_vegan.jpg/ia-92b6d0c62d75db6af33932fee67e3259-px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_lait_vegan.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Plusieurs recettes de "produits laitiers" végétaux fermentés facilement réalisable à la maison, pour pouvoir profiter de yaourts, faisselles, et fromages vegans ayant du gout et fabriqués en low-tech.</div>
+        
+      </div>
+    
+    
+      
+        <p>Enfin comme le rappelle Virginie Geres avec son site HappyBiote, sans microorganismes nous serions morts ! Tout simplement ! Nous ne pourrions pas fonctionner sans la présence de milliards de bactéries, levures et autres microbes (non pathogènes) qui tapissent notre corps. Ils assurent d’importantes tâches comme nous protéger des agressions d’autres microbes (pathogènes), nous permettent de nous alimenter, d’avoir une odeur distincte des autres individus (et donc facilite de tomber amoureux quand on n’est pas trop crade), ils participent à notre système immunitaire… Et dans chacune de nos cellules se trouve un microorganisme que nous avons incorporé au fil des millénaires : la mitochondrie, qui permet la respiration cellulaire ! Cette super vidéo pour en savoir plus.</p>
+      
+        <p>Donc, non seulement les microorganismes sont nécessaires à notre survie mais en en apportant une grande diversité par une alimentation saine et variée (notamment avec des aliments riches en fibres -prébiotiques- et microorganismes -probiotiques-) nous améliorons notre santé immunitaire et psychique. Ceci est aux antipodes des standards occidentaux modernes, rendant les gens littéralement malades, entre autres par un microbiote faible. Pour plus d’informations je vous conseille ce reportage d’Arte, ou celui-ci un peu plus ancien sur le même thème.</p>
+      
+        <p>Autant de bonnes raisons d'en consommer de manière régulière (attention à ne pas manger que ça pour autant!)</p>
+      
+        <p>Nous vous donnons ici plusieurs recettes de fermentations de "produits laitiers végétaux" pour que vous puissiez essayer à la maison ! Des recettes alternatives aux produits laitiers classiques qui a du gout, est facile à réaliser et diversifie notre alimentation.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Aliments_fermentés_-_kéfir_de_laits_végétaux_et_fromages_vegan" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Aliments_fermentés_-_kéfir_de_laits_végétaux_et_fromages_vegan</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Laits végétaux (faits maisons ou du commerce)</li><li>Ferments (kéfir de lait ou d'eau ou kombucha ou autres probiotiques contenant des lactobaciles, de la saumure de lactofermentation, des misos, des jus fermentés, d'anciens yaourts ou fromages végétaux fermentés non pasteurisés, des levains...)</li><li>Sel</li><li>Gélifiant naturel (optionnel) type agar-agar ou pectine de fruits</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Récipient en verre</li><li>Tissu fin et propre</li><li>Cuillères (en bois ou plastique si kéfir)</li><li>Moule type faisselle ou petites passoires</li><li>Thermomètre de cuisson (si coagulation à chaud)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Règles d'hygiène et mises en garde</strong><p><strong>Étapes :</strong></p><ol><li>Les laits végétaux ne sont pas des laits animaux et donc ne sont pas adaptés à la consommation par de jeunes enfants pour remplacer le lait maternel ou les laitages pendant leur forte croissance. Les laits végétaux peuvent être intéressants car ils ne contiennent pas de lactose, de cholestérol, de caséine ou de gluten (selon les graines pour le gluten) et qu’ils peuvent facilement être préparés à la maison, avec une empreinte écologique bien plus faible que le lait animal. Certaines graines nécessitent d’être trempées et rincées avant d’en faire du lait, cette étape est importante car permet l’élimination de certains toxines et antinutriments (éléments bloquant l’absorption de certains nutriments), ne pas chercher à consommer cette eau de trempage !</li><li>Il n'est pas nécessaire de travailler dans un champ stérile lorsqu'il s'agit de fermentation mais il est crucial d'être le plus propre possible.</li><li>Travaillez sur un plan de travail nettoyé (si besoin/possible aseptisé au vinaigre blanc ou à l'alcool). Utilisez des ustensiles et récipients propres, lavés à l'eau chaude (ou passés au lave-vaisselle), manipulez avec des mains propres et essuyez-les avec un torchon PROPRE... bien entendu.</li><li>Pour la réalisations de produits laitiers au kéfir je vous invite à consulter les tutoriels suivants afin de mieux comprendre comment le kéfir de lait et d'eau agissent :<ul><li>Pour le fonctionnement de base des kéfirs d'eau et de lait : Boissons fermentées - Kéfir, kombucha et vinaigres</li><li>Pour l'utilisation du kéfir de lait dans des produits laitiers animaux : Aliments fermentés - produits laitiers animaux maison</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Recettes de laits végétaux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/b7/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_lait_v_g_.jpg' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan lait v g .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les « laits végétaux » sont en fait des filtrats après avoir imbibé les graines et les avoir mixées (on conserve la purée pour faire des pâtisseries). Etant donné qu’ils contiennent énormément d’eau ils peuvent facilement déphaser, il suffit de secouer avant de servir, et fermenter (c’est pas grave, ça change de goût et ça peut devenir pétillant). Les laits végétaux se conservent environ 3-4 jours au frigo.</li><li>Si vous achetez des laits végétaux du commerce veillez à bien vérifier sur l'étiquette la présence de sucre, agents de texture (caroube, huile). La présence de sucre en grande quantité peut donner un gout agréable aux yaourts mais être désagréable pour des fromages.</li><li>Le lait de soja contenant une grande proportion de protéines possède un comportement similaire au lait animal pour sa transformation. Il peut être fermenté par des bactéries classiques de yaourt animal, du kéfir de lait et du kéfir d’eau. Attention cependant car il est également riche en phytoestrogènes, hormone végétale avec une action analogue à celle humaine (oestrogène), et à forte consommation peut provoquer des troubles hormonaux sérieux.</li><li>Si vous souhaitez faire votre lait de soja maison je vous conseille l'excellent tutoriel illustré de Marion : https://areyouradis.fr/comment-faire-du-tofu-maison-recette/</li><li>Des recettes de laits et de crèmes végétales (lait d’amande, noisette, coco, riz, soja et avoine) en 5 min + trempage : https://consommonssainement.com/2017/10/17/tuto-lait-vegetal/</li><li>Et encore plus de laits végétaux possibles (laits de blé, de banane, de chanvre, de quinoa, sésame, tournesol…) http://www.cfaitmaison.com/bio/faire-laits.html</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Comment utiliser l'okara ? (pulpe après mixage)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/77/Okara.png/800px-Okara.png' alt='Okara.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>En général lors de la réalisation de laits végétaux on filtre la pâte végétale "le namago" pour séparer le liquide blanc ressemblant à du lait de la pulpe végétale "l'okara".</li><li>Ne jetez pas l'okara à la poubelle, cet élément très riche peut être utilisé de nombreuses façons en cuisine et cosmétique! Par exemple il est possible de faire déshydrater la poudre au four pour la stocker et l'utiliser en patisserie ou en gommage doux, en bombe de bain, dans des savons. Il est également possible d'en faire des pâtés végétaux.</li><li>Vous pouvez garder l'okara avec un peu de lait pour créer des crèmes végétales, à consommer tel-quel ou à fermenter en yaourt ou fromage. Car oui, il est possible pour avoir plus de fromage (plus épais) de garder tout ou une partie de l'okara.<ul><li>Si vous souhaitez vous pouvez faire fermenter cet okara, en en faisant par exemple du tempeh --> vidéo de la recette ici : https://www.youtube.com/watch?v=XPVglI8JCZs</li></ul></li><li>Note de Claire Mauquier du Low-tech Lab : " J’ai eu d’excellents résultats d’okara tempeh avec le pois chiche ou encore le soja, mais cela ne fonctionne pas dans le cas du haricot blanc, qui a une texture différente)."</li><li>Dans le tutoriel Aliments fermentés - alternatives aux protéines animales vous trouverez encore plus de différentes méthodes de faire du tempeh.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Faire des yaourts végétaux à base de ferments lactiques du commerce</strong><p><strong>Étapes :</strong></p><ol><li>Il est possible de réaliser des yaourts végétaux en utilisant des ferments similaires aux ferments pour des laits animaux.</li><li>Cela fonctionne particulièrement bien pour des laits qui ont une grande proportion de protéines, comme le lait de soja et semble-t-il ici le lait de coco.</li><li>Voici le retour d'expérience de Marielle de Monplaisir à propos de yaourt coco aux ferments Alsa :</li><li>INGRÉDIENTS :</li><li>- Environ un petit 1/4 de cuillère à café de « ferments lactiques Alsa spécial yaourtière » composés de ferments lactiques lyophilisés (streptococcus thermophilus et lactobacillus bulgaricus) sur maltodextrine et sucre (cf. photos) qui périment en mars...</li><li>- 50 g de crème de coco (100% noix de coco moulue) (cf. photos sur la publication Facebook)</li><li>- 100 ml d’eau</li><li>PROCÉDÉ :</li><li>1. Dissoudre le sachet de noix de coco dans l’eau afin de retrouver une texture de crème. Faire tiédir dans une casserole en remuant pour une meilleure dissolution.</li><li>2. Laisser refroidir la crème de coco jusqu’à atteindre une température inférieure à 35-40 degrés C.</li><li>3. Incorporer la dose de ferments et bien mélanger.</li><li>4. Verser dans un pot qui ferme et visser le couvercle. Puis le placer dans un contenant assez grand et au moins aussi haut que le contenu du pot.</li><li>5. Ajouter de l’eau tiède (40-50 degrés max) jusqu’à hauteur de la crème ensemencée.</li><li>6. Placer au four à 40-50°C pendant environ 12h. Il n’est pas nécessaire que le four reste allumé tout ce temps tant que l’eau du bain-marie reste tiède.</li><li>7. Sortir le pot du bain-marie et le laisser refroidir. À ce stade la texture est onctueuse comme un brassé assez ferme. Très doux au goût. Délicieux !</li><li>Après un passage au réfrigérateur il devient comme sur les photos : très très ferme ! Et toujours très doux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Faire du yaourt, du tofu et du fromage à base de lait de soja</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4c/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_demouler-son-tofu-maison.jpg/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_demouler-son-tofu-maison.jpg' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan demouler-son-tofu-maison.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/91/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_tofu_chanvre_lactoferment_.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_tofu_chanvre_lactoferment_.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan tofu chanvre lactoferment .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le lait de soja contenant une grande proportion de protéines possède un comportement similaire au lait animal pour sa transformation. Il peut être fermenté par des bactéries classiques de yaourt animal, du kéfir de lait et du kéfir d’eau.</li><li>Quelques recettes de yaourt au soja avec différents ferments (on peut même utiliser un scoby de kombucha !) : http://www.cfaitmaison.com/bio/laitage-soja.html</li><li>Avec du lait de soja (1 litre), on obtient par fermentation environ 250 g. de tofu. C'est peu, mais on obtient du tofu sans effort et à un prix moindre que celui du commerce (quand on fait aussi son lait).</li><li>Réalisation avec du kéfir : Les grains de kéfir de lait ou de fruits mis dans un bocal contenant du "lait" de soja donnent après quelques heures une boisson à la consistance d'un yaourt liquide onctueux au goût de dessert au soja nature (type "sojasun"). Laissez à température ambiante encore quelques heures, la boisson se sépare en deux parties, une qui ressemble au petit lait et une autre au fromage blanc. Déposez dans un pot avec faisselle (ou passoire avec linge), pour récolter la partie solide, l'égoutter et la faire sécher. On obtient alors un fromage moulé qui a le goût du soja et se rapproche du tofu.</li><li>Pour avoir un tofu à l'ancienne il est nécessaire de faire bouillir le lait de soja puis pour faire la coagulation l’idéal est d’avoir un thermomètre culinaire. En effet, c’est entre 73°C et 74°C que le nigari permet la meilleure coagulation du tofu ! Donc à cette température ajouter 50 g de jus de citron OU 10 g de nigari dilué dans 70g d’eau chaude (ou en version liquide 10ml pour 2,5L de lait de soja). Bien mélanger puis une fois la coagulation réalisée on égoutte, voire on presse légèrement avec un poids.<ul><li>Tofu soyeux : 20 min avec un poids de 400g</li><li>Tofu ferme : 30 min avec un poids de 700g</li></ul></li><li>Après le pressage vient l'étape du rinçage (si on utilise du nigari) :<ul><li>Retirez le poids et déposez le moule à tofu dans un grand saladier d’eau froide</li><li>Démoulez le bloc de tofu dans l’eau et retirez-lui délicatement son linge</li><li>Rincez le tofu pendant au moins 20 minutes : soit en laissant couler un filet d’eau sur le saladier plein (pas super écolo…), soit en changeant plusieurs fois l’eau de trempage. Le but est de faire disparaître l’éventuelle amertume du nigari !</li></ul></li><li>Pour avoir du fromage on peut laisser s’affiner le « tofu » au frigo ou à température ambiante (en goutant régulièrement et en le protégeant dans un linge des insectes et de la poussière) et l’aromatiser comme un fromage de lait animal.</li><li>Il est également possible de faire lactofermenter le tofu, cela donne un fromage ressemblant à la feta.</li><li>Conservation : dans un pot hermétique au frigo pendant 5 jours. Si le tofu est conservé dans de l'eau, changée tous les jours, la conservation peut durer jusqu'à 1 semaine. Le tofu conservé sans eau, réalisé avec du nigari, ne se conserve que 48h.</li><li>Exemple de recette de biscuit : http://etrangerecuisine.canalblog.com/archives/2009/06/18/14129491.html</li><li>D’autres recettes au soja : http://www.cfaitmaison.com/bio/kefir-vegetal.html</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Faire du seitan (substitu de viande/fromage à base de blé ou sans gluten)</strong><p><strong>Étapes :</strong></p><ol><li>Le seitan est une spécialité japonaise consommée depuis des siècles pour remplacer la viande (notamment pour rempalcer celle de porc ou de poulet par les moines bouddhistes). Elle est surnommée "viande de blé" car elle est très riche en protéines. Pour en réaliser soi-même en low-tech il suffit de farine de blé, d'eau, d'un bouillon (traditionnellement d'algues kombu) et de sauce soja. Ce qui donne une texture élastique/spongieuse au seitan vient principalement du gluten du blé, mais il est possible d'utiliser d'autres farines pour ne pas avoir de gluten.</li><li>Voici une recette avec de la farine de blé, malheureusement pas fermentée. De quoi s'inspirer en attendant de trouver la recette traditionnelle. https://www.finedininglovers.fr/article/comment-preparer-seitan-maison</li><li>Voici un exemple de recette de seitan sans gluten. Ces recettes utilisent du miso mais ne fait pas fermenter la pâte de seitan, rien ne vous empêche de la faire fermenter légèrement avant cuisson, par exemple en faisant "mousser" les farines et les légumineuses en 24h de fermentation à température ambiante avec un peu d'eau, comme on le ferait pour un dosas (voir le tutoriel ici).</li><li>Exemple de recette de biscuit : http://etrangerecuisine.canalblog.com/archives/2009/06/18/14129491.html</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Faire du yaourt et du fromage aux oléagineux SANS soja</strong><p><strong>Étapes :</strong></p><ol><li>Contrairement au soja, d’autres laitages végétaux ont moins de protéines et sont donc souvent moins fermes. Pour pallier ça on peut mélanger un peu de lait de soja ou ajouter un peu d’agar-agar ou tout autre gélifiant naturel à chaud (pensez aux pépins de citron, pomme, coings… A ne pas consommer directement car ils contiennent du cyanure !).</li><li>Il existe plusieurs possibilités pour faire fermenter du lait végétal afin de le transformer en yaourt et/ou fromage. Par exemple en ajoutant quelques cuillères à soupe d’un liquide déjà fermenté, tel que réjuvélac (eau de graines germées), liquide de légumes fermentés, un peu de boisson fermentée aux fruits, aux fleurs ou du levain de gingembre (gingerbug), levain de céréales, nukazuké (levain de son de céréale), des compléments alimentaires probiotiques (1/2 gélule pour 300g de fromage, vérifiez quelles bactéries sont présentes, il faut des bactéries lactiques). Comme dans le cas du kéfir de fruit, les bonnes bactéries déjà présentes dans le liquide fermenté vont se propager au lait végétal et faciliter la fermentation. Pour les levains et les gingerbug il est recommandé de les utiliser en starter pour fromages AVANT de les nourrir pour éviter de donner un gout sucré au fromage et afin qu'ils aient suffisamment "faim" pour rapidement transformer le fromage.</li><li>Les recettes proposées dans ce paragraphe n’utilisent pas de kéfir de fruit (pour fermenter des laitages végétaux les kéfirs de lait ne fonctionnent pas car il n’y a pas de lactose). Cependant, il est conseillé d’utiliser des ferments car la fermentation est plus rapide et plus sécurisé, les bonnes bactéries étant propagées par le ferment.</li><li>Deux recettes de tofu de chanvre : recette express (sans fermentation) par France Inter ou avec fermentation par Panasonic</li><li>Plein d’expériences de yaourts à partir de différentes graines et différents ferments par Cfaitmaison (amande, avoine, noix, cajou, lin, tournesol…)</li><li>http://www.cfaitmaison.com/bio/laitage-vegetal-sans-soja.html</li><li>http://www.cfaitmaison.com/bio/yaourt-graines.html</li><li>Vidéo de Claire Mauquié à propos de la mousse de noix fermentée, version express du fromage frais d'oléagineux. La vidéo est retranscrite dans le tutoriel sur les sauces fermentées.</li><li>La recette fromage végétal SANS CUISSON pas à pas de ShiraBio à partir d'amandes (ou tout autre oléagineux) en gardant l'okara (le liquide n'est pas filtré). Vidéo ici : https://www.instagram.com/tv/CQodEQRoZtA/</li><li>Exemple de recette si vous préférez utiliser uniquement un lait végétal (pas d'okara), AVEC CUISSON :</li><li>Remarque : cette recette avec cuisson du lait végétal et ajout d'acidifiant permet d'avoir une coagulation plus rapide et donc possiblement un fromage plus ferme. Pour les personnes ayant peur des possibles contaminations, ce passage à haute température et l'ajout d'acide sécurise la fermentation en tuant les potentielles mauvaises bactéries et en créant un environnement acide propice aux bactéries lactiques (celles qui nous intéressent ici).</li><li>Ingrédients et matériel<ul><li>250g d'amandes</li><li>1L d'eau ou 2L de lait d'amande du commerce</li><li>3 cuillères à café d'acidifiant (citron ou vinaigre)</li><li>1 dose de starter</li><li>sel/poivre et autres aromates à votre guise</li><li>mixeur (optionnel si lait déjà réalisé)</li><li>casserolle</li><li>thermomètre de cuisson</li><li>bocal en verre</li><li>cuillères</li><li>passoire fine avec linge</li></ul></li><li>Faire gonfler les amandes pendant 12h. Retirez la peau et les mixer avec 1L d'eau puis filtrez pour séparer le lait de l'okara (ou avoir acheté 2l de lait d'amande du commerce). Pour une texture plus ferme il est possible d'ajouter quelques cuillères d'okara au lait.</li><li>Pour faire coaguler le lait, le faire chauffer à 85-90°C en mélangeant bien puis ajouter l'acidifiant. des grumeaux vont se former, si jamais cela n'arrive pas vous pouvez ajouter un peu plus d'acidifiant. Laissez la mixture couverte, hors du feu jusqu'à ce qu'elle retourne à la température ambiante.</li><li>Egouter le fromage dans une passoire avec un linge. Déposer le fromage dans un bocal pour fermenter et ajouter le ferment (dose de yaourt, poudre de probiotique...) et fermer ou couvrir le bocal d'un linge (suivant si la fermentation est aérobique ou anaérobique). Placer dans un endroit à l'abris de la lumière, assez chaud pour quelques heures (6-12h). Lorsque des bulles se forment et que le fromage prend du volume jusqu'à ressembler à une mousse il est prêt à être dégusté ou placé au frigo il se conserve environ 1 semaine dans un bocal fermé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Faire du yaourt et du fromage avec des légumineuses</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6b/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_1.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_1.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan fromage pois angole 1.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3c/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_2.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_2.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan fromage pois angole 2.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7d/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_3.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_3.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan fromage pois angole 3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d8/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_4.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_4.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan fromage pois angole 4.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_5b.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_5b.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan fromage pois angole 5b.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cd/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_6b.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_fromage_pois_angole_6b.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan fromage pois angole 6b.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette de Claire Mauquier, équipière du Low-tech Lab pour réaliser des fromages avec des légumineuses (pois d’angole, haricots blancs, pois sabre, soja, pois chiche). Voici les recettes et les vidéos : https://foodforestlab.com/comment-faire-un-fromage-vegetal-a-base-de-legumineuses/ et https://foodforestlab.com/le-fromage-vegetal-de-pois-dangole/</li><li>Faire du lait à partir des légumineuses : Pour cela, il faut faire tremper les graines quelques heures, pour les réhydrater (une nuit c'est l'idéal). Ensuite, rincez-les et passez-les au blender avec 5 fois leur volume en eau (ex 1 litres d’eau pour 200 g de graines).</li><li>Filtrez maintenant le liquide dans un sac à lait de soja ou tout tissu fin (ex: une taie d'oreiller), et réservez la pulpe (l’okara) pour une autre utilisation.</li><li>Pour finir, vous devez faire bouillir le lait pour le débarrasser des inhibiteurs d’enzymes.<ul><li>Versez-le petit peu par petit peu dans une grande marmite, et faites-le bouillir au fur et à mesure.</li><li>Utilisez une grande marmite et ne versez pas tout le liquide d’un coup, il risque de gonfler soudainement et de sortir de la marmite!</li><li>Les mousses qui se forment à la surface sont les inhibiteurs d’enzyme. Vous pouvez les retirer car ceux-ci sont indigestes.</li><li>Pendant la cuisson, remuez constamment le liquide en raclant bien le fond, pour ne pas que les particules les plus lourdes s’accrochent au fond.</li><li>La manœuvre dure environ 30 minutes, courage!</li></ul></li><li>Et voilà votre lait végétal de pois d’angole! Laissez-le refroidir avant de passer à l’étape suivante. Une peau va se former à la surface, vous pouvez la prélever et la déguster telle quelle. C’est ce qu’on appelle “tofu skin” en Asie. Vous pouvez vous arrêter à ce stade si vous souhaitez faire du lait ou continuer pour le transformer en yaourt/fromage.</li><li>Transformer le lait en fromage : Tout d’abord, versez votre lait dans des bocaux en verre et dans chaque bocal ajoutez 1 à 2 cuillères de "starter de fermentation". Ce starter peut être quelques cuillères à soupe d’un liquide déjà fermenté, tel que réjuvélac, liquide de légumes fermentés ou levain de gingembre.</li><li>Laissez fermenter entre 12 et 24h (plus il faut chaud plus la fermentation est rapide, le signal est lorsque vous disintguez une phase solide (type yaourt) et une fase liquide (similaire au petit lait). Egouttez dans une passoire le substrat un peu plus solide qui s’est formé.</li><li>A ce stade vous pouvez le déguster tel quel en yaourt ou bien continuer les autres étapes pour en faire du fromage.</li><li>Laissez-le sécher toute la journée. Si les mailles de votre passoire ne sont pas suffisamment fines, recouvrez-la d’un linge avant de verser votre lait fermenté.</li><li>Mélangez quelques épices dans ce qui ressemble maintenant à un yaourt. Ail, fines herbes, sel, poivre, vous n’avez que l’embarras du choix! Mettez tout ceci dans un moule, au réfrigérateur. 3 ou 4 jours après, vous pouvez retirer le moule, ajouter quelques épices sur la surface si vous le souhaitez. Enfin, laissez-le durcir au frigo pendant une à deux semaines, en le retournant de temps à autre.</li><li>Et voila, votre délicieux fromage végétal est prêt à être dégusté!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Faire du porridge fermenté</strong><p><strong>Étapes :</strong></p><ol><li>Avant les céréales données aux enfants le matin étaient souvent fermentées car cela rend leur digestion plus facile et peut développer un gout légèrement sucré/acide.</li><li>Pour faire du porridge fermenté il suffit de faire tremper dans de l'eau vos céréales (souvent ici de l'avoine) en vérifiant qu'ils ne sont pas déjà pré-cuits et pré-sucrés. Faites tremper environ 24h puis faites cuire ou mangez cru, en assaisonnant en sucré ou salé suivant votre préférence.</li><li>Vous pouvez transformer cette recette en dosas en mixant et en laissant fermenter encore 12h afin que la pâte devienne mousseuse. (Voir tutoriel sur les fermentations asiatiques des céréales et légumineuses)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Amazake dessert de riz japonais au koji</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/eb/Amazak_.jpg' alt='Amazak .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette et photo de Bonobocuisine</li><li>L’amazaké est une boisson japonaise sucrée obtenue par la fermentation de riz (ou autre céréale) avec du koji. L’amazaké constitue à peu de choses près la première étape dans la production du saké.</li><li>La méthode classique pour faire de l'amazaké consiste à mélanger du koji avec une céréale cuite (dans certaines recettes il n’y a pas de céréale ajouté, c’est le cas dans celle du Noma) encore chaud dans de l’eau (certaines recettes n’apportent de l’eau qu’à postériori de la fermentation) et d’essayer de garder le tout aussi chaud que possible, autour de 60°C (pour stimuler l'activité des enzymes produites par le koji qu vont décomposer le riz en sucres rapides). Grâce à cette température et un ratio important de koji, les enzymes vont être proactives. Plus il y a de koji et plus le mélange est chaud (pas au delà de 60°C) et plus l'amazaké sera sucré rapidement.</li><li>Pour avoir un amazaké sucré il convient de suivre la procédure suivante :<ul><li>1 volume de koji pour 1 volume de céréale et 2 volumes d'eau</li><li>(optionnel) Mixer pour augmenter la surface de contact</li><li>Maintenir à 55-60°C pendant 10-14h pour développer le koji</li><li>Conserver au frais une fois refroidi. Une fois au frigo le processus de fermentation continue mais au ralenti. Si vous le conservez longtemps il risque de devenir alcoolisé (ce qui n'est pas forcément une mauvaise chose).</li></ul></li><li>Pour avoir un amazaké acidulé, aussi appelé lactique, il convient de suivre la méthode suivante :<ul><li>1 volume de koji pour 1 volume de céréale et 4 volumes d'eau</li><li>Mixer (optionnel)</li><li>Maintenir à 55-60°C pendant 10 à 14h,</li><li>Filter et maintenir à température ambiante pendant une semaine.</li><li>Conserver au frais.</li></ul></li><li>Pour un amazaké alcoolique (type cidre) :<ul><li>1 volume de koji pour 1 volume de céréales et 3 volumes d'eau</li><li>Mixer et maintenir à 60°C pendant 6-8h</li><li>Filtrer et ajouter une levure de chardonnay</li><li>Stopper la fermentation assez tôt pour conserver des sucres</li></ul></li><li>Remarques :<ul><li>Le liquide pour fermenter le koji n'a pas besoin d'être nécessairement de l'eau, on peut le remplacer (tout ou en partie) par du jus de pomme par exemple.</li><li>Concernant les céréales il faut plus globalement utiliser un ingrédient riche en amidon (cela fonctionne avec de la patate douce cuite par exemple, de la chataigne...)</li><li>Il est possible d'aromatiser l'amazaké en sucré ou en salé (ex : gingembre, cacao, cannelle, cardamome, melon, pomme, ciboulette...). L'assaisonnement se fait après la fermentation.</li></ul></li><li>Comment maintenir à 60°C?</li><li>Bien qu’il soit possible de produire un amazaké à température ambiante, il est préférable de maintenir la température autour de 60°C afin de favoriser une réaction où les enzymes transforment les amidons en sucres plus simples. En somme le résultat sera plus constant.<ul><li>L’incubateur : si vous disposez d’un incubateur (stype Brod and Taylor), il vous suffit de mettre le mélange dans un plat ou un bocal, et de le laisser chauffer à 60°C.</li><li>Le cuiseur à riz : si vous diposez d’un cuiseur à riz, déposez le mélange dedans et laissez le cuiseur sur le mode “maintien au chaud.” L’un des meilleur résultat que j’ai pu obtenir.</li><li>La yaourtière : bien que je n’ai jamais essayé, il est possible de maintenir une température globalement favorable avec une yaourtière, il faudra laisser le mélange un peu plus longtemps pour atteindre un taux de sucre idéal.</li><li>Le temps : Nakamura, un auteur amateur, propose de faire chauffer la mixture à 60°C et verser le tout dans une bouteille ou un bocal hermétique stérélisé en amont (bouillu par exemple). Il faut ensuite laisser reposer 8 jours. L’idéal ici est d’éviter une contamination par des bactéries lactiques ou des levures, pour éviter que le sucre ne soit transformé.</li><li>Le thermos : si vous disposez d’un thermos efficace, déposez la mixture chauffée à 60°C dans le thermos que vous aurez fait chauffer en amont. Couvrez d’un linge pour essayer de maintenir la chaleur autant que possible.</li></ul></li><li>Utilisations : Une fois fermenté, l'amazaké a une texture proche du riz au lait, si vous souhaitez une texture plus crémeuse ou liquide vous pouvez le mixer ou bien le filtrer et récupérer le jus. L’amazaké peut être consommé tel quel et est merveilleux ainsi, mais on peut l’intégrer facilement à plein de cuisines différentes :<ul><li>Le filtrer et le faire réduire pour en faire un sirop</li><li>Remplacer l’eau d’un pain ou le lait d’une brioche par ce dernier pour apporter des saveurs supplémentaires et une coloration plus marquée</li><li>S’en servir comme marinade même si c’est différent et moins marqué que le shio koji.</li><li>Globalement remplacer le lait dans les recettes par de l’amazaké, ou s’en servir pour démarrer des fermentations (notamment pour des crêpes ou pancakes)</li><li>Les possibilités sont nombreuses!</li></ul></li><li>Variante de l'amazaké avec du koji noir (la souche Aspergillus luchuensis var awamori) par Ferment'Nation. Teaser : boisson noire au gout de jus de fruit similaire au jus de pamplemousse!</li><li>Plus d'informations sur cette souche de koji ici.</li><li>Variante de l'amazaké avec de l'avoine au lieu du riz, recette de Ferment'Nation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Jiuniang : dessert de riz fermenté chinois au levain de riz</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/de/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_jiuniang_riz_ferment_sucr_chinois.jpg/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_jiuniang_riz_ferment_sucr_chinois.jpg' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan jiuniang riz ferment sucr chinois.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cliquez ici pour voir l'excellent live d'information et recette par Ferment'Nation à propos du Jiuniang sur le groupe Fermentation Maison.</li><li>Le Jiuniang est un dessert de riz fermenté chinois doux, sucré et contenant peu d'alcool (car la fermentation est arrêtée assez tôt). C'est donc un dessert qui est autorisé pour les enfants.</li><li>La principale différence entre le jiuniang et l'amazaké est le ferment. Pour l'amazaké il s'agit des enzymes du koji, donc une souche particulière de moisissure qui a été sélectionnée et que l'on cherche à garder unique. Pour le jiuniang on utilise une sorte de levain de riz, de la farine de riz gluant qui a été mélangé à des plantes (notamment de la renouée poivre d'eau) et qui va fermenter une première fois en développant une association complèxe de bactéries et de levures sauvages. Le koji est souvent réalisé en laboratoire car la souche microbienne est isolée, elle est pure, il n'y a qu'une seule espèce. Le levain de riz est, comme le levain classique, plutôt réalisé de manière traditionnelle donc sa composition complèxe change d'un endroit à un autre et évolu au fil du temps pour s'adapter à son environnement. Pour inoculer son riz afin de réaliser un jiuniang on peut acheter sur internet une boulette de levain de riz, on les appelle Qu (prononcée "chu"), c'est le terme générique pour parler de ferments chinois. Comme un levain, on garde donc un peu de Qu que l'on alimente pour l'utiliser et inoculer les prochaines tournées. Pour plus de détails sur les différents Qu possibles, je vous invite à regarder le live à 10min.</li><li>Enfin, autre différence, la fermentation du Jiuniang se fait à température ambiante, pas besoin de chauffer à 60°C.</li><li>Ingrédients :<ul><li>1 kg de riz, le riz gluant donne un résultat plus sucré</li><li>2 boulettes de Qu, ferment de levain de riz . Ici le lien vers le Qu utilisé par Sébastien, d'une boutique européenne.</li><li>De l'eau à température ambiante</li><li>Passoire</li><li>Casserole</li><li>Plat</li><li>une couverture (film plastique alimentaire ou beewrap)</li></ul></li><li>Recette :<ul><li>Rincer le riz pour éliminer la poudre d'amidon qui risque de faire coller les grains entre eux. Mieux vaut rincer plusieurs fois jusqu'à ce que l'eau de rinçage soit claire.</li><li>Faire tremper le riz permet de l'hydrater et de le cuire à la vapeur beaucoup plus vite.</li><li>Laisser égoutter environ 40 min pour éliminer les gouttes d'eau entre les grains de riz, cela évite le côté collant.</li><li>Cuire à la vapeur. Pour éviter qu'il passe dans les mailles du panier il est utile de déposer un tissu (coton) au fond du panier. Cuire pendant 20-25 min, le repère est de pouvoir le couper avec l'ongle du doigts sans qu'il colle à lui-même. S'il colle il est utilisable mais cela rend moins bien.</li><li>Etalez le riz sur le tissus pour faciliter le refroidissement.</li><li>Une fois qu'il est à température ambiante le déposer dans un plat large, type tare ou plat à gratin. L'idée est de pouvoir étaler le riz sans avoir trop d'épaisseur, 3-4 cm.</li><li>Réduire en poudre le Qu (au pilon ou au mixeur) afin de le répartir facilement sur le riz. Le dosag est approximatif, environ 2 boulettes pour 1kg de riz.</li><li>Ajouter environ 100 ml d'eau. Le riz va absorber l'eau et cela va permettre aux moisissures du Qu de s'activer sans être noyée sous l'eau, en milieu aérobie (avec oxygène).</li><li>Couvrir d'un film plastique ou au beewrap et laisser fermenter 36-72h à entre 20-30°C. Le riz qui semblait assez sec va devenir pâteux-liquide car les sucres complexes ont été découpés en sucres rapides. Le résultat est naturellement très sucré et avec ue saveur plus complèxe que l'amazaké.</li></ul></li><li>On peut consommer le jiuninang tel quel à la petite cuillère, comme une sorte de riz au lait. Ou bien on peut le mixer et ajouter de l'eau pour en faire une texture plus onctueuse. On peut aussi le passer à l'étamine pour consommer le liquide d'un côté et le solide d'un autre.</li><li>Conservation : au frigo, en limitant l'exposition à l'oxygène pour éviter une sporulation des moisissures. Il se conserve environ 1 semaine.</li><li>Refermentation : On peut faire une seconde fermentation pour obtenir un dessert plus alcoolisé. On ajoute alors un peu d'eau et on place le jiuniang dans un bocal pour avoir une fermentation anaérobie, où les levures s'activent.</li><li>Voici plusieurs idées d'utilisation par Laly Mazeres (photos ici, plus de détails sur le post facebook).<ul><li>en verrine, en mixant le jiuniang et en deposant en topping du granola ou des fruits</li><li>en faisant des kiwi farcis en dessert</li><li>comme boisson alcoolisée, type liqueure de dessert</li><li>en crème glacée avec des clémentines lactofermentées</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Boza "yaourt" de céréale d'Asie mineure</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/93/Boza_yaourt_c_r_ale_et_levain.jpg/800px-Boza_yaourt_c_r_ale_et_levain.jpg' alt='Boza yaourt c r ale et levain.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/05/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_boza_torr_fi_.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_boza_torr_fi_.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan boza torr fi .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Informations, photo et recette de Laly Mazeres</li><li>La boza est une boisson fermentée à base de graines de céréales. Connue des peuples d'Asie Mineure, Xénophon (historien et philosophe de le Grèce Antique) en parlait en précisant que la conservation se faisait par enfouissement dans des pots en terre.</li><li>Cette boisson est très appréciée dans les Balkans et en Turquie. L'histoire raconte qu'elle est originaire de la Turquie puis a atteint les Balkans par la suite.</li><li>Les céréales utilisées varient selon les situations géographiques. On peut utiliser du boulghour, millet, orge, etc.<ul><li>Ingrédients ( 1 dose = 1 pot de yaourt en verre) :</li><li>Boulghour (gros grains pour moi) : 1 dose</li><li>Eau déchlorée (pour la cuisson) : 6 doses</li><li>Levain (actif pour moi) : 1càs bien pleine (50g)</li><li>Cannelle en poudre : 1càs</li><li>Vanille (facultatif) : 1 gousse</li></ul></li><li>Protocole :</li><li>1/ Faire tremper les graines dans un grand volume d'eau pendant 24h</li><li>2/ Jeter l'eau de trempage et cuire les graines avec la gousse de vanille fendue en 2 dans le sens de la longueur. Il faut qu'elles soient bien cuites (cela a nécessité 1h30 pour moi). Les graines n'auront pas absorbé toute l'eau</li><li>3/ Laisser refroidir complètement. Bien racler la gousse de vanille pour garder uniquement les graines dans la préparation puis mixer jusqu'à avoir une consistance bien lisse et homogène</li><li>4/ Ajouter le levain et la cannelle en poudre. Bien mélanger puis couvrir (avec un torchon ou une assiette posée dessus)</li><li>5/ Laisser fermenter à température ambiante pendant 3j. Mélanger une fois par jour. Vous pouvez goûter : dès le 1er jour après fermentation, la préparation a une saveur légèrement acidulée qui va s'intensifier un peu plus les 2 jours suivants.</li><li>6/ Au bout des 3 jours de fermentation, récupérer 1 dose de la boisson fermentée qui vous servira pour ensemencer la tournée suivante (dans ce cas ne plus ajouter de levain). Mettre le reste au frais.</li><li>7/La boisson se déguste fraîche. Au moment de servir, saupoudrer avec un peu de cannelle en poudre. Traditionnellement, la boisson s'accompagne de graines de pois chiche. Personnellement je la bois telle qu'elle et c'est déjà bien goûteux mais vous pouvez bien sûr rajouter du sucre/ miel/ sirop d'érable/ sirop de chéong</li><li>NOTES :</li><li>- J'ai rajouté volontairement de la cannelle en poudre avant fermentation car cela révèle d'avantage sa saveur, bien plus qu'en saupoudrant juste avant de servir.</li><li>- Dans mon tout premier essai, j'ai mis du sucre avant fermentation (5 càs exactement) : j'ai obtenu une boisson alcoolisée (Jack Daniel's pouvait se rhabiller ).</li><li>- La boisson est crémeuse, mais si vous la préférez un peu plus liquide il faudra rajouter une dose d'eau pour la cuisson. Pour votre premier essai, je vous recommander de cuire avec 8 doses d'eau puis de récupérer une partie de l'eau de cuisson avant de mixer et rajuster la texture en rajoutant plus ou moins d'eau de cuisson. C'est bien plus goûteux de rajouter de l'eau de cuisson plutôt que de l'eau.</li><li>- J'ai refait un essai en mettant du sucre avant fermentation puis en rajoutant plus d'eau de cuisson dans le but d'obtenir une boisson alcoolisée plutôt liquide que crémeuse. J'ai servi ça bien frais en apéro et ce fut très apprécié de mes convives.</li><li>Remarques à partir du retour d'expérience de Ferment'Nation :</li><li>Certaines recettes indiquent qu'avant fermentation la farine ou le céréale est torréfié. La torréfaction de la farine va transformer l’amidon présent dans le millet en dextrine, un glucide dont vont se nourrir les levures, et qui va donner à la boisson son parfum et sa couleur typique (c’est le même processus qui donne son parfum et sa couleur à la croûte du pain). Puis du sucre et du levain sont ajoutés pour lancer la fermentation. Vous pouvez découvrir cette recette dans le livre Boissons fermentées naturelles de Marie-Claire Frédéric (créatrice du blog NiCruNiCuit, référence française dans le domaine des fermentations).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Faire du fromage à partir de céréales</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Fromage_de_c_r_ales_Kechek_el_fouqara.png/800px-Fromage_de_c_r_ales_Kechek_el_fouqara.png' alt='Fromage de c r ales Kechek el fouqara.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette et photo du kechek el fouqara, "fromage du pauvre" à base de boulgour (blé) de Ferment'Nation.</li><li>Etonnement, c'est un substitut intéressant au fromage, la fermentation lui donne des notes de vieux fromage de chèvre, comme le kechek.</li><li>La recette vient de la Sentinelle Slow Food Terra Madre, et est partagée par Sandor Ellix Katz dans son magnifique livre « Fermentations ! ».</li><li>On commence par mélanger un volume de boulgour avec un peu plus d'un volume d'eau dans un bol, qu'on recouvre d'un tissu et qu'on laisse fermenter à température ambiante.</li><li>On mélange tous les jours. Ça va rapidement former une pâte élastique, à l'odeur très prononcée. Vous allez voir qu'une flore blanche va se former sur la surface, c'est normal, intégrez-la tous les jours au mélange, la pâte va s'acidifier, ce qui va la protéger des pathogènes.</li><li>Après trois semaines de fermentation, on y mélange des épices séchées et du sel pour lui donner du goût : ail en poudre, carvi, cumin, sauge, thym, romarin, nigelle, poivre, piment.. n'hésitez-pas à forcer un peu sur les épices, car malgré son arôme de vieux fromage, la pâte n'a pas beaucoup de goût.</li><li>Enfin, on en fait des boules et on les conserve dans l'huile d'olive, au moins deux semaines, le temps qu'elles s'en imprègnent, jusqu'à six mois.</li><li>Le kechek el fouqara se tartine sur du pain, comme le fromage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Faire du fromage de glands</strong><p><strong>Étapes :</strong></p><ol><li>Recette de Ferment'Nation</li><li>Il est tout à fait possible de ramasser des glands en forêt pour les faire fermenter et les transformer en différents produits délicieux : un « café », un croisement entre le thé et le café, sans caféine ; des fromages/pâtés végétaux ; du miso (à suivre), et bientôt du pain. C'est beaucoup de travail, mais ça en vaut la peine !</li><li>Les glands blanchis sont insipides (même si ils ont une bonne odeur de caramel), mais quand ils sont bien préparés, ils peuvent donner de très bons produits.</li><li>La première étape consiste à leur retirer leurs tanins toxiques et amères (qui peuvent d'ailleurs servir pour teindre des tissus!). Il existe apparement une méthode qui n'utilise que de l'eau froide (qui demande apparement beaucoup de temps), mais j'ai opté pour celle à l'eau bouillante.</li><li>On commence par retirer leur enveloppe extérieure (c'est plus facile si on les coupe en deux). On les fait ensuite tremper (lacto-fermenter, mais sans sel) dans de l'eau pendant 3 ou 4 jours, en changeant l'eau tous les jours, ce qui permet d'aider à retirer leur fine peau (très amère).</li><li>Ensuite, on les fait blanchir. C'est cette étape qui permet de réellement retirer les tanins des glands et leur peau. On les met dans de l'eau froide, qu'on porte à ébullition. Quand l'eau devient très foncée, on la remplace par de l'eau bouillante (très important, si l'eau est froide, on fixe les tanins et ce n'est plus possible de les retirer), et on continue jusqu'à ce que les glands ne soient plus amers (6 ou 7 changements d'eau environ). Il ne faut pas hésiter à remuer vigoureusement avec une grande cuillère pour aider les peaux à se détacher.</li><li>Transformation en « fromages » végétaux : j'ai plus ou moins suivi la méthode de @pascalbaudar , partagée succinctement ici, mais je vous invite à vous procurer son livre Wildcrafted Fermentation (en anglais) pour plus de détails :</li><li>On mixe les glands refroidis avec un starter (du jus de choucroute par exemple), des « exhausteurs de goût » (que du naturel !), du sel et un peu de sucre, on les presse dans un tissu, puis on les recouvre d'un mélange d'épices (ici zaatar, curry et herbes séchées) avant de les faire sécher.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Recette de mozzarella et feta végétale</strong><p><strong>Étapes :</strong></p><ol><li>A partir d'un fromage frais type ricotta réalisé avec l'une des recettes ci-dessus vous pouvez mettre en forme le fromage afin qu'il ressemble à de la mozzarella.</li><li>Pour avoir une texture plus ferme je vous conseille d'ajouter un peu d'okara à votre lait végétal. Si nécessaire (ou en absence d'okara) vous pouvez saupoudrer un petit peu de farine. La farine d'amidon de pommes de terre ou de maïs sont sans gluten et ont un fort pouvoir épaississant. Pour avoir une texture un peu plus cahoutchouteuse de fromage vous pouvez utiliser 1 cuillère à soupe d'agar-agar dissoute dans 50ml d'eau chaude (attention l'agar-agar doit être ajoutée chaude à votre fromage pour que son action gélifiante fonctionne). Si l'effet épaississant est visible instantanément avec les farines, il ne se constate qu'après refroidissement pour l'agar-agar. Si la consistance ne vous plait pas, il est toujours possible de réchauffer et ajuster la farine ou l'agar-agar et refaire les étapes de mises en formes.</li><li>Verser votre lait végétal ou votre crème (lorsqu'il y a plus d'okara) dans une casserolle, chauffer doucement pour épaissir en remuant bien pour ne pas accrocher. Lorsque la consistance devient légèrement collante et épaisse sortir la casserolle du feu. Si nécessaire (ou en absence d'okara) vous pouvez saupoudrer un petit peu de farine ou utiliser un peu d'agar-agar.</li><li>--> pour la mozzarella : Préparez un bol d'eau glacée. En utilisant une cuillère à soupe ou une cuillère à boules de glace formez des boulettes de fromage et plongez-les délicatement dans l'eau glacée. Le changement de température va légèrement figer les boulettes dans cette forme, en affermissant l'extérieur tout en gardant le centre crémeux.</li><li>--> Pour la feta : Déposez le fromage encore tiède dans un récipient rectangulaire. Pour épaissir encore le fromage il est possible de le presser légèrement avec un poids, dans ce cas un linge entre le fromage et le récipient facilite l'égouttage et la récupération du fromage. Laissez refroidir tranquillement ou bien déposez ce plat rectangulaire dans une bassin d'eau glacée pour accélérer la prise. Découpez ensuite au couteau en petits cubes.</li><li>Vous pouvez consommer vos mozzarella/feta végétales immédiatement ou les conserver quelques jours dans de la saumure (25g de sel pour 50cl). Vous pouvez remplacer la saumure de conservation par une saumure de lactofermentation pour donner un léger arôme aux boulettes.</li><li>Une autre recette de mozzarella avec une texture un peu plus ferme (mais plus d'ingrédients) créé par La Petite Okara.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Recette de camembert végétal</strong><p><strong>Étapes :</strong></p><ol><li>D'après la recette de Fairment</li><li>Ingrédients :<ul><li>200g d'oléagineux</li><li>140 ml d'eau</li><li>1 cuillère à soupe de paillettes de levure de bière (optionnel)</li><li>1 cuillère à soupe de miso (optionnel)</li><li>1 cuillère à soupe de transglutaminase</li><li>1/4 cuillères à café de ferment mésophile (ici en poudre)</li><li>1/4 cuillères à café de culture de Penicillium candidum</li><li>2 cuillères à café de sel</li></ul></li><li>Faire tremper les graines d'oléagineux pendant au moins 12h puis retirer la peau et les rincer. Pour "stériliser" les graines vous pouvez les faire tremper pendant 1 min dans de l'eau bouillante (optionnel).</li><li>Réduire en purée les graines avec 140 ml d'eau (ou de quoi les recouvrir et donner une texture crémeuse). Si désiré, ajoutez pour le gout les paillettes de levure de bière et/ou le miso.</li><li>Verser la crème dans un bocal pouvant fermer hermétiquement (préférablement avec un joint), ajouter la transglutaminase et bien mélanger. Lorsque la température est inférieure à 35°C ajouter le ferment et la pénicilline, bien mélanger. Fermez le bocal et laisser fermenter environ 6h à température ambiante.</li><li>Egouttez le fromage dans une passoire recouverte d'un linge ou directement dans un moule de forme camembert. Plier le linge par-dessus le fromage et si besoin pressez légèrement avec un poids. Placez le fromage dans une soucoupe, surélevé, afin que le liquide puis s'égoutter facilement. Laisser fermenter et égoutter pendant 12h à température ambiante.</li><li>Retirer le moule et le tissu et placer sur un tapis avec trous type tapis à bambous pour réaliser des sushis. Saupoudrez les fromages avec du sels sur les deux faces puis mettre sur le tapis au réfrigérateur pour l'assécher pendant 6-8h. Retournez le fromage toutes les 3-4h afin que l'asséchement soit similaire sur les deux faces.</li><li>Pour faire maturer le fromage, placez-le ensuite dans une boite entrouverte dans le compartiment le plus "tiède" du frigo ou dans une cave, car l'affinage est meilleure entre 7°C et 12°C. Maturer en vérifiant tous les 2-3 jours le bon déroulé du processus. Lors de la vérification de possibles départs de moisissures indésirables vous pouvez retourner le fromage et humidifier légèrement le fromage tout en retirant la condensation de la boite.</li><li>Au bout de 2-4 semaines le camembert végétal est entièrement recouvert de penicilline et la fermentation active est complète.</li><li>Suivant votre préférence vous pouvez le consommer tel quel ou le laisser maturer en bas du frigo pour encore 2-3 semaines afin d'avoir un gout plus prononcé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Crème de Roquefort version pâte d'amande au koji</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/48/P_te_d_amande_koji_fa_on_roquefort.png/800px-P_te_d_amande_koji_fa_on_roquefort.png' alt='P te d amande koji fa on roquefort.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>D'après l'expérience de Ferment'Nation, c'est la recette de fromage végétal qui ressemble le plus à un fromage animal (et il en a testé beaucoup).</li><li>Pour apprendre à faire votre koji vous-même regardez ce tutoriel : Aliments fermentés - fermentations asiatiques de céréales, légumineuses et variations</li><li>On fait d'abord tremper 150g d'amandes une nuit, puis on les fait bouillir rapidement pour pouvoir leur retirer la peau facilement.</li><li>On retire leur peau, puis on les mixe avec 100g de koji frais et 25g de de sel. On met le tout dans un bocal à joint, on ferme, et on laisse fermenter à température ambiante pendant 5 jours. Puis on a conserve au frais. C'est aussi simple que ça !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Misozuke - Fromage de tofu affiné au miso façon brie affiné</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/db/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_misozuk_.png/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_misozuk_.png' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan misozuk .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette illustrée et en vidéo de Révolution Fermentation.</li><li>Cette recette se base sur une technique de fermentation japonaise. Le miso est appliqué sur le tofu et laissé à fermenter plusieurs semaines au frais.</li><li>Pour apprendre à faire votre miso vous-même regardez ce tutoriel : Aliments fermentés - fermentations asiatiques de céréales, légumineuses et variations</li><li>Sous l’action des enzymes et des microorganismes du miso, le tofu devient crémeux, et son goût neutre devient riche et complexe, avec des notes umami et légèrement fromagées. Un vrai régal!</li><li>Si on garde le temps de fermentation plus court, on obtient un fromage plus ferme qu’on peut trancher et manger sur des craquelins. Une fermentation plus longue, quant à elle, rend le tofu crémeux et facile à tartiner.</li><li>Pour voir des résultats, laissez fermenter au moins 2 semaines. Le tofu sera encore ferme, et pourra se couper en petites tranches. Après un mois et demi, le tofu deviendra plus crémeux et riche. On pourra encore le trancher, et l’étaler sur des craquelins. Après 3 mois, le tofu sera très crémeux et aura la texture d’un fromage à la crème.</li><li>Ingrédients :<ul><li>454 g tofu ferme ou extra-ferme</li><li>250 ml miso</li></ul></li><li>Pour un goût plus délicat, prenez un miso blanc (jeune miso) ou un miso de pois chiches.</li><li>Pour un goût plus riche, fort et complexe, utilisez un miso rouge ou un miso d’orge. Plus le miso est âgé, plus le «fromage» goûtera fort.</li><li>Note: Si vous utilisez un miso maison ou un miso où l’on voit encore des morceaux de légumineuses, réduisez-le en purée lisse avec un mélangeur à immersion ou un mixeur afin de faciliter l’enrobage.</li><li>Etapes :<ul><li>Envelopper le tofu dans une serviette propre et mettre dans une assiette. Poser une deuxième assiette par-dessus. Déposer des objets lourds, comme des boîtes de conserve, en guise de poids (attention à la stabilité de votre construction).</li><li>Presser le tofu de 12 à 24 heures. Changer la serviette au besoin, si elle devient trop mouillée.</li><li>Retirer le bloc de tofu de la presse. Éponger les résidus d’eau. Envelopper le bloc de 1 ou 2 épaisseurs d’étamine (coton à fromage).</li><li>À l’aide d’une petite spatule ou d’un couteau, badigeonner le tofu de miso. Toutes les parois du tofu doivent être recouvertes de miso. Aucun bout de tofu ou d’étamine ne doit être visible.</li><li>Déposer une ou deux feuilles de papier essuie-tout dans le fond du contenant hermétique. Poser le bloc de tofu par-dessus. Refermer le contenant et mettre au réfrigérateur.</li><li>Laisser fermenter au frais de 2 à 6 semaines.</li><li>Chaque semaine, ouvrir le contenant et changer les feuilles de papier essuie-tout si elles sont trop imbibées. L’humidité ne doit pas s’accumuler dans le contenant. Si une partie du miso se détache, en appliquer de nouveau pour que le tofu soit bien enrobé.</li><li>Lorsque vous souhaitez consommer votre tofu, raclez délicatement la couche de miso et retirez l’étamine --> vous pouvez tout à fait réutiliser le miso, récupérez-le dans un pot!</li></ul></li><li>Voici le retour d'expérience (en photo) de La Fermentation De Philou :</li><li>"J'ai enveloppé mon morceau de tofu d'une gaze alimentaire, puis j'ai recouvert la suŕface de tous côtés avec du miso (de pois chiche). J'avais pris soin auparavant de presser le tofu entre deux planche à découper pendant quelques heures pour lui faire perdre de l'eau.</li><li>J'ai placé le tofu dans une boite que j'ai mise au frigo ; j'avais tapissé le fond de la boîte avec de l'essuie-tout pour que ce dernier absorbe l'éventuel liquide ; au bout de trois semaines, j'ai changé le papier.</li><li>Pendant deux mois, les enzymes et microbes du miso ont transformé le tofu en une pâte tendre, odorante, au goût de brie affiné. Je suis bluffé car c'est la première fois que je trouve l'équivalent d'un fromage de lait animal en intensité et richesse de saveurs et même en texture cremeuse ! "</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - Idées pour aromatiser les produits laitiers végétaux</strong><p><strong>Étapes :</strong></p><ol><li>Il existe de nombreuses possibilités pour aromatiser ses produits laitiers végétaux.</li><li>Hydrolats : on peut utiliser des hydrolats (facilement réalisables à la maison) pour remplacer tout ou une partie de l'eau de mixage des laits végétaux et ainsi parfumer délicatement ou fortement les yaourts et fromages. Des hydrolats floraux de rose, lavande sont superbes en yaourts, ceux au thym, romarin ou basilic donnent de délicieux fromages!</li><li>Les saumures de lactofermentations : en réutilisant un peu de saumure d'une lactofermentation d'au moins un mois (pour avoir une bonne charge de microorganisme et une belle acidité) on peut récupérer des aromes complèxes qui donneront un gout unique au fromage. Cela peut même donner des couleurs (lacto de betterave, choux ou carotte). Shirabio aime particulièrement utiliser la saumure de lactofermentation de tomates/ail/basilic ou thym, celles à base de carotte ou celles de champignon au miso. Suivant la force du gout et la teneur en sel souhaitée dans le produit laitier on peut remplacer tout ou partie de l'eau de mixage par cette saumure.</li><li>Miso et autres ferments asiatiques : les ferments asiatiques comme le miso ou le koji sont en général assez afinés avec des saveurs très fortes. En ajouter un petit peu à votre produit laitier va donner un gout umami et faciliter la fermentation. Pour la dose, se référer à l'étiquette de chaque ferment.</li><li>Epices, aromates frais ou secs : le plus classique. Il est possible d'aromatiser avant la fermentation ou bien au moment de la mise en forme (dans la pâte ou en roulant le fromage dans le produit pour l'aromatiser). Cela donne d'excellents résultats et visuellement des produits très variés avec différents poivres, poivrons, piments, herbes, épices colorées.</li><li>Sirops, confitures, chutneys : plutôt pour des produits sucrés mais une bonne confiture ou un chutney (confiture aigre-douce légèrement salée) de piment, de fruit... Peuvent révéler le gout d'un fromage!</li><li>Graines : tout comme les herbes il est possible d'utiliser des graines pour parfumer et décorer ses produits laitiers. Je pense notamment aux graines de sésame, d'anis, de carotte sauvage (attention à être certain.e d'identifier la plante!), de fenouil, coriandre...</li><li>Paillettes de levure de bière : certaines personnes aiment le gout légèrement fumé et fermenté des levures de bières. Ajouter des paillettes à votre préparation va non seulement l'enrichir (sans faciliter la fermentation car les levures en paillettes sont mortes) mais également lui donner un joli gout, voir eune couleur ambrée.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - Fromage végétal pané et fondu</strong><p><strong>Étapes :</strong></p><ol><li>Il est intéressant de cuisiner ses fromages dans des plats chauds. Par exemple un tofu fera une excellente fausse mozzarella qui pourra même fondre à la cuisson.</li><li>Cette recette de Cul de Poule présente une version express de fromage à fondre (idéal en raclette, en gratiné, en toast et sur les pizza) à partir de fécule/farines et tempeh.</li><li>Pour faire vos fromages végétaux imitation chèvre pané il suffit de les façonner puis de les rouler dans un mélange eau-farine-chapelure puis de les faire dorer à la poële ou rotir au four. Pour le côté chèvre vous pouvez utiliser un fromage végétal un peu fort en gout.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Dessert de koji de riz</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/46/Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_crunch_koji1.jpg/800px-Aliments_ferment_s_-_k_fir_de_laits_v_g_taux_et_fromages_vegan_crunch_koji1.jpg' alt='Aliments ferment s - k fir de laits v g taux et fromages vegan crunch koji1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Recette et photos de Laly Mazeres</li><li>Crunch de koji de riz</li><li>Le koji de riz remplace merveilleusement bien le riz soufflé et apporte des enzymes qui, je le rappelle, ont un rôle essentiel pour rendre de nombreux nutriments assimilables par notre organisme.</li><li>Le capital enzyme varie d'une personne à une autre selon le mode alimentaire, diminue avec l'âge, etc etc et l'alimentation en est la source principale.</li><li>Au-delà de 60°C les enzymes sont détruites. Autant dire, les aliments cuits n'en apportent donc pas, quant aux aliments stérilisés n'en parlons même pas!</li><li>Pour cette recette il faudra :<ul><li>Koji de riz : 150g</li><li>Huile de coco : 4 càs bien pleine</li><li>Cacao cru en poudre : 2 càs</li><li>Résidu séché de crème de clémentine corse lacto-fermentée : 1cc (facultatif)</li><li>Sucre : au goût</li></ul></li><li>L'idée c'est que l'huile de coco, en figeant, va colmater les grains de koji et permettre d'avoir quelque chose de compact qui tienne.</li><li>1/ Mélanger l'huile de coco, le cacao cru et le sucre jusqu'à avoir quelque chose de bien homogène ayant la consistance d'un beurre mou.</li><li>2/ Dans un récipient mélanger le koji et le résidu séché de clémentines LF. Rajouter 1 bonne càs de la préparation précédente puis bien mélanger.</li><li>3/ Utiliser un carré à pâtissier pour la mise en forme. Bien tasser en remplissant. Mettre au frigo 1h pour permettre à la préparation de figer et de colmater les grains de koji.</li><li>4/ Tartiner le dessus avec la préparation au cacao cru puis remettre à nouveau 1h au frigo</li><li>5/ Démouler puis tartiner l'autre face.</li><li>6/ Remettre au frigo, idéalement une nuit.</li><li>7/ Découper en morceaux de la taille de votre choix et servir.</li><li>Une idée gourmande et saine pour accompagner un café gourmand par exemple ou pour une petite collation avec une infusion</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

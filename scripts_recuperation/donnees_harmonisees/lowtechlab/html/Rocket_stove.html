@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rocket stove</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Rocket stove</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/6/60/Rocket_stove_IMG_20190613_212208.jpg/800px-Rocket_stove_IMG_20190613_212208.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Rocket stove simple à partir de boîtes de conserve (dimensions totales : 45x25 cm)</div>
+        
+      </div>
+    
+    
+      
+        <p>Le rocket stove est un type de foyer à bois utilisé pour la cuisson des aliments ou comme moyen de chauffage. Sa structure typique forme un L, composé d'un orifice horizontal d'alimentation permettant l'arrivée d'air et la mise en place du combustible, d’une chambre de combustion et d’une cheminée verticale d’évacuation isolées. Cette isolation du foyer permet une meilleure combustion du bois qui produit, alors, un son de fusée, d’où l’appellation de cette invention.</p>
+      
+        <p>La différence entre les deux types d’utilisation se traduit dans le choix du matériau mis entre le foyer et la paroi extérieure. Dans le cas d'une utilisation pour la cuisson, la chaleur doit être concentrée en sortie de cheminée ce qui nécessite une bonne isolation entre le foyer et la paroi extérieure. A l'inverse, dans le cas d'une utilisation pour le chauffage (poêle), la chaleur doit être stockée et diffusée vers les parois latérales.</p>
+      
+        <p>Toutefois, cela n'empêche pas d'utiliser un rocket stove isolé avec de la terre pour de la cuisson, il sera juste moins performant.</p>
+      
+        <p>L'utilisation d'un mélange terre-paille pourrait également s'envisager si le mélange est bien dosé en terre pour protéger la paille des hautes chaleurs.</p>
+      
+        <p>Le design du rocket stove présenté dans ce tuto est inspiré de la page YouTube suivante : OpenSourceLowTech tenue par un Daniel Connell. Vous pouvez retrouver la description de son tutoriel grâce au lien ci-dessous.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0-5 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Rocket_stove" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Rocket_stove</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Terre (conducteur) ou vermiculite/perlite (isolant)</li><li>7 boîtes de conserve vides, dont : 2 Grandes de 4,22 kg (23,5x15,5 cm) 2 Standard 800 g (11,5x10 cm) 3 Petites 400 g (10,5x7,5 cm)</li><li>2 Grandes de 4,22 kg (23,5x15,5 cm)</li><li>2 Standard 800 g (11,5x10 cm)</li><li>3 Petites 400 g (10,5x7,5 cm)</li><li>1 couvercle supérieur de Grande boîte ou une vieille râpe en métal (pour en faire un cendrier)</li><li>un ruban adhésif aluminium [optionnel]</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Cisaille à tôle</li><li>Pince coupante</li><li>Pince plate</li><li>Ouvre-boîte</li><li>Perceuse ou Chignole + foret métal ou Marteau + clou</li><li>Marqueur</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Vue Générale</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/0/03/Sch%C3%A9ma_du_fonctionnement_d%27un_rocket_stove.jpg' alt='Schéma du fonctionnement d'un rocket stove.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le rocket stove que nous allons construire est constitué de 7 boîtes de conserve.</li><li>- 2 standard horizontales [1] et [2], qui constituent la chambre de combustion primaire du foyer.</li><li>- 3 petites verticales [3], [6] et [7] qui constituent la cheminée.</li><li>- 2 grosses verticales [4] et [5] qui constitues l'enceinte extérieure.</li><li>La chambre de combustion primaire du foyer et la cheminée constituent ensemble la chambre de combustion interne du rocket stove.</li><li>Nous allons d'abord nous occuper de cette chambre de combustion interne, puis, assembler en même temps la cheminée et l'enceinte extérieure en rajoutant l'isolation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Chambre Interne (combustion) - Partie 1 : foyer</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e7/Rocket_stove_Image2.png/ia-f82daa2fda650271b482eb13213c2f15-px-Rocket_stove_Image2.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/c8/Rocket_stove_schema_entailles.png' alt='Rocket stove schema entailles.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Rocket_stove_P1000135.JPG/800px-Rocket_stove_P1000135.JPG' alt='Rocket stove P1000135.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5d/Rocket_stove_P1000106.JPG/800px-Rocket_stove_P1000106.JPG' alt='Rocket stove P1000106.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e2/Rocket_stove_P1000107.JPG/ia-144140fff034836c3b6b1ed2a1d8a7f8-px-Rocket_stove_P1000107.JPG.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/73/Rocket_stove_P1000108.JPG/ia-9309882da42a8f2e665d11c005f3bb9a-px-Rocket_stove_P1000108.JPG.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La chambre de combustion primaire du rocket stove, ou foyer, est schématisée par la première image.</li><li>Les matériaux et outils utilisés ici sont : deux boîtes standards, une petite et du fil de fer.</li><li>Étapes à suivre</li><li>1) Boîte standard extérieure [1]</li><li>A l’aide de l’ouvre-boîte, découper entièrement le fond d’une boîte standard afin d’en faire un tube.</li><li>Sur l’une des extrémités, faire 4 entailles d’environ 2 cm, également réparties sur le contour comme sur le schéma & la photo qui suit.</li><li>L’idée étant ensuite de repousser légèrement deux languettes vers l’intérieur, et deux vers l’extérieur afin de faciliter l’emboîtement avec la seconde boîte standard.</li><li>2) Boîte standard intérieure [2]</li><li>Sur la deuxième boîte standard, découper un tiers du fond (photo 4).</li><li>A l’aide de la pince coupante, entailler de la longueur de la pince la paroi latérale de la boîte au milieu de l’ouverture faite à l’ouvre-boîte. (photo 5)</li><li>A l’aide de la pince plate, enfoncer légèrement le fond de la boîte au niveau de l’encoche, puis replier les deux parties de la paroi dessus. Cette étape va permettre d’incliner la partie horizontale du foyer, afin de faciliter le ramassage des cendres. (photo 6)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Chambre Interne (combustion) - Partie 2 : cheminée</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Rocket_stove_Image1.png/ia-8e61d8625d2c3efb188f7e54b7fd8738-px-Rocket_stove_Image1.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Rocket_stove_P1000111.JPG/800px-Rocket_stove_P1000111.JPG' alt='Rocket stove P1000111.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d8/Rocket_stove_P1000112.JPG/800px-Rocket_stove_P1000112.JPG' alt='Rocket stove P1000112.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/28/Rocket_stove_P1000115.JPG/800px-Rocket_stove_P1000115.JPG' alt='Rocket stove P1000115.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/db/Rocket_stove_P1000116.JPG/800px-Rocket_stove_P1000116.JPG' alt='Rocket stove P1000116.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/20/Rocket_stove_P1000119.JPG/800px-Rocket_stove_P1000119.JPG' alt='Rocket stove P1000119.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’idée est de tracer sur la boîte standard intérieure [2] le pourtour de la première petite boîte qui va débuter le conduit de cheminée. Pour cela, insérer la boîte standard [2] dans la grosse boîte [4] afin de repérer l’inclinaison, et tracer au marqueur le contour. (3 photos)</li><li>Une fois le cercle tracé, sortir la boîte [2], percer un trou au milieu du cercle à l’aide de la perceuse montée d’un foret métal, de la chignole, ou du marteau + clou. A partir de ce trou, découper des triangles en forme de “pizza” sur tout le pourtour du cercle, afin de les replier comme des ailettes à l’aide de la pince plate pour faire passer la petite boîte [3].</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Chambre Interne (combustion) - Partie 3 : Assemblage foyer + cheminée</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Rocket_stove_P1000121.JPG/800px-Rocket_stove_P1000121.JPG' alt='Rocket stove P1000121.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/55/Rocket_stove_P1000123.JPG/800px-Rocket_stove_P1000123.JPG' alt='Rocket stove P1000123.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Rocket_stove_P1000124.JPG/800px-Rocket_stove_P1000124.JPG' alt='Rocket stove P1000124.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/13/Rocket_stove_P1000132.JPG/800px-Rocket_stove_P1000132.JPG' alt='Rocket stove P1000132.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Glisser maintenant la petite boîte [3] à l’intérieur, en veillant à garder l’angle de la figure 1 (visible sur la photo 2). Si l’ouverture n’est pas assez large, découper encore sur quelques millimètres les languettes, et les replier vers l’extérieur avec la pince plate. Une fois la petite boîte insérée d’environ 2 à 3 centimètres, cercler les languettes avec du fil de fer, et serrer en tournant à l’aide de la pince plate (3 photos).</li><li>Nous allons maintenant préparer les deux autres petites boîtes [6&7], mais nous les assemblerons plus tard. Il suffit, à l’aide de l'ouvre-boîte, d’enlever le fond des deux boîtes (photo 4). Nul besoin d’encoches supplémentaires, car elles s’emboîtent correctement l’une sur l’autre, et la terre (ou la vermiculite) maintiendra l’ensemble.</li><li>A la fin de cette étape, nous avons donc un assemblage comptant une boîte moyenne et une petite boîte [2+3], ainsi qu’une boîte moyenne [1]</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Chambre externe</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/6/6d/Chambre_externe.png' alt='Chambre externe.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/23/Rocket_stove_P1000127.JPG/800px-Rocket_stove_P1000127.JPG' alt='Rocket stove P1000127.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e1/Rocket_stove_P1000129.JPG/800px-Rocket_stove_P1000129.JPG' alt='Rocket stove P1000129.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/59/Rocket_stove_P1000130.JPG/800px-Rocket_stove_P1000130.JPG' alt='Rocket stove P1000130.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e5/Rocket_stove_P1000131.JPG/800px-Rocket_stove_P1000131.JPG' alt='Rocket stove P1000131.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Rocket_stove_Image2.jpg/800px-Rocket_stove_Image2.jpg' alt='Rocket stove Image2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Comme nous l’avons fait pour la cheminée interne, nous allons marquer la grande boîte externe [4] au marqueur à l’endroit où va venir s’insérer la partie horizontale d’entrée de bois & d’air [1]. Plaquer la boîte moyenne sur la grande, à environ 2cm du fond de la grande, et tracer le tour avec un marqueur (photo 2).</li><li>2) Une fois le cercle tracé, percer un trou au milieu du cercle à l’aide de la perceuse montée d’un foret métal, de la chignole, ou du marteau + clou. A partir de ce trou, découper des triangles en forme de “pizza” sur tout le pourtour du cercle, afin de les replier comme des ailettes à l’aide de la pince plate pour faire passer la partie horizontale (photos 3, 4, 5).</li><li>3) Nous allons maintenant préparer la seconde grande boîte [5] pour l’assemblage final.</li><li>Nous allons effectuer la même opération que pour la toute première boîte standard. Premièrement, à l’aide de l’ouvre-boîte, découper totalement le fond de la seconde grande boîte. Ensuite, à l’aide de la cisaille, découper 8 entailles également réparties à une des extrémités (Photo 6). De la même manière que pour la première, en replier légèrement 4 vers l’intérieur et 4 vers l’extérieur (en alternant).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Assemblage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3d/Rocket_stove_P1000133.JPG/800px-Rocket_stove_P1000133.JPG' alt='Rocket stove P1000133.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a6/Rocket_stove_P1000137.JPG/800px-Rocket_stove_P1000137.JPG' alt='Rocket stove P1000137.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Rocket_stove_P1000138.JPG/800px-Rocket_stove_P1000138.JPG' alt='Rocket stove P1000138.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/36/Rocket_stove_P1000139.JPG/800px-Rocket_stove_P1000139.JPG' alt='Rocket stove P1000139.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Comme lorsque nous avions glissé la petite boîte de la cheminée dans la boîte standard du foyer, nous allons maintenant assembler le résultat de l'étape 4 avec l'étape 5.</li><li>Nous allons commencer par remplir le fond de notre grande boîte [4] avec de la terre, jusqu'à fleur de l'ouverture (Photo 1). Ensuite, rentrer par l'intérieur l'ensemble des boîtes [2] & [3], en calant avec de la terre afin que la cheminée soit au maximum centrée et verticale.</li><li>L'assemblage le plus complexe arrive maintenant, il s'agit de raccorder les boîtes standard [1]&[2] à travers l'ouverture de la boîte [4]. Pour cela, veiller à plier légèrement les 4 languettes de la boîte [1] comme indiqué à l'étape 2, deux languettes vers l'extérieur et deux vers l'intérieur. Ensuite, enfoncer la boîte par l'extérieur de l'ouverture, en jouant pour que les languettes s'emboîtent bien dans la boîte [2] (photo 2 & 3).</li><li>Une fois l'assemblage réussi, cercler à l'aide de fil de fer sur le côté extérieur de la grosse boîte comme on l'a fait auparavant, et serrer à l'aide de la pince plate à la base de l'ouverture (photo 4).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Isolation</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0a/Rocket_stove_P1000141.JPG/800px-Rocket_stove_P1000141.JPG' alt='Rocket stove P1000141.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/52/Rocket_stove_P1000140.JPG/800px-Rocket_stove_P1000140.JPG' alt='Rocket stove P1000140.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a4/Rocket_stove_P1000143.JPG/800px-Rocket_stove_P1000143.JPG' alt='Rocket stove P1000143.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/77/Rocket_stove_P1000144.jpg/800px-Rocket_stove_P1000144.jpg' alt='Rocket stove P1000144.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Rocket_stove_P1000147.JPG/800px-Rocket_stove_P1000147.JPG' alt='Rocket stove P1000147.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Rocket_stove_P1000148.JPG/800px-Rocket_stove_P1000148.JPG' alt='Rocket stove P1000148.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette étape consiste à placer l'isolant choisi et assembler les pièces au fur et à mesure.</li><li>1) Remplir l'espace entre la cheminée externe et interne d'isolant en veillant à bien le tasser (par exemple, à l'aide d'un bâton comme sur la photo 1).</li><li>2) Assembler les deux grandes boîtes en alignant les encoches ensembles (photo 3) puis assembler la petite boîte [7] avec la boîte [6] de la cheminée interne (photo 4). Répéter l'opération précédente pour remplir l'espace entre les cheminées interne et externe jusqu'à 5 cm en dessous du haut de la cheminée interne.</li><li>3) Pour finir l'isolation, récupérer le fond de la grande boîte [5], y tracer le contour du périmètre d'une petite boîte (attention à bien aligner le tracé, la cheminée n'arrivant pas forcément au centre), percer puis découper la forme à l'aide de la cisaille à tôle (photo 5).</li><li>4) Une fois découpé, emboîter le couvercle pour venir recouvrir l'isolant comme sur la photo 6.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Support Casserole & finitions</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Rocket_stove_P1000150.JPG/800px-Rocket_stove_P1000150.JPG' alt='Rocket stove P1000150.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7b/Rocket_stove_P1000154.JPG/800px-Rocket_stove_P1000154.JPG' alt='Rocket stove P1000154.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1b/Rocket_stove_P1000156.JPG/800px-Rocket_stove_P1000156.JPG' alt='Rocket stove P1000156.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2f/Rocket_stove_P1000152.JPG/800px-Rocket_stove_P1000152.JPG' alt='Rocket stove P1000152.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans l'état actuel, nous ne pouvons pas poser une casserole sur le stove car cela étoufferait le feu. Il faut donc réaliser des ouvertures sur la partie haute de l'enceinte externe (Boîte [5]).</li><li>1) Découper 4 languettes de 2cm de large équidistantes à l'aide de la cisaille à taule, et les plier vers l'intérieur (Photo 1 & 2).</li><li>2) Ensuite, à l'aide de la pince plate, plier chaque coin des montants restants vers l'intérieur, afin d'augmenter un peu le tirage d'air, de solidifier les rebords pour qu'ils puissent accueillir de grosses casseroles et d'éviter les parties coupantes (Photo 2).</li><li>3) Plier les "parts de pizza" de la boîte [4] en les roulant afin d'éviter que restent des pics pointus et tranchants à l'extérieur (photo 3).</li><li>4) Le dernier ajout est le cendrier, très important pour que l'air puisse arriver sous le bois afin d'optimiser la combustion. C'est la petite plaque en métal qu'on voit sur la photo 3. Elle peut être faite avec le couvercle supplémentaire de grande boîte, qu'il suffit de percer de petits trous réguliers et nombreux, puis de plier les côtés (photo 4) pour qu'il rentre dans la boîte horizontale, la séparant à peu près en deux.</li><li>Il est aussi possible d'utiliser une vieille râpe en métal.</li><li>5) L'utilisation d'un ruban adhésif aluminium peut être intéressant pour couvrir l'assemblage des grandes boites [4] et [5] et éviter de se blesser les main lors des manipulations. De la même manière, il est possible de couvrir l'assemblage de l'arrivée d'air [1] avec la chambre externe basse [4] et ainsi couvrir les languettes en forme de part de pizza qui coupent et piquent.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Utilisation</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/Rocket_stove_P1000160.JPG/800px-Rocket_stove_P1000160.JPG' alt='Rocket stove P1000160.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Rocket_stove_P1000164.JPG/800px-Rocket_stove_P1000164.JPG' alt='Rocket stove P1000164.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e3/Rocket_stove_IMG_20190602_204057.jpg/800px-Rocket_stove_IMG_20190602_204057.jpg' alt='Rocket stove IMG 20190602 204057.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant toute utilisation, il est important de faire une première flambée en extérieur afin de brûler tous les résidus internes des boîtes.</li><li>Pour allumer le stove, y insérer plusieurs buchettes par la chambre horizontale, et placer des copeaux de bois ou du papier à l'extrémité puis allumer le feu.</li><li>Nous utilisons actuellement ces modèles comme plancha extérieure, (photo 3&4), avec deux stoves, et une plancha en fonte dessus. Celui de gauche est isolé à la terre, celui de droite à la vermiculite, et on a bien pu constater la différence d'efficacité en cuisson.</li><li>IMPORTANT: Sans système d'extraction des fumées ou de grande cheminée, ce rocket stove n'est pas dédié à une utilisation en intérieur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/b3/Rocket_stove_Illustration_FichePedagogiqueRocket.png' alt='Rocket stove Illustration FichePedagogiqueRocket.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux"), vous pouvez télécharger :</li><li>- une fiche pédagogique créée par le Low-tech Lab</li><li>- une version PDF adaptée du tuto qui tient en quelques pages</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

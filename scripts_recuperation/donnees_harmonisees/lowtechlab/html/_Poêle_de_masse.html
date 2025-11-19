@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rocket Stove Plancha / Poêle de masse</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Rocket Stove Plancha / Poêle de masse</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/7/75/Rocket_Stove_Plancha_ENIB_jozdfpezjp.jpg/ia-4ec7b320ce98a9474da5841bc477c84a-px-Rocket_Stove_Plancha_ENIB_jozdfpezjp.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Rocket Stove d'extérieur qui a pour but de remplacer une plancha/barbecue (dimension 70x100cm avec cheminée a 2.5m)</div>
+        
+      </div>
+    
+    
+      
+        <p>Nous connaissons tous le barbecue classique pour cuire ses merguez en été mais cela relève un problème majeur, celui de la pollution engendrée par la combustion.</p>
+      
+        <p>Il faut savoir que 1 Kg de charbon équivaut à 3.7 Kg de CO2 émis dans l’atmosphère soit un trajet de 27 Km en voiture [1]. Qui plus est la combustion des graisses suintant des aliments entraine la création de composés toxique potentiellement cancérigène (HAP : Hydrocarbures Aromatiques Polycycliques).</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very hard Très difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/_Poêle_de_masse" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/_Poêle_de_masse</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Un bidon de diamètre 70cm et d'hauteur 100cm</li><li>Un vieux ballon d'eau chaude</li><li>4m de tuyaux en acier</li><li>6 seaux de 7L de sable</li><li>1 seau de gravier</li><li>Un couvercle qui va nous servir de plancha</li><li>4 grosses briques</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Perceuse</li><li>Meuleuse</li><li>Maillet/Marteau</li><li>Poste de soudure</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Coupe + perçage du bidon et du ballon d'eau chaude</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5b/Rocket_Stove_Plancha_ENIB_IMG_20250204_150701.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150701.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150701.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/07/Rocket_Stove_Plancha_ENIB_IMG_20250204_150730.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150730.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150730.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/66/Rocket_Stove_Plancha_ENIB_coup_chemise_externe.png' alt='Rocket Stove Plancha ENIB coup chemise externe.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a1/Rocket_Stove_Plancha_ENIB_image.jpg/800px-Rocket_Stove_Plancha_ENIB_image.jpg' alt='Rocket Stove Plancha ENIB image.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Bidon<ul><li>Couper pour avoir une hauteur d'un mètre environ</li><li>Percer le fond pour laisser écouler l'eau</li><li>Percer deux trous faces a faces sur les cotés (même diamètre que le tuyau)</li></ul></li><li>Ballon d'eau chaude<ul><li>Le couper en deux également</li><li>Faire les deux mêmes trous que sur le bidon</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Coupe des tuyaux et soudures</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/f/f6/Rocket_Stove_Plancha_ENIB_coup_chemin_.png' alt='Rocket Stove Plancha ENIB coup chemin .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/3c/Rocket_Stove_Plancha_ENIB_coup_foyer.png' alt='Rocket Stove Plancha ENIB coup foyer.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ef/Rocket_Stove_Plancha_ENIB_IMG_20250204_150739.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150739.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150739.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d0/Rocket_Stove_Plancha_ENIB_IMG_20250204_150802.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150802.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150802.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Couper les tuyaux et les souder entres eux pour leur donner la forme voulue</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Soudure du ballon d'eau chaude</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/4/4c/Rocket_Stove_Plancha_ENIB_coup_chemise_interne.png' alt='Rocket Stove Plancha ENIB coup chemise interne.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a4/Rocket_Stove_Plancha_ENIB_IMG_20250204_150723.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150723.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150723.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper des tuyaux et les souder de la même manière que nos photos.</li><li>Il faut boucher la sortie d'air à l'intérieur du tuyau et en faire une nouvelle sur le côté extérieur supérieur de la sortie. La taille de la sortie d'air doit être la même que celle de l'entrée d'air (là où on met le bois pour le feu)</li><li>La hauteur de la cheminée doit être deux fois plus longue que le tuyau d'entrée.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Installation du bidon</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d6/Rocket_Stove_Plancha_ENIB_IMG_20250204_150659.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150659.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150659.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Installer le bidon vide en hauteur pour faciliter l'écoulement de l'eau à l'aide des 4 briques, verser le seau de gravier au fond et bien veiller a tout répartir équitablement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Installation du ballon d'eau chaude dans le bidon</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/02/Rocket_Stove_Plancha_ENIB_IMG_20250204_150830.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150830.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150830.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e3/Rocket_Stove_Plancha_ENIB_IMG_20250204_150849.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150849.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150849.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d9/Rocket_Stove_Plancha_ENIB_IMG_20250204_150907.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150907.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150907.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3e/Rocket_Stove_Plancha_ENIB_IMG_20250204_150945.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_150945.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 150945.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Mettre le ballon d'eau chaude dans le fond sans le poser. Pour le tenir, il faut le relier aux deux tuyaux extérieurs. Quand le tout est assemblé, il devrait être surélevé par rapport au fond du bidon mais n'est pas stable.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Ajout du sable pour maintient de la chemise intérieur.</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/22/Rocket_Stove_Plancha_ENIB_IMG_20250204_151156.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_151156.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 151156.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/03/Rocket_Stove_Plancha_ENIB_IMG_20250204_151158.jpg/800px-Rocket_Stove_Plancha_ENIB_IMG_20250204_151158.jpg' alt='Rocket Stove Plancha ENIB IMG 20250204 151158.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Verser le sable sur les parois pour maintenir le tout. Veiller à bien tasser, surtout sur les liaisons entre les tuyaux et le ballon d'eau chaude.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Assemblage de la plancha pour Rocket Stove final</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Rocket_Stove_Plancha_ENIB_clat_cot_droit.png/800px-Rocket_Stove_Plancha_ENIB_clat_cot_droit.png' alt='Rocket Stove Plancha ENIB clat cot droit.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/23/Rocket_Stove_Plancha_ENIB_clat_cot_3D.png/800px-Rocket_Stove_Plancha_ENIB_clat_cot_3D.png' alt='Rocket Stove Plancha ENIB clat cot 3D.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/61/Rocket_Stove_Plancha_ENIB_coupe_globale.png/800px-Rocket_Stove_Plancha_ENIB_coupe_globale.png' alt='Rocket Stove Plancha ENIB coupe globale.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/35/Rocket_Stove_Plancha_ENIB_coup_capuchon.png' alt='Rocket Stove Plancha ENIB coup capuchon.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/19/Rocket_Stove_Plancha_ENIB_image3.jpg/800px-Rocket_Stove_Plancha_ENIB_image3.jpg' alt='Rocket Stove Plancha ENIB image3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La plancha doit avoir un diamètre supérieur au ballon d'eau chaude mais plus faible que le bidon. Bien mettre du sable sur les bords pour maximiser un max l'étanchéité. Laisser entre 10 a 15cm entre la cheminée centrale et la plancha pour que l'air puisse circuler et que la flamme chauffe a fond</li><li>La plancha sur la photo était trop rouillée est pas asser plate, on a donc opter pour une plaque en aluminium plate qui transmet mieux la chaleur si on met une poêle ou une casserole car contact sur toute la surface</li><li>Voici des schéma de l'assemblage final.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Allumage du foyer</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/32/Rocket_Stove_Plancha_ENIB_image4.jpg/800px-Rocket_Stove_Plancha_ENIB_image4.jpg' alt='Rocket Stove Plancha ENIB image4.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/75/Rocket_Stove_Plancha_ENIB_jozdfpezjp.jpg/800px-Rocket_Stove_Plancha_ENIB_jozdfpezjp.jpg' alt='Rocket Stove Plancha ENIB jozdfpezjp.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Allumer le foyer a l'aide de petit bois et ensuite mettre des grandes planches et bien pousser le foyer au fond (vers le millieu de la chemise interne)</li><li>Notre rocket stove atteint 200-250° pour l'exemple</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Réflexion sur le projet</strong><p><strong>Étapes :</strong></p><ol><li>L’utilisation du charbon dans tout milieu est un frein à la transition écologique.</li><li>C’est ici que commence notre recherche de solutions.</li><li>Comment conserver l’efficacité d’un barbecue, tout en réduisant nos émissions de Gaz à Effet de Serre (GES).</li><li>Une des solutions nous a été présentée, la mise en lumière du « Rocket Stove ».</li><li>Cette « Low Tech » a pris de l’importance depuis quelques années grâce aux éveillement de conscience sur l’écologie.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Le fonctionnement et les avantages</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Rocket_Stove_Plancha_ENIB_Capture_d_cran_2025-02-05_151121.png/800px-Rocket_Stove_Plancha_ENIB_Capture_d_cran_2025-02-05_151121.png' alt='Rocket Stove Plancha ENIB Capture d cran 2025-02-05 151121.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le principe est en soit très simple :</li><li>On brûle des bouts de bois (de l’ordre de 5x20cm) qui vont monter dans la chambre de combustion, poussés par l’arrivée d’air primaire. Les flammes vont alors « taper » sur une casserole mise à l’envers puis les gaz chauds vont venir chauffer l’isolant thermique pour une meilleure uniformisation, mais ils vont aussi faire préchauffer la seconde arrivée d’air pour crée un vortex dans la chambre de combustion pour une meilleure combustion. Les gaz vont alors s’échapper dans la cheminé de refroidissement.</li><li>Ce système comporte 3 aspect majeurs :</li><li>-Une combustion complète dû au tirage puissant dans la chambre de combustion (donc peu de rejet de monoxyde de carbone). Quand la combustion est complète, aucune fumée ne s'échappe de la cheminée et on peu voir sortir de cette dernière des ondulations de chaleur comme dans le désert ou sur les autoroutes l'été.</li><li>-Une énergie thermique restitué sans beaucoup de perte grâce à l’isolant thermique (rendement autour de 90% selon les modèles contre 30% pour un barbecue classique).</li><li>-Impossibilité de mise en contact des flammes avec les graisses issues des aliments, donc pas de particules cancérogènes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Axes d'améliorations</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/1/1f/Po_le_de_masse_regenkap_gegalvaniseerd_7_1_57310.1526566073.1280.1280_66222.1533894065.1280.1280_category.original.jpg' alt='Po le de masse regenkap gegalvaniseerd 7 1 57310.1526566073.1280.1280 66222.1533894065.1280.1280 category.original.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/50/Po_le_de_masse_510F0b_noSL._AC_SX679_.jpg' alt='Po le de masse 510F0b noSL. AC SX679 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/53/Po_le_de_masse_dcdcsd.jpg/800px-Po_le_de_masse_dcdcsd.jpg' alt='Po le de masse dcdcsd.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/6e/Po_le_de_masse_Capture_d_cran_2025-02-11_143931.png' alt='Po le de masse Capture d cran 2025-02-11 143931.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>- Ajouter un petit chapiteau sur le bout de la cheminée pour éviter que l'eau ne rentre si il pleut</li><li>- Ajouter une cloche sur la plancha pour éviter les pertes thermiques (car a l'air libre, il y en a énormément)</li><li>- Mettre une plancha en verre à la place d'une en aluminium car le transfert thermique se fait beaucoup mieux (et en plus on peut voir ce qu'il se passe a l'intérieur)</li><li>- Ajouter une entrée circulaire d'air sur la chambre pour permettre a l'air de rentrer en tourbillon et donc de crée un vortex avec les flammes et mieux répartir la chaleur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Un simple support magnétique pour iPad pour une nuit de farniente sur Netflix</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Un simple support magnétique pour iPad pour une nuit de farniente sur Netflix</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FR1/4G9X/LI359RSS/FR14G9XLI359RSS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Avez-vous déjà été allongé dans votre lit, regardant quelque chose sur un iPad posé sur votre ventre, et celui-ci a glissé et s'est écrasé dans votre nez ? Ce projet vous permet de vous allonger au lit et de regarder votre iPad sans ce danger. (Bien sûr, utilisez-le à vos propres risques. Si l'iPad glisse hors du support, il vous frappera quand même au visage.)</p>
+      
+        <p>Ce projet a vu le jour au début du COVID. Il a été entièrement fabriqué à partir de pièces restantes d’autres projets, ce qui était idéal pour le recyclage. Il offre des heures de plaisir à regarder des films depuis quelques années maintenant.</p>
+      
+        <p>Notre lit est doté d'une tête de lit en tube d'acier, les aimants n'ont donc aucun problème à la fixer. Pour les têtes de lit en bois, nous fixons des plaques d'acier sur lesquelles fixer les aimants. (Uniquement sur les meubles de qualité IKEA. Nous ne faisons cela avec aucune des belles pièces de menuiserie.)</p>
+      
+        <p>Un exemple de fixation à une tête de lit fabriquée à partir d'un matériau différent (par exemple, le bois) peut être vu dans notre nouveau instructable.</p>
+      
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Support magnétique sur rail Din en ligne : Printables Thingiverse</li><li>Support rail Din pour Ipad air (version lit) : PrintablesThingiverse</li><li>Support rail Din pour Ipad air (version originale) : PrintablesThingiverse</li><li>Din rail: Amazon</li><li>Quatre vis 1/4-20 x 3/4 po provenant de la quincaillerie locale.</li><li>Four 1/4-20 nuts: Amazon</li><li>Élastiques solides : magasin de fournitures de bureau</li><li>Gaffers tape: Amazon or Amazon</li><li>Anti-skid tape: Amazon</li><li>Les aimants que nous avons utilisés : Amazon</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: The Design</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F45/UQKG/LHLZZPPY/F45UQKGLHLZZPPY.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Design' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZZ/CHT0/LHLZZP4M/FZZCHT0LHLZZP4M.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Design' loading='lazy'></figure><figure><img src='https://content.instructables.com/F45/UQKG/LHLZZPPY/F45UQKGLHLZZPPY.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Design' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZZ/CHT0/LHLZZP4M/FZZCHT0LHLZZP4M.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Design' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The magnet base was initially designed to temporarily attach din rail-based things like Arduino projects, thermal couples recorders, power supplies, and tool racks to metal surfaces. However, aligning the magnets vertically instead of horizontally proved more efficient for this application. The horizontally aligned bracket tended to slowly slide down the metal surface over time.</li><li>The iPad brackets were initially designed to have the iPad face the other side of the bracket, This worked but did not allow for enough clearance in the cabinet it was mounted, so we retired the design.</li><li>The only change for watching in bed was to flip the rubber band post to the other side of the bracket—a three-minute change in Fusion 360.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Print the Parts</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FJ6/DA4O/LHT58B5A/FJ6DA4OLHT58B5A.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print the Parts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ6/DA4O/LHT58B5A/FJ6DA4OLHT58B5A.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print the Parts' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>There are only two parts to print and only two copies of each part.</li><li>You should print the iPad bracket for the orientation you will use. We printed all the parts in PLA using Pursa Slicer and a 20% infill.<ul><li>Print two of the magnet mounts.</li><li>Print two of the iPad brackets.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: A Word About Din Rails</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F3J/WAZ7/LHT58898/F3JWAZ7LHT58898.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='A Word About Din Rails' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3J/WAZ7/LHT58898/F3JWAZ7LHT58898.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='A Word About Din Rails' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>There are a lot of types of DIN rail. The one we use for projects like this is IEC/EN 60715 – 35 × 15. Specifically ASI PR006-1M Heavy Duty DIN Rail. It is 15mm deep. It is made of steel, not aluminum. This makes it rigid and able to span short distances without torquing.</li><li>The DIN rail can be cut to length with a hacksaw or a bandsaw with a metal blade. We use leftover pieces for this project.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Assembly</strong><div class='step-images count-12'><figure><img src='https://content.instructables.com/FFB/3OHZ/LI359RSN/FFB3OHZLI359RSN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVC/IKCG/LHLZZOVV/FVCIKCGLHLZZOVV.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP2/ENWZ/LI359RST/FP2ENWZLI359RST.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRD/FX6Y/LHLZZOVR/FRDFX6YLHLZZOVR.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FR1/2HA7/LHLZZOVW/FR12HA7LHLZZOVW.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0H/MMRB/LHLZZOVU/F0HMMRBLHLZZOVU.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFB/3OHZ/LI359RSN/FFB3OHZLI359RSN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVC/IKCG/LHLZZOVV/FVCIKCGLHLZZOVV.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP2/ENWZ/LI359RST/FP2ENWZLI359RST.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRD/FX6Y/LHLZZOVR/FRDFX6YLHLZZOVR.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FR1/2HA7/LHLZZOVW/FR12HA7LHLZZOVW.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0H/MMRB/LHLZZOVU/F0HMMRBLHLZZOVU.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Assembly' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>When assembling the stand, One bracket is locked in between; one is free to slide.</li><li>The assembly process<ul><li>Attach the din rail to the magnetic mounts using screws and bolts.</li><li>Place one of the iPad brackets on the din rail between the two stops on the magnetic mount. This will be the fixed iPad bracket.</li><li>Place the other iPad bracket between the two magnetic mounts on the din rail. This will be the movable iPad bracket.</li><li>Place at least four rubberbands in a crisscross pattern between the rubberband mounting post.</li><li>The next step is not required but highly recommended. Put a piece of gaffers tape or a vinal anti-skid tape over the magnets. Using tape will slightly reduce the magnets' holding power but will help prevent scratching of the surfaces.</li><li>Attach the magnetic mount to a metal surface.</li><li>Slide the movable iPad bracket away from the fixed bracket, place an iPad in the groves, and let the brackets slide together. Test to ensure that the Ipad is secure.</li><li>Test to ensure the magnetic mounts are secure and the iPad is firmly in place.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Variations</strong><div class='step-images count-10'><figure><img src='https://content.instructables.com/FPE/QB8T/LIBPWCP8/FPEQB8TLIBPWCP8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUK/Q84W/LIBPWCP9/FUKQ84WLIBPWCP9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLH/PE1B/LHLZZP4N/FLHPE1BLHLZZP4N.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/F51/AIZ5/LIBPWCP6/F51AIZ5LIBPWCP6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8D/85HD/LIBPWCP5/F8D85HDLIBPWCP5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPE/QB8T/LIBPWCP8/FPEQB8TLIBPWCP8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUK/Q84W/LIBPWCP9/FUKQ84WLIBPWCP9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLH/PE1B/LHLZZP4N/FLHPE1BLHLZZP4N.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/F51/AIZ5/LIBPWCP6/F51AIZ5LIBPWCP6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8D/85HD/LIBPWCP5/F8D85HDLIBPWCP5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Variations' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>But wait, there is more. What if you don't want the iPad overhead, you want it at the foot of the bed? If you want to lay on the bed and watch, the same bracket will work.</li><li>If you want to watch from the foot of the bed, print the original brackets and attach the magnetic mounts to a metallic surface at the end of the bed. The caution here is to test the magnets' holding; they might side downward slowly over time.</li><li>If you have a large enough metal surface at the end of the bed, you can use one of the larger magnetic mounts to mitigate this. (PrintablesThingiverse)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Lessive à la cendre</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lessive à la cendre</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/5/50/Lessive_la_cendre_cendre.jpg/ia-6672c44468908df8a5912cbedd674494-px-Lessive_la_cendre_cendre.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Une recette de lessive gratuite, ne nécessitant aucun chauffage, se conservant plusieurs mois et qui sert même de fertilisant! Cette base peut également servir pour nettoyer le sol et la vaisselle.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ah la lessive, ces fameuses pubs et son rayon très odorant ! C’est parfois un casse-tête de chercher la lessive qui nous convient (adapté à son linge/peau sensible, parfumée mais pas trop, avec des ingrédients pas trop allergisant ou mauvais pour l’environnement…). Le problème est que l’affichage des ingrédients sur les lessives et les produits nettoyants est très limité : on trouve souvent « contient des agents ioniques et anioniques », plus flou c’est difficile ! D’autant plus que les lessives commerciales coutent souvent cher, et que celles bio ou écologiques ne sont pas plus transparentes sur leur composition (même si certaines affichent des détergents 100% naturels ou issus de végétaux). Dans tous les cas, acheter des lessives commerciales revient à produire beaucoup de déchets, surtout si vous utilisez des berlingots enrobés, tablettes ou bidons en plastique. Dans ce tutoriel je vous propose une recette facile, rapide et économique de fabriquer sa propre lessive, et 100% biodégradable !</p>
+      
+        <p>Avantages : Mono-ingrédient, réalisable sans chauffage, fertilisant naturel, aucune odeur et n’encrasse pas les canalisations, gratuite car permet d’utiliser un « déchet » des feux de bois. Conservation illimitée grâce au pH basique.</p>
+      
+        <p>Inconvénients : peu adaptée au linge délicat, tendance à ternir le linge blanc à long terme (rattrapable avec du percarbonate), pour le jardin attention car pH basique.</p>
+      
+        <p>La très grande majorité des lessives utilisées sont faites à base de produits contenant du sodium comme agent actif, ce qui une fois rejeté dans l'environnement est non seulement alcalinisant (augmente le pH) mais également salinisant à long terme. Un des grands avantages de la lessive de cendre est que le principe actif est de la potasse (forme ionique du potassium, le K du fameux tryptique N-P-K de la fertilisation agricole). Même si le rejet de votre eau de lessive continuera d'être alcalinisant, cela fertilisera votre environnement en un élément souvent oublié par les jardiniers et plus difficile à apporter que de l'azote!</p>
+      
+        <p>Comment ça marche ? Après brassage, le liquide est chargé en sels de potasse. Dans la machine à laver, au contact de la graisse présente sur le linge sale, cette potasse se transforme en savon. En gros, plus il y a de graisse, et mieux ça lave !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Lessive_à_la_cendre" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Lessive_à_la_cendre</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Cendre</li><li>Eau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Tami (pour éliminer les morceaux de charbons et résidus)</li><li>Seau/saladier/grand contenant</li><li>Linge pour filtrer</li><li>Bâton ou tige pour mélanger</li><li>Bidon ou bouteille vide</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Tamisage</strong><p><strong>Étapes :</strong></p><ol><li>Une fois la cendre récupérée, prendre le temps de la tamiser au dessus d'un seau pour éliminer tout ce qui n'est pas de la cendre et qui pourrait flotter (charbon, bois) ou couler (métal des cagettes ect).</li><li>Attention, la poussière fine de la cendre peut irriter les yeux et les poumons. Vous pouvez porter un masque et des lunettes si cela vous incomode. Essayez pour votre confort de vous mettre dehors, dans un endroit à l'abris du vent.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Macération</strong><p><strong>Étapes :</strong></p><ol><li>Verser dans un grand seau ou bac avec couvercle (pour éviter que la pluie et d'autres éléments extérieurs tombent dedans)<ul><li>1 volume de cendre tamisé</li><li>2 volumes d'eau</li></ul></li><li>Bien remuer puis laisser macérer pendant au moins 48h, si possible en remuant de temps en temps. Vous pouvez tout à fait "oublier" cette macération pendant plusieurs jours/semaines/mois, cela continuera de se concentrer jusqu'à se stabiliser.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Filtration</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/Lessive_la_cendre_cendre_filtr_e.jpg/800px-Lessive_la_cendre_cendre_filtr_e.jpg' alt='Lessive la cendre cendre filtr e.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette étape n'est pas obligatoire, vous pouvez très bien utiliser le seau de macération et prendre le volume de lessive dont vous avez besoin à la surface, en veillant à bien avoir laissé décanter la cendre au fond.</li><li>Si vous souhaitez filtrer, prenez un linge propre, des gants, et un seau. Après avoir filtré dans un grand seau/casserole il est plus facile de transvaser la lessive dans une bouteille/bidon avec un entonnoir.</li><li>La couleur peut varier suivant le filtrage : transparente, ou jaune/brune. Il suffit de laisser décanter et bien éliminer les restes de charbon avant de mélanger à l’eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Utilisation et conservation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/6/69/Lessive_a_la_cendre_Image.png' alt='conseils d'utilisation lessive cendre' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La lessive à la cendre possède un pH très haut (basique), ce qui rend impossible toute fermentation. Elle se conserve donc plus d'un an sans avoir besoin de la conserver au frais, mais la garder à l'ombre ne peut pas lui faire de mal.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

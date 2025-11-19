@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dominik - serveur modulable autoalimenté en réemploi</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dominik - serveur modulable autoalimenté en réemploi</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/bf/Dominik_-_serveur_modulable_autoaliment_en_r_emploi_TITRE.jpg/ia-bb1ffd434190a594317e606a842a32d0-px-Dominik_-_serveur_modulable_autoaliment_en_r_emploi_TITRE.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a pour but de présenter la construction de A à Z d'un système modulable et mobile d'alimentation, d'hébergement et de partage numérique bas carbone, à base de matériaux de récupération abritant un site internet web écoconçu.</div>
+        
+      </div>
+    
+    
+      
+        <p>Objectif de ce tutoriel</p>
+      
+        <p>L'objectif de ce tutoriel est de documenter la réalisation d'un système Low-tech de numérique minimal. Un exemplaire a déjà été construit par les auteurs de ce tutoriel et il sert d'hébergement pour un site internet low-tech sur lequel vous pourrez trouver des informations complémentaires sur ce projet ainsi que des ressources supplémentaires : http://lowtechnumerique.mooo.com/</p>
+      
+        <p>Dans quel contexte s'inscrit ce système ?</p>
+      
+        <p>A la fin du 20ème siècle, le numérique connait un essor remarquable à travers un développement des technologies de l'information et de la communication, régulièrement qualifié de troisième révolution industrielle. Ces technologies ont radicalement changé notre monde et leur progression semble inarrêtable. Même dans la stratégie du gouvernement français, la transformation numérique est présentée comme nécessaire et évidente.</p>
+      
+        <p>Seulement, le numérique se dirige inexorablement vers un mur, celui des limites planétaires.</p>
+      
+        <p>Selon L'ADEME, le numérique représente à l'échelle mondiale 4 % des émissions de gaz à effet de serre dans le monde, mais ce chiffre augmente de 9% tous les ans.</p>
+      
+        <p>Les appareils électroniques nécessitent de nombreux matériaux (dont des terres rares), qui sont jugés comme des matériaux critiques par les institutions internationales. Ces matériaux sont déjà source de dégâts sociaux (exploitation par des travailleurs mineurs et/ou sous-payés) et vont probablement manquer dans les prochaines années.</p>
+      
+        <p>Ainsi, que ce soit sur le plan des ressources, de l’énergie, mais aussi de la sécurité ou même du bien-être mental, le numérique dépasse aujourd’hui des drapeaux rouges dans de nombreux domaines. Bien qu’étant un moyen de communication très efficace et parfois indispensable dans certains secteurs, il faut aujourd’hui le remettre en cause, penser son démantèlement et inventer son devenir dans un contexte de décroissance de la production électrique et d’extraction des ressources.</p>
+      
+        <p>Dans ce cadre contextuel, en lien avec le laboratoire d'informatique de Grenoble (LIG) et le Low-Tech Lab de Grenoble, il a été demandé à notre groupe de 5 étudiants grenoblois de penser un système low-tech, c’est-à-dire qui est utile, accessible, et durable, et qui permet de satisfaire des besoins essentiels du numérique, tout en remettant en question les usages superflus dont nous sommes actuellement entourés. Après plusieurs semaines de travail, ce système, c’est DOMINIK.</p>
+      
+        <p>Quel est le concept théorique du système Dominik ?</p>
+      
+        <p>L'idée de ce système est d'avoir un système modulable, afin que ce dernier soit pertinent pour des utilisateurs différents, des besoins singuliers et dans des mondes variés.</p>
+      
+        <p>Au cœur de ce système, un appareil électronique central (smartphone, ordinateur, raspberry pi, ...) de récupération peut jouer plusieurs rôles.</p>
+      
+        <p>D'abord, il peut servir de box internet afin de fournir un accès internet aux personnes environnantes.</p>
+      
+        <p>Ensuite, il peut permettre à du contenu qu'il héberge d'être publié sur Internet.</p>
+      
+        <p>Il peut également créer un réseau local auquel des smartphones ou ordinateurs peuvent se connecter lorsqu'ils sont à proximité de l'appareil électronique central, afin de pouvoir y stocker et y échanger des fichiers avec les utilisateurs également à proximité.</p>
+      
+        <p>Enfin, cet appareil électronique central permet de stocker physiquement des données essentielles d'Internet afin d'y avoir accès même sans Internet.</p>
+      
+        <p>Cet appareil électronique central sera alimenté par une source d'énergie renouvelable (panneaux solaires, petite éolienne, petite hydraulique, dynamo...) construite grâce à des matériaux de récupération.</p>
+      
+        <p>L'ensemble de ce système sera encapsulé dans un support de mobilité (sac à dos, glacière, caisse,...) afin de le protéger et de le rendre mobile. Cette caractéristique l'inscrit partiellement dans une optique de Sneakernet, c'est-à-dire le transfert de fichiers hors réseau informatique, comme lorsqu’on se passait des clés usb avec des films ou des CD avec des jeux vidéos.</p>
+      
+        <p>Quel est l'interprétation concrète présentée dans ce tutoriel ?</p>
+      
+        <p>Afin de prouver que ce système conceptuel est faisable, nous avons voulu interpréter concrètement une version de ce système : c'est notre Dominik. Au cœur de notre Dominik, un smartphone de récupération joue plusieurs rôles.</p>
+      
+        <p>D'abord, il sert de box internet grâce à une carte SIM prépayée et la fonctionnalité "Partage de connexion".</p>
+      
+        <p>Ensuite, il héberge un site internet que l'on a conçu selon de nouveaux principes d’écoconception numérique afin d'être ultra économe en taille et en consommation énergétique. Ce site sert à fournir la documentation et les ressources nécessaires pour permettre à d'autres utilisateurs de créer leur propre Dominik.</p>
+      
+        <p>Enfin, il est également possible de se connecter à un réseau local créé par le téléphone central lorsqu'on est à proximité de ce dernier, afin de pouvoir y stocker et y échanger des fichiers avec d’autres utilisateurs à proximité.</p>
+      
+        <p>Ce téléphone sera alimenté par des panneaux solaires associés à une batterie, provenant de matériel de récupération. Il sera donc aussi possible de recharger votre propre téléphone.</p>
+      
+        <p>L'ensemble de ce système sera mobile, encapsulé dans un caisson de protection et de transport, qui est une glacière de camping de récupération.</p>
+      
+        <p>A qui s'adresse Dominik ?</p>
+      
+        <p>Le système permet de répondre à des besoins variés. Il propose un accès à internet plus économique, plus indépendant. Il permet le stockage et le partage local d'informations et de fichiers, mais permet également la transmission de ces fichiers par la mobilité intrinsèque de son design. Ces caractéristiques rendent le système pertinent dans des lieux où l’accès au réseau, aux ressources ou à l’électricité n’est pas garanti. Dans le monde actuel, on peut citer le Liban, dont les habitants n'ont que quelques heures d'électricité par jour. Cela peut aussi être les Zones à Défendre (appelées ZAD), qui n'ont pas d'accès à l'électricité et des problématiques d'organisation interne et de visibilité externe. Ce sont dans ces lieux, qui reflètent probablement un monde de demain en contraction, que le numérique low-tech prend son sens. Et pourquoi pas dans un imaginaire futur, on trouverait des Dominik sur un bateau à voile, dans une bibliothèque, dans un jardin partagé, sur un vélo et à pleins d’autres endroits qu’il ne reste qu’à inventer.</p>
+      
+        <p>Il est important de comprendre que la version de Dominik présentée dans ce tutoriel est celle qui correspondait le mieux à nos besoins. Il ne tient qu'à vous et votre imagination d'adapter toute ou partie du système pour créer votre propre Dominik.</p>
+      
+        <p>Ce tutoriel est divisé en différents modules qui peuvent être suivis indépendamment. Pour éviter trop de lourdeur de ce tutoriel, les modules sont rédigés sur des tutoriels à part entiers sur le wiki du low-tech lab. Vous trouverez le liens de ces tutoriels dans les différentes parties<ul><li>Module électronique central (smartphone)</li></ul></p>
+      
+        <p>L'objectif de ce module central est d'obtenir un smartphone fonctionnel permettant l'hébergement de fichiers sur un serveur local qu'il contient, l'hébergement d'un site web ainsi que sa mise en ligne par une WIFI extérieure et le partage de connexion pour permettre l'accès à internet. Il permettra aussi de créer autour de lui un réseau local auquel d'autres appareils électroniques environnants pourront se connecter.<ul><li>Module énergétique (alimentation photovoltaïque)</li></ul></p>
+      
+        <p>L'objectif de ce module énergétique est d'obtenir une alimentation photovoltaïque connecté à une batterie et un régulateur afin d'alimenter au maximum le module central.<ul><li>Module de mobilité (glacière de transport)</li></ul></p>
+      
+        <p>L'objectif de ce module de mobilité est d'obtenir un caisson de protection et de transport pour permettre le déplacement de tous les modules précédents et rendre le système global mobile. Il sera construit à partir d'une glacière de récupération.<ul><li>Module éco-conception web</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 20 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Dominik_-_serveur_modulable_autoalimenté_en_réemploi" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Dominik_-_serveur_modulable_autoalimenté_en_réemploi</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour la partie serveur :<ul><li>Smartphone avec entrée carte SD</li><li>Carte SD (taille adaptée à vos besoins)</li><li>Une carte SIM et un forfait Internet</li></ul></li><li>Pour la partie auto-alimentation :<ul><li>1 panneau solaire</li><li>1 régulateur solaire</li><li>1 batterie</li><li>1 allume-cigare USB</li><li>15m de câble (1,5mm²)</li><li>Scotch isolant</li><li>Cosses + dominos</li></ul></li><li>Pour la partie caisson de transport :<ul><li>Une petite glacière (17 cm x 23 cm x 24 cm dans notre cas)</li><li>Planches de bois</li><li>Colle à bois</li><li>2 charnière</li><li>Plaque de plexiglass</li><li>Un passe câble</li><li>2 petites vis</li><li>Scotch double face</li><li>Super glue</li><li>Papier de verre</li><li>Scotch velcro</li><li>Une chambre à air</li><li>Une petite plaque d'acier</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li>Pour la partie auto-alimentation :<ul><li>Pince multifonction de câblage</li><li>Un poste à souder</li></ul></li><li>Pour la partie caisson de transport :<ul><li>Un mètre</li><li>Une règle</li><li>Un stylo</li><li>Une perceuse</li><li>Foret cloche</li><li>Une scie circulaire ou manuelle à défaut</li><li>Une perceuse</li><li>Lime à bois</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Module électronique central - Smartphone</strong><p><strong>Étapes :</strong></p><ol><li>⌚ Durée : 2 à 4h</li><li>L'objectif de ce module central est d'obtenir un smartphone fonctionnel permettant l'hébergement de fichiers sur un serveur local qu'il contient, l'hébergement d'un site web ainsi que sa mise en ligne par une WIFI extérieure et le partage de connexion pour permettre l'accès à internet. Il permettra aussi de créer autour de lui un réseau local auquel d'autres appareils électroniques environnants pourront se connecter.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Module énergétique</strong><p><strong>Étapes :</strong></p><ol><li>⌚ Durée : 2h (+10h récupération de matériel)</li><li>Un système complet d'accès au numérique de façon low-tech doit permettre aux utilisateurs de ne pas dépendre (ou le moins possible) du réseau électrique national, mais de pouvoir être tout de même être alimenté en énergie, et ceci de la façon la plus fiable et éco-responsable possible. Au regard de ces exigences, différents systèmes d'alimentation peuvent être envisagés :<ul><li>Une alimentation classique au réseau électrique</li><li>Une auto-alimentation par système photovoltaïque</li><li>Une auto-alimentation par système éolien</li><li>Une auto-alimentation par un vélo-générateur électrique</li></ul></li><li>Une analyse multi-critère hiérarchique (fichier choix_alim) nous a permis de définir le système photovoltaïque comme le plus pertinent pour ce projet.</li><li>Dans ce module, nous vous proposons alors :<ul><li>Une méthode de dimensionnement de votre installation</li><li>Des astuces pour récupérer les composants nécessaires</li><li>Un tutoriel de câblage de votre installation pas à pas</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Module de mobilité</strong><p><strong>Étapes :</strong></p><ol><li>⌚ Durée : 4h</li><li>Pour continuer dans le développement de ce système, il est pertinent de lui offrir un caisson de transport et protection, afin de pouvoir déplacer le système. Cette mobilité ne sert pas uniquement à rendre toutes les utilités précédentes mobiles, mais elle permet une utilité en elle-même dans une optique de Sneakernet (https://fr.wikipedia.org/wiki/Sneakernet).</li><li>Pour ce caisson, il existe plusieurs possibilités :<ul><li>Caisson auto-construit à partir de matériaux bruts de récupération</li><li>Récupération d'une boite type glacière de camping</li><li>Sac à dos de récupération</li></ul></li><li>Pour se fixer sur un choix pertinent, nous avons réalisé une analyse hiérarchique multi-critères. (voir le fichier "choix_caisson")</li><li>Celle-ci nous a permis de réaliser que l'utilisation d'une glacière de camping récupérée était le choix le plus pertinent pour notre cas d'utilisation. Ce choix peut être différent dans d'autres cas d'utilisation. Nous présenterons ici uniquement le tutoriel associé à la solution "glacière".</li><li>Nous avons donc aménagé cette glacière dans le but de lui donner un aspect esthétique convivial, mais aussi et surtout pour qu'elle puisse accueillir et transporter de façon pratique et simple les différents composants de notre système connectés entre eux.</li><li>Avant d'attaquer la conception en elle-même, nous nous sommes demandé si la surchauffe de la glacière pouvait comporter un risque pour l'ensemble du système. Une analyse théorique nous a permis de conclure que la température à l'intérieur de la glacière resterait acceptable, et qu'il n'était donc pas utile de pense à ajouter un système de ventilation (voir le fichier "ventilation").</li><li>Ce module contiendra donc une notice détaillée pour la fabrication d'un caisson hébergeant un serveur local alimenté au solaire : Dominik. Ce serveur internet sera hébergé sur un smartphone de récupération. Le caisson est prévu pour être mobile, étanche, pratique et convivial. Ce caisson s'appuiera sur la récupération d'une glacière aménagée, à l'intérieur de laquelle se trouve des compartiments. Dans les différents compartiments se trouveront :<ul><li>La batterie</li><li>Le régulateur de tension</li><li>Le smartphone</li><li>Des cales</li><li>La longueur de câble inutilisée</li></ul></li><li>Des bretelles seront ajoutées ainsi qu'un système de support et d'orientation du panneau solaire (voir illustrations Image 2).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Module éco-conception web</strong><p><strong>Étapes :</strong></p><ol><li>Voir le tutoriel complet sur ce lien</li><li>L'objectif de ce module numérique est d'obtenir un site web conçu de zéro ("from scratch") en HTML et CSS en suivant les concepts de la conception numérique faible carbone.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

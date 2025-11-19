@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bassin de culture de spiruline</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Bassin de culture de spiruline</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/f/f7/Bassin_de_culture_de_spiruline_bassin_z.jpg/800px-Bassin_de_culture_de_spiruline_bassin_z.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Construction d'un bassin de culture de spiruline rehaussé</div>
+        
+      </div>
+    
+    
+      
+        <p>La construction d’un bassin de culture familiale permet de produire une quantité importante de spiruline pour un faible encombrement. Pour une production idéale le milieu de culture doit faire 20 cm de profondeur. Avec moins de 20 cm, le bassin n’est pas exploité au maximum, avec plus la spiruline n’est pas suffisamment exposé à la lumière, la production est ralentie. La Fédération des Spiruliniers de France recommande une consommation de 50 grammes de spiruline par jour. Il faut 1 m² de bassin pour produire quotidiennement ces 50 grammes de micro-algue. La dimension du bassin est à adapter en fonction du nombre de personnes souhaitant consommer de la spiruline tous les jours. Dans notre cas, nous sommes trois, nous allons donc réaliser un bassin de 3 m².</p>
+      
+        <p>Le bassin présenté dans ce tutoriel est surélevé pour permettre de travailler sur la culture de spiruline debout, plus confortablement. Cela permet également de stocker du matériel sous le bassin. Une alternative plus économique et rapide à réaliser est possible en commençant à l'étape bassin.</p>
+      
+        <p>Ce tutoriel est réalisé en collaboration avec Enkidou Burtschell , spécialiste en éco-construction bioclimatique et diplômé d’Etat de production de spiruline.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 300 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Bassin_de_culture_de_spiruline" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Bassin_de_culture_de_spiruline</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Vis à bois de 50 à 100 mm de long</li><li>Volige 18 mm</li><li>Demi-chevron</li><li>Pieds de nivellement</li><li>Géotextile</li><li>Bâche étanche</li><li>Agrafes</li><li>Bâche de serre ou film alimentaire</li><li>Plaque de polycarbonate de 3x1 m</li><li>Cartons</li><li>Silicone</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Scie circulaire/scie à onglet</li><li>Scie à main</li><li>Visseuse</li><li>Rabots électrique</li><li>Agrafeuse</li><li>Pistolet à silicone</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Structure de support du bassin : châssis bas</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4d/Bassin_de_culture_de_spiruline_chassis_bas.jpg/800px-Bassin_de_culture_de_spiruline_chassis_bas.jpg' alt='Bassin de culture de spiruline chassis bas.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Faire un cadre de 3 mètres de long par 1 mètre de large en demi-chevron,</li><li>Poser une équerre d'environ 30 cm dans chaque angle,</li><li>Ajouter deux raidisseurs en demi-chevron, un à 1 m, l’autre à 2 m dans la longueur.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Structure de support du bassin : surélévation</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/58/Bassin_de_culture_de_spiruline_jambes.jpg/800px-Bassin_de_culture_de_spiruline_jambes.jpg' alt='Bassin de culture de spiruline jambes.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/18/Bassin_de_culture_de_spiruline_jambes_2.jpg/800px-Bassin_de_culture_de_spiruline_jambes_2.jpg' alt='Bassin de culture de spiruline jambes 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f1/Bassin_de_culture_de_spiruline_jambes_3.jpg/800px-Bassin_de_culture_de_spiruline_jambes_3.jpg' alt='Bassin de culture de spiruline jambes 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour une bonne ergonomie de travail il faut ajuster la hauteur du bassin à la taille de chacun. Le bassin fait 30 centimètres de haut. Dans notre cas le fond du bassin est à un mètre du sol. Dans le calcul de la hauteur des jambes, il faut également prendre en compte l’épaisseur des châssis bas et haut.<ul><li>Faire 4 jambes en angle en demi-chevron,</li><li>Poser les jambes d’angles alignées sur les angles du châssis bas,</li><li>Poser quatre jambes centrales, d'un seul demi-chevron, face à chaque raidisseur du châssis bas,</li><li>Poser une équerre d’environ 30 cm entre chaque jambe centrale et son raidisseur du châssis bas, quatre en tout.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Structure de support du bassin : châssis haut</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/90/Bassin_de_culture_de_spiruline_chassis_haut.jpg/800px-Bassin_de_culture_de_spiruline_chassis_haut.jpg' alt='Bassin de culture de spiruline chassis haut.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/02/Bassin_de_culture_de_spiruline_chassis_haut_2.jpg/800px-Bassin_de_culture_de_spiruline_chassis_haut_2.jpg' alt='Bassin de culture de spiruline chassis haut 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d4/Bassin_de_culture_de_spiruline_chassis_haut_3.jpg/800px-Bassin_de_culture_de_spiruline_chassis_haut_3.jpg' alt='Bassin de culture de spiruline chassis haut 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le châssis haut est une copie du châssis bas.<ul><li>Poser deux nouveaux demi-chevrons de 3 m sur les jambes, au-dessus de ceux du châssis bas, pour faire la longueur du châssis haut.</li></ul></li><li>ASTUCE Commencer par visser les demi-chevrons sur les jambes d’angles puis sur les jambes centraux<ul><li>Poser les deux demi chevrons qui ferment le châssis dans la largeur,</li><li>Poser deux raidisseurs centraux, au-dessus de ceux du châssis bas et des jambes centrales,</li><li>Poser une équerre d’environ 30 cm dans chaque angle du châssis haut.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Structure de support du bassin : plancher support</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cd/Bassin_de_culture_de_spiruline_plancher_1.jpg/800px-Bassin_de_culture_de_spiruline_plancher_1.jpg' alt='Bassin de culture de spiruline plancher 1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c0/Bassin_de_culture_de_spiruline_plancher_2.jpg/800px-Bassin_de_culture_de_spiruline_plancher_2.jpg' alt='Bassin de culture de spiruline plancher 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Poser un plancher en volige d’environ 18 mm d’épaisseur sur le châssis haut,</li><li>Visser les planches sur les raidisseurs.</li></ul></li><li>La rehausse du bassin est terminée.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Bassin de culture : structure du bassin</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/Bassin_de_culture_de_spiruline_bassin_1.jpg/800px-Bassin_de_culture_de_spiruline_bassin_1.jpg' alt='Bassin de culture de spiruline bassin 1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Bassin_de_culture_de_spiruline_bassin_2.jpg/800px-Bassin_de_culture_de_spiruline_bassin_2.jpg' alt='Bassin de culture de spiruline bassin 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/49/Bassin_de_culture_de_spiruline_bassin_3.jpg/800px-Bassin_de_culture_de_spiruline_bassin_3.jpg' alt='Bassin de culture de spiruline bassin 3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/35/Bassin_de_culture_de_spiruline_bassin_4.jpg/800px-Bassin_de_culture_de_spiruline_bassin_4.jpg' alt='Bassin de culture de spiruline bassin 4.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bd/Bassin_de_culture_de_spiruline_bassin_5.jpg/800px-Bassin_de_culture_de_spiruline_bassin_5.jpg' alt='Bassin de culture de spiruline bassin 5.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/Bassin_de_culture_de_spiruline_bassin_6.jpg/800px-Bassin_de_culture_de_spiruline_bassin_6.jpg' alt='Bassin de culture de spiruline bassin 6.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour faciliter le travail en hauteur, la face avant est plus basse que celle du fond. 30 cm à l’avant, 40 à l’arrière du bassin. Pour améliorer la production, on isole le bassin, il gardera plus longtemps la chaleur de la journée, importante pour la spiruline. Dans notre cas, une lame d’air entre deux planches de volige isole la culture.<ul><li>Poser un cadre de tasseaux sur le plancher à 18 mm des bords du plancher. Distance à adapter en fonction de l’épaisseur de la volige utilisée pour faire le bassin,</li><li>Faire un cadre en volige à l’intérieur du cadre de tasseaux,</li><li>Faire un cadre en volige à l’extérieur du cadre de tasseaux,</li><li>Mettre des tasseaux à la verticale, entre les deux cadres de volige, en prolongement des jambes centrales et un de chaque côté des quatre angles,</li><li>Découper des planches de volige surélever les cadres initiaux (intérieur et extérieur) de manière à ce que la hauteur du bassin soit de 30 cm à l’avant et de 40 cm à l’arrière. Les deux planches latérales doivent être découpées en diagonale pour lier les deux faces du bassin,</li><li>Fixer les deux nouveaux cadres (intérieur et extérieur) sur les tasseaux verticaux en appui sur les premiers cadres. Commencer par le cadre intérieur,</li><li>Couper les parties des tasseaux verticaux qui dépassent.</li></ul></li><li>ATTENTION Dans la réalisation du bassin, pour le cadre intérieur, les vis doivent venir de l’intérieur et aller vers l’extérieur sinon il y a risque de crever la bâche. ASTUCE Ajouter de la paille, de la laine, papier journaux ou carton entre les deux cadres pour isoler encore mieux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Bassin de culture : capot</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Bassin_de_culture_de_spiruline_capot_2.jpg/800px-Bassin_de_culture_de_spiruline_capot_2.jpg' alt='Bassin de culture de spiruline capot 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/17/Bassin_de_culture_de_spiruline_capot.jpg/800px-Bassin_de_culture_de_spiruline_capot.jpg' alt='Bassin de culture de spiruline capot.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c5/Bassin_de_culture_de_spiruline_capot_3.jpg/800px-Bassin_de_culture_de_spiruline_capot_3.jpg' alt='Bassin de culture de spiruline capot 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Un capot translucide posé sur le bassin permet au milieu de culture de monter rapidement en température le matin et de conserver sa chaleur le soir. Une plaque de polycarbonate joue le rôle de verrière. Un film de bâche de serre ou du film alimentaire permet d’éviter le contact entre la spiruline et le polycarbonate dont les effets sur la santé ne sont pas connus.<ul><li>Faire un cadre en demi-chevron aux mesures du dessus du bassin,</li><li>Mettre deux raidisseurs centraux,</li><li>Mettre une équerre d’environ 30 cm dans chaque coin,</li><li>Poser la bâche pour serre ou le film alimentaire sur une face, retourner le cadre et agrafer le film plastique sur le cadre,</li><li>Faire un cordon de silicone sur le tour du cadre, où la bâche est agrafée,</li><li>Poser la plaque de polycarbonate à la taille du cadre sur le joint en silicone,</li><li>Visser,</li><li>Mettre le capot de côté pour passer aux étapes d’isolation et d’étanchéité.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Isolation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a7/Bassin_de_culture_de_spiruline_isolation.jpg/800px-Bassin_de_culture_de_spiruline_isolation.jpg' alt='Bassin de culture de spiruline isolation.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Mettre deux ou trois couches de cartons à l’intérieur du bassin sur le plancher.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Étanchéité</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ab/Bassin_de_culture_de_spiruline_geot.jpg/800px-Bassin_de_culture_de_spiruline_geot.jpg' alt='Bassin de culture de spiruline geot.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/68/Bassin_de_culture_de_spiruline_geot_2.jpg/800px-Bassin_de_culture_de_spiruline_geot_2.jpg' alt='Bassin de culture de spiruline geot 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/81/Bassin_de_culture_de_spiruline_geot_3.jpg/800px-Bassin_de_culture_de_spiruline_geot_3.jpg' alt='Bassin de culture de spiruline geot 3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Bassin_de_culture_de_spiruline_bache.jpg/800px-Bassin_de_culture_de_spiruline_bache.jpg' alt='Bassin de culture de spiruline bache.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5b/Bassin_de_culture_de_spiruline_bache_2.jpg/800px-Bassin_de_culture_de_spiruline_bache_2.jpg' alt='Bassin de culture de spiruline bache 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Un géotextile permet d’améliorer l’isolation et surtout d’éviter à la bâche de se déchirer<ul><li>Poser le géotextile au fond du bassin et qui remonte le long des parois,</li><li>Lisser le tissu à la main pour éviter les plis et surépaisseurs,</li><li>Privilégier un peu de « mou » sur le géotextile pour qu’il ne se déchire pas avec la pression de l’eau,</li><li>Plier proprement les angles,</li><li>Agrafer tous les 20 cm sur le cadre extérieur,</li><li>Couper les sur-longueurs de géotextile à 2 cm du haut du bassin,</li><li>Poser la bâche au fond du bassin et la faire remonter le long des parois,</li><li>Lisser la bâche à la main pour éviter les plis et surépaisseurs,</li><li>Privilégier un peu de « mou » sur la bâche pour qu’elle ne se déchire pas avec la pression de l’eau,</li><li>Plier proprement les angles,</li><li>Agrafer tous les 20 cm sur le cadre extérieur,</li><li>Couper les sur-longueurs de bâche à 2 cm du haut du bassin,</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Assemblage</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d3/Bassin_de_culture_de_spiruline_charni_re.jpg/800px-Bassin_de_culture_de_spiruline_charni_re.jpg' alt='Bassin de culture de spiruline charni re.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/46/Bassin_de_culture_de_spiruline_couronne.jpg/800px-Bassin_de_culture_de_spiruline_couronne.jpg' alt='Bassin de culture de spiruline couronne.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3d/Bassin_de_culture_de_spiruline_couronne_2.jpg/800px-Bassin_de_culture_de_spiruline_couronne_2.jpg' alt='Bassin de culture de spiruline couronne 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Poser une charnière tous les mètres entre le capot et la face arrière du bassin,</li><li>Visser des tasseaux « en couronne » du cadre extérieur pour recouvrir la bâche et le géotextile au niveau des agrafes et des charnières,</li><li>Poser un tissu d’ombrage sur le capot.</li></ul></li><li>Le bassin est finit, il n’y a plus qu’à préparer un milieu de culture, installer une pompe d’aquarium puis ensemencer la spiruline.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>
