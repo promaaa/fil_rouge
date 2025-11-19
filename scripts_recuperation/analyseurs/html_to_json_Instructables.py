@@ -292,8 +292,8 @@ def batch_convert_instructables():
     here = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(here)
 
-    pages_dir = os.path.join(project_root, "pages", "instructables")
-    output_dir = os.path.join(project_root, "json", "instructables")
+    pages_dir = os.path.join(project_root, "pages_brutes", "instructables")
+    output_dir = os.path.join(project_root, "donnees_brutes", "instructables")
     os.makedirs(output_dir, exist_ok=True)
 
     base_url = "https://www.instructables.com/"

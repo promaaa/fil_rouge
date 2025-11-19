@@ -7,14 +7,14 @@ from jinja2 import Environment, FileSystemLoader
 # =========================
 
 # Dossier où se trouvent les JSON source (ceux produits par html_to_json)
-# Exemple : "../json/json_original/lowtechlab"
-INPUT_DIR = "../json/json_original/wikifab"
+# Exemple : "../donnees_brutes/lowtechlab"
+INPUT_DIR = "../donnees_brutes/instructables"
 
-# Dossier racine pour les sorties harmonisées (au niveau de json/)
-OUTPUT_BASE_DIR = "../json"
+# Dossier racine pour les sorties harmonisées
+OUTPUT_BASE_DIR = "../donnees_harmonisees"
 
 # Nom de la source (lowtechlab, instructables, wikifab)
-SOURCE_NAME = "wikifab"
+SOURCE_NAME = "instructables"
 
 # Dossier où se trouve le template Jinja2
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
@@ -81,9 +81,9 @@ class TutorialHarmonizer:
 
         # Champs principaux
         titre = (project_data.get("titre", ["Projet maker"])[0] or "").strip()
-        difficulte = (project_data.get("difficulté", [""])[0] or "").strip()
-        duree = (project_data.get("durée", [""])[0] or "").strip()
-        cout = (project_data.get("coût", [""])[0] or "").strip()
+        difficulte = (project_data.get("difficulté", [""])[0] or "").strip() if project_data.get("difficulté") else ""
+        duree = (project_data.get("durée", [""])[0] or "").strip() if project_data.get("durée") else ""
+        cout = (project_data.get("coût", [""])[0] or "").strip() if project_data.get("coût") else ""
         image = project_data.get("image", [{}])[0] if project_data.get("image") else {}
         main_image_url = (image.get("url") or "").strip()
         main_image_caption = (image.get("description") or "").strip()
@@ -300,19 +300,47 @@ class TutorialHarmonizer:
         html_output = template.render(**fields)
         return html_output
 
+    def _safe_path(self, filepath: str, max_filename_length: int = 100) -> str:
+        """Tronque le nom de fichier pour éviter les chemins trop longs sous Windows (260 chars max)."""
+        dir_path = os.path.dirname(filepath)
+        filename = os.path.basename(filepath)
+        name, ext = os.path.splitext(filename)
+        
+        # Si le nom de fichier est trop long, le tronquer et ajouter un hash
+        if len(name) > max_filename_length:
+            import hashlib
+            name_hash = hashlib.md5(name.encode()).hexdigest()[:8]
+            name = name[:max_filename_length] + "_" + name_hash
+        
+        return os.path.join(dir_path, name + ext)
+
     def save_html(self, html_output: str, output_html: str):
+        # S'assurer que le répertoire existe d'abord
+        output_dir = os.path.dirname(output_html)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Puis tronquer le chemin si nécessaire
+        output_html = self._safe_path(output_html)
+        
         with open(output_html, "w", encoding="utf-8") as f:
             f.write(html_output)
-        print(f"✅ HTML généré : {output_html}")
+        print(f"✅ HTML généré : {os.path.basename(output_html)}")
 
     # ========== SORTIE JSON HARMONISÉ ==========
     def harmonize_to_json(self, data: dict):
         return self._compute_common_fields(data)
 
     def save_json(self, json_data: dict, output_json: str):
+        # S'assurer que le répertoire existe d'abord
+        output_dir = os.path.dirname(output_json)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Puis tronquer le chemin si nécessaire
+        output_json = self._safe_path(output_json)
+        
         with open(output_json, "w", encoding="utf-8") as f:
             json.dump(json_data, f, ensure_ascii=False, indent=4)
-        print(f"✅ JSON harmonisé généré : {output_json}")
+        print(f"✅ JSON harmonisé généré : {os.path.basename(output_json)}")
 
 
 # =========================
@@ -324,8 +352,8 @@ if __name__ == "__main__":
         raise NotADirectoryError(f"Dossier introuvable : {INPUT_DIR}")
 
     # Créer les sous-dossiers de sortie avec la structure source
-    output_html_dir = os.path.join(OUTPUT_BASE_DIR, "html_harmonized", SOURCE_NAME)
-    output_json_dir = os.path.join(OUTPUT_BASE_DIR, "json_harmonized", SOURCE_NAME)
+    output_html_dir = os.path.join(OUTPUT_BASE_DIR, SOURCE_NAME, "html")
+    output_json_dir = os.path.join(OUTPUT_BASE_DIR, SOURCE_NAME, "json")
     os.makedirs(output_html_dir, exist_ok=True)
     os.makedirs(output_json_dir, exist_ok=True)
 
