@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Repair Pulls in Upholstery Instantly</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Repair Pulls in Upholstery Instantly</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FLP/JMH0/LV0YUZ88/FLPJMH0LV0YUZ88.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>A maker’s/tinkerer’s/artist’s back pocket, such as mine, hosts many different objects (not all of which are conducive to being placed in a pocket ). This means that often, things that are not appropriately pocket sized, such as: tools, strange found objects, utensils, living things, etc., stick out quite aggressively. This in and of itself is not problematic when standing; however, when seated, these objects can lead to a myriad of malaises, from sciatic pain to the impetus for authoring this article —pulls in upholstery.</p>
+      
+        <p>“Hypothetical” scenario:</p>
+      
+        <p>Average mid-spring day, searing sun, brisk air, and a denim back pocket desperately clutching a pair of needle nosed pliers as I contorted my body into the passenger seat of my wife's beloved subcompact hatchback. Much to the chagrin of the passenger seat, the plier’s careless ragged teeth gnawed at its upholstery as I backed into it blindly. An attempt to pass off the tight weave’s very audible evisceration as a much ruder sound from an entirely different source was futile. The damage was done. What follows is how simple it is to reverse the damage to upholstery with the right tool not intended for the job.</p>
+      
+        <p>ATTENTION CAT OWNERS: This guide might in fact be more for you than anyone else.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Repair-Pulls-in-Upholstery-Instantly/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Repair-Pulls-in-Upholstery-Instantly/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>A felting needle. (There are optional holders for felting needles, but these are not at all a necessity. )</li><li>Wait, how do I choose a felting needle?</li><li>Literally ANY kind that you can get your hands on will work for this technique. Don’t be intimidated by different gauges or shape choice. To help you make an informed purchase, however, there are three main needle shapes that could prove useful for this purpose: triangle, star, and spiral (twisted). There are also multiple gauges, higher numbered gauges are in fact smaller in size than lower numbered gauges. The gauge numbers are 32, 36, 38, 40, and 42. Gauges 32 and 42 are rarer and harder to find than the others, so you can ignore them. You also might find that the felting needles are labeled something like “fine” and “coarse”, these will also work. A good rule of thumb to follow, use a fine gauge (40 for instance) for finer/tighter upholstery weaves and a coarse gauge (36 for instance) for looser/coarser upholstery weaves.</li><li>Recommendation:</li><li>During R&D, spiral shaped 36 and 38 gauge needles worked best on the widest variety of fabrics. Your kilometers may vary.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: What Is a Felting Needle?</strong><p><strong>Étapes :</strong></p><ol><li>Felting needles for the uninitiated, are specialty needles designed for felting a bundle of fibers (habitually wool) through repeated insertion and removal (STABBING). These needles have tiny forward-facing barbs that hook the fibers together as the needle is repeatedly inserted into the bundle of fibers, matting them together. If you’ve never taken a stab at needle felting, I implore you to try, it is oddly therapeutic, humbling, and the results are often rewarding.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: The Repair Technique</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FJO/B3DR/LV0YUZ8U/FJOB3DRLV0YUZ8U.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Repair Technique' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBS/FDT7/LV0YUZ8Y/FBSFDT7LV0YUZ8Y.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Repair Technique' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZ8/Q3N6/LV0YUZ97/FZ8Q3N6LV0YUZ97.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Repair Technique' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Z/VCPP/LV0YUZ9D/F3ZVCPPLV0YUZ9D.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Repair Technique' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>My limited needle felting experience led me to hypothesize a potential solution to pulls in upholstery (after the passenger seat disaster of 2020). After grueling minutes of research and development, the theory was tested and worked spectacularly! In fact, it worked so well that I started creating pulls in upholstery just to mend them like a fabric wizard.</li><li>The Repair Technique In Detail:</li><li>Here is the simple technique to reverse the effects of nearly all small pulls in upholstery!</li><li>Preparatory Step: Grasp the felting needle around its shaft, close to the bent end, in your dominant hand between your thumb and index. Use remaining fingers to help support the needle. You are now ready.</li><li>Step 1: With the felting needle, point down, gingerly stab around the affected area to tighten up the loosened fibers.</li><li>Step 2: Stab the loop of the pull directly until it becomes recessed back into the fabric.</li><li>Step 3: Tidy up any stray fibers by stabbing them as well.</li><li>Step 4: Rub the previously affected area with your fingertips in disbelief.</li><li>Step 5: Share the technique with your cat owning friends.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Bonus.</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FM8/83Q6/LV0YUZ9K/FM883Q6LV0YUZ9K.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bonus.' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8Z/G2RF/LV0YUZ9S/F8ZG2RFLV0YUZ9S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bonus.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>For the overly ambitious, you can even convert a pumpkin carving reciprocating saw into an automated needle felting machine! Yes, it is terrifying to use, but it's guaranteed to increase speed of repair by at least 65% until the felting needle breaks!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

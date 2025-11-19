@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chaufferette</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Chaufferette</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/c/c6/Chaufferette_20241205_183025.jpg/800px-Chaufferette_20241205_183025.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">L'objet de ce tutoriel est de fabriquer des chaufferettes à main. Celles-ci peuvent monter en température lorsqu'on les active, jusqu'à 50°C environ, elles sont utilisables en montagne par exemple, pour se réchauffer lors d'une randonnée.</div>
+        
+      </div>
+    
+    
+      
+        <p>Lors des sorties en montagne on se retrouve parfois à subir le froid, notamment au niveau des extrémités du corps (mains, pieds).</p>
+      
+        <p>Certaines personnes peinent vraiment à se réchauffer, et la sortie ski de randonnée (pour éviter les remontées mécaniques peu économiques et écologiques !) peut devenir un véritable calvaire !</p>
+      
+        <p>Certains magasins de sport proposent, pour nous apporter un peu de confort, des chaufferettes à main. Ce sont de petits contenants en plastique qui se mettent à chauffer aux alentour de 50°C lorsqu'on les active.</p>
+      
+        <p>Certaines sont réutilisables pour des prix tournant autour de 20 € la paire et d'autres non, pour des prix autour de 15€ les 30.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1,5 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Chaufferette" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Chaufferette</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Bicarbonate de sodium (Bicarbonate de soude)</li><li>Vinaigre</li><li>Contenant pour les chaufferettes (ici des compotes à emporter vide)</li></ul></li><li>Les quantités seront discutés dans le tutoriel car dépendante du degrés de concentration du vinaigre</li><li>Les compotes à emporter ne conviennent pas toutes, prendre seulement celles qui se rebouchent bien!</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Casserole</li><li>Balance</li><li>Cuillère</li><li>Entonnoir</li><li>Verre</li><li>Verre doseur</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Calcul des quantités</strong><p><strong>Étapes :</strong></p><ol><li>Voici les quantités pour une chaufferette ! La masse de vinaigre dépend de sa concentration.</li><li>35g de bicarbonate de sodium</li><li>Ces valeurs sont approximatives. Vous trouverez dans les sections théoriques comment les retrouver par le calcul.</li><li>NB : La masse volumique du vinaigre est très proche de l'eau soit 1kg pour 1L.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Nettoyage du matériel</strong><p><strong>Étapes :</strong></p><ol><li>Fabriquer des chaufferettes, c'est faire de la chimie, et la chimie n'aime pas trop les impuretés. Il est fortement conseillé de nettoyer correctement tout les ustensiles à l'eau et au savon. En particulier les contenants des chaufferettes au risque qu'il y reste un peu de compote si vous choisissez les mêmes que nous !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Mélange des réactifs</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/26/Chaufferette_1707561564307.jpg/800px-Chaufferette_1707561564307.jpg' alt='Chaufferette 1707561564307.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3e/Chaufferette_1707561564296.jpg/800px-Chaufferette_1707561564296.jpg' alt='Chaufferette 1707561564296.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/45/Chaufferette_1707561910716.jpg/800px-Chaufferette_1707561910716.jpg' alt='Chaufferette 1707561910716.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Sécurité<ul><li>Le vinaigre est une substance irritante pour la peau et fortement irritante pour les yeux. Ne pas hésiter à mettre des lunettes de protection lors du mélange. Autrement, faire attention aux éclaboussures...</li></ul></li><li>La première étape consiste à mélanger le vinaigre et le bicarbonate de sodium. Pour cela, on commence par verser la bonne quantité de vinaigre dans notre casserole. On vient ensuite ajouter doucement le bicarbonate de sodium. Il faut ensuite mélanger le tout jusqu'à ce qu'il n'y est plus de mousse. Cela indiquera que la réaction chimique est terminée.</li><li>Point de vigilance<ul><li>Verser doucement le bicarbonate de soude car la réaction produit du CO2 gazeux ce qui fait mousser la solution</li><li>Cette étape prend du temps, mais mieux vaut aller au bout pour que l'ensemble du vinaigre réagisse. Si il reste du vinaigre, préparez-vous à sentir son odeur nauséabonde lors de l'étape suivante !!</li><li>Au plus on fabrique de chaufferettes, au plus la réaction prendra du temps. Pour 5 chaufferettes, on peut s'attendre à environ 20 min de mélange</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Chauffe, évaporation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fb/Chaufferette_1707570183991.jpg/800px-Chaufferette_1707570183991.jpg' alt='Chaufferette 1707570183991.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/47/Chaufferette_1707570183986.jpg/800px-Chaufferette_1707570183986.jpg' alt='Chaufferette 1707570183986.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Sécurité<ul><li>La substance obtenue par la réaction du vinaigre et du bicarbonate de sodium est de l'éthanoate de sodium. Cette substance est irritante, ne pas hésiter à porter des lunettes de sécurité. Autrement, prenez garde à ne pas vous en mettre dans les yeux</li><li>Léger risque de brûlure, potentielle petite projection en cas de grosse quantité et de plaque de cuisson de forte puissance</li></ul></li><li>Lorsque la première étape est bien terminée, on peut mettre notre casserole à chauffer à feu vif, l'objectif est de faire s'évaporer toute l'eau qu'il y a en trop. Je dis en trop, car nous aurons besoin d'un petit peu d'eau pour obtenir la bonne substance. Lorsqu'un film très léger commence à apparaitre à la surface, alors la substance est prête, il faut arrêter la chauffe.</li><li>Point de vigilance<ul><li>Il y a une grande quantité d'eau à évaporer donc cette étape prend un certain temps (encore une fois, au plus on fait de chaufferette, au plus l'évaporation est longue)</li><li>Lors de cette étape il ne se passera rien pendant longtemps, mais à la fin tout va très vite. Il faut donc être très attentif dès lors que le liquide se trouble très légèrement et jaunit.</li><li>Généralement, sur la fin, des cristaux apparaitront sur les bords de la casserole.</li><li>Si par mégarde, on laisse le liquide trop longtemps chauffer, il se solidifie complétement. Dans ce cas, couper le feu et ajouter de l'eau rapidement (pas en trop grande quantité, juste assez pour voir tout le solide redevenir liquide). On peut ensuite le remettre sur le feu en remuant pour aider les dernier cristaux à ce liquéfier. Pas d'inquiétude, les chaufferettes fonctionneront tout de même !</li><li>Vers la fin une odeur proche de celle d'un gâteau au four devrait apparaitre. Elle n'est pas désagréable mais éviter de trop la renifler !! Mieux vaut être prudent lorsque l'on joue à l'apprenti chimiste ! Même lorsque l'on manipule des substances peu dangereuses :)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Remplissage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e9/Chaufferette_1707570183965.jpg/800px-Chaufferette_1707570183965.jpg' alt='Chaufferette 1707570183965.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Sécurité<ul><li>Risque de brûlure, le liquide à verser dans les contenants de chaufferettes est très chaud (environs 100°C au début)</li><li>En cas de contact avec la peau à moins de 60°C, le liquide se solidifiera et ce réchauffera. C'est très impressionnant car le solide colle à la peau. Pas de panique, un peu d'eau et il partira tout seul. Ne tardez tout de même pas trop à rincer à l'eau pour éviter une brûlure.</li></ul></li><li>L'objectif de cette étape est de remplir les contenants de nos chaufferettes par la substance obtenu à l'étape 4.</li><li>Il faut être deux pour cette étape, seul il est difficile de tenir les contenants et de verser en même temps.</li><li>La personne qui tient le contenant peut mettre des gants pour limiter le risque de brûlure.</li><li>Dans cette étape on utilise un entonnoir que l'on vient insérer dans les contenants, puis on vient verser le contenu de la casserole doucement.</li><li>Point de vigilance<ul><li>Il faut laisser une petite entrée d'air dans la chaufferette lorsque l'on verse le liquide, prenez garde à ne pas complétement boucher le trou avec l'entonnoir au risque de débordement et donc de brûlure :(</li><li>Entre chaque chaufferettes, remuer la casserole pour mélanger le liquide et éviter que la surface ne se solidifie</li><li>Le liquide se solidifie au alentour de 58°C, il faut donc le verser avant qu'il n'atteigne cette température, autrement l'entonnoir sera bouché. N'y allez pas pour autant trop vite au risque de vous bruler. Si la substance commence à trop refroidir, il suffi d'y ajouter un petit peu d'eau et de réitérer l'étape 4.</li><li>Si l'entonnoir est complétement bouché, vous pouvez y verser de l'eau chaude, le solide deviendra liquide rapidement est coulera à flot !</li><li>Attention à bien remplir la chaufferette aux 3/4 pour éviter les secousses et donc les risques d'auto-activation!</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Recharge des chaufferettes</strong><p><strong>Étapes :</strong></p><ol><li>Les chaufferettes sont maintenant prêtes à être chargées!</li><li>Afin de charger en chaleur les chaufferettes, il faut les mettre dans de l'eau bouillante durant 10-15min. Ensuite, on doit les laisser refroidir sans trop les remuer jusqu'à qu'elles soient à température ambiante.</li><li>Elles sont maintenant pleines d'énergie et prêtes pour utilisation en montagne ou ailleurs !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Utilisation des chaufferettes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/27/Chaufferette_face_arriere.png/800px-Chaufferette_face_arriere.png' alt='Chaufferette face arriere.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois en pleine montagne dans le froid, on peut les activer, pour cela il faut suivre la notice.</li><li>Elle chauffe alors jusqu'à environs 50°C. Pour conserver la chaleur créée, il est conseillé de les isoler de l'air extérieur en les mettant dans vos gants et/ou dans vos poches.</li><li>Sécurité</li><li>Attention, il est fortement déconseillé de réchauffer brutalement une engelure. L'utilisation des chaufferettes se veut préventive, pour prévenir de forte sensation de froid et non pour réchauffer une zone en état critique.</li><li>En suite, il est fortement déconseillé d'alterner chaud et froid sur une engelure. Mieux vos privilégier des vêtements secs et attendre un bain thermostaté à 37°C une fois en lieu sûr.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - La théorie des chaufferettes</strong><p><strong>Étapes :</strong></p><ol><li>Il a été très intéressant pour moi d'expérimenter par moi-même et d'améliorer un procédé suite à des observation personnelles ! Je vous fais ici part de mes découvertes tirées de mes expériences et de mes lectures.</li><li>L'éthanoate de sodium est un produit de la réaction entre l'acide éthanoïque et le bicarbonate de sodium.</li><li>Cette réaction produit aussi de l'eau est du CO2.</li><li>Cette partie n'est pas très fun, à passer si vous n'êtes pas un grand fan de calculs de chimie ! Mais nécessaire si vous voulez recalculer le tout par vous même !</li><li>Afin de déterminer les quantités d'acide éthanoïque et de bicarbonate de soude à mélanger on fait l'hypothèse que la réaction est totale. Ainsi, afin d'optimiser le tout, il faut mélanger les réactifs en quantité dite stœchiométrique. Lorsqu'on insère exactement ces quantités, tout les réactifs sont consommés et il ne reste plus que des produits à la fin de la réaction!</li><li>Dans notre cas, une molécule d'acide éthanoïque réagit avec une molécule de bicarbonate de sodium. Ainsi, il faut mettre le même nombre de "quantité de matière" (de moles) de chacun des deux réactifs afin d'atteindre les quantités stœchiométriques.</li><li>Sachant cela, on calcul la quantité de matière correspondante à 35g de bicarbonate (pour 1 chaufferette).</li><li>En suite, on calcul la masse d'acide acétique pour obtenir exactement la même quantité de matière (ce qui dépendra de sa masse molaire).</li><li>Enfin, sachant qu'un vinaigre, disons, à 8%, possède 0,08 g d'acide éthanoïque pour 100mL, alors on calcul le volume de vinaigre pour obtenir exactement la bonne masse d'acide éthanoïque.</li><li>Si on préfère, il est possible de calculer la masse de vinaigre plutôt que son volume (Utile lorsque l'on a pas de verre doseur). Par chance, le vinaigre à presque la masse volumique de l'eau, donc 1kg de vinaigre pour 1l de vinaigre.</li><li>Il y a de nombreuses ressources pédagogiques sur les calculs de base en chimie des solutions sur internet si cela vous intéresse. Ce sont des notions abordées en début de lycée en France.</li><li>Cette réaction est amusante à expérimenter car très visuelle, la production de CO2 gazeux produit de la mousse. On peut alors savoir si toutes nos molécules ont bien réagi.</li><li>La réaction prend du temps, et on est obligé de mélanger ! Mais que se passe-t-il dans le monde des molécules pour que cela prenne autant de temps !</li><li>Dans notre casserole après quelques seconde de réaction, on a beaucoup d'eau, des réactifs mais aussi les quelques produits déjà créer. Pour pouvoir réagir, il faut que deux molécules de réactif se rencontre.</li><li>Mais comment ce rencontrer dans tout ce bazar !? C'est un peu comme si on jetait du pollen dans un champs de fleur, au début, il est facile pour le pollen de trouver une fleur célibataire, mais après quelques minutes, lorsque de nombreux couple se sont former, difficile pour une petite fleur et un pollen de ce retrouver.</li><li>En terme technique on parle de cinétique de réaction pour désigner la vitesse à laquelle elle à lieu et de phénomène limitant pour parler du phénomène qui impose cette vitesse.</li><li>Ici c'est la rencontre des molécules qui est la plus lente, on parle donc de transfert de masse.</li><li>On a déjà discuter du problème de cristallisation si on fait chauffer trop longuement le liquide. C'est assez contre-intuitif comme observation. Normalement, en augmentant la température, on passe de solide à liquide pas l'inverse.</li><li>Le phénomène de cristallisation provient ici de la déshydratation l'éthanoate de sodium trihydraté vers l'éthanoate de sodium anhydre. En faite, la substance trihydraté, celle que l'on souhaite pour nos chaufferette, se liquéfie si on la chauffe au delà de 58°C. En revanche, la substance anhydre elle ne se liquéfie qu'à 324°C. Ainsi, lorsqu'on enlève son eau à une molécule, PAF ! Elle devient anhydre et se solidifie instantanément car nous ne somme bien en dessous de 324°C !</li><li>Au début, il y a de l'eau en excès, donc c'est cette eau la qui s'évapore. Mais dès lors qu'il n'y a presque plus d'eau, on commence à déshydrater nos bonne vieille molécule, d'où l'apparition sur la fin de cristaux, puis, progressivement d'un film solide.</li><li>Ici, la connaissance du phénomène permet de juger quand arrêter l'étapes 4. En effet, à l'apparition des premiers cristaux, on sait que le liquide restant n'est pas de l'eau mais bien de l'éthanoate de sodium trihydraté, car si il y avait encore de l'eau liquide, c'est elle qui s'évaporerais et aucun cristaux n'apparaitrais !</li><li>Le fonctionnement des chaufferettes se base sur le phénomène de surfusion ! Pour en savoir plus vous pouvez consulter cette article :</li><li>https://ssaft.com/Blog/dotclear/?pages/Acetate-de-Sodium</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Problématique non résolue</strong><p><strong>Étapes :</strong></p><ol><li>Les chaufferettes devrait être réutilisable en théorie. Dans la réalité, à chaque nouvelle utilisation il devient plus difficile de les activer. Je n'ai pas su percer le mystère de ce phénomène mais peut être que vous y arriverez !</li><li>Elles sont tout de même réutilisables un certain nombre de fois si on accepte d'attendre un peu et de s'y reprendre à plusieurs fois pour les activer.</li><li>Pour les plus persistant, en insérant un tige en métal et en la malaxant l'activation est plus efficace donc vous pourrez les réutiliser plus longtemps avec cette méthode. Pour se faire vous pouvez insérer un l'embout d'un petit tourne vis, d'une vis ou tout objet métallique, le malaxer pendant un certain temps et le retirer une fois que la chaufferette se met à chauffer :)</li><li>Parfois, pendant la recharge, après les avoirs fait chauffer et une fois au repos. Les chaufferettes peuvent s'activer toute seul. Cela peut être embêtant car il faut alors les remettre à charger.</li><li>Pour s'assurer qu'une chaufferette est bien prête à utilisation il faut simplement vérifier qu'elle soit bien liquide. Si c'est le cas vous êtes sûr de votre coup.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Pochettes</strong><p><strong>Étapes :</strong></p><ol><li>Des pochettes en tissus améliorent le "look" des chaufferettes. Pour cacher et tenir les Pom'potes : un morceau de tissus de 20 cm sur 20 cm, avec un ourlet en haut, c'est par là qu'on fera entrer la Pom'pote. Disposer les étiquettes plastifiées de consignes et les coudres en bas et en haut est suffisant, avant de coudre la pochette elle-même sur le côté et en bas... C'est joli...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

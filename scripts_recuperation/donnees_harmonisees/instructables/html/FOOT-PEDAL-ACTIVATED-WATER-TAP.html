@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>FOOT PEDAL ACTIVATED WATER TAP</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>FOOT PEDAL ACTIVATED WATER TAP</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FTW/AQVR/KRKN4F2V/FTWAQVRKRKN4F2V.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Greetings everyone!</p>
+      
+        <p>We hope you are in good health.</p>
+      
+        <p>We live in a world where any form of physical contact between two human beings is starting to pose serious health issues. Keeping this in mind, a while ago, we had worked on an automatic water tap using an Infrared sensor to detect the presence of a human hand, a solenoid valve to control the flow of water through the tap, and finally, an Arduino ProMini to serve as the brains of the system.</p>
+      
+        <p>In this Instructable, we will guide you through the process of controlling the flow of water through your water faucet with the help of a foot pedal.</p>
+      
+        <p>We will still employ the trusty Arduino ProMini as the brains of the project and use a tactile pushbutton as the substitute for the IR sensor.</p>
+      
+        <p>The principle of operation is really simple, a pushbutton sends a signal to the Arduino when the foot pedal is pressed and the solenoid valve opens along with the status indicator LED going off. Upon taking releasing the foot pedal, the water stops flowing from the tap.</p>
+      
+        <p>DISCLAIMER: WE WASTED NO WATER IN THE TESTING OF THIS PROJECT AND RESPONSIBLY REUSED IT.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/FOOT-PEDAL-ACTIVATED-WATER-TAP/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/FOOT-PEDAL-ACTIVATED-WATER-TAP/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: The Prerequisites</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FUY/BD15/KRKN4DCT/FUYBD15KRKN4DCT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGQ/QQ63/KRKN4DEQ/FGQQQ63KRKN4DEQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8B/4LE8/KRKN4DCU/F8B4LE8KRKN4DCU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL4/N1CD/KRKN4DET/FL4N1CDKRKN4DET.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRU/9OB8/KRKN4DCV/FRU9OB8KRKN4DCV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIZ/UB1A/KRKN4DCW/FIZUB1AKRKN4DCW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5X/3MAA/KRKN4DEU/F5X3MAAKRKN4DEU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7B/WXPZ/KRKN4DEP/F7BWXPZKRKN4DEP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Prerequisites' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A) SOFTWARE:</li><li>a) Arduino IDE: Download here.</li><li>b) FTDI drivers: Download here.</li><li>B) ELECTRONICS:</li><li>a) Square tactile pushbutton with cap: Buy here.</li><li>b) Arduino ProMini: Buy here.</li><li>c) FT232RL: Buy here.</li><li>d) USB type A to mini B cable: Buy here.</li><li>e) 3.6-6V DC bistable solenoid valve(1/2 inch): Buy here.</li><li>f) L293D motor driver IC: Buy here.</li><li>g) 5V White LEDs: Buy here.</li><li>h) 9V battery: Buy here.</li><li>i) 9V cell clip connectors: Buy here.</li><li>j) 5.5mm DC barrel plugs: Buy here.</li><li>k) Half-sized breadboard: Buy here.</li><li>l) Mini breadboard: Buy here.</li><li>m) HW-131 breadboard power supply module: Buy here.</li><li>n) Dupont jumper wires: Buy here.</li><li>o) Multi-strand wires: Buy here.</li><li>p) Male berg strips: Buy here.</li><li>C) TOOLS:</li><li>a) Soldering station: Buy here.</li><li>b) X-Acto knife: Buy here.</li><li>c) Scissors: Buy here.</li><li>d) Adjustable wrench: Buy here.</li><li>D) MISCELLANEOUS:</li><li>a) Corrugated cardboard: Buy here.</li><li>b) 1/2 inch elbow threaded coupler(female): Buy here.</li><li>c) Teflon tape: Buy here.</li><li>d) 3M Scotch packing tape: Buy here.</li><li>e) 3M Scotch heavy-duty double-sided tape: Buy here.</li><li>f) 3mm yellow heat shrink: Buy here.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Let's Get Familiar With the Main Components</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/F0J/UU2V/KRKN4C74/F0JUU2VKRKN4C74.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Get Familiar With the Main Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNY/9EJ2/KRKN4C8X/FNY9EJ2KRKN4C8X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Get Familiar With the Main Components' loading='lazy'></figure><figure><img src='https://content.instructables.com/F65/LR45/KRKN4C75/F65LR45KRKN4C75.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Get Familiar With the Main Components' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) The solenoid valve:</li><li>A solenoid valve is an electromechanical device used to control the flow of a fluid through it by energizing an electromagnet which in turn moves the plunger to either restrict or allow the flow of fluid through the valve.A bi-stable solenoid valve has the ability to "remember" its state even after the power/signal is cut off. For example, a bi-stable solenoid valve will remain closed after receiving a positive/negative pulse depending on the construction, even after the signal is no longer sent. This helps in keeping the power consumption and the temperature rise of the coil to the very minimum.</li><li>2) The Arduino ProMini:Our goal is to read the value from a tactile pushbutton and use it to open and close the solenoid valve. We can do this by using an I/O pin on the Arduino to read the digital state of the button and use this to control the input values of the motor driver IC, which in turn will control the solenoid valve. An LED can also be programmed to light up when the foot pedal is pressed and the water starts to flow out of the tap.</li><li>3) The L293D MOTOR DRIVER IC:</li><li>An individual I/O pin on an Arduino ProMini can supply a maximum current of 40 milliAmperes. The solenoid valve under test draws approximately 500 milliAmperes during its operation, so we will use an L293D motor driver IC which can supply up to 1.2 Amperes peak and 600 milliAmperes continuously. The IC can operate off an Arduino Pro Mini's 5V output and can be used to control a load of up to 36V!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Let's Prepare the Foot Pedal | Part 1:</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FO9/7PQL/KRKN47AY/FO97PQLKRKN47AY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHN/384M/KRKN47AZ/FHN384MKRKN47AZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP6/D22J/KRKN47B0/FP6D22JKRKN47B0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW2/LWZP/KRKN47B1/FW2LWZPKRKN47B1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGS/Z65E/KRKN47B2/FGSZ65EKRKN47B2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJV/RT63/KRKN47B3/FJVRT63KRKN47B3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZV/MSMK/KRKN47B8/FZVMSMKKRKN47B8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVR/6JXY/KRKN47B7/FVR6JXYKRKN47B7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 1:' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Alright, now gather these ingredients and let's get over the input part of the system.</li><li>A sheet of cardboard, a mini breadboard, a tactile pushbutton with a cap, some single-core and multi-strand wires, male header pins and heat shrink tubing, double-sided and packing tape.</li><li>1) Start by marking out the lines for cuts and creases.</li><li>2) Make a hinge with the help of packing tape.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Let's Prepare the Foot Pedal | Part 2:</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FQK/Z7M9/KRKN47BL/FQKZ7M9KRKN47BL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 2:' loading='lazy'></figure><figure><img src='https://content.instructables.com/F78/VSRR/KRKN47BZ/F78VSRRKRKN47BZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 2:' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6Z/ELL4/KRKN47C0/F6ZELL4KRKN47C0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 2:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXR/WBZC/KRKN47C1/FXRWBZCKRKN47C1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 2:' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Adhere the mini breadboard to a corner of the foot pedal's base with the help of double-sided tape.</li><li>2) Install the pushbutton on the breadboard and use hookup wires to extend the terminals to the extreme end of the breadboard.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Let's Prepare the Foot Pedal | Part 3:</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FYN/M2P7/KRKN47GJ/FYNM2P7KRKN47GJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 3:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE6/QDBH/KRKN47GK/FE6QDBHKRKN47GK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 3:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNJ/YES0/KRKN47GL/FNJYES0KRKN47GL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 3:' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2H/FSFO/KRKN47GM/F2HFSFOKRKN47GM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 3:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGS/Y9WU/KRKN47GN/FGSY9WUKRKN47GN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 3:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEE/FT6O/KRKN47CX/FEEFT6OKRKN47CX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Foot Pedal | Part 3:' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Remove the 2 pins on the middle of a 6 pin berg strip.</li><li>2) Solder up multi-strand wires to the remaining pins on either side.</li><li>3) Solder the other end of the wires to a 2 pin berg strip to finish up the foot pedal's extension cable.</li><li>4) Connect the 4 pin berg strip to the pushbutton.</li><li>Use heat shrink tubing wherever necessary.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Let's Prepare the Control Unit | Part 1:</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F63/BVQZ/KRKN47KB/F63BVQZKRKN47KB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKN/M3CI/KRKN47K8/FKNM3CIKRKN47K8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1Q/AK4O/KRKN47KC/F1QAK4OKRKN47KC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRY/071C/KRKN47K9/FRY071CKRKN47K9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FL4/D7OD/KRKN47KD/FL4D7ODKRKN47KD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 1:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQF/O3LZ/KRKN47KA/FQFO3LZKRKN47KA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 1:' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now that were's done with the input side of the circuit, let's move on to the processing side.</li><li>Gather these ingredients and let's get started!</li><li>An Arduino ProMini, a half-sized breadboard, a breadboard power supply module, an L293D motor driver IC and some single-core wires.</li><li>1) Install the Arduino ProMini and the breadboard power supply module to the extreme ends of the half-sized breadboard. Ensure that the power supply module is set to provide an output of 5 Volts.</li><li>2) Install the L293D IC between the Arduino and the power supply module.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Let's Prepare the Control Unit | Part 2:</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F40/F4PI/KRKN47S5/F40F4PIKRKN47S5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 2:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFK/9A54/KRKN47S2/FFK9A54KRKN47S2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 2:' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8P/DO6V/KRKN47S3/F8PDO6VKRKN47S3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 2:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNB/I0JI/KRKN47S4/FNBI0JIKRKN47S4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 2:' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Connect the Arduino's VCC and GND pins to the breadboard's +ve and -ve rails respectively.</li><li>2) Connect the L293D's EnableA, VChip and VExternal to the +ve rail of the breadboard. Also, connect the GND pins of the IC to the -ve rail.</li><li>3) Use a hookup wire to connect the +ve rail to an empty row on the breadboard and connect a jumper wire from digital pin 3 to the next empty row. This will serve as our switch's port.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Let's Prepare the Control Unit | Part 3:</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F3K/KYEX/KRKN47ZD/F3KKYEXKRKN47ZD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 3:' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRZ/SLKW/KRKN47ZE/FRZSLKWKRKN47ZE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Control Unit | Part 3:' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Connect the foot pedal's cable to the breadboard.</li><li>2) Connect the pushbutton's terminal to digital pin 3 on the Arduino.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Let's Prepare the Solenoid Valve and Status Indicator LED</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F4G/DDSC/KRKN483Z/F4GDDSCKRKN483Z.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Solenoid Valve and Status Indicator LED' loading='lazy'></figure><figure><img src='https://content.instructables.com/F47/GVT4/KRKN4814/F47GVT4KRKN4814.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Solenoid Valve and Status Indicator LED' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBZ/Z2WH/KRKN4815/FBZZ2WHKRKN4815.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Solenoid Valve and Status Indicator LED' loading='lazy'></figure><figure><img src='https://content.instructables.com/F28/UPOC/KRKN4816/F28UPOCKRKN4816.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Prepare the Solenoid Valve and Status Indicator LED' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now that we are done with the control unit, let's move on to the output stage of the system.</li><li>Pull out a DC solenoid valve and a 5V LED from your inventory and make the following connections:</li><li>1) LED's positive terminal to digital pin 2 on the Arduino and negative terminal to GND.</li><li>2) Solenoid valve's terminal A to output A1 on the IC and terminal B to output A2.</li><li>3) Use jumper wires to connect digital pins 10 and 11 to the IC's InputA1 and InputA2 respectively.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Final Breadboard Schematic</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FW5/N4ZI/KRKN4BDU/FW5N4ZIKRKN4BDU.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Breadboard Schematic' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pushbutton's terminal A -> GND</li><li>Pushbutton's terminal B -> Digital pin 3 on the Arduino</li><li>L293D's pin 1,8, and 16 -> Arduino's VCC</li><li>L293D's pin 2 -> Digital pin 10 on the Arduino</li><li>L293D's pin 7 -> Digital pin 11 on the Arduino</li><li>L293D's pin 4 and 5 -> GND</li><li>STATUS INDICATOR LED'S POSITIVE TERMINAL -> Digital pin 2 on the Arduino</li><li>STATUS INDICATOR LED's NEGATIVE TERMINAL -> GND on the Arduino</li><li>SOLENOID VALVE'S TERMINAL "A" -> PIN 4 on the IC</li><li>SOLENOID VALVE'S TERMINAL "B" -> PIN 6 on the IC</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: The One With the Programming</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FP2/X1ZP/KRKN4DNQ/FP2X1ZPKRKN4DNQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Programming' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHC/KIFM/KRKN4DNR/FHCKIFMKRKN4DNR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Programming' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXI/ZUE4/KRKN4DNU/FXIZUE4KRKN4DNU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Programming' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7S/58IE/KRKN4C17/F7S58IEKRKN4C17.gif?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Programming' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now let's move on to the software side of the system.</li><li>1) Please find the attached, and download it.</li><li>2) Open it using the Arduino IDE and verify the same.</li><li>3) Select your communication port and board.</li><li>4) Upload the code.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: Testing and Troubleshooting</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F7J/AY3L/KRKN4DXI/F7JAY3LKRKN4DXI.gif?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Testing and Troubleshooting' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now let's make sure our system works as expected before moving on to mounting the control unit near the washbasin.</li><li>1) Disconnect the Arduino from your computer.</li><li>2) Use your external power supply to power up the entire system.</li><li>3) Press down on the pushbutton and release it to check if the status indicator LED lights up and the solenoid valve opens and both remain active for 2 seconds.</li><li>TROUBLESHOOTING:</li><li>1) Status indicator LED doesn't function:</li><li>> Check if the connections are right.</li><li>> Check if the LED is healthy.</li><li>2) Solenoid valve doesn't function:</li><li>> Check if the connections between the motor driver IC and the Arduino and the solenoid are right.</li><li>> Check if the solenoid valve is healthy by externally exciting it.</li><li>> Check if the IC is healthy.</li><li>> Ensure the external power supply is adequate.</li><li>3) Both the LED and solenoid don't work:</li><li>> Check if the pushbutton functions properly.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Step 13: The One With the Plumbing!</strong><div class='step-images count-5'><figure><img src='https://content.instructables.com/FHZ/PJNV/KRKN49TF/FHZPJNVKRKN49TF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Plumbing!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUQ/XXHL/KRKN49TD/FUQXXHLKRKN49TD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Plumbing!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYV/BUKV/KRKN4A36/FYVBUKVKRKN4A36.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Plumbing!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVL/PT8I/KRKN4A37/FVLPT8IKRKN4A37.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Plumbing!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIH/1LVG/KRKN4A38/FIH1LVGKRKN4A38.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The One With the Plumbing!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Okay, it's time to get down and dirty!</li><li>1) Turn off the main water outlet valve at your sink.</li><li>2) Open the water tap disconnect the pipe to drain all the fluid in the system.</li><li>3) Connect a 1/2" female coupling or a repurposed hose to the main valve.</li><li>4) Connect the other end of the coupling to the inlet of the solenoid valve.</li><li>5) Connect the water tap's pipe to the outlet of the solenoid valve.</li><li>6) Open the solenoid valve by externally powering it and check if the water flow through the system is effective.</li><li>7) Close the solenoid valve and check if the water stops flowing through the tap.</li><li>TROUBLESHOOTING:</li><li>1) Water leakage:</li><li>> Check the tightness of the connections.</li><li>> Use Teflon tapes wherever possible to avoid leakage.</li><li>2) Low discharge:</li><li>> Check if the water inlet and outlet are properly connected with respect to the solenoid valve's construction.</li><li>> Avoid bends and twists in the pipes.</li><li>> Clean the aerator.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Step 14: Let's Finish Up!</strong><div class='step-images count-5'><figure><img src='https://content.instructables.com/FW0/0HSC/KRKN49ET/FW00HSCKRKN49ET.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Finish Up!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2Q/8L8R/KRKN49ER/F2Q8L8RKRKN49ER.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Finish Up!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FT5/HAGM/KRKN49ES/FT5HAGMKRKN49ES.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Finish Up!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FND/DKBT/KRKN49EU/FNDDKBTKRKN49EU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Finish Up!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0E/FLHS/KRKN49EV/F0EFLHSKRKN49EV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Let's Finish Up!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Alright, we're almost done!</li><li>Find a good spot to place the foot pedal and secure it down to the floor with the help of some mildly strong double-sided tape if required.</li><li>Adhere the CPU to a wall close to the washbasin and ensure that no water can get there.</li><li>Plugin the solenoid valve's cable into its designated rows on the breadboard.</li><li>Plugin the foot pedal's cable to the switch port.</li><li>Adhere to the power supply near the CPU and, again, ensure that no water comes near it.</li><li>( Please don't hate me for placing the CPU and the battery so close to a water source, I am aware of the dangers and I am strictly monitoring the system during its operation. This is being done only to show the proof of concept. The final product will be much more reliable and safe)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Step 15: HAPPY HANDWASHING!</strong><div class='step-images count-5'><figure><img src='https://content.instructables.com/FGL/DWFK/KRKN48IE/FGLDWFKKRKN48IE.gif?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='HAPPY HANDWASHING!' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5C/85SK/KRKN498R/F5C85SKKRKN498R.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='HAPPY HANDWASHING!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQV/FQ90/KRKN48ZN/FQVFQ90KRKN48ZN.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='HAPPY HANDWASHING!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUQ/10K1/KRKN48ZM/FUQ10K1KRKN48ZM.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='HAPPY HANDWASHING!' loading='lazy'></figure><figure><img src='https://content.instructables.com/FX9/G3AH/KRKN48XP/FX9G3AHKRKN48XP.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='HAPPY HANDWASHING!' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Power up the system and go crazy!</li><li>THE WHO (WORLD HEALTH ORGANIZATION) RECOMMENDS WASHING OUR HANDS FOR AT LEAST 20 SECONDS.</li><li>PLEASE WASH YOUR HANDS AT REGULAR INTERVALS AND AVOID UNNECESSARY TOUCHING OF ANY SURFACE.</li><li>PLEASE SAVE WATER.</li><li>STAY HOME AND STAY SAFE!</li><li>Kindly vote for this project in the WATER speed challenge if you found it useful!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Color Light "beacon" / Lightbox</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Simple Color Light "beacon" / Lightbox</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FF2/C2W9/LP427QS2/FF2C2W9LP427QS2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>There are times, when a colored marker light ("beacon") would be nice to have: when you play games with your youth group, on parties or just for some ambient light on your movie night ...</p>
+      
+        <p>You can quickly make a simple one with cheap and available parts.</p>
+      
+        <p>This one came to be, when we needed playground markers for our scouts group game. We needed gentle light source not to spoil the night game atmosphere, but strong enough to clearly mark the perimeter. I was surprised how well they come out and the kids were enthusiastic about them.</p>
+      
+        <p>There are two main "OH" factors here:</p>
+      
+        <p>This can't be used in (quick) motion, as it is only a tiny magnet which is holding the clip in place. For such uses fix the clip some other way.</p>
+      
+        <p>What is extra suitable here is you need no tools to make it.</p>
+      
+        <p>There is no switch in this design (nd adding it would complicate things), so you make - and break - this beacon every time you use it. It is quick and simple enough.</p>
+      
+        <p>If you want extra effects, you can use a blinking LED (I gut some of those blinking candles to get them)</p>
+      
+        <p>Picture of the finished project doesn't do it justice, it gives away nice coloured light, not a white one as in the picture.</p>
+      
+        <p><ul><li>to use a binder clip to provide a contact LED - cell</li><li>to use a disposable packaging for light diffusion</li></ul></p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Simple-Color-Light-beacon-Lightbox/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Simple-Color-Light-beacon-Lightbox/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>binder clip - is a semi common stationery item</li><li>LED - any electronic hobbyist will have a lot of them, others probably not. In worst case they can be ordered via web for a penny. LED is a "standard" one - if it is not, it may drain the battery too quick or even not light at all. Here I use a RGB LED, which is practical, because this way you can always have three colours at hand. (Just to let you know - making more colours to light up inside is a bit complicated, because electronics (different colours have different Vf ...)</li><li>3V button cell - a standard button cell battery; even a quite spent one may work for hours</li><li>small magnet - I get them from old disk player heads or HD linear motors. You can probably use an ordinary fridge magnet, just that it's not too big.</li><li>small piece of paper - used just to prevent short circuiting the battery</li><li>semi transparent white container from thin plastic - I used a disposable one from white cheese, which I have in excess. Plastic has to be thin enough that the magnet "grips" the clip through. Plus, the material has to be just the right transparence to let the light through, but to diffuse it. You may have to experiment here to get the right box, but I guess everywhere in the world there is a lot of them.</li><li>sticky tape - for better portability you can put it over the magnet not to loose it.</li><li>Some parts here will surely be somewhere in your home, some not so much - but are still extremely cheap and readily available:</li><li>Instructions here are for a single light.</li><li>(binder and magnet on paper in the picture so that they are visible well on dark underground; magnet is the brown circular thingie)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Connecting the LED</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F57/62ZA/LP427QRT/F5762ZALP427QRT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connecting the LED' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOZ/TI8X/LP427QRU/FOZTI8XLP427QRU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connecting the LED' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Take the LED and spread the legs so they can go over the battery poles. Connect it to the battery so it lights up.</li><li>There are poles on battery and also on LED, so it lights up only in one direction (but there are only two possibilities, so it is quicker to just try than to orient and then connect).</li><li>There is a small possibility that one of the pins of LED would bridge battery poles and cause short circuit, but it never happened to me - just check for this.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Insulating the Battery</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F83/Z5GL/LP427QRW/F83Z5GLLP427QRW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Insulating the Battery' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Because the next step is putting a metal clip on both poles of battery cell (and over both pins of a LED) it may be a good idea to provide insulation so not to cause short circuit. When I tried without the paper everything was working fine, so the paint on clip is obviously insulating enough, but just to be on the safe side I added a piece of paper.</li><li>Put a piece of paper so it covers the LED and battery on both sides.</li><li>This step may be somewhat klutzy, but nothing extraordinary.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: "Clipping" the Light</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F8Q/885B/LP427QRX/F8Q885BLP427QRX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='"Clipping" the Light' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Put a binder clip so it clips over the paper and so provides a tight contact between the battery and LED.</li><li>Use of binder clip here is the part which is the reason I made this instructable - because I played with LEDs and 3V cells a lot of times (for ordinary LED this is the quickest method to test if it works). When you grip it, the LED is bright, but when you let go, it turns off. And it is quite hard to persuade the LED to stay in contact. Sticky tape doesn't work and soldering on those cells is hard. On the other hand biunder clip not only works, but provides a quick assembly - disassembly.</li><li>On this step you have a functioning, quite sturdy LED light and you may even not proceed further - the "handles" provide a nice fixing point</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: "Hands in the Air"</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F85/SQOD/LP427QRY/F85SQODLP427QRY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='"Hands in the Air"' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Move the binder clip "handles", so they are not in the way of next step.</li><li>You can even remove them from the clip, but there is no real need for it.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Fixing the Clip to the Lid</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FZ7/Q1B7/LP427QRZ/FZ7Q1B7LP427QRZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fixing the Clip to the Lid' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS5/H8HY/LP427QS0/FS5H8HYLP427QS0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fixing the Clip to the Lid' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLG/F5F1/LP427QS1/FLGF5F1LP427QS1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fixing the Clip to the Lid' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Take the container lid and put the clip with the light on the inner side and the magnet on the outer side so it "grips" the clip.</li><li>For additional safety not to loose the magnet you can put some sticky tape over it (not in the picture).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Close the Lid</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FZG/96GS/LP5HN4Q1/FZG96GSLP5HN4Q1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Close the Lid' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Close the cointainer.</li><li>That's it, you have it. Isn't it fantastic?</li><li>The lid becomes the new bottom.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: "bonus Step" - Storing</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FR6/DDR6/LP5HN59A/FR6DDR6LP5HN59A.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='"bonus Step" - Storing' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>When you are finished using it, disassemble and store until next use. If you use more of the same containers, you can stack them inside one another and put the parts in the top one, close the lid and put the other lids on top, bind with sticky tape. This way it really doesn't take much space and can be stored safely. Put some bubble foil in the container toghether with small parts to prevent rattling and accidental short circuits.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

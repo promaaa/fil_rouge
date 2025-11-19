@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Full Rain Protection Hat</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Full Rain Protection Hat</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FUX/8L60/MCW9EFNF/FUX8L60MCW9EFNF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>There are many types of ways to protect yourself from rain—most often umbrellas and raincoats—but each comes with its own drawbacks. Umbrellas do a good job shielding your head and upper body, but your legs often get soaked, and worst of all, they occupy one of your hands. Raincoats tend to feel stuffy, and as they usually don't cover your face, you often end up getting cold and wet anyways.</p>
+      
+        <p>What if we could combine the two ideas, creating rain gear that provides great ventilation while not taking up your hands?</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Full-Rain-Protection-Hat/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Full-Rain-Protection-Hat/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>[1] Umbrella hat</li><li>[2] Plastic sheet (I used shower curtain liner)</li><li>[3] Self-adhesive Velcro strips</li><li>[4] Plastic meshes (Mesh bags for produce work fine)</li><li>[5] Double sided tape/Fabric tape. (Or you can use a heat sealer if you have one)</li><li>[6] Elastic bands</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Design</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FLH/ZM6H/MCW9E9L7/FLHZM6HMCW9E9L7.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Design' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFF/ERRH/MCW9E9LG/FFFERRHMCW9E9LG.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Design' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The inspiration for this design came from a traditional Chinese women’s hat, known for its wide brim and a scarf draped around the edges that offers both privacy and ornamental appeal. I realized that if the scarf were extended long enough, it could also provide protection from the rain. That insight led me to seek out a wide-brimmed hat that could serve as a functional rain shield.</li><li>That’s when I discovered the “umbrella hat”—a wearable version of a traditional umbrella, with a folding mechanism controlled from the top rather than along a handle. This hands-free, wide-brimmed umbrella hat became the foundation of the design.</li><li>To create a full-coverage rainwear system, the upper portion of a waterproof jacket is attached to the umbrella hat. Its length can be adjusted to ensure a good fit for people of different heights.</li><li>For ventilation, the gear includes two sets of mesh-covered openings: one under the arms and another near the waist, helping to promote airflow and reduce stuffiness. The bottom portion features an elastic band that fits snugly around the waist, making the length adaptable and keeping water from splashing in underneath.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Prep Shower Liner</strong><p><strong>Étapes :</strong></p><ol><li>The shower curtain measures 178 cm by 183 cm and will be divided into two sections to create the upper and lower parts of our rain gear.</li><li>We’ll make the cut 73 cm down from the top edge of the liner. This shorter section will become the lower part of the gear, as it already has pre-made holes for curtain hooks—perfect for attaching ventilation mesh.</li><li>The longer bottom section of the curtain contains built-in weights, which we’ll use to weigh down the upper portion of the gear, helping it drape and stay in place more effectively.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Install Upper Gear</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FXI/CC03/MCW9EA77/FXICC03MCW9EA77.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Install Upper Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWK/Y903/MCW9EA6E/FWKY903MCW9EA6E.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Install Upper Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/FH0/LX28/MCW9EA6S/FH0LX28MCW9EA6S.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Install Upper Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIW/LLS9/MCW9EAYW/FIWLLS9MCW9EAYW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Install Upper Gear' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To wrap the shower curtain liner around the umbrella hat, we’ll use its 178 cm width as the circumference. To leave room for overlap and closure, we’ll round it down slightly to 170 cm. This gives us a target circle with a radius of approximately 27 cm (since 170 ÷ 2 ÷ 3.14 ≈ 27 cm).</li><li>Next, cut Velcro strips into 1-inch pieces. Evenly space and attach them around the inside rim of the umbrella hat, forming a circular pattern.</li><li>Take the longer section of the shower liner (the one without the built-in weights) and attach its top edge to the Velcro on the umbrella hat as shown.</li><li>Note: You only need one set of Velcro pieces attached directly to the umbrella hat. However, you may want to add a few extra Velcro points to the upper part of the rain gear itself as shown. This allows you to adjust the height as needed to ensure the arm openings align comfortably for different body sizes.</li><li>Use Velcro strips as “buttons” to create a front closure for the rain gear. Be sure to leave an open space around the face for visibility and comfort.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Install Arm Pieces</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/F94/V9M8/MCW9EBI6/F94V9M8MCW9EBI6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Install Arm Pieces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FH6/AL5C/MCW9EBIS/FH6AL5CMCW9EBIS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Install Arm Pieces' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEK/TN7T/MCW9EBHL/FEKTN7TMCW9EBHL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Install Arm Pieces' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>For the arm sections, I repurposed mesh potato bags. I cut off both ends of the bag, angling the end that will attach to the upper portion of the gear slightly, as shown.</li><li>Next, I fitted and marked the placement of the armholes on the upper gear, then carefully cut them out. To attach the mesh sleeves, I used fabric tape around the edges to secure them in place. Make sure the mesh portion sits under the arms to allow for better ventilation.</li><li>I only had one mesh bag (previously used to hold potatoes) available, so I installed just one sleeve for demonstration purposes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Bottom Gear</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FCW/764D/MCW9ECPF/FCW764DMCW9ECPF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/FU7/JEGX/MCW9ECQ5/FU7JEGXMCW9ECQ5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE9/5KVH/MCW9ECQW/FE95KVHMCW9ECQW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7X/KE6T/MCW9ECRO/F7XKE6TMCW9ECRO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1N/YMMW/MCW9ECSH/F1NYMMWMCW9ECSH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Gear' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKO/BCL9/MCW9ECTD/FKOBCL9MCW9ECTD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Gear' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Use Velcro strips as “buttons” to create a front closure for the bottom portion of the rain gear.</li><li>Thread elastic bands through the edge as shown. If your plastic sheet doesn’t have a built-in hollow edge, you can fold the edge over and tape it to create a channel for the elastic.</li><li>Cut a piece of mesh and attach it to the hook holes along the shower curtain liner using string.</li><li>Finally, connect the mesh of the bottom part to the top part with heat sealer to complete the assembly.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Put It On, Pack & Unpack</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FJA/QE8F/MCW9EE5T/FJAQE8FMCW9EE5T.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Put It On, Pack & Unpack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ5/SC28/MCW9EE6R/FJ5SC28MCW9EE6R.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Put It On, Pack & Unpack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOG/5X1Z/MCW9EFJ7/FOG5X1ZMCW9EFJ7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Put It On, Pack & Unpack' loading='lazy'></figure><figure><img src='https://content.instructables.com/FU0/YYVN/MCW9EFK8/FU0YYVNMCW9EFK8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Put It On, Pack & Unpack' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To wear the rain gear, first put on the umbrella hat with the front left open. Slip your arm through the sleeve, then close the front—leaving the face area uncovered for visibility and comfort. Tighten the elastic band around your waist to secure the fit.</li><li>The layers are arranged from outside in as follows: the upper gear, the ventilation mesh, and the lower jacket. This setup blocks rain from above, allows airflow through the mesh, and shields the lower body from splashes.</li><li>When not in use, you can detach the gear from the umbrella hat and pack it away for easy storage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Potential Improvement</strong><p><strong>Étapes :</strong></p><ol><li>For this project, I initially used a large umbrella hat—but in hindsight, that was probably unnecessary. A smaller, more affordable umbrella hat would work just as well, which means the total cost for this rain gear could be kept under $5!</li><li>That said, to make it truly practical and durable, I would need a better method for connecting the components. At the moment, I’m using a mix of fabric tape, double-sided tape, and a heat sealer.</li><li>Overall, I think the design and prototype show real potential for practical use. I’d love to hear your thoughts and suggestions!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

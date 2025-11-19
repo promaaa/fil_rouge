@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Family Calendar From Old IPad</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Family Calendar From Old IPad</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F3C/R6J7/MH9IACPL/F3CR6J7MH9IACPL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Found my old iPad 4 lying around and decided to turn it into a family calendar</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Family-Calendar-From-Old-IPad/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Family-Calendar-From-Old-IPad/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>iPad 4</li><li>Google account</li><li>Google script</li><li>Dakboard account</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Introduction: Old Ipad</strong><p><strong>Étapes :</strong></p><ol><li>I found this old iPad 4, it still worked like a charm and some of the apps still launched.</li><li>Unfortunately not a single app could be installed from the App store because of the outdated iOS version. Even installed apps could not be updated. This fine tablet actually seemed to be quite useless...</li><li>But: Safari was still capable of displaying some internet pages...<ul><li>Also, the Calendar app could not retrieve data from a google calendar anymore because of outdated security settings.</li><li>Also the Safari app could not display the apple or google calendar anymore.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: DakBoard and Google Calendars</strong><p><strong>Étapes :</strong></p><ol><li>Since Safari was capable of displaying some internet pages, I tried DAKboard: a kiosk display,</li><li>https://dakboard.com/pricing</li><li>It worked!</li><li>So I signed up for a free plan, and the old iPad displayed this DAKboard calendar nice and well.</li><li>My family members all use their google account as their digital calendars.</li><li>DAKboard free plan only allows 2 calendars to be displayed ... so I needed a solution for this.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Google Script to Merge Calendars</strong><p><strong>Étapes :</strong></p><ol><li>I created a google account called something like "family" and shared all my family members to that family calendar.</li><li>Do this in google calendar for each member: under settings -> Shared with -> add your "family" account.</li><li>At this point, the newly created family account is capable to display the agenda of each family member.</li><li>But the family calender does not contain all events from all family members calendars, it only displays them. DAKboard was still empty at this point.</li><li>I needed to merge all calendars into the family calendar.</li><li>To merge all calendars, I use script.google.com</li><li>As the family user, create a google script to merge all calendars into one.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Google Script</strong><p><strong>Étapes :</strong></p><ol><li>This is the functionality of my google script, I built it with a little help from chatgpt.</li><li>What this script does:</li><li>How to use:</li><li>This is my anonymized script:</li><li>/**</li><li>* Calendar Sync Script - v9 (Anonymized)</li><li>*</li><li>* Features:</li><li>* - Keeps full titles from source calendars</li><li>* - ICS feed: only category name in event title</li><li>* - Syncs up to 6 months ahead</li><li>* - 200ms throttle between event creations</li><li>* - Removes deleted events from both sources and ICS feeds</li><li>*/<ul><li>const TARGET_CALENDAR_ID = "familycalendar@example.com"; // target (merged) calendar</li><li>const SOURCE_CALENDARS = [</li></ul></li><li>"person1@example.com",</li><li>"person2@example.com",</li><li>"person3@example.com",</li><li>"person4@example.com",</li><li>"calendar@example.com",</li><li>];<ul><li>const ICS_FEEDS = [</li></ul></li><li>{</li><li>url: "https://example.com/path/to/icalfeed.ics",</li><li>sourceId: "ICS_WASTE_CALENDAR",</li><li>},</li><li>];<ul><li>const MAX_MONTHS_AHEAD = 6;</li><li>const THROTTLE_MS = 200;</li></ul></li><li>function syncCalendars() {<ul><li>Logger.log("=== CalendarSync v9: Started ===");</li><li>const targetCalendar = CalendarApp.getCalendarById(TARGET_CALENDAR_ID);</li></ul></li><li>if (!targetCalendar) {</li><li>Logger.log("❌ Target calendar not found: " + TARGET_CALENDAR_ID);</li><li>return;</li><li>}<ul><li>const today = new Date();</li></ul></li><li>today.setHours(0,0,0,0);<ul><li>const future = new Date(today);</li></ul></li><li>future.setMonth(future.getMonth() + MAX_MONTHS_AHEAD);<ul><li>const validEventKeys = new Set();</li></ul></li><li>// --- Sync source calendars ---</li><li>for (const sourceId of SOURCE_CALENDARS) {</li><li>try {<ul><li>const src = CalendarApp.getCalendarById(sourceId);</li></ul></li><li>if (!src) {</li><li>Logger.log(`⚠️ Source calendar not found: ${sourceId}`);</li><li>continue;</li><li>}<ul><li>const events = src.getEvents(today, future);</li></ul></li><li>Logger.log(`[CalendarSync] ${sourceId}: ${events.length} events found`);</li><li>for (const e of events) {<ul><li>const key = syncEvent(e, targetCalendar);</li></ul></li><li>if (key) validEventKeys.add(key);</li><li>}</li><li>} catch (err) {</li><li>Logger.log(`⚠️ Error in source calendar ${sourceId}: ${err.message}`);</li><li>}</li><li>}</li><li>// --- Sync ICS feeds ---</li><li>for (const feed of ICS_FEEDS) {</li><li>try {<ul><li>const keysFromICS = syncICSFeed(feed.url, targetCalendar);</li><li>keysFromICS.forEach(k => validEventKeys.add(k));</li></ul></li><li>} catch (err) {</li><li>Logger.log(`[CalendarSync] ⚠️ Error in ICS feed ${feed.url}: ${err.message}`);</li><li>}</li><li>}</li><li>// --- Cleanup target calendar ---</li><li>cleanupTargetCalendar(targetCalendar, validEventKeys, today, future);<ul><li>Logger.log("=== CalendarSync v9: Completed ===");</li></ul></li><li>}</li><li>// --- Copy one event from a source calendar to target ---</li><li>function syncEvent(sourceEvent, targetCalendar) {<ul><li>const title = (sourceEvent.getTitle() || "").trim();</li></ul></li><li>if (!title) return null;<ul><li>const start = sourceEvent.getStartTime();</li><li>const end = sourceEvent.getEndTime();</li><li>const key = `SRC_${title}_${start.getTime()}`;</li><li>const existing = targetCalendar.getEvents(start, end, {search: title});</li><li>const duplicate = existing.some(e => e.getTitle() === title && e.getStartTime().getTime() === start.getTime());</li></ul></li><li>if (!duplicate) {</li><li>targetCalendar.createEvent(title, start, end, {</li><li>description: sourceEvent.getDescription() || "",</li><li>location: sourceEvent.getLocation() || ""</li><li>});</li><li>Logger.log(`[CalendarSync] ➕ New event: ${title}`);</li><li>Utilities.sleep(THROTTLE_MS);</li><li>}</li><li>return key;</li><li>}</li><li>// --- Import events from an ICS feed ---</li><li>function syncICSFeed(url, targetCalendar) {</li><li>Logger.log(`[CalendarSync] Processing ICS feed: ${url}`);<ul><li>const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });</li><li>const icsText = response.getContentText();</li><li>const events = parseICSEvents(icsText);</li><li>const keys = [];</li></ul></li><li>for (const ev of events) {</li><li>if (!ev.title || !ev.start) continue;<ul><li>const cleanTitle = ev.title.split(" ")[0].trim();</li><li>const key = `ICS_${cleanTitle}_${ev.start.getTime()}`;</li><li>const existing = targetCalendar.getEvents(ev.start, ev.end, { search: cleanTitle });</li><li>const duplicate = existing.some(e => e.getTitle() === cleanTitle && e.getStartTime().getTime() === ev.start.getTime());</li></ul></li><li>if (!duplicate) {</li><li>targetCalendar.createEvent(cleanTitle, ev.start, ev.end, { description: "", location: "" });</li><li>Logger.log(`[CalendarSync] ➕ ICS event: ${cleanTitle} (${ev.start.toDateString()})`);</li><li>Utilities.sleep(THROTTLE_MS);</li><li>}</li><li>keys.push(key);</li><li>}</li><li>return keys;</li><li>}</li><li>// --- Parse .ICS text into event objects ---</li><li>function parseICSEvents(icsText) {<ul><li>const events = [];</li><li>const lines = icsText.split(/\r?\n/);</li><li>let ev = null;</li></ul></li><li>for (const line of lines) {<ul><li>if (line === "BEGIN:VEVENT") ev = {};</li><li>else if (line === "END:VEVENT") {</li></ul></li><li>if (ev?.title && ev?.start) events.push(ev);<ul><li>ev = null;</li></ul></li><li>} else if (ev) {<ul><li>if (line.startsWith("SUMMARY:")) ev.title = line.substring(8).trim();</li><li>else if (line.startsWith("DTSTART")) ev.start = parseICSTime(line);</li><li>else if (line.startsWith("DTEND")) ev.end = parseICSTime(line);</li></ul></li><li>}</li><li>}</li><li>return events;</li><li>}</li><li>// --- Parse an ICS datetime line ---</li><li>function parseICSTime(line) {<ul><li>const m = line.match(/:(\d{8}T\d{6})/);</li></ul></li><li>if (!m) return null;<ul><li>const s = m[1];</li></ul></li><li>return new Date(</li><li>s.substring(0, 4),</li><li>parseInt(s.substring(4, 6)) - 1,</li><li>s.substring(6, 8),</li><li>s.substring(9, 11),</li><li>s.substring(11, 13),</li><li>s.substring(13, 15)</li><li>);</li><li>}</li><li>// --- Remove obsolete events from target calendar ---</li><li>function cleanupTargetCalendar(targetCalendar, validEventKeys, start, end) {<ul><li>const targetEvents = targetCalendar.getEvents(start, end);</li><li>let removed = 0;</li></ul></li><li>for (const ev of targetEvents) {<ul><li>const idSRC = `SRC_${ev.getTitle()}_${ev.getStartTime().getTime()}`;</li><li>const idICS = `ICS_${ev.getTitle()}_${ev.getStartTime().getTime()}`;</li></ul></li><li>if (!validEventKeys.has(idSRC) && !validEventKeys.has(idICS)) {</li><li>try {</li><li>ev.deleteEvent();</li><li>removed++;</li><li>Logger.log(`[CalendarSync] 🗑️ Removed: ${ev.getTitle()}`);</li><li>Utilities.sleep(THROTTLE_MS);</li><li>} catch (err) {</li><li>Logger.log(`[CalendarSync] ⚠️ Error removing ${ev.getTitle()}: ${err.message}`);</li><li>}</li><li>}</li><li>}</li><li>Logger.log(`[CalendarSync] Cleanup done – ${removed} events removed`);</li><li>}<ul><li>🗓 Combines multiple Google Calendars into a single shared “family” calendar.</li><li>🔁 Two-way sync direction: It copies from multiple source calendars and from an ICS feed (this are the garbage collection dates from an open calendar of the municipal waste processing company, when to put the bins in the street to get them emptied :-) ) into one target calendar.</li><li>🧩 Keeps full event details: Title, description, and location are preserved.</li><li>🧹 Automatically removes deleted events: If a source or ICS event is gone, it’s deleted from the target too.</li><li>⏱ Performance-friendly: Adds a short delay (200 ms) between event creations for API throttling.</li><li>⏳ Time-limited sync: Only synchronizes events within the next 6 months (configurable).</li><li>📅 ICS feed support: Can import events from public .ics URLs (e.g. garbage collection schedules).</li><li>🧼 De-duplication: Prevents duplicate events in the target calendar.</li><li>📋 Logging: Every sync step is logged in the Apps Script console for troubleshooting.</li><li>Open Google Apps Script</li><li>Create a new project and paste this code.</li><li>Update the TARGET_CALENDAR_ID, SOURCE_CALENDARS, and ICS_FEEDS to match your setup.</li><li>Authorize the script the first time you run it.</li><li>(Optional) Add a time-based trigger (e.g. daily) to automate synchronization.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Using the Calendar</strong><p><strong>Étapes :</strong></p><ol><li>The google script is time triggered, you can find this in de sctipt.google environment.</li><li>The DAKboard agenda is refreshed twice per 24h, which is enough for this family calendar.</li><li>Some tips to display the calendar nicely:</li><li>This method removes the browser bars and gives a “native app” look.</li><li>Now a DAKboard icon appears on your home screen.</li><li>When you launch it from there, it will:</li><li>If you want your DAKboard display to stay on permanently (for example on a wall-mounted iPad):<ul><li>Open Safari on your iPhone or iPad.</li><li>Go to your DAKboard URL, e.g.</li><li>https://dakboard.com/app?p=your_dashboard_id</li><li>Tap the Share icon (square with an arrow pointing up).</li><li>Scroll down and tap “Add to Home Screen.”</li><li>Give it a name, e.g. “DAKboard.”</li><li>Tap Add.</li><li>Open full screen (no Safari bars).</li><li>Stay in that mode even if you lock/unlock the device.</li><li>Go to Settings → Display & Brightness → Auto-Lock.</li><li>Set it to Never.</li><li>Plug in the device so it stays powered.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

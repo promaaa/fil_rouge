@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fonctionnement, entretien et régénération de batteries au plomb</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Fonctionnement, entretien et régénération de batteries au plomb</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/a/ab/Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_batterie-solaire-2v-12v-24v.jpg/ia-33a3249d90ea32d3fe6914f9b2c91271-px-Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_batterie-solaire-2v-12v-24v.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Les batteries sont des éléments centraux et chers dans les installations autonomes. Pourtant, leur fonctionnement et leur entretien sont très mal connus par le grand public. Ce tutoriel a donc plusieurs objectifs :</div>
+        
+      </div>
+    
+    
+      
+        <p>Les batteries sont souvent les constituants les plus chers et les plus fragiles d’un système électrique de conversion. Aussi, il est important d’en prendre soin par une bonne utilisation et une bonne surveillance !</p>
+      
+        <p>Les batteries au Plomb Acide sont très fragiles. Elles sont sensibles aux surcharges, aux charges partielles, aux décharges profondes, aux charges trop rapides et aux températures au-dessus 20°C. Tous ces facteurs de vieillissement prématuré, adviennent facilement et peuvent se combiner, ceci étant dû au manque de connaissance technique, à des systèmes mal dimensionnés ou à une utilisation erronée de la part de l’utilisateur. Si vous ne maîtrisez pas ces facteurs, les batteries seront rapidement endommagées.</p>
+      
+        <p>Ces dommages amèneront à une durée de vie des batteries et à une disponibilité moindre et dans certains cas, une détérioration irrémédiable des batteries peut survenir. Les batteries dureront plus longtemps en les utilisant selon les règles de l’art, et donc leur remplacement sera moins fréquent. A long terme, vous ferez de sérieuses économies. Un autre intérêt est que le système de conversion sera bien plus performant si les batteries sont en bon état. Plus les batteries seront en bon état et plus l’installation sera performante !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 14 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Fonctionnement__entretien_et_régénération_de_batteries_au_plomb" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Fonctionnement__entretien_et_régénération_de_batteries_au_plomb</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Constitution d'une batterie au plomb</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a8/Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_Sch_ma_batteries.JPG/800px-Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_Sch_ma_batteries.JPG' alt='Fonctionnement entretien et r g n ration de batteries au plomb Sch ma batteries.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2e/Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_capture-decran-2020-07-06-a-08.54.22.png' alt='Fonctionnement entretien et r g n ration de batteries au plomb capture-decran-2020-07-06-a-08.54.22.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Une batterie au plomb est constituée par un ensemble d'accumulateurs. La tension nominale d'un accumulateur étant d'environ 2.1 V, une batterie de 12 V est constituée de 6 accumulateurs montés en série et reliés par des connexions en plomb soudées. Ces accumulateurs sont logés dans un bac en plastique, fermé par un couvercle scellé.</li><li>Chaque accumulateur est composé d'un ensemble de couples d'électrodes positives et négatives montés en parallèle. Au milieu de chaque couple est placé un séparateur.</li><li>Des séparateurs sont généralement des feuilles rectangulaires, intercalées entre les plaques positives et les plaques négatives, et possèdent des qualités remarquables: isolant électrique parfait très grande perméabilité aux ions porteurs de charges électriques excellente tenue à l'acide sulfurique</li><li>isolant électrique parfait</li><li>très grande perméabilité aux ions porteurs de charges électriques</li><li>excellente tenue à l'acide sulfurique</li><li>isolant électrique parfait</li><li>très grande perméabilité aux ions porteurs de charges électriques</li><li>excellente tenue à l'acide sulfurique</li><li>Les électrodes sont composées d'une grille sur laquelle est déposée une matière active poreuse: du plomb (Pb) sur l'électrode négative et du dioxyde de plomb (PbO2) sur l'électrode positive. La grille collecte le courant et sert aussi de support mécanique de la matière active.</li><li>L'électrolyte est une solution diluée d'acide sulfurique dans laquelle baigne les électrodes. Il peut être sous forme liquide, de gel ou absorbée dans des feutres en fibre de verre en fonction du type de batterie.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fonctionnement d'une batterie au plomb</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/1d/Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_r_action.jpg' alt='Fonctionnement entretien et r g n ration de batteries au plomb r action.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour comprendre les causes de défaillance d'une batterie, il est important de bien comprendre les réactions chimiques à l’œuvre à l'intérieur de celle-ci.<ul><li>A la décharge: Lors de la décharge, il se passe la réaction chimique suivante:</li></ul></li><li>PbO2 sol + Pb sol + 2 HSO4−aq + 2 H+aq ⟶ 2 PbSO4 sol + 2 H2O liq<ul><li>L'électrode positive (+) qui était du dioxyde de plomb va devenir du sulfate de plomb, sous forme de cristaux. L'électrode négative (-) qui était en plomb va aussi devenir du sulfate de plomb, sous forme de cristaux. Le bain dans lequel baigne tout ça (l'électrolyte) se transforme en grande partie en eau (H2O).</li><li>L'électrode positive (+) qui était du dioxyde de plomb va devenir du sulfate de plomb, sous forme de cristaux.</li><li>L'électrode négative (-) qui était en plomb va aussi devenir du sulfate de plomb, sous forme de cristaux.</li><li>Le bain dans lequel baigne tout ça (l'électrolyte) se transforme en grande partie en eau (H2O).</li><li>L'électrode positive (+) qui était du dioxyde de plomb va devenir du sulfate de plomb, sous forme de cristaux.</li><li>L'électrode négative (-) qui était en plomb va aussi devenir du sulfate de plomb, sous forme de cristaux.</li><li>Le bain dans lequel baigne tout ça (l'électrolyte) se transforme en grande partie en eau (H2O).</li><li>A la charge : Lors de la charge, on force la réaction chimique inverse :</li></ul></li><li>2PbSO4 sol + 2 H2O liq ⟶ Pb sol + PbO2 sol + 2 HSO4−aq + 2 H+aq.<ul><li>Les cristaux de sulfate de plomb se redissolvent. On retrouve une électrode (+) en dioxyde plomb et une électrode (-) en plomb. L'électrolyte redevient de l'acide sulfurique dilué.</li><li>Les cristaux de sulfate de plomb se redissolvent. On retrouve une électrode (+) en dioxyde plomb et une électrode (-) en plomb.</li><li>L'électrolyte redevient de l'acide sulfurique dilué.</li><li>Les cristaux de sulfate de plomb se redissolvent. On retrouve une électrode (+) en dioxyde plomb et une électrode (-) en plomb.</li><li>L'électrolyte redevient de l'acide sulfurique dilué.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Les unités caractéristiques des batteries</strong><p><strong>Étapes :</strong></p><ol><li>Les caractéristiques des batteries sont indiquées d'une manière abrégée et il n'est pas toujours facile de bien les déchiffrer. Voici un tableau récapitulatif des unités associées aux batteries :</li><li>Batterie C100 : 90Ah (capacité de 90Ah avec une décharge en 100h)<ul><li>500 cycles à 80% de DOD</li><li>750 cycles à 50% de DOD</li><li>1800 cycles à 30% de DOD</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Différents types de batteries pour différents usages</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_bat_anim_118.bmp/800px-Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_bat_anim_118.bmp.png' alt='Fonctionnement entretien et r g n ration de batteries au plomb bat anim 118.bmp' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7b/Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_bat_anim_112.bmp/580px-Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_bat_anim_112.bmp.png' alt='Fonctionnement entretien et r g n ration de batteries au plomb bat anim 112.bmp' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il existe plusieurs types et plusieurs technologies de batteries au plomb. Chacune est adaptée à un usage, un environnement et des contraintes particulières. Comprendre ces différences est essentiel pour choisir et entretenir correctement sa batterie. Cette partie résume les grandes familles de batteries plomb et leurs caractéristiques.</li><li>Les combinaisons suivantes sont à proscrire :<ul><li>Vieilles et nouvelles batteries</li><li>Différentes capacités</li><li>Différents types de batterie</li><li>Différentes marques</li><li>Différentes technologies ou chimie</li><li>Batterie de démarrage:</li></ul></li><li>Une batterie de démarrage est destinée à fournir un courant élevé pendant une très courte période. Elle est conçue pour démarrer un moteur (par exemple un véhicule ou un groupe électrogène). Les batteries de démarrage sont parfois appelées “batterie de voiture”, “batterie de camion” ou “batterie à plaques minces”. Voir l'intérieur d'une batterie de démarrage.<ul><li>Batterie de traction</li></ul></li><li>Le nom de ces batteries vient de leur première utilisation : l’alimentation du moteur de véhicules électriques comme les chariots élévateurs. Elles sont généralement équipées de "plaques épaisses ou tubulaires" qui leur permet de résister à des décharges assez profondes et d'avoir une durée de vie élevée. Elles sont bien adaptées à une utilisation en solaire photovoltaïque.</li><li>Les batteries OPzS (électrolyte liquide) et OPzV (électrolyte gel) présentent à peu près les mêmes caractéristiques que les batteries de traction.<ul><li>Batterie stationnaire</li></ul></li><li>Ces batteries sont celles utilisées dans les alimentations de secours notamment pour des systèmes informatiques ou de télécommunication. Elles sont conçues pour être rechargées en permanence et n’être déchargées que rarement.<ul><li>Batterie solaire / à décharge lente</li></ul></li><li>Ces batteries sont prévues pour être utilisées dans des installations solaires photovoltaïques. Elles sont conçues pour supporter un nombre élevé de cycle (puisqu’elles seront déchargées toutes les nuits et rechargées tous les matins), leur profondeur de décharge est généralement bonne mais peut varier fortement d’un modèle à l’autre. Les batteries de servitudes présentent à peu près les mêmes caractéristiques que les batteries solaires. Voir l'intérieur d'une batterie à décharge lente / solaire<ul><li>Batterie ouverte</li></ul></li><li>Une batterie ouverte est une batterie à électrolyte liquide dotée de bouchons permettant de la remplir. Les batteries ouvertes ne sont pas étanches : le liquide qui est à l'intérieur s'évapore peu à peu, il faut donc contrôler régulièrement son niveau et compléter si nécessaire avec de l'eau distillée.<ul><li>Batterie liquide scellée / étanche</li></ul></li><li>Une batterie étanche est une batterie à électrolyte liquide dotée d'un système permettant d’empêcher l'évaporation de l'eau contenu dans l'électrolyte, par recombinaison des gaz. Ces batteries ne nécessitent pas de maintenance. Ces batteries sont souvent appelées VRLA pour Valve Regulated Lead-Acid.<ul><li>Batterie AGM</li></ul></li><li>Les batteries AGM sont un type de batterie étanche / VRLA. Dans une batterie AGM, l'électrolyte est liquide mais maintenu en place dans un buvard en fibre de verre, d'où son nom: Absorbed Glass Material. Voir l'intérieur d'une batterie AGM<ul><li>Batterie gel</li></ul></li><li>Les batteries gel sont un type de batterie étanche / VRLA. Dans une batterie gel, l'électrolyte est gélifié par ajout de silicate. Voir l'intérieur d'une batterie gel</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Mécanismes de dégradation des batteries au plomb</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c9/Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_Tableau_causes_d_gradation_batteries_plomb_goodyy.JPG/800px-Fonctionnement_entretien_et_r_g_n_ration_de_batteries_au_plomb_Tableau_causes_d_gradation_batteries_plomb_goodyy.JPG' alt='Fonctionnement entretien et r g n ration de batteries au plomb Tableau causes d gradation batteries plomb goodyy.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Stratification de l'électrolyte: Dans une batterie à électrolyte liquide, si l'électrolyte n'est pas agité, l'acide sulfurique va couler vers le bas des bacs. Ainsi, la densité de l'électrolyte va lentement augmenter en bas des batteries, tandis qu'elle va diminuer en haut des batteries. Cette stratification de l'acide va provoquer une inhomogénité de la décharge des électrodes avec une corrosion accélérée en pied de batterie.</li><li>Utiliser régulièrement ses batteries. L'électrolyse de l'eau créé naturellement des bulles d'oxygène qui agite l'électrolyte.</li><li>Effectuer périodiquement une charge d'égalisation: Elle consiste à charger les batteries avec un faible courant, mais sous une tension supérieure à la tension généralement appliquée pour créer un bouillonnement plus important.</li><li>Utiliser des batteries GEL ou AGM</li><li>Corrosion des électrodes positives: Les électrodes positives sont sensibles à la corrosion qui se produit au repos, mais surtout lors de la charge : le plomb de la grille se transforme en oxyde de plomb, peu conducteur. Si la corrosion devient trop importante, les matériaux actifs tombent peu à peu au fond des accumulateurs, et l'ensemble des électrodes se désagrège. La capacité de la batterie diminue et la résistance interne augmente jusqu'à rendre la batterie inutilisable.</li><li>Éviter les surcharges: vérifier sur les fiches techniques que les courants et durées de charges ne sont pas trop importants</li><li>Éviter les températures élevées: aérer ou isoler le local batterie, laisser un espace entre chaque batterie.</li><li>Perte de la matière active: Durant des cycles de charge et de décharge, les plaques positives et négatives subissent de fortes contraintes mécaniques (forts courants, champs magnétiques induits). Les plaques se désagrègent peu à peu et la matière active s’accumule au fond de la batterie. Cette "boue" peut provoquer des courts circuits entre deux plaques.</li><li>Éviter les décharges profondes</li><li>Éviter les décharges rapides: Si la batterie est déchargée très rapidement, les contraintes mécaniques n'ont pas le temps de s'accommoder et la désagrégation est plus rapide.</li><li>Choisir des batteries à électrodes épaisses ou tubulaires.</li><li>Asséchement de l'électrolyte: Naturellement, l'eau contenue dans l'électrolyte s'évapore un peu. Les batteries VRLA favorise sa recondensation, ce qui réduit la nécessité d’appoint en eau distillée (contrairement aux batteries ouvertes). Mais, une fois la batterie chargée, un apport de courant amorce l'électrolyse de l’eau avec formation d’oxygène et d’hydrogène gazeux. Dans une batterie VRLA, au délà d'une certaine pression, des soupapes de sécurité laissent s'échapper l'eau de manière définitive. Ceci est problématique car l’appoint d’eau distillée n’est pas possible !</li><li>Éviter les surcharges: vérifier sur les fiches techniques que les courants et durées de charges ne sont pas trop importants</li><li>Éviter les températures élevées: aérer ou isoler le local batterie, laisser un espace entre chaque batterie.</li><li>Sulfatation: Durant la décharge, des cristaux de sulfate de plomb (PbSO4) se forment sur les électrodes positives et négatives. Si la batterie reste longtemps déchargée, ces cristaux de sulfate de plomb grossissent et durcissent de manière irréversible. Cela réduit la conductivité des électrodes, fait perdre en capacité à la batterie et peut provoquer des courts-circuits.</li><li>Éviter les sous-charges prolongée: ne jamais stocker une batterie déchargée</li><li>Éviter les charges incomplètes: charger vos batteries à 100% au moins 1x/semaine.</li></ul></li><li>Gel de l'électrolyte: Lorsqu'une batterie est déchargée, l'électrolyte est principalement constitué d'eau. Sous de basses températures, celle-ci peut geler et endommager irrémédiablement la batterie.<ul><li>En voiture, éviter les trajets quotidien trop courts en hiver.</li><li>Dans les climats froids, augmenter la densité spécifique de l'électrolyte si batterie ouverte (acide/eau= 1,29-1,3 g/cm3)</li><li>Passer à des batteries AGM ou Gel</li><li>Corrosion des bornes de la batterie : Suite à des projections d'acide, des vapeurs d'acide, ou simplement à de la corrosion galvanique (2 métaux différents mis en contact), il peut se former des dépôts d'oxyde de plomb sur les bornes de la batterie. Cela peut poser des problèmes de conductivité électrique.</li><li>Graisser les connectiques avec de la vaseline ou une graisse anti-corrosion adaptée aux batteries</li><li>Brosser, nettoyer les bornes si des traces de corrosion s'installe.</li><li>Fusion des bornes de la batterie: Si le connecteur est mal serré sur la borne, la résistance électrique de contact va augmenter. Au passage d'un courant élevé, les bornes peuvent fondre par effet Joule. Cela peut amener à des incendies !</li><li>Respecter les couples de serrage en N.m donnés par les fabricants de batteries.</li><li>Vérifier régulièrement le bon serrage surtout si les batteries sont soumises à des vibrations (voitures de golf, remorques...)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Résumé des bonnes pratiques à adopter avec des batteries au plomb</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Matériel: Bien choisir sa batterie en fonction de l’usage recherché. Ne jamais mélanger des batteries neuves et usagées. Ne jamais mélanger des batteries de technologies différentes. Installer correctement et solidement le câblage de votre parc batterie pour éviter les incendies. Vérifier régulièrement les connectiques si celles-ci sont soumises à des vibrations.</li><li>Détection et prévention des décharges profondes: La durée de vie d’une batterie est en relation directe avec la profondeur de décharge DoD. Il est donc très important d’empêcher toute décharge à plus de 50% ! Comment connaitre le niveau de charge (SoC)? La mesure du voltage ne suffit pas. Trop de facteurs différents agissent sur la tension de batterie. Il faut utiliser un moniteur batterie. Il calcule la tension mais aussi les courants de charge et de décharge. Cela permet de calculer l'état de charge en direct. Comment éviter les décharges profondes ? L’idée est de contrôler le niveau de charge (SoC) et de déconnecter les charges de consommation dès que celui-ci passe sous un niveau établi. Utiliser un protecteur de batterie/Battery Protect ou un régulateur de charge solaire paramétrable, pour les équipements en courant continu DC. Utiliser le relais à contact sec de votre moniteur batterie s'il en est équipé. Paramétrer le seuil de basse tension batterie sur votre onduleur pour les équipements en courant alternatif AC (bien lire la notice).</li><li>Comment connaitre le niveau de charge (SoC)? La mesure du voltage ne suffit pas. Trop de facteurs différents agissent sur la tension de batterie. Il faut utiliser un moniteur batterie. Il calcule la tension mais aussi les courants de charge et de décharge. Cela permet de calculer l'état de charge en direct.</li><li>La mesure du voltage ne suffit pas. Trop de facteurs différents agissent sur la tension de batterie.</li><li>Il faut utiliser un moniteur batterie. Il calcule la tension mais aussi les courants de charge et de décharge. Cela permet de calculer l'état de charge en direct.</li><li>Comment éviter les décharges profondes ? L’idée est de contrôler le niveau de charge (SoC) et de déconnecter les charges de consommation dès que celui-ci passe sous un niveau établi. Utiliser un protecteur de batterie/Battery Protect ou un régulateur de charge solaire paramétrable, pour les équipements en courant continu DC. Utiliser le relais à contact sec de votre moniteur batterie s'il en est équipé. Paramétrer le seuil de basse tension batterie sur votre onduleur pour les équipements en courant alternatif AC (bien lire la notice).</li><li>L’idée est de contrôler le niveau de charge (SoC) et de déconnecter les charges de consommation dès que celui-ci passe sous un niveau établi.</li><li>Utiliser un protecteur de batterie/Battery Protect ou un régulateur de charge solaire paramétrable, pour les équipements en courant continu DC.</li><li>Utiliser le relais à contact sec de votre moniteur batterie s'il en est équipé.</li><li>Paramétrer le seuil de basse tension batterie sur votre onduleur pour les équipements en courant alternatif AC (bien lire la notice).</li><li>Faire attention à la température: Ce facteur a une influence très importante sur la durée de vie des batteries ! Il est très important de garder les batteries à des températures « fraiches » , environ 20°C. Local technique : Choisissez toujours la pièce ou l’endroit le plus frais. Ne laissez jamais les batteries exposées au soleil direct. Si ce lieu est encore trop chaud, il faudra très sérieusement envisager une ventilation rafraichissante du local ou du container batterie. Aération et ventilation : Toujours garder de l’espace entre les batteries (environ 5 cm), ne pas les mettre les unes contre les autres. Si les batteries sont à l’intérieur d’un coffre à batterie ou dans une armoire, il doit y exister une circulation d’air. Compensation de température: Lorsque la température dépasse les 30°C ou est inférieure à 10°C durant une longue période, il est nécessaire de modifier la tension de recharge.</li><li>Local technique : Choisissez toujours la pièce ou l’endroit le plus frais. Ne laissez jamais les batteries exposées au soleil direct. Si ce lieu est encore trop chaud, il faudra très sérieusement envisager une ventilation rafraichissante du local ou du container batterie.</li><li>Aération et ventilation : Toujours garder de l’espace entre les batteries (environ 5 cm), ne pas les mettre les unes contre les autres. Si les batteries sont à l’intérieur d’un coffre à batterie ou dans une armoire, il doit y exister une circulation d’air.</li><li>Compensation de température: Lorsque la température dépasse les 30°C ou est inférieure à 10°C durant une longue période, il est nécessaire de modifier la tension de recharge.</li><li>Comment connaitre le niveau de charge (SoC)? La mesure du voltage ne suffit pas. Trop de facteurs différents agissent sur la tension de batterie. Il faut utiliser un moniteur batterie. Il calcule la tension mais aussi les courants de charge et de décharge. Cela permet de calculer l'état de charge en direct.</li><li>La mesure du voltage ne suffit pas. Trop de facteurs différents agissent sur la tension de batterie.</li><li>Il faut utiliser un moniteur batterie. Il calcule la tension mais aussi les courants de charge et de décharge. Cela permet de calculer l'état de charge en direct.</li><li>Comment éviter les décharges profondes ? L’idée est de contrôler le niveau de charge (SoC) et de déconnecter les charges de consommation dès que celui-ci passe sous un niveau établi. Utiliser un protecteur de batterie/Battery Protect ou un régulateur de charge solaire paramétrable, pour les équipements en courant continu DC. Utiliser le relais à contact sec de votre moniteur batterie s'il en est équipé. Paramétrer le seuil de basse tension batterie sur votre onduleur pour les équipements en courant alternatif AC (bien lire la notice).</li><li>L’idée est de contrôler le niveau de charge (SoC) et de déconnecter les charges de consommation dès que celui-ci passe sous un niveau établi.</li><li>Utiliser un protecteur de batterie/Battery Protect ou un régulateur de charge solaire paramétrable, pour les équipements en courant continu DC.</li><li>Utiliser le relais à contact sec de votre moniteur batterie s'il en est équipé.</li><li>Paramétrer le seuil de basse tension batterie sur votre onduleur pour les équipements en courant alternatif AC (bien lire la notice).</li><li>La mesure du voltage ne suffit pas. Trop de facteurs différents agissent sur la tension de batterie.</li><li>Il faut utiliser un moniteur batterie. Il calcule la tension mais aussi les courants de charge et de décharge. Cela permet de calculer l'état de charge en direct.</li><li>L’idée est de contrôler le niveau de charge (SoC) et de déconnecter les charges de consommation dès que celui-ci passe sous un niveau établi.</li><li>Utiliser un protecteur de batterie/Battery Protect ou un régulateur de charge solaire paramétrable, pour les équipements en courant continu DC.</li><li>Utiliser le relais à contact sec de votre moniteur batterie s'il en est équipé.</li><li>Paramétrer le seuil de basse tension batterie sur votre onduleur pour les équipements en courant alternatif AC (bien lire la notice).</li><li>Local technique : Choisissez toujours la pièce ou l’endroit le plus frais. Ne laissez jamais les batteries exposées au soleil direct. Si ce lieu est encore trop chaud, il faudra très sérieusement envisager une ventilation rafraichissante du local ou du container batterie.</li><li>Aération et ventilation : Toujours garder de l’espace entre les batteries (environ 5 cm), ne pas les mettre les unes contre les autres. Si les batteries sont à l’intérieur d’un coffre à batterie ou dans une armoire, il doit y exister une circulation d’air.</li><li>Compensation de température: Lorsque la température dépasse les 30°C ou est inférieure à 10°C durant une longue période, il est nécessaire de modifier la tension de recharge.</li><li>Batterie non utilisée – Autodécharge: Quand une batterie n’est pas utilisée, elle se décharge lentement. Ce phénomène dépend du type de batterie et de la température. Une batterie ouverte non utilisée doit rechargée tous les 4 mois à température ambiante (entre 10-25°C). Une batterie ouverte non utilisée doit être maintenue chargée en permanence par des température inférieure à 0°C. Les batteries étanches pourront être laissées jusqu’à 6 à 8 mois sans recharge par température ambiante. Quand un système contenant des batteries (camping car, voiture, etc) n’est pas utilisé pendant une longue période, débranchez les batteries pour éviter les courants de fuites.</li><li>Une batterie ouverte non utilisée doit rechargée tous les 4 mois à température ambiante (entre 10-25°C).</li><li>Une batterie ouverte non utilisée doit être maintenue chargée en permanence par des température inférieure à 0°C.</li><li>Les batteries étanches pourront être laissées jusqu’à 6 à 8 mois sans recharge par température ambiante.</li><li>Quand un système contenant des batteries (camping car, voiture, etc) n’est pas utilisé pendant une longue période, débranchez les batteries pour éviter les courants de fuites.</li><li>Une batterie ouverte non utilisée doit rechargée tous les 4 mois à température ambiante (entre 10-25°C).</li><li>Une batterie ouverte non utilisée doit être maintenue chargée en permanence par des température inférieure à 0°C.</li><li>Les batteries étanches pourront être laissées jusqu’à 6 à 8 mois sans recharge par température ambiante.</li><li>Quand un système contenant des batteries (camping car, voiture, etc) n’est pas utilisé pendant une longue période, débranchez les batteries pour éviter les courants de fuites.</li><li>Tensions correctes de charge: Ne jamais recharger les batteries avec une tension supérieure à celle préconisée dans la fiche technique du fabriquant. Utiliser un chargeur ayant au moins 3 étapes de charge (Bulk, Absorption, Float).</li><li>Courant correct de charge / décharge : Il est préconisé de ne jamais charger ou recharger des batteries plomb à plus de 0,2C, c'est-à-dire 20% de la capacité du parc batterie (ex: 20A pour un parc batterie de 100Ah).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Désulfatation / Régénération de batteries au plomb</strong><p><strong>Étapes :</strong></p><ol><li>Durant la décharge, du sulfate de plomb (PbSO4) se forme sur les électrodes positives et négatives. Si la batterie reste déchargée, ce sulfate de plomb cristallise et durcit. Une fois cristallisé, il ne peut plus se transformer en acide sulfurique lors du chargement de la batterie. Cela fait chuter la capacité de la batterie: "elle ne tient plus la charge"</li><li>La régénération de batterie est un processus qui consiste à envoyer des impulsions électriques de forte intensité (300-400A) à une fréquence donnée, basée sur la fréquence de résonance propre de la batterie. Celle-ci est calculée automatiquement par la machine et évolue au cours du temps. Ces impulsions viennent briser la couche cristalline formée par le sulfate de plomb amorphe et permettent la redilution de celui-ci dans l'acide sulfurique.</li><li>Taux de succès: La sulfatation n'étant pas le seul phénomène de dégradation d'une batterie, toutes ne pourront pas être régénérées par désulfatation.<ul><li>Sur les batteries à électrodes tubulaires, le taux de succès est d'environ 90% (source: BeEnergy)</li><li>Sur les batteries de démarrage, le taux de succès est d'environ 30%. (source: BeEnergy)</li></ul></li><li>Durée du procédé: Ce procédé peut durer de quelques heures pour une batterie de démarrage à plusieurs jours pour des batteries de traction.</li><li>[Recherches à poursuivre]</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

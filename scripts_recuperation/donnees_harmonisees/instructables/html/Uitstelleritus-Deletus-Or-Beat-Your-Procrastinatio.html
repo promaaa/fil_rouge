@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Uitstelleritus Deletus Or... Beat Your Procrastination With an Arduino Uno</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Uitstelleritus Deletus Or... Beat Your Procrastination With an Arduino Uno</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FOH/RGJV/LGUUN7BT/FOHRGJVLGUUN7BT.png?auto=webp&crop=1%3A1&frame=1&width=130&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>If you're a huge procrastinator like me, you might need to make this handy device I've created called "Uitstelleritus Deletus", which roughly translates to "Procrastinator Terminator". I often have this problem where I say I am going to start something, for example write this instructable, and then just. Do not do it. This device has a timer and when the timer runs out, I'll face the consequence of hearing the annoying buzzer (which I really hate and would be heard by my roommates), something I really do not want.</p>
+      
+        <p>In this instructable I explain how to make this device for yourself using an arduino uno and some basic supplies. It's fairly simple, the hardest part is soldering all the LCD screen parts.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Uitstelleritus-Deletus-Or-Beat-Your-Procrastinatio/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Uitstelleritus-Deletus-Or-Beat-Your-Procrastinatio/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Soldering iron</li><li>Craft knife</li><li>Hot glue gun</li><li>Arduin Uno</li><li>USB-B Cable and USB Adapter for macbook</li><li>16x2 LCD screen</li><li>Piezo speaker / buzzer</li><li>Push button</li><li>Push button cap</li><li>PotVal meter</li><li>2 Solder-able breadboards</li><li>Handful of jumping wires</li><li>2 220Ω resistors</li><li>Breadboard (for testing)</li><li>Foam board</li><li>Cardboard scraps</li><li>Decoration material of your liking (you're the one who has to look at it)</li><li>Cut up disposable chopstick</li><li>For this project you will need a couple of things:</li><li>Tools:</li><li>Supplies:</li><li>For the exterior:</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Create a Prototype</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FN4/N7Y1/LHW08DME/FN4N7Y1LHW08DME.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Prototype' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAM/FA3S/LHW08DMO/FAMFA3SLHW08DMO.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Prototype' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I started off by putting the needed supplies all on a breadboard to see if I could get them to work with each other. For a while I was tinkering around with an LCD screen with an I2C backpack, which would've made the whole proces a lot smoother, but sadly I couldn't get it to work. In the first picture there is a button missing since i was trying out just getting the timer to work at first, but as you can see in the digital bread board, I did add it later.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: The Code</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FJ7/KGT5/LHXFIM73/FJ7KGT5LHXFIM73.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Code' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I struggled with the code for a little while, since I am not the best at coding. I ended up using the help of chatGPT to make my code fully functional after fighting with it for a couple of days, which was super helpful since it suggested ways to fix my code but also explained to me how and why, which will help me solve future problems I might face!</li><li>The code is easily adapted to fit any amount of time you might need in hours, minutes and seconds. Just enter the time at the top of the code, upload it and it should work!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Soldering</strong><div class='step-images count-7'><figure><img src='https://content.instructables.com/FJ5/O70P/LHW08EYA/FJ5O70PLHW08EYA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAO/72BY/LHW08EYB/FAO72BYLHW08EYB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWN/JTP0/LHW08EYC/FWNJTP0LHW08EYC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3Y/X5C2/LHW08EYD/F3YX5C2LHW08EYD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHU/I557/LHW08EYE/FHUI557LHW08EYE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8A/SNAX/LHW08EYF/F8ASNAXLHW08EYF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Soldering' loading='lazy'></figure><figure><img src='https://content.instructables.com/FR1/23BI/LHW08FOF/FR123BILHW08FOF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Soldering' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>This was my first time soldering a bigger project like this, so sorry if it's not the tidiest or if it does not make a lot of sense. I've tried to explain it with the colors yellow and blue, blue going to GROUND and yellow going to the 5V. I've used 2 solder-able breadboards, one small and one large. The small one holding the button, potVal and buzzer, the large one holding the LCD with its many connections.</li><li>The small board has 2 points connecting it through the larger board to the 5V and ground, highlighted with blue and yellow (as explained before).</li><li>The large board is an extension for the LCD screen connected at the bottom, with small jumper wires connecting to either 5V, GROUND, the potVal or to their digital pins.</li><li>WARNING: do not put your arduino straight on the breadboard like I did! This will cause it to short circuit. Do not do this. Add a piece of cardboard underneath instead :-) (see the last picture!).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Making the Exterior</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/F1V/OIYZ/LHXFIM7T/F1VOIYZLHXFIM7T.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Making the Exterior' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLF/CFUC/LHXFIM8M/FLFCFUCLHXFIM8M.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Making the Exterior' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDP/89BH/LHXFIMWH/FDP89BHLHXFIMWH.gif?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Making the Exterior' loading='lazy'></figure><figure><img src='https://content.instructables.com/FN6/TPMB/LHXFINEW/FN6TPMBLHXFINEW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Making the Exterior' loading='lazy'></figure><figure><img src='https://content.instructables.com/FC6/RCLZ/LHXFIVRB/FC6RCLZLHXFIVRB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Making the Exterior' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFJ/UGX8/LHXFIVTU/FFJUGX8LHXFIVTU.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Making the Exterior' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To make the exterior, I first sketched out a rough design and then adapted it to the size of the electronics together. I wanted it to be a little larger, so it could sit on my desk and I couldn't easily ignore it. I then glued the whole thing together and later cut out parts for the screen, start button, potVal (which i took the knob out of later) and a hole for the stick to the reset button up top. The back door is removable :-). The push button cover is also removable, it has a hot glue knob that fits in the hole, but easily presses down to push the button and stays in place well while still making the entire thing easy to disassemble.</li><li>For the reset button I used a piece of a cut up chopstick with some hot glue at the end to press the button. This is quite a nice way of resetting it, since it's very satisfying to press a funny button at the top (almost like ringing a bell).</li><li>The electronics are all held up with a cardboard construction on the inside. I did this so it was easy to take apart in case I needed to fiddle with it if something came loose. This construction is very steady and won't budge unless you're really rough with it.</li><li>I then decorated it to my liking, since this is something that was going to sit on my desk I wanted it to be something I'd like to look at. I added some inspirational dogs to keep me going through tough times and designed a sticker of myself trying to motivate myself, because I know the consequences are something I do not want.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Putting It All Together</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F17/COAY/LHXFIPWH/F17COAYLHXFIPWH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Putting It All Together' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now that everything is soldered, the construction is put together and decorated it is time to put everything together and to put it to use. The project is made to be connected to arduino IDE so you can edit the timer in the code. This makes it so that you can edit the timer very easily and then upload it to use it.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Putting It to Use</strong><p><strong>Étapes :</strong></p><ol><li>Watch this video for a demonstration and the whole project in use :-)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Conclusion</strong><p><strong>Étapes :</strong></p><ol><li>This was my first larger arduino project like this, and I feel like I learned a whole lot. My original plan was to make it a bit more expansive, adding bigger consequences if I didn't do my work. This ended up being a bit too difficult for the time being. The soldering was very fun to do and I liked thinking about the whole lay-out of all the electronic parts and executing it. I also learned a lot coding wise, as this also was my first time coding a project like this. The timer part proved to be really difficult and I could not get it to work for quite some time.</li><li>All in all I really liked doing this project, though I spent many sleepless nights working on it and occupied my mind by thinking about the different ways I could've soldered it together. I now have a bit more confidence in my arduino skills and cannot wait to see what the future holds.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

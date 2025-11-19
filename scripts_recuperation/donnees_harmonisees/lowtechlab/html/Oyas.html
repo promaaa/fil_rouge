@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Oyas</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Oyas</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/2/20/Oyas_main.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Système de micro-irrigation semi-enterré.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les oyas (ou ollas) sont des récipients en terre cuite et en forme de poire. Ils sont poreux et disposent d’une ouverture vers le haut. Elles sont utilisées depuis l’antiquité pour irriguer le sol en douceur. Pour cela, il suffit de les enterrer en laissant seulement la partie haute dépasser, pour permettre leur remplissage.</p>
+      
+        <p>Ce tutoriel va vous accompagner dans la fabrication d'une oya de ~7L, capable de maintenir un sol humide dans un rayon de ~ 60 cm (entre 1 et 1,5 m2) sur une durée d’environ ~10 jours.</p>
+      
+        <p>Nota: différentes tailles d'oyas peuvent être fabriquées en suivant les même étapes. Les dimensions indiquées ici ne sont qu'indicatives.</p>
+      
+        <p>Les avantages de ce mode d'irrigation sont nombreux:<ul><li>l'eau consommée ne subit aucune évaporation, elle n'entraîne aucun lessivage du sol, et évite l'apparition des maladies fongiques causées par l'humidité du feuillage (ex. mildiou)</li><li>la diffusion de l'eau dans le sol se fait lentement, elle laisse aux racines avoisinantes le temps d'en profiter</li><li>les racines des plantes (ou des arbres) plongent dans le sol, au lieu de rester en surface</li><li>lorsque le sol est déjà humide (ex. après une grosse pluie) l'eau reste dans l'oya</li><li>l'arrosage est plus rapide (il suffit de remplir l'oya) et plus simple (on peut le confier à un voisin qui ne jardine pas)</li><li>l'eau dans l'oya se met à température, elle ne crée pas de choc thermique pour la plante</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10-15 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Oyas" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Oyas</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>2 pots en terre cuite (non peints) 1 grand : diamètre = 23 cm (mesuré sur l'extérieur du bord haut) 1 petit: diamètre = 21 cm</li><li>1 grand : diamètre = 23 cm (mesuré sur l'extérieur du bord haut)</li><li>1 petit: diamètre = 21 cm</li><li>soucoupe adaptée au petit pot : diamètre = 16 cm</li><li>tesson de carrelage (environ 5 cm x 5 cm)</li><li>colle à carrelage (compter ~50 g par oya)</li><li>peinture blanche</li><li>1 pic à brochette (ou 1 clou + 2 pailles en plastique )</li><li>~30 cm de fil de fer</li><li>1 bouchon de liège</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>crayon de maçon (ou marqueur)</li><li>râpe à bois demi-ronde "grosse piqûre" (pour râper les bords) ALTERNATIVE : ponceuse + abrasif gros grain (<60) ALTERNATIVE : disqueuse + disque "diamant"</li><li>ALTERNATIVE : ponceuse + abrasif gros grain (<60)</li><li>ALTERNATIVE : disqueuse + disque "diamant"</li><li>scie-sauteuse + lame "diamant" (pour les découpes) ALTERNATIVE : perceuse + trépans de maçonnerie (diamètre ~70mm) ALTERNATIVE : disqueuse + disque diamant + pince perroquet</li><li>ALTERNATIVE : perceuse + trépans de maçonnerie (diamètre ~70mm)</li><li>ALTERNATIVE : disqueuse + disque diamant + pince perroquet</li><li>seau profond ou bac pour le trempage</li><li>petit matériel de maçonnerie truelle fine (type "langue de chat") auge ou seau de maçon éponge "gros travaux"</li><li>truelle fine (type "langue de chat")</li><li>auge ou seau de maçon</li><li>éponge "gros travaux"</li><li>pinceau</li><li>torchon à main (ou vieille serviette de toilette)</li><li>perceuse 1 foret fin (~2.5mm): du diamètre du fil de fer 1 foret épais (~4.5mm): > au diamètre du pic à brochette (ou des pailles)</li><li>1 foret fin (~2.5mm): du diamètre du fil de fer</li><li>1 foret épais (~4.5mm): > au diamètre du pic à brochette (ou des pailles)</li><li>pince coupante (pour le fil de fer)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Appareiller (et ajuster) les deux pots</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a5/Oyas_20210418_132934.jpg/800px-Oyas_20210418_132934.jpg' alt='Oyas 20210418 132934.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/12/Oyas_20210418_114306.jpg/ia-a07659b092f47e8846a1585dd91b41c6-px-Oyas_20210418_114306.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/08/Oyas_20210418_115639.jpg/800px-Oyas_20210418_115639.jpg' alt='Oyas 20210418 115639.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Objectif: que les parties hautes des pots s'emboîtent suffisamment bien deux à deux pour permettre ensuite un joint étanche et solide</li><li>Même fabriqués industriellement, les pots en terre ne sont pas toujours parfaitement ronds, et leurs dimensions présentent quelques variations.</li><li>Si les 2 pots ne s'emboîtent pas suffisamment:<ul><li>chercher un meilleur emboîtement en tournant celui de dessus sur son axe</li><li>raboter la périphérie du petit pot à l'aide d'une lime à bois, d'une ponceuse, ou d'une disqueuse</li></ul></li><li>Une fois appareillés, marquer la position retenue.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Agrandir le trou au fond du petit pot</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/42/Oyas_20210418_110905.jpg/800px-Oyas_20210418_110905.jpg' alt='Oyas 20210418 110905.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Oyas_20210418_103845.jpg/ia-b2c1d4fbdb50a11a5940220b4f4e3c59-px-Oyas_20210418_103845.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Objectif: faciliter le remplissage et le nettoyage de l'oya</li><li>Poser le petit pot sur le torchon (ou la serviette de toilette), partie ouverte vers le bas.</li><li>Avec la scie-sauteuse, découper une forme de spirale jusqu'à atteindre un disque permettant de passer la main.</li><li>Pendant la découpe, veiller à appuyer fermement le pot vers le bas pour limiter les vibrations.</li><li>Pas de scie-sauteuse ? Vous pouvez obtenir le même résultat avec<ul><li>une perceuse + trépan</li><li>ou une disqueuse + une pince "bec de perroquet"</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Adoucir les bords du trou</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/Oyas_20210418_110259.jpg/800px-Oyas_20210418_110259.jpg' alt='Oyas 20210418 110259.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois retiré le fond du petit pot, adoucir les bords avec la râpe à bois, ce qui évitera de se blesser au moment d'y passer la main.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Mouiller les surfaces à coller</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8f/Oyas_20210418_111444.jpg/800px-Oyas_20210418_111444.jpg' alt='Oyas 20210418 111444.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Objectif: que la colle ne prenne pas trop vite</li><li>L'idéal est d'immerger complètement les pots pendant 2~3 minutes.</li><li>A défaut de disposer d'un récipient suffisamment grand, privilégier le mouillage des parties qui recevront de la colle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Boucher le fond du grand pot</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2f/Oyas_20210418_133203.jpg/800px-Oyas_20210418_133203.jpg' alt='Oyas 20210418 133203.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Objectif: favoriser une diffusion de l'eau latérale et lente de l'eau dans la future oya</li><li>Préparer ~0.5L de colle à carrelage (en vous reportant aux instruction sur le sachet).</li><li>Utiliser environ un tiers pour "beurrer" le tesson de carrelage, le disposer sur le trou et combler le fond du grand pot.</li><li>Temps de séchage: se référer à la notice de la colle à carrelage utilisée</li><li>Le reste est à garder (à l'ombre) et sera utilisé plus tard pour assembler les deux pots.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Joindre les deux pots</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/14/Oyas_20210418_162046.jpg/800px-Oyas_20210418_162046.jpg' alt='Oyas 20210418 162046.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Objectif: créer un assemblage étanche (pour que l'eau ne sorte pas entre les deux pots), et solide (pour transporter et réutiliser facilement l'oya)</li><li>Appareiller les deux pots en se référant au repère tracé à l'étape 1.</li><li>Utiliser le reste de colle pour combler le jour dans la rainure entre les pots (en appuyant bien sur la colle.</li><li>Une fois le tour terminé, passer une éponge légèrement humide pour retirer le surplus de colle et lisser le joint.</li><li>Temps de séchage: se référer à la notice de la colle utilisée</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Assembler le flotteur</strong><p><strong>Étapes :</strong></p><ol><li>Objectif: fabriquer un flotteur qui indiquera le niveau d'eau restant dans l'oya<ul><li>Option "pic à brochette"</li></ul></li><li>Planter le pic dans le bouchon de liège assez profondément pour que les deux pièces soient solidaires.<ul><li>Option "pailles et clou"</li></ul></li><li>Planter complètement le clou dans le bouchon de liège. Sur la pointe qui dépasse du bouchon, fixer une première paille et assembler autant de pailles que nécessaire pour couvrir la hauteur de l'oya</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Fixer le flotteur au couvercle</strong><p><strong>Étapes :</strong></p><ol><li>Objectif: permettre au flotteur de dépasser de l'oya et le maintenir en position verticale</li><li>Avec la perceuse équipée de la mèche épaisse, percer au centre de la soucoupe le trou qui permettra de faire passer le flotteur.</li><li>Avec la mèche mince, percer trois trous autour du trou principal pour disposer le fil de fer.</li><li>Avec le fil de fer (et la pince coupante), réaliser une forme permettant:<ul><li>de fixer le fil via les trois trous fins</li><li>de maintenir le flotteur vertical</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Peindre le couvercle</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/b/b1/Oyas_flotteur.jpg' alt='Oyas flotteur.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Objectif: faciliter le repérage de l'oya lorsqu'il sera installé et réverbérer les rayons solaires</li><li>Une fois votre oya installée, la soucoupe sera son chapeau et sera la seule partie visible au sol.</li><li>Appliquer la peinture blanche sur la partie visible de la soucoupe. (donc le dessous)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Installer l'oya</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/19/Oyas_20210421_163900.jpg/ia-7ac55aef1ad252f0ccf2f7ceee44a1cb-px-Oyas_20210421_163900.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/04/Oyas_schema.jpg' alt='Oyas schema.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Oyas_20210421_163818.jpg/ia-7da30d0ec78656384037fda73581ed82-px-Oyas_20210421_163818.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ed/Oyas_20210421_171609.jpg/800px-Oyas_20210421_171609.jpg' alt='Oyas 20210421 171609.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Objectif: enterrer l'oya dans votre espace cultivé (ou au pied d'un arbre)</li><li>Creuser 1 trou d'environ 40cm de profondeur et 30cm de diamètre.</li><li>Installer l'oya en veillant à sa bonne verticalité.</li><li>Caler l'oya avec un mélange de terre et terreau adapté aux cultures prévues. Dans le cas d'une installation au pied d'un arbre:<ul><li>choisir une distance au tronc qui ne va pas endommager le système racinaire de l'arbre (l'idéal étant d'installer en même temps l'arbre et l'oya)</li><li>anticiper la croissance du diamètre du tronc de l'arbre</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>L'énergie dans l'habitat</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>L'énergie dans l'habitat</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/9/92/L_nergie_dans_l_habitat_Main.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Comment avoir un logement énergétiquement efficace?</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment l'énergie dans l'habitat.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 0 month(s) mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/L_énergie_dans_l_habitat" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/L_énergie_dans_l_habitat</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Le contexte énergétique français</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/3/33/L_nergie_dans_l_habitat_Conso_nerg_tique_france.png' alt='L nergie dans l habitat Conso nerg tique france.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d3/L_nergie_dans_l_habitat_Conso_nerg_tique_habitat.png' alt='L nergie dans l habitat Conso nerg tique habitat.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>En France, les bâtiments absorbent 45% de l’énergie totale consommée, devant les transports (33%), l’industrie (19%) et l’agriculture (3%). Les deux tiers de la consommation énergétique de ce secteur proviennent des logements et le tiers restant, des bâtiments du tertiaire.</li><li>Dans le logement, sur l’année 2013, 67% de l’énergie consommée servent à chauffer l’habitat, 10,4% permettent de chauffer l’eau sanitaire, 6% sont dédiés à la cuisson. Les 16,6% restants correspondent à la lumière, les appareils électroménagers, la bureautique et l’hi-fi, que l’on regroupe sous le terme d’énergie spécifique. Les 16 000 kW.h consommés pour chaque logement reviennent à un peu plus 1700€/an.</li><li>En France, le chauffage résidentiel est un plus gros poste de dépense énergétique (20,1%) que l’industrie (19%).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Glossaire</strong><p><strong>Étapes :</strong></p><ol><li>Dans cette notice, chacun des postes de consommation énergétique de l’habitat sont détaillés. Au fil du texte, les sujets de puissance et d’énergie, relativement abstraits, sont abordés.</li><li>Les quelques lignes ci-dessous tentent de les expliquer :<ul><li>Puissance, P en Watts : W ou kiloWatts : kW,</li><li>Energie, E en Watts x heure : W.h ou kW.h.</li><li>La puissance et l’énergie sont liées par le temps : la puissance est la quantité d'énergie par unité de temps. La puissance correspond donc à un débit d'énergie. P x t = E</li></ul></li><li>Voici un exemple pour illustrer les deux concepts intimement liés :<ul><li>Un cycliste qui pédale tranquillement génère une Puissance de 50W. S’il fait du vélo pendant une heure, il produit une Énergie de 50W x 1h = 50 W.h. S’il pédale, toujours tranquillement, pendant deux heure, il produit une Énergie de 50W x 2h = 100 W.h</li></ul></li><li>Les 16 000 kW.h annuels par foyer correspondent donc à 320 000 heures de vélo ou 36 années de cyclisme « tranquille » mais non-stop.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - L’électricité et la chaleur dans l’habitat</strong><p><strong>Étapes :</strong></p><ol><li>Plus des trois quarts de l’énergie consommée dans l’habitat servent à la production de chaleur (chauffage, eau chaude sanitaire, cuisson). La moitié de l’électricité des foyers (50,4%) est utilisée dans cet objectif. 81% de l’électricité sont produits par des centrales thermiques nucléaires ou à énergie fossile (gaz, charbon, fioul).</li><li>Le rendement de ces centrales puis l’acheminement de l’électricité se situe autour de 30%. Regardons de plus près : la chaleur met un fluide sous pression, la pression permet de faire tourner une turbine, la turbine alimente un générateur, l’électricité est acheminée puis transformée en chaleur. Energétiquement parlant, avec trois transformations et le transport, il n’est pas intéressant de chauffer avec de l’électricité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - La puissance solaire</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/0/03/L_nergie_dans_l_habitat_Soleil.jpg' alt='L nergie dans l habitat Soleil.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>La Terre est soumise à une irradiation solaire très importante, d'une puissance moyenne de 173 Pétawatts (1 PW = 1015 Watts) soit 11 500 fois la puissance consommée par l’humanité.</li></ul></li><li>Chaque jour elle est un peu plus utilisée via l’installation de panneaux photovoltaïques. Ce type de panneau a un rendement d’environ 15%. Il existe un système technologiquement plus simple non pas pour fournir de l’électricité mais de la chaleur. Les panneaux solaires thermiques ont un rendement supérieur à 60%. Ils produisent donc quatre fois plus d'énergie que les panneaux photovoltaïque pour une même surface. Cette solution est intéressante face aux besoins en chaleur importants dans l'habitat.</li><li>Par temps clair, la puissance du rayonnement solaire à la surface de la Terre est de 1 000 Watts/m². Cependant l’intensité solaire dépend fortement des saisons. En été le soleil est « au plus haut », plus perpendiculaire à la surface terrestre donc une plus grande densité de rayons est captée. A l’inverse, en hiver, il est « au plus bas ». De plus la durée des journées varie du simple au double, avec, pour Paris, un peu plus de 8h de jour au solstice d’hiver et plus de 16h au solstice d’été.<ul><li>En prenant en compte la puissance solaire et la durée du jour, l’énergie solaire d’un jour d’été est jusqu’à six fois plus importante qu’un jour d’hiver (E = P x t).</li></ul></li><li>Dans l’idée d’utiliser cette énergie pour des applications thermiques ou électriques, il faut penser à orienter son système en fonction de la période de plus forts besoins, plus vertical l’hiver, plus horizontal l’été. Il reste que l’énergie solaire est toujours présente et qu’un système très productif en été sera toujours un appoint intéressant en hiver.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Chauffage - la température idéale</strong><p><strong>Étapes :</strong></p><ol><li>Il est normal que la température d’un logement soit plus élevée l’été que l’hiver et qu’il faille s’habiller en fonction des saisons. De plus, pour un bon confort de vie, il n’est pas nécessaire qu’il fasse chaud chez soi. Il fait en moyenne 20°C dans un logement français. L’Ademe recommande une température de 19°C dans les pièces à vivre et de 16°C dans les chambres. La variation d’un chauffage de 19°C à 20°C entraîne une surconsommation d’énergie de 7%.</li><li>Scientifiquement, cela s’explique en partie par la loi simplifiée de Fourier ou de conduction thermique:</li><li>Jth : flux thermique (W/m²)</li><li>λ : conductivité thermique (W/m/K)</li><li>∆T : écart de température entre les côtés de la paroi (°C ou K)</li><li>e : épaisseur de la paroi (m)</li><li>Selon cette loi, le flux thermique (la perte de chaleur) est proportionnel à la différence de température.</li><li>En exemple, s’il fait 12°C à l’extérieur et que l’habitat est chauffé à 18°C :</li><li>S’il fait toujours 12°C à l’extérieur mais que l’habitat est chauffé à 24°C :</li><li>Quel que soit l’isolant utilisé et son épaisseur, s’il fait 12°C à l’extérieur les déperditions thermiques seront 2 fois plus importantes à 24°C qu’à 18°C.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Chauffage - l'isolation</strong><p><strong>Étapes :</strong></p><ol><li>Le chauffage représente en moyenne sur l’année les deux tiers de la consommation énergétique des foyers avec environ 11 000 kWh. N’étant utilisé que pendant la saison froide, environ six mois de l’année, il est un véritable « gouffre d’énergie » avec 60 kWh journaliers lissés sur cette période.</li><li>Une très bonne isolation permet de réduire de 80% les besoins en chaleur. Il est possible d’isoler son habitat de plusieurs manières avec des efficacités et des coûts économiques très différents.</li><li>En exemple, l’isolation par l’extérieur est intéressante : elle permet de garder le logement en dehors du froid environnant et de conserver l’énergie solaire dans les matériaux lourds de la construction, s’ils ne sont pas couverts d’un isolant thermique. Mais cette méthode d’isolation est onéreuse et demande d’importants travaux. De plus ce n’est pas par les murs que les déperditions thermiques sont les plus importantes.</li><li>En premier lieu, il faut faire attention à la bonne étanchéité à l’air. Chauffer un courant d’air, même bien isolé, est inutile. La circulation d’air provient majoritairement des espaces entre les fenêtres, portes et leurs cadres. Un joint en mousse limitera fortement le vent ambiant.</li><li>Les fenêtres sont responsables de 10 à 15% des déperditions thermiques, Fermer ses volets ou tirer un rideau lourd évite un investissement dans une nouvelle épaisseur de vitrage.</li><li>Il faut également faire attention aux ponts thermiques : ce sont des zones de faiblesse dans l'enveloppe d'un bâtiment. Le froid extérieur est alors plus rapidement transmis à l’intérieur du logement. Les ponts thermiques les plus importants se situent aux jonctions entre la toiture et les murs et entre les murs et les menuiseries des fenêtres. Ce sont les premières régions à isoler.</li><li>Dans l’étape précédente est détaillée la loi de Fourier sur la conduction thermique. La conduction thermique est la quantité de chaleur qui passe d’un milieu à un autre en fonction du matériau les séparant et de son épaisseur. Cette conduction dépend du facteur de conductivité thermique (λ) propre à chaque matériau. Plus λ est faible, plus le matériau est isolant. Selon la norme française RT2012, un matériau est considéré comme isolant si sa conductivité thermique est inférieure à 0,065 W/m/K. Voici quelques exemples de matériaux communs pouvant être utilisés dans la construction :</li><li>Matériaux λ (W/m/K) à 20°C</li><li>Brique (terre cuite) 0,84</li><li>Carton 0,11</li><li>Laine de verre 0,04</li><li>Paille 0,04</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Chauffage - chauffer autrement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/be/L_nergie_dans_l_habitat_Chauffage_vs_puissance_solaire.png/800px-L_nergie_dans_l_habitat_Chauffage_vs_puissance_solaire.png' alt='L nergie dans l habitat Chauffage vs puissance solaire.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le logement n’est plus un courant d’air. Les principaux ponts thermiques de l’enveloppe sont isolés. La température ciblée est réduite de quelques degrés. Les besoins en apports caloriques sont donc fortement réduits. Il devient intéressant de s’orienter vers une nouvelle source de chaleur, au moins auxiliaire, pour réduire sa consommation directe (gaz, fioul) ou indirecte (électricité) d’énergies fossiles.</li><li>En fonction du type d’habitat et de la région, il peut être intéressant de chauffer à la biomasse (bois, pellet, granulé de bois) dans un poêle à bois. Les poêles de masse (tutoriel disponible en décembre) ont un rendement supérieur à 80% et sont donc très économiques en combustibles.</li><li>Attention, chauffer à la biomasse n’est pas synonyme d’écologie. En effet, les cheminées à foyer ouvert sont un moyen de chauffage des plus médiocres. L'air réchauffé est aspiré par la cheminée. La cheminée ne chauffe dès lors que par rayonnement. Plus le foyer sera chaud, plus le tirage sera important, plus l’air intérieur sera évacué vers l’extérieur. Un foyer ordinaire peut avoir un tirage de 800 à 1 000 mètres cubes d'air par heure. Le rôle principal des cheminées est donc réduit à de la ventilation. Caricaturalement, avec une cheminée, plus on chauffe, plus il fait froid (en dehors de la zone de rayonnement).</li><li>De plus, la combustion dans un foyer ouvert est très incomplète. Les fumées qui s’échappent d’une cheminée sont des hydrocarbures non consommés, donc un manque à gagner et une pollution supplémentaire.</li><li>En résumé, moins il y a de fumées en sortie du poêle, meilleur est le rendement de la combustion. Plus la température des fumées est faible, plus la chaleur est donnée au logement.</li><li>Pour limiter le volume de combustible (biomasse, gaz, fioul) pour se chauffer, il est également possible d’utiliser le rayonnement solaire et sa transformation en calories. En hiver, les journées sont plus courtes et le rayonnement solaire est moins puissant qu’en été mais l’énergie disponible reste cependant importante.</li><li>En prenant en compte la météorologie, d’octobre à mars, période d’utilisation du chauffage, le soleil fournit plus de 3 kWh/m² par jour dans le sud de la France, plus de 2 kW.h/m² dans le nord. En prenant un rendement de 60%, les énergies captées par un panneau solaire thermique seraient respectivement de 2 et 1,3 kW.h/m²</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Chauffe-eau</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/a/a4/L_nergie_dans_l_habitat_chauffe-eau.png' alt='L nergie dans l habitat chauffe-eau.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le chauffage de l’eau chaude sanitaire représente plus de 10% de l’énergie totale consommée à l’année dans un logement. La consommation moyenne d’un foyer est d’environ 1 700 kW.h par an soit un peu moins de 5 kW.h par jour.</li><li>Comme pour le chauffage du logement, la première action à réaliser est de bien isoler sa chaudière, son chauffe-eau et les tuyaux qui en sortent. Un chauffe-eau neuf de 200 litres a des pertes statiques de plus d’ 1 kW.h par jour. Les pertes statiques sont l’énergie liée à la diminution de la température de l’eau sans qu’elle soit consommée. 20% de la consommation quotidienne est perdue. Sur-isoler le ballon permet d’économiser une part conséquente de l’énergie. Quand on touche un chauffe-eau, il doit être froid, sinon c’est un radiateur, il perd de l’énergie par rapport à sa fonction première.</li><li>Précédemment étaient étudiés les intérêts et limites du chauffage solaire thermique. Les besoins en chauffage sont inversement proportionnels à l’énergie fournie par le soleil. Pour l’eau, la situation est bien différente : les besoins sont similaires toute l’année et 13 fois moins forts que le chauffage en plein hiver.</li><li>Le fonctionnement des chauffe-eau solaires est simple : un fluide caloporteur (qui transporte la chaleur) passe dans des tubes isolés exposés idéalement au soleil. Avec le rayonnement, le fluide chauffe ; quand la température du fluide est supérieure à celle du ballon d’eau chaude, un thermostat ouvre la vanne de circulation. Le fluide caloporteur transfère ses calories à l’eau sanitaire.</li><li>L'eau du ballon chauffe dans la journée, avec le soleil. L’eau a une bonne inertie thermique, elle gardera sa température pendant la nuit si le ballon est isolé.</li><li>Les systèmes solaires thermiques ont un rendement en général supérieur à 60%, c’est-à-dire que si le soleil rayonne 1 000 W/m², un chauffe-eau solaire de 1 m² générera au moins 600 W de chaleur.</li><li>Avec l’ensoleillement moyen en France, 4 m² de panneaux permettent de couvrir les besoins quotidiens toute l’année ; 3 m² de panneaux permettent de couvrir les besoins pendant 90% de l’année, décembre excepté; 2 m² couvrent les besoins en eau chaude pendant la moitié la plus chaude de l’année.</li><li>Quelle que soit la saison, il est possible d’avoir plusieurs jours consécutifs sans soleil. L’eau restera froide. Les systèmes de chauffe-eau solaires sont en général couplés avec un système électrique qui prend le relai pendant les longues périodes nuageuses.</li><li>Un système de chauffe-eau solaire low-tech sera documenté par le Low-tech Lab en 2018.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Cuisson</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/12/L_nergie_dans_l_habitat_cuisson.png/800px-L_nergie_dans_l_habitat_cuisson.png' alt='L nergie dans l habitat cuisson.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La cuisson représente environ 6% de l’énergie consommée. C’est un peu moins de 1 000 kWh sur l’année soit environ 2,5 kWh par jour.</li><li>Globalement, d’un point de vue énergétique, la cuisson au gaz est la plus intéressante. L’efficacité d’une gazinière est de 60%, contre 90% pour des plaques à induction. Mais, comme vu en introduction, l’électricité du réseau est produite avec de la chaleur. Si on prend en compte les 70% de pertes de la centrale et du réseau, le rendement énergétique de l’induction chute à 27%.</li><li>Le gaz naturel distribué dans le réseau est du méthane (CH4). Il est possible d’en produire à petite échelle à partir de déchets organiques via un compostage anaérobique. Les systèmes domestiques permettant la production de méthane sont appelés méthaniseurs ou biodigesteurs.</li><li>Pour réduire la consommation propre à la cuisson, deux solutions simples peuvent être mises en place : les jupes isolantes et la marmite norvégienne. Une gazinière perd une bonne partie de son énergie en chauffant l’air autour de la casserole. Une jupe permet de concentrer la chaleur du feu sur la zone à chauffer. La jupe isole également les champs de la casserole, cela permet de limiter les pertes de chaleur pendant et après la cuisson. C’est également le principe de la marmite norvégienne, particulièrement utilisée pour les cuissons longues. Une fois le plat monté à température, on le retire du feu pour le placer dans une enceinte très bien isolée. La chaleur va descendre très doucement, possiblement pendant des heures, permettant à la cuisson de continuer sans consommer d’énergie additionnelle. Pour ces deux solutions, des tutoriels seront bientôt disponibles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Energie spécifique</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/L_nergie_dans_l_habitat_E_Sp_cifique.png/800px-L_nergie_dans_l_habitat_E_Sp_cifique.png' alt='L nergie dans l habitat E Sp cifique.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’énergie spécifique est l’énergie dédiée à la lumière, l’équipement électroménager, la bureautique et la hi-fi. C’est la seule énergie pour laquelle le besoin est de l'électricité. Toutes les autres énergies de l'habitat sont des besoins de chaleur. Elle représente aujourd’hui 16,6% de l’énergie consommée. C’est un peu moins de 2 700 kW.h sur l’année soit environ 7 kW.h par jour.</li><li>Avec l’arrivée massive des lampes à économie d’énergie et des LED, la consommation consacrée à la lumière a fortement diminué. Cependant, la consommation d’énergie spécifique a doublé depuis 1990. En cause, le nombre croissant d’appareils électriques et électroniques, comme les téléphones et ordinateurs qui habitent le quotidien.</li><li>Pour limiter sa consommation spécifique, il faut faire attention à ne pas multiplier les appareils. De plus, les appareils non utilisés sont souvent en veille, avec une consommation légèrement inférieure à 1 W. Mais une veille d’un Watt sur l’année correspond à l’énergie nécessaire pour cuisiner pendant 4 jours. L’énergie consommée par plusieurs appareils en veille peut être conséquente.</li><li>Pour finir, bien qu’invisible individuellement mais avec un très fort impact à l’échelle nationale : la consommation électrique en fin de journée, où une grande partie des besoins énergétiques sont concentrés sur quelques heures. Chacun rentre chez soi et allume tous ses appareils (téléviseurs, ordinateurs, machine à laver, cuisinière, etc). La demande est telle que la consommation nationale connaît un véritable pic sur cette période. L’énergie n’étant pas ou peu stockable, les centrales doivent fournir cette énergie en direct. Le parc électrique français est dimensionné par cette demande en énergie, en début de soirée.</li><li>Si la consommation électrique était lissée sur la journée, plusieurs centrales électriques pourraient être fermées. Pour répartir ce besoin, il est possible de programmer certains appareils pour la nuit ou, encore mieux, en journée, profitant du solaire photovoltaïque de plus en plus présent.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Conclusion</strong><p><strong>Étapes :</strong></p><ol><li>La consommation énergétique dans le logement français est importante. La première étape à réaliser dans la transition énergétique individuelle n’est pas le changement de source d'énergie et/ou d’échelle. L’installation de panneaux photovoltaïques ou d’éoliennes n’est pas intéressante économiquement et écologiquement parlant s’il n’y a pas eu une importante réduction de la consommation énergétique avant.</li><li>Mais réduire sa consommation ce n’est pas se priver ou même perdre du confort. C’est rendre son habitat plus efficace. L'efficacité, c’est avant tout limiter ses pertes. Plus de 70% de l'énergie consommée étant du chauffage, limiter ses pertes c’est bien isoler son logement.</li><li>Une fois les pertes réduites il est possibles de s’orienter vers des solutions moins puissantes. Dans ces conditions les alternatives intéressantes sont nombreuses, en low-tech, ou conventionnelles :<ul><li>poêle à bois</li><li>chauffage solaire</li><li>chauffe-eau solaire</li><li>architecture bioclimatique</li><li>éolienne</li><li>panneaux solaires</li><li>biogaz</li><li>marmite norvégienne</li><li>jupe isolante</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

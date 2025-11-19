@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Boissons fermentées - Kéfir, kombucha et vinaigres</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Boissons fermentées - Kéfir, kombucha et vinaigres</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/7/7e/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_K_fir_et_kombucha.png/ia-b1e4e57dc699c76e6cdf3ab7f7246f7d-px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_K_fir_et_kombucha.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Plusieurs recettes de boissons fermentées simples, saines et anti-gaspi à base de symbiose bactérie-levures comme le kéfir d'eau, le kéfir de lait, le kombucha et les mères de vinaigre.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les aliments fermentés sont des aliments qui ont été transformés par des micro-organismes: bactéries, levures, champignons. Ce processus s'effectue souvent sans oxygène, en milieu anaérobique. Les microbes se multiplient normalement en présence d'oxygène. Mais lorsqu'ils en sont privés, ils luttent en fabriquant des molécules pour prendre l'avantage sur les microbes concurrents: alcool, acide lactique, acide acétique. Cela donne lieu à divers types de fermentation: lactique, alcoolique, acétique, etc... Même si nous avons parfois tendance à l'oublier, de nombreux aliments du quotidien sont en réalité fermentés: pain, fromages, yaourts, choucroute, saucisson, vin, bière... La liste est longue. Et cela tombe bien puisque leurs effets sont bénéfiques pour la santé ! Elles facilitent la digestion, participent au bon fonctionnement de l’intestin, sont sources de vitamines et de minéraux, renforcent notre système immunitaire...</p>
+      
+        <p>Enfin comme le rappelle Virginie Geres avec son site HappyBiote, sans microorganismes nous serions morts ! Tout simplement ! Nous ne pourrions pas fonctionner sans la présence de milliards de bactéries, levures et autres microbes (non pathogènes) qui tapissent notre corps. Ils assurent d’importantes tâches comme nous protéger des agressions d’autres microbes (pathogènes), nous permettent de nous alimenter, d’avoir une odeur distincte des autres individus (et donc facilite de tomber amoureux quand on n’est pas trop sale), ils participent à notre système immunitaire… Et dans chacune de nos cellules se trouve un microorganisme que nous avons incorporé au fil des millénaires : la mitochondrie, qui permet la respiration cellulaire ! Cette super vidéo pour en savoir plus.</p>
+      
+        <p>Donc, non seulement les microorganismes sont nécessaires à notre survie mais en en apportant une grande diversité par une alimentation saine et variée (notamment avec des aliments riches en fibres -prébiotiques- et microorganismes -probiotiques-) nous améliorons notre santé immunitaire et psychique. Ceci est aux antipodes des standards occidentaux modernes, rendant les gens littéralement malades, entre autres par un microbiote faible. Pour plus d’informations je vous conseille ce reportage d’Arte, ou celui-ci un peu plus ancien sur le même thème.</p>
+      
+        <p>Autant de bonnes raisons d'en consommer de manière régulière (attention à ne pas manger que ça pour autant!)</p>
+      
+        <p>Nous vous donnons ici plusieurs recettes de boissons fermentées, zéro gaspi, élaborées à partir de microorganismes naturels, pour vous essayer à la fabrication de ces sodas maison !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Boissons_fermentées_-_Kéfir__kombucha_et_vinaigres" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Boissons_fermentées_-_Kéfir__kombucha_et_vinaigres</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Mère de Kombucha</li><li>et/ou grains de kéfir d'eau (alias kéfir de fruit)</li><li>et/ou grains de kéfir de lait</li><li>Sucre</li><li>Eau</li><li>Thé (pour le kombucha)</li><li>Fruits, plantes, jus de fruits pour aromatiser</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Bocaux en verre</li><li>Bouteille à fermeture mécanique type limonade</li><li>Etamine</li><li>Cuillère</li><li>Balance</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Règles d'hygiène</strong><p><strong>Étapes :</strong></p><ol><li>Il n'est pas nécessaire de travailler dans un champ stérile lorsqu'il s'agit de fermentation mais il est crucial d'être le plus propre possible.</li><li>Travaillez sur un plan de travail nettoyé (si besoin/possible aseptisé au vinaigre blanc ou à l'alcool). Utilisez des ustensiles et récipients propres, lavés à l'eau chaude (ou passés au lave-vaisselle), manipulez avec des mains propres et essuyez-les avec un torchon PROPRE... bien entendu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Les étapes de la fermentation</strong><p><strong>Étapes :</strong></p><ol><li>1ère phase de fermentation (F1) : Cette phase de fermentation est appelée respiration car elle fonctionne en aérobie (avec de l'oxygène), c'est à ce moment que les levures et bactéries se multiplient et développent des arômes. Mélanger tous les ingrédients dans un bocal en verre à large ouverture. Refermer sans visser le couvercle ou poser un linge serré par un élastique. Laisser entre 3-5j fermenter dans un endroit chaud (autour de 20°C) en mélangeant régulièrement. Vous saurez que la première phase est terminée quand vous verrez le liquide frémir généreusement lorsque vous le remuez.</li><li>2ème phase de fermentation (F2) : Cette phase est appelée carbonatation car l'objectif est que le CO2 produit par les microorganismes soint forcé de réintégré le liquide (par pression) et donc faire pétiller le liquide. C'est dans cette phase que les microorganismes sont en anaérobie (sans oxygène) et produisent donc une fermentation acétique (acide type vinaigre) et/ou alcoolique. Lorsque'ils consomment les sucre de la boisson les microorganismes produisent cet acide ou alcool et rejettent du CO2. Si le goût vous plait en fin de F1 vous pouvez déjà la boire. Filtrer le liquide et le verser dans une bouteille type limonade, mais ça marche aussi avec des bouteilles de soda en plastique. Au début de cette deuxième phase, le liquide doit être encore un peu sucré. En effet, la fermentation va se poursuivre encore quelques jours et les levures ont besoin de nourriture. Si ce n’est pas le cas, rajoutez du sucre. Ouvrir chaque jour la bouteille pour dégazer et goûter pour voir si le goût vous convient.</li><li>Cette phase peut durer entre 2 et 5 jours, en fonction du goût et du taux de bulles que vous souhaitez. Vous pouvez la goûter de temps à autre.<ul><li>Trop sucré : patientez encore deux ou trois jours.</li><li>Pas assez pétillant : rajoutez du sucre et patientez encore un jour ou deux.</li><li>Trop vinaigré : rajoutez du sucre et patientez encore un jour.</li></ul></li><li>Lorsque le goût vous convient, vous pouvez déguster votre boisson pétillante fermentée à partir de fleurs! Vous pourrez la conserver quelques jours à température ambiante, avant qu’elle ne tourne au vinaigre (ce qui est délicieux aussi). Vous pouvez aussi la conserver plus longtemps au frigo, car cela ralentit le processus de fermentation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Kéfir de lait ou kéfir d'eau/de fruits?</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_grain-kefir-eau-kefir-fruit-1170x781.jpeg/800px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_grain-kefir-eau-kefir-fruit-1170x781.jpeg' alt='Boissons ferment es - K fir kombucha et vinaigres grain-kefir-eau-kefir-fruit-1170x781.jpeg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/7f/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_k_firlait2.jpg' alt='Boissons ferment es - K fir kombucha et vinaigres k firlait2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les grains de kéfir sont une association de plusieurs types de bactéries et de levures dans des petites structures de cellulose en forme de grains. Ce sont des ferments assez fragile, il convient donc d'en prendre soin et de faire attention à ne pas les stresser (éviter les ustensils en métal, de les rincer ou de les laisser trop longtemps sans nouvelle fermentation). Les kéfirs de lait sont des cousins des kéfir d’eau, ils ne fermentent que des produits laitiers animaux (normalement) et sont plus blancs, parfois avec une allure un peu gluante. Le kéfir d'eau fermente les boissons à base d'eau et de jus de légumes/fruits, ainsi que les laits végétaux.</li><li>Pour travailler avec du kéfir, le plus simple et le mieux est de s’en faire donner puisqu'ils se multiplient assez vite. Pour les conserver on les garde dans un peu de lait au frigo, et si possible on change le lait toutes les semaines. Pour les kéfirs d'eau/de fruits la conservation se fait dans un peu d'eau sucrée.</li><li>Pas besoin de rincer les grains à l’eau avant de les activer, au contraire cela les fragilise. Il est inutile de stériliser quoi que ce soit pour préparer son kéfir mais il faut veiller à bien nettoyer tous les ustensiles et ses mains.</li><li>Règle cruciale : ne pas utiliser de métal avec les grains de kéfir (de lait ou d’eau) car l’acide produit par les grains va ioniser le métal et une fois en contact avec le grain ceci peut le tuer ! Donc bois, plastique ou inox (mais du vrai bon inox, les plaquages s’abimant avec le temps).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Recette de base du kéfir d'eau</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/d/da/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_k_fireau.png' alt='Boissons ferment es - K fir kombucha et vinaigres k fireau.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour vivre le kéfir a besoin de sucre, d’acidité et d’acides aminés. Ces acides aminés se trouvent dans les fruits séchés, traditionnellement la figue (mais ça devient vite cher) et les scientifiques ont vu que les raisins secs et l’abricot sec fonctionnent bien (bio !). Pour l’acidité une rondelle de citron pour 50cl d’eau suffit, pas besoin de la presser. On peut réutiliser le citron et les fruits après la fermentation dans des confitures ou pâtisseries. Pour le sucre il vaut mieux utiliser un sucre non raffiné, c'est-à-dire non blanchi (sucre de betterave, sucre de canne, muscovado pas de miel). Dans des recettes comme le Tibicos on trouve du sucre brun très brut avec le kéfir, cela fonctionne mais cela peut colorer les grains à force, à vous de voir, ils redeviendront clair en utilisant du sucre blanc.</li><li>Pour aromatiser il est important de le faire en seconde fermentation (F2), pour ne pas fragiliser les grains. Si on a trop de grains on peut accélérer la F2 en laissant quelques grains mais parfois cela change le goût de manière pas très agréable. Pour aromatiser et fermenter des jus on peut utiliser aussi l’eau de conservation des grains lorsqu’elle est bien pétillante, environ 1/3 du liquide total, compter au moins 48h de fermentation. Cela fonctionne car dans l'eau de conservation des grains se trouvent des levures et bactéries qui viennent former ensuite de nouveaux grains.</li><li>Recette traditionnelle :<ul><li>En première fermentation (F1) : Dans un bocal dissoudre 20g de sucre dans 1L d'eau puis ajouter environ 20g (2-5càc) de grains de kéfir. Ajouter 2 rondelles de citron, 1 figue/abricot sec ou 2-3 raisins secs. Evidemment du citron et des fruits secs non traités ou bio est mieux pour vos grains et votre santé.</li><li>Le kéfir de fruits est généralement fabriqué avec un bocal entrouvert, recouvert d'un linge (fermentation aérobie) mais la fermentation anaérobie (sans oxygène en bocal fermé) est possible, à la condition de laisser suffisamment d'espace entre la boisson et le couvercle. Laisser fermenter à température ambiante, à l’abri du soleil quelques jours (attendre au moins 24h). Une fois prêt le fruit sec (et quelques grains) remontent à la surface. Pour économiser de l'argent il n’est pas obligé de mettre des fruits séchés à chaque fermentation (cela ralentira aussi la multiplication des grains).</li><li>Fermentation F2 : filtrer puis mettre en bouteille et laisser encore 1-2j à température ambiante pour avoir une boisson bien gazeuse ou consommer directement si vous préférez sans ou avec peu de bulles. On le conserve facilement une semaine au frigo mais il s’acidifie avec le temps.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Variantes de kéfir d'eau</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/a/ac/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_k_fireau2.png' alt='Boissons ferment es - K fir kombucha et vinaigres k fireau2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>De très nombreuses variantes sont possibles. On peut par exemple ajouter des fruits ou du jus de fruit en fermentation F2. Attention si vous laissez la pulpe des jus, votre kéfir risque de faire un geyser car les morceaux de fruits sont emportés par les bulles qui remontent. Pensez à dégazer très souvent!</li><li>Si l'on aime les laits végétaux il est également possible de faire du "faux kéfir laitier végan" en faisant fermenter le lait végétal avec des grains de kéfir d'eau. Dans la continuités un autre toturiel vous propose de réaliser des "faux-mages, faux fromages végan" à base de kéfir et laits végétaux.</li><li>Exemples de variation autour du kéfir d'eau :<ul><li>Jus de pomme et canelle en F2</li><li>Jus de pastèque et feuilles de basilic en F2</li><li>Virgin mojito avec citron vert (en F1) et menthe (en F2)</li><li>Liban : pétales de rose et anis vert</li><li>Explications, astuces et recettes de cuisine au kéfir : https://nicrunicuit.com/?s=k%C3%A9fir</li></ul></li><li>Recettes et variantes : http://www.cfaitmaison.com/kefir_fruits/kefirfr_intro.html</li><li>La particularité du Tibicos (alicament) http://www.cfaitmaison.com/kefir_fruits/tibicos.html</li><li>Levain de kéfir pour du pain : http://www.cfaitmaison.com/kefir_fruits/levain-kefirfr.html</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Recette de base du kéfir de lait</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/e2/K_firlait.png' alt='K firlait.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le kéfir de lait est un aliment lacté fermenté, mousseux, faiblement alcoolisé, parfois appelé "Champagne lacté". Il ressemble au yaourt, mais en plus fluide et plus doux. Originaire des montagnes du Caucase (dans l'ancienne Union soviétique, une chaîne de montagnes, qui s'étend de la Mer Noire à la Mer Caspienne), où elle était faite avec du lait de chamelle, cette boisson légendaire, très saine est aujourd'hui fabriquée industriellement.</li><li>La boisson kéfir « jeune » a une consistance crémeuse épaisse uniforme, un goût acide rafraîchissant, léger et un arôme peu prononcé et très doux de levure. On peut avoir un goût plus prononcé (acide, avec beaucoup de bulles et d’alcool) en laissant les grains plus longtemps. La composition et la saveur du kéfir changent de manière significative, selon une variété de facteurs comprenant la source (vache, brebis, chèvre, jument) et la teneur en graisses du lait utilisé, la composition des grains ou des démarreurs, et des conditions technologiques de production (contrôle de la température notamment).</li><li>Comme lors d'autres transformations laitière (yaourt, fromages) les micro-organismes du kéfir consomment un peu de lactose, sucre naturel du lait. Il est donc plus digeste pour les personnes ayant une légère intolérance au lactose mais reste déconseillé pour les personnes ayant de fortes réactions au lactose.</li><li>La durée de conservation du kéfir traditionnel (préparé à partir des grains) est très courte, moins de trois jours, certains sites annoncent jusqu'à une semaine. Le kéfir fini peut être consommé immédiatement ou stocké pour une utilisation ultérieure dans le réfrigérateur (je ne sais pas si on peut le congeler, on risque de perdre certaines bactéries bénéfiques). S'il n'est pas consommé dans les 2 ou 3 jours, ce lait fermenté devient pétillant.</li><li>Utiliser du lait entier cru de préférence mais tous les laits fonctionnent bien, même le lait en poudre dilué (mais à éviter quand même, fatigue les grains à la longue). Utiliser 10 à 20g de grains/L de lait. Le lait n'a pas besoin d'être bouilli ou chauffé pour faire du kéfir (mais il peut l'être si votre kéfir est destiné à une femme enceinte ou un petit enfant). Ne pas remplir la totalité du bocal (peut augmenter de volume par la fermentation) et poser un linge à la place du couvercle (fermentation aérobie).</li><li>A température ambiante il faut environ 24-36h (mais beaucoup moins par temps chaud) pour obtenir un kéfir jeune, en remuant de temps en temps afin que les grains soient bien au contact de tout le lait. Les grains sont souvent remontés en haut du laitage. Filtrer afin de récupérer les grains et fermer votre bouteille pour la conserver au frigo.</li><li>Pour avoir des kéfirs plus forts en goût et bulles<ul><li>Après filtration laisser faire une seconde fermentation entre 16-20°C pendant 1 à 4 jours : kéfir légèrement acide avec beaucoup de bulles et un taux d’alcool autour de 0.5%</li><li>Laisser les grains fermenter plus longtemps le lait : kéfir vieux avec un fort goût acide et un taux d’alcool pouvant atteindre 2.5%</li></ul></li><li>Quand la coagulation est plus rapide que 24 heures, (par temps chaud notamment) il y a une séparation rapide du petit lait qui reste au fond du bocal et le kéfir peut être un peu acide. Pour éviter ça, réduire le nombre de grains ou ajouter plus de lait pour ralentir la fermentation ou fermenter moins longtemps.</li><li>Voici différentes recette de kéfir jeunes, forts, avec différents laits, à partir de kéfir en poudre du commerce… http://www.cfaitmaison.com/kefir_lait/fabriquer.html</li><li>Les grains de kéfir mis dans de la crème fraîche à température ambiante réussissent à la faire fermenter.</li><li>Pour préparer une crème fermentée épaisse, versez le contenu d'une briquette de crème fraîche entière (de préférence) dans un récipient. Ajoutez un grain de kéfir (par exemple un grain moyen de kéfir de lait de la grandeur d'une cuillérée à café). Laissez à température ambiante. En moins de 24 heures vous remarquerez que la crème s'épaissit et devient très légèrement aigre. Vous pourrez l'utiliser après avoir ôté le grain. Placez de préférence le récipient au frais encore 12 à 24 heures.</li><li>Dégustez, tartinez ou assaisonnez la crème si vous le souhaitez et utilisez-la dans vos préparations en remplacement des crèmes aigres (ou sûres ou surettes) et du mascarpone. Elle accompagne merveilleusement bien les crudités, les tomates, les concombres, les salades et les desserts.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Variantes du kéfir de lait</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/d/da/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_yaourt_fruit.png' alt='Boissons ferment es - K fir kombucha et vinaigres yaourt fruit.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/39/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_fromage_frais.png/800px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_fromage_frais.png' alt='Boissons ferment es - K fir kombucha et vinaigres fromage frais.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois le lait fermenté au kéfir il est possible de l'aromatiser comme on aromatiserait n'importe quel produit laitier. Par exemple on peut y ajouter du sirop, des fruits ou des confitures pour avoir un côté sucré. On peut y ajouter des fines herbes, des épices, des légumes pour un côté salé.</li><li>Il est également possible de réaliser des fromages à partir de kéfir de lait affiné. Après avoir laissé la fermentation avec les grains réaliser une première séparation entre le caillé et le petit lait, filtrer et séparer les grains du liquide pâteux (caillé). Consommé tel-quel cela ressemble au fromage frais. Y ajouter un peu d'ail, de ciboulette et de persil vous donne un "boursin" fait maison.</li><li>Si vous le souhaitez vous pouvez saler et affiner quelques jours ce fromage afin d'avoir un fromage plus fort en gout et plus crémeux. N'hésitez pas à regarder le tutoriel spécifique aux yaourts et fromages.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Recette de base du kombucha</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7c/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_kombucha.png/800px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_kombucha.png' alt='Boissons ferment es - K fir kombucha et vinaigres kombucha.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le kombucha et le Jun sont des boissons fermentées très faiblement alcoolisées (considérées comme non alcoolisées en France car en dessous de 1.2%, comme les jus de fruits). La différence entre le kombucha et le Jun est que le Jun est un cousin, spécialement adapté à fermenter avec du miel (le miel est antimicrobien). On peut transformer son kombucha en Jun en l’habituant progressivement à fonctionner avec du miel. Avec ces deux méthodes, on retrouve une association naturelle de bactéries et de levures dans un scoby rond épais et gélatineux, allant prendre toute la surface du liquide, se multipliant en se dédoublant par le dessus.</li><li>Le kombucha et le Jun sont les ferments les plus résistants, on peut très facilement faire des aromatisations en F1, les faire fermenter des choses auxquelles ils ne sont pas destinés (lait, jus de fruits directement, tisanes sans thé…) sans les tuer mais mieux vaut ne pas trop s’amuser si on ne possède qu’un seul scoby. Ce serait dommage de le sacrifier.</li><li>Traditionnellement en Europe on utilisait le kombucha pour produire du vinaigre alimentaire et médicinal, ce n’est que récemment (environ 10 ans) que la boisson sous forme sucrée et pétillante devient connue.</li><li>La recette de base :<ul><li>du thé très infusé (5g),</li><li>70g de sucre pour 1L d’infusion,</li><li>1 scoby avec un peu de starter (100ml/1L).</li></ul></li><li>Le starter est un peu de la boisson fermentée précédente (peu importe si elle date de quelques jours ou plusieurs années). Si on ne possède pas de starter, on peut mettre un peu de vinaigre ou du citron, l’essentiel est d’apporter de l’acidité pour favoriser l’activation du kombucha. Le sucre est plutôt du sucre pur, non raffiné mais brut (sucre de betterave, sucre de canne roux), on peut utiliser des sucres contenant plus de fibres comme le muscovado ou la panela mais le scoby devra s’y habituer.</li><li>Important : attendre que l’infusion ait refroidi (24-30°C) et soit sucrée puis filtrée pour y déposer le scoby (gentiment à la surface), avec la face la plus brillante vers le haut. Si le scoby coule ce n’est pas grave tant qu’après quelques jours/semaines on voit se développer une fille et qu’il ne s’effiloche pas.</li><li>Laisser fermenter environ 7j avec un tissu sur le bocal pour éviter d’attirer les moucherons (qui raffolent des choses fermentées -si jamais vous voulez faire un piège à moucheron-) , dans une pièce à environ 20°C et ne jamais remuer. Cette fermentation avec le ferment s’appelle F1.</li><li>Retirer délicatement le scoby avec une cuillère en bois / plastique ou des mains très propres puis filtrer (pour éviter les filaments de scoby mais non obligatoire), puis mettre en bouteille en laissant au min 2cm d’air afin d’éviter tout débordement et faciliter la seconde fermentation (appelée F2) bouchon fermé (bouteille type Fischer ou limonade). On peut le déguster immédiatement (peu de bulles), ou le laisser entre quelques jours à quelques mois à température ambiante ou au frais, à condition de dégazer régulièrement !</li><li>Il parait que le kombucha se bonifie avec le temps, certains le font vieillir en cave plus de 8 mois avant de le déguster, mais attention au geyser de bulles à l’ouverture !</li><li>Pour conserver le scoby entre les fabrications de kombucha il suffit de conserver un peu de boisson, et de déposer le scoby dessus, dans un bocal fermé. On peut le garder de cette manière des mois (voire des années) à température ambiante ou au frigo car une fois le liquide devenu très vinaigré les microorganismes se mettent en dormance. Il vaut mieux éviter de le congeler ou le déshydrater pour ne pas trop l’altérer (vu qu’il vit déjà très bien dans son jus).</li><li>Les conseils de Laurent Coullome-Labarthe, fondateur de la marque française Karma. Le kombucha est fortement influencé par la température, l’idéal étant entre 24-30°C. Certains ingrédients stimulent fortement le kombucha, comme le gingembre et la menthe poivrée (cette dernière le rend très très actif). Il est très simple et peu cher de faire ses propres boissons fermentées, et cela permet d’éviter les arnaques grandissantes suite à la « mode » de ces boissons healthy. En effet, de nombreuses grandes compagnies de sodas ont investi dans des marques de boissons fermentées (kéfir et kombucha) comme Coca-cola et Pepsi… Et pour surfer sur les bénéfices font de faux kombucha/kéfirs ! C’est-à-dire qu’ils n’utilisent pas de scoby mais déposent des concentrés de microorganismes à la fin du process, voire ajoutent des arômes avec des concentrés de fermentés achetés ailleurs. Le tout réalisé aux USA souvent pour être exporté par bateaux conteneurs réfrigérés jusqu’en Europe, pour un coût environnemental 3 fois supérieur à celui d’importation de bouteilles d’eau en plastique. Evitez cette aberration écologique et alimentaire, faites-le vous-même !</li><li>Voici un article de NiCruNiCuit qui liste les erreurs à ne pas faire et les conseils pour rattraper un kombucha mal parti.</li><li>Voici un condensé d’explication et de recettes pour vous inspirer : http://www.cfaitmaison.com/kombucha/kombucha-intro.html</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Que faire avec son suprlus de scoby de kombucha/kéfir d'eau ou mère de vinaigre??</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/85/Kombucha_et_vinaigres_scoby_snacks.png/800px-Kombucha_et_vinaigres_scoby_snacks.png' alt='Kombucha et vinaigres scoby snacks.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Myfermentpassion a testé (et aimé) cette recette pour en faire des friandises sucrées ressemblant à des bonbons (photo). Voici les scoby snacks, ici de kombucha mais rien n'empêche d'essayer avec du kéfir ou de la mère de vinaigre.</li><li>Mais pourquoi manger du scoby ? Parce qu'il est riche en protéines, acides aminés essentiels, lipides, minéraux, fibres et bonnes bactéries.</li><li>"1️⃣ Découper son surplus de mère de kombucha en petits cubes réguliers</li><li>2️⃣ Les recouvrir de miel et laisser tremper au frigo pour la nuit</li><li>3️⃣ Les mettre à sécher 48h à 70°C au déshydrateur ou au four 10min à 180°C</li><li>↪️ Super délicieux et texture vraiment sympa ! La prochaine fois je tenterai des les aromatiser</li><li>Avez-vous d'autres recettes pour un surplus de scoby ? "</li><li>On peut également le manger plus discrètement en le mixant dans une sauce ou un smoothie par exemple.</li><li>Si l'idée de manger vos scoby ne vous tente pas Myfermentpassion liste d'autres utilisations possibles :<ul><li>Nourriture pour animaux : c'est un aliment à haute valeur nutritionnnelle pour les animaux domestiques ou d'élevage.</li><li>Compost : sa haute valeur nutritionnelle peut aussi bénéficier aux animaux du sol et à nos plantes.</li><li>Santé : De par ses propriétés antimicrobiennes (la flore amie repousse les microbes pathogènes) et sa capacité d'absorption, de plus en plus d'études en médecines se penchent sur l'utilisation de scoby pour accélérer et optimiser la guérison des plaies.</li><li>Assainir l'eau : Etant donné sa forte capacité d'absorption et de rétention d'eau il semblerait que le scoby permette de capter les métaux lourds présents dans les eaux usées pour les traiter et les assainir</li><li>Batteries éco-friendly : le scoby étant de nature poreuse et avec une bonne capacité d'absorption, il en résulte une très bonne conduction électrique.</li><li>Emballage biodégradable : une fois séché il peut être utilisé comme embalage alimentaire.</li><li>Production de tissus zéro-déchet. Saviez vous qu'il est possible de réaliser du Cuir de kombucha ? Oui, oui, en couture!</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Différentes manières de faire du vinaigre</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4c/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigres.png/800px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigres.png' alt='Boissons ferment es - K fir kombucha et vinaigres vinaigres.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Savez-vous qu'il est facile de fabriquer le vinaigre chez soi ? Cela demande du temps mais bien peu de travail. Pourtant celui commercialisé ne coûte pas cher et on en trouve une grande variété. Malheureusement le vinaigre commercialisé est parfois, pour raison de rentabilité, fabriqué en 24 heures ; ces acétifications ultra-rapides et filtrations exagérées, n'en font plus un ingrédient très naturel, mais un liquide privé en grande partie de ses qualités. Il est donc bien préférable de se mettre à la fabrication de vinaigre pour sa consommation courante (alimentaire, cosmétique, hygiène) d'autant plus que même certains vinaigres biologiques sont fabriqués de manière industrielle.</li><li>La meilleure explication, recettes et utilisations : http://www.cfaitmaison.com/vinaigre/vinaigre.html https://www.vinaigremalin.fr/fabriquez-vous-meme-un-excellent-vinaigre/</li><li>Il est possible de faire du vinaigre de différentes façon :<ul><li>Faire fermenter naturellement des épluchures de pommes (1 mois), ce qui au bout de 2 semaines donne un soda de pomme (voir le tutoriel sur les boissons fermentées aux fruits)</li><li>Laisser fermenter trop longtemps des jus de fruits ou des sodas fermentés à base de fruits/fleurs/kéfir/kombucha</li><li>Utiliser volontairement des jus ou du vins avec des ferments (kéfir, kombucha, mère de vinaigre)</li></ul></li><li>Le vinaigre le plus zéro déchet à faire et celui qui présente le plus d’usages (alimentaire, cosmétique, hygiène corporelle et soin des plantes) est le vinaigre de cidre. On peut le faire sans acheter de cidre (mieux vaut le boire) mais directement à base de déchets de pomme ! Rien qu’avec des trognons, des épluchures (toujours bio évidemment c’est mieux). Et si on possède un vinaigrier tant mieux mais ce n’est pas nécessaire. Deux méthodes suivant que l’on possède déjà une mère de vinaigre ou non.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Réaliser ses vinaigres avec une mère de vinaigre (ou de kombucha)</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5a/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigrem_re.png/800px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigrem_re.png' alt='Boissons ferment es - K fir kombucha et vinaigres vinaigrem re.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/7c/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigre_vin.png' alt='Boissons ferment es - K fir kombucha et vinaigres vinaigre vin.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous avez de la chance ! Une mère de vinaigre s’est peut-être spontanément formée dans un de vos vinaigres au bout de quelques mois ou quelqu’un vous en a donné un morceau. La fabrication sera nettement plus rapide !</li><li>Qu'est ce que la mère de vinaigre?</li><li>La mère de vinaigre ressemble au scoby de kombucha mais est plus fine et moins translucide. Au départ très fine, elle s'épaissit jusqu'à devenir une peau épaisse, gélatineuse et ferme, parfois de plusieurs centimètres. Si la mère coule, essayez de la repositionner à la surface. Une astuce peut aider à maintenir la mère en surface : posez sur le liquide deux petits bâtonnets de bois de hêtre utilisés par les médecins pour l'examen de la gorge et posez délicatement la mère par-dessus. Si la mère se multiple trop, donner ou jeter les mères inférieures et garder la mère supérieure, qui est la plus active. Lorsque l’accumulation de bactéries est trop importante certaines meurent et tombent au fond du récipient, c’est normal. La masse rougeâtre et gélatineuse qui coule dans le fond du vinaigre meurt par manque d'oxygène, c'est une agglomération de bactéries mortes. La conserver est inutile. Pour lui permettre un bon développement on peut ajouter un peu de sucre dans le vin ou le jus de fruits.</li><li>La mère de vinaigre est comestible. Sa ressemblance avec la consistance d'un abat ne la rend guère appétissante.</li><li>Parfois malgré le tissu de protection des mouches parviennent à entrer. Filtrer le liquide si des anguillules (larves de mouches ressemblant à un fin fil à coudre blanc) prolifèrent à la surface.</li><li>Recette de vinaigre avec mère<ul><li>un contenant à bords larges</li><li>une mère de vinaigre (ou de kombucha)</li><li>du vin ou de jus de fruit</li></ul></li><li>Verser le jus ou le vin délicatement dans le contenant sans faire couler la mère de vinaigre (ou bien réussir à retirer puis déposer la mère à la surface après remplissage). Laisser fermenter entre 15 jours et 2 mois avant de l'utiliser, de préférence dans un lieu frais et à l'abris de la lumière. Pour utiliser le vinaigre, soit un robinet en bas du contenant permet de retirer du liquide sans perturber la mère, soit il est nécessaire de retirer la mère le temps de transvaser le vinaigre dans une bouteille.</li><li>Soutirer entre 60 % à 75 % du vinaigre présent dans le vinaigrier et compléter de préférence en une seule fois avec du jus/vin. Il ne faut pas tirer la totalité du vinaigre obtenu, en effet du vinaigre de la précédente production doit être laissé dans le vinaigrier pour amorcer le processus des préparations suivantes.</li><li>Le vinaigre soutiré est souvent mis directement en bouteilles préalablement ébouillantées après filtrage. Mais avant d'embouteiller, il est préférable de vérifier que l'acétification est complète pour éviter qu'une nouvelle mère ne vienne se former dans la bouteille. Le vinaigre soutiré est laissé en attente une semaine. Si aucun voile de surface ne se forme, il sera mis en bouteille. Si une nouvelle mère se reforme dans votre vinaigre embouteillé, plusieurs solutions s'offrent à vous : l'y laisser, la filtrer, l'offrir à une personne désirant produire son propre vinaigre, l'utiliser pour démarrer une nouvelle production dans un autre vinaigrier par exemple.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Réaliser son vinaigre de cidre à partir d'épluchures</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/88/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigre_cidre.png/800px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigre_cidre.png' alt='Boissons ferment es - K fir kombucha et vinaigres vinaigre cidre.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ingrédients : des trognons et épluchures de pommes, 22g de sucre /L d’eau.</li><li>Remplir des bocaux de morceaux de pommes aux ¾, versez ensuite l’eau sucrée jusqu’à recouvrir entièrement les morceaux tout en laissant un peu d’air sous le couvercle. Pour s'assurer que les morceaux restent sous le liquide il peut être utile de placer un poids (petit pot de yaourt en verre, en grès ou un sac plastique remplis d'eau) par dessus les épluchures. Couvrir le pot avec un tissu tenu par un élastique.</li><li>Placer ensuite le bocal au chaud et dans un endroit sombre pendant 2 semaines. On peut remuer tous les 3-4 jours mais ce n’est pas obligatoire. Si de l’écume brune ou grise se développe à la surface pas de panique il suffit de l’enlever. Si la mousse vire au vert mieux vaut jeter et recommencer.</li><li>Filtrer le liquide au bout de 2 semaines avec une étamine ou un tissu (les résidus de pommes peuvent aller au compost). A ce stade le vinaigre a un joli goût de cidre mais pas encore de vinaigre.</li><li>Laissez maturer le liquide dans un bocal couvert de tissus pendant encore 2 à 4 semaines au même endroit qu’avant.</li><li>Dans de bonnes conditions les prémices du voile vont apparaître au bout de deux semaines, les bactéries acétiques vont créer un film à la surface du récipient, c'est à ce moment-là qu'on considère que la "mère" est née. Après la naissance de la mère, on peut rajouter délicatement du vinaigre (pour accélérer le processus) et laisser à nouveau reposer entre 3 semaines et 2-3 mois avant de prélever du vinaigre (pour être sûr de ne pas la détruire).</li><li>Une fois la mère de vinaigre créée vous pouvez continuer de l'utiliser pour créer du vinaigre de cidre ou de vin.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Aromatiser ses vinaigres</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigre-de-framboises.jpeg/800px-Boissons_ferment_es_-_K_fir_kombucha_et_vinaigres_vinaigre-de-framboises.jpeg' alt='Boissons ferment es - K fir kombucha et vinaigres vinaigre-de-framboises.jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est facile d'aromatiser ses vinaigres et les possibilités semblent infinies.</li><li>Quelques exemples :<ul><li>Vinaigre aux framboises (fruits macérés dans le vinaigre quelques semaines)</li><li>Vinaigre aux échalottes (idem)</li><li>Vinaigre aux herbes (idem) comme au thym, romarin, sauge...</li><li>Vinaigre aux fleurs (idem) comme à la lavande</li><li>Vinaigre aux écorces d'agrumes...</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,68 @@
+{
+    "titre": "Timer for Working Out - LED Lights",
+    "main_image_url": "https://content.instructables.com/F0I/AIVC/KND6ERJX/F0IAIVCKND6ERJX.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75",
+    "main_image_caption": "",
+    "difficulte": "",
+    "duree": "",
+    "cout": "",
+    "source_link": "https://www.instructables.com/Timer-for-Working-Out-LED-Lights/",
+    "intro": "Inspired from: https://www.instructables.com/Flowing-LED-Lights-W... Topic: I am making a timer for people who are doing workouts. For example, people can't look at their phones when they are doing workouts that need to stay on the ground. In this situation, my product will be able for people to know the time they have spent. Changes: I changed \"wait for 100ms\" of delay to \"wait for 1000ms\", changed \"wait for 100ms\" of delay to \"wait for 50ms\", changed \"wait for 100ms\" of delay to \"wait for 150ms\", 把秒數由500改至1000. Code: https://create.arduino.cc/editor/irene1026/05b6a2b...",
+    "intro_items": [
+        "Inspired from: https://www.instructables.com/Flowing-LED-Lights-W...",
+        "Topic: I am making a timer for people who are doing workouts. For example, people can't look at their phones when they are doing workouts that need to stay on the ground. In this situation, my product will be able for people to know the time they have spent.",
+        "Changes: I changed \"wait for 100ms\" of delay to \"wait for 1000ms\", changed \"wait for 100ms\" of delay to \"wait for 50ms\", changed \"wait for 100ms\" of delay to \"wait for 150ms\", 把秒數由500改至1000.",
+        "Code: https://create.arduino.cc/editor/irene1026/05b6a2b..."
+    ],
+    "materiaux": [
+        "Supplies<ul><li>- Arduino Uno board * 1</li><li>- USB cable * 1</li><li>- Resistor (110Ω) * 8</li><li>- LED * 8 - Potentiometer * 1</li><li>- Breadboard * 1</li><li>- Jumper wires</li></ul>"
+    ],
+    "outils": [],
+    "etapes": [
+        {
+            "html": "<strong>1. Step 1: Build the Circuit</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FUP/SP0J/KND6EOL7/FUPSP0JKND6EOL7.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Build the Circuit' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Plug wires required for these steps into the spots they should work.</li><li>2. First plug one wire from \"2\" to the negative (-).</li><li>3. The eight LEDs are connected to pin 2-pin 9.</li><li>4. High level and the corresponding LED at the pins will light up.</li><li>5. Control the time of each LED brightening and you will see flowing LED lights.</li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        },
+        {
+            "html": "<strong>2. Step 2: The Schematic Diagram</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F6Z/CWO5/KND6EOPZ/F6ZCWO5KND6EOPZ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Schematic Diagram' loading='lazy'></figure></div>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        },
+        {
+            "html": "<strong>3. Step 3: Procedures</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FP7/4TH6/KND6EOR3/FP74TH6KND6EOR3.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Procedures' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. Build the circuit.</li><li>2. Download the code from https://github.com/primerobotics/Arduino</li><li>3. Upload the sketch to the Arduino Uno board</li><li>4. Click the Upload icon to upload the code to the control board.</li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        },
+        {
+            "html": "<strong>4. Step 4: Code</strong><p><strong>Étapes :</strong></p><ol><li>const<ul><li>int lowestPin = 2;//the lowest one attach to</li><li>const int highestPin = 9;//the highest one attach to</li></ul></li><li>/**************************************/</li><li>void setup()</li><li>{</li><li>//set pins 2 through 9 as output<ul><li>for (int thisPin = lowestPin; thisPin <= highestPin; thisPin++)</li></ul></li><li>{</li><li>pinMode(thisPin, OUTPUT); //initialize</li><li>}</li><li>}</li><li>/****************************************/</li><li>void loop()</li><li>{</li><li>//iterate over the pins</li><li>//turn the led on from lowest to the highest<ul><li>for (int thisPin = lowestPin; thisPin <= highestPin; thisPin++)</li></ul></li><li>{</li><li>digitalWrite(thisPin, HIGH); //turn this led</li><li>delay(100);//wait for 1000 ms</li><li>}</li><li>//fade from the highest to the lowest<ul><li>for (int thisPin = highestPin; thisPin >= lowestPin; thisPin--)</li></ul></li><li>{</li><li>digitalWrite(thisPin, LOW); //turn this led</li><li>delay(100);//wait for 50 ms</li><li>}<ul><li>for (int thisPin = highestPin; thisPin >= lowestPin; thisPin--)</li></ul></li><li>{</li><li>digitalWrite(thisPin, HIGH); //turn this led on</li><li>delay(100);//wait for 150 ms</li><li>}<ul><li>for (int thisPin = lowestPin; thisPin <= highestPin; thisPin++)</li></ul></li><li>{</li><li>digitalWrite(thisPin, LOW); //turn this led</li><li>delay(1000);//改,把秒數由500改至1000</li><li>}</li><li>}</li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        }
+    ],
+    "remarques": "",
+    "mentions_legales": []
+}

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Estimer la quantité d'eau de pluie récupérable grâce à une toiture, dimensionner son stockage en prenant en compte les changements climatiques</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Estimer la quantité d'eau de pluie récupérable grâce à une toiture, dimensionner son stockage en prenant en compte les changements climatiques</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/6/61/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Pr_cipitations.jpg/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Pr_cipitations.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">L'eau de pluie peut être valorisée de nombreuses manières. Ce tutoriel vous permettra de vous questionner sur la manière de stocker l'eau et d'avoir une idée précise des volumes d'eau qu'il est possible de récupérer grâce à une toiture (exemple : toit de maison, garage, cabanon, etc.). Vous serez également invités à explorer les prévisions climatiques pour les prochaines décennies, pour dimensionner votre système de récupération d'eau.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce tutoriel permet</p>
+      
+        <p>- de se questionner sur la manière de stocker l'eau en dehors de citernes</p>
+      
+        <p>- de se faire une idée des volumes d'eau qu'il est potentiellement possible de récupérer grâce à une toiture</p>
+      
+        <p>- d'approfondir la manière dont les précipitations et températures vont évoluer (changements climatiques), sur votre secteur, au cours des prochaines décennies.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Estimer_la_quantité_d_eau_de_pluie_récupérable_grâce_à_une_toiture__dimensionner_son_stockage_en_prenant_en_compte_les_changements_climatiques" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Estimer_la_quantité_d_eau_de_pluie_récupérable_grâce_à_une_toiture__dimensionner_son_stockage_en_prenant_en_compte_les_changements_climatiques</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Un ordinateur avec une connexion internet.</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>https://geoportail.gouv.fr (site gratuit - visualisation des données géographiques)</li><li>https://fr.climate-data.org (site gratuit - visualisation des données pluviométrie)</li><li>https://drias-climat.fr (site gratuit - visualisation des projections climatiques GIEC-MétéoFrance)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Réfléchir, en fonction des mois et des projets/usages, à vos besoins en eau - et commencer à penser stockage en dehors des citernes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f5/Estimer_la_quantit_d_eau_de_pluie_r_cup_rable_gr_ce_une_toiture_dimensionner_son_stockage_en_prenant_en_compte_les_changements_climatiques_pics-usages-eau.png/800px-Estimer_la_quantit_d_eau_de_pluie_r_cup_rable_gr_ce_une_toiture_dimensionner_son_stockage_en_prenant_en_compte_les_changements_climatiques_pics-usages-eau.png' alt='Estimer la quantit d eau de pluie r cup rable gr ce une toiture dimensionner son stockage en prenant en compte les changements climatiques pics-usages-eau.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Réfléchir, mois par mois ou par saison, à vos utilisations de l'eau de pluie</li><li>Pour initier ce tutoriel, nous vous proposons de réfléchir à vos besoins en eau de pluie. Ces derniers dépendent de vos projets et de vos usages.</li><li>Voici deux exemples de projets bien différents que nous utiliserons dans ce tutoriel :</li><li>- une maison où les eaux de pluie seront valorisées toute l'année pour les usages internes (machine à laver, toilettes, arrosage des plantes en intérieur) et en printemps/été pour l'arrosage à l'extérieur.</li><li>- un grand potager de 300m² avec une cabane de 30m², et aucun accès à une rivière/lac ou à une nappe souterraine.</li><li>Voici ci-après quelques astuces pour réfléchir, mois par mois, à vos besoins en eau :</li><li>Première astuce : penser à une année particulièrement "sèche" que vous avez déjà vécue, et à une année particulièrement "humide"</li><li>Comme nous allons l'approfondir plus loin, autour d'une moyenne, certaines années sont plutôt sèches avec peu de précipitations (exemple : l'année 2022) et d'autres sont plutôt humides avec des précipitations plus importantes (exemple : l'année 2021). Dans les prochaines décennies, les années "sèches" vont devenir de plus en plus "sèches". Si vous récupérez principalement de l'eau de pluie pour arroser votre potager, vous êtes par exemple invités à penser à un printemps/été particulièrement sec que vous avez déjà vécu, et de réfléchir sur les volumes d'eau qui étaient alors nécessaires en fonction de votre installation.</li><li>Si les années particulièrement sèches peuvent nous aider à réfléchir à nos stratégies de stockage, les années particulièrement humides peuvent nous aider à réfléchir à la gestion des excédents (exemple : réseau eaux pluviales, puit d'infiltration, noues d'infiltration, bassin d'infiltration, etc.).</li><li>Deuxième astuce : penser stockage sans penser aux citernes</li><li>Prenons l'exemple du grand potager de 300m², avec une cabane qui a une toiture de 30m². Nous pourrions penser que, pour installer un système de stockage d'eau de pluie, il faudrait se concentrer sur les 30m² de toiture et installer une citerne à partir de laquelle nous pourrions arroser les végétaux durant les périodes à fort besoin. Sauf que la logique peut être complètement inversée : il est également possible de stocker l'eau de pluie sur les 300m² de sol en augmentant de manière conséquente la capacité du sol à stocker l'eau. Après tout, s'il pleut sur 30m² de toiture, le volume d'eau récupérable est 10x plus conséquent sur 300m² de potager.</li><li>L'agroécologie, la permaculture, l'agriculture syntropique, etc. regorgent d'une multitude d'approches pour augmenter la capacité du stockage de l'eau dans les sols. Parmi ces techniques (liste non exhaustive)</li><li>- l'incorporation de sources de carbone au sol (exemple : enfouissement de bois décomposé). Ce bois décomposé encouragera non seulement la formation d'humus - élément structurant capable de stocker l'eau - mais agira également comme éponge. Le bois décomposé "absorbe" l'eau et la restitue progressivement (note : il est relativement important que ce bois soit relativement décomposé de manière à ne pas provoquer une faim d'azote)</li><li>- l'incorporation de bio charbon dans le sol (voir tutoriel du low tech lab)</li><li>- mise en place de couverts végétaux pour augmenter l'infiltration des eaux dans le sol, éviter l'évaporation et créer de la fraicheur</li><li>- mise en place de procédés type "keyline design" pour orienter les écoulements de l'eau sur la parcelle</li><li>- mise en place de différentes strates de végétaux pour créer un micro-climat sur le potager et remonter l'eau contenue plus en profondeur dans le sol vers le potager</li><li>- etc.</li><li>Troisième astuce : les besoins d'utilisation des eaux de pluie dépendent de la consommation en eau des végétaux ou de nos machines</li><li>Prenons l'étude de cas d'une maison où les eaux de pluie seront valorisées toute l'année pour les usages internes (machine à laver, toilettes, arrosage des plantes en intérieur) et en printemps/été pour l'arrosage à l'extérieur.</li><li>Dans ce cas ci :</li><li>- les besoins pour les usages internes sont relativement stables toute l'année, et reposent en grande partie sur l'utilisation de systèmes de stockage comme des citernes.</li><li>- les besoins pour les usages externes à la maison (arrosage) sont fluctuants et peuvent, comme nous l'avons vu ci-dessus, être drastiquement diminués en fonction de notre manière de jardiner</li><li>Pour la valorisation de l'eau pour les usages internes, la principale utilisation seront les toilettes. Dans l'hypothèse où votre infrastructure serait dimensionnée pour pouvoir résister, une fois pleine, à deux ou trois mois sans pluie, il est également possible sur les deux toilettes de votre maison d'imaginer : une toilette fonctionnant avec l'eau de la citerne et pouvant être alimenté par l'eau potable du réseau au besoin, et une toilette sèche. Ou encore de diminuer le volume d'eau consommé pour la chasse d'eau.</li><li>Quatrième astuce : nos besoins en eau dépendent de notre capacité à revaloriser - recycler l'eau sur place</li><li>Prenons à nouveau l'étude de cas d'une maison où les eaux de pluie seront valorisées toute l'année pour les usages internes (machine à laver, toilettes, arrosage des plantes en intérieur) et en printemps/été pour l'arrosage à l'extérieur.</li><li>Durant la saison estivale, il est par exemple possible de brancher votre sortie de douche sur votre citerne de récupération des eaux, et ainsi la remplir. Une vanne vous permet de choisir, en fonction des produits sanitaires que vous utilisez (shampoing), si vous souhaitez que les eaux de la douche rejoignent la citerne ou non.</li><li>Il est également possible de penser son jardin de manière à "cultiver l'eau" sur son terrain. L'agriculture syntropique et l'agroécologie regorgent d'exemples simples où la végétation peut non seulement abaisser la température du potager, mais également provoquer une condensation de l'eau (exemple : rosée) et ne (presque) plus avoir à réaliser un apport d'eau extérieur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Estimez, pour chaque mois de l'année, le volume d'eaux de pluie qu'il serait théoriquement possible de récupérer grâce à une toiture</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a6/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_1.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_1.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Tutoriel eau - geoportail 1.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_3.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_3.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Tutoriel eau - geoportail 3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b8/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_4.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_4.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Tutoriel eau - geoportail 4.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/27/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_5.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Tutoriel_eau_-_geoportail_5.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Tutoriel eau - geoportail 5.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour connaître les volumes d'eau mois par mois qu'une toiture peut potentiellement permettre de récupérer, il va nous falloir deux informations :</li><li>- la superficie de votre toiture</li><li>- les données relatives aux précipitations spécifiques à votre commune</li><li>Le volume d'eau de pluie potentiellement récupérable, sur un mois, est théoriquement obtenu en multipliant la pluviométrie du mois en question et la surface de votre toiture.<ul><li>Mesurez la superficie de votre toiture (exemple : garage, maison, etc) en m² Rendez-vous sur le site gratuit https://www.geoportail.gouv.fr/ Renseignez votre adresse (dans le cas où le site ne connaît pas votre adresse renseignez le nom de votre commune et localisez le bâtiment pour lequel vous souhaitez faire l'estimation) Une fois votre maison localisée, mesurez la surface de votre toiture grâce à l'outil "Mesurer une surface" (voir photos ci-contre). L'outil est accessible en cliquant sur le symbole "Outil", rubrique "Mesures", ligne "Mesurer une surface". Notez la superficie de votre toiture, en m². Quelques astuces et notes : Exemple en images (ci-contre) : visualisation de la superficie d'une toiture sur la commune d'Arbois (Jura) La superficie de la toiture utilisée pour le calcul est la superficie équivalente au sol (surface sur laquelle tombe l'eau de pluie) et non la superficie de la toiture en pente. Que votre toiture soit très inclinée ou faiblement inclinée, d'un point de vue récupération d'eaux de pluie, la surface reste la même. si la toiture est composée par deux ou plusieurs parties qui déversent les eaux pluviales dans des gouttières différentes et en fonction de vos projets : il peut être intéressant de faire les calculs pour chaque partie de toiture.</li><li>Rendez-vous sur le site gratuit https://www.geoportail.gouv.fr/</li><li>Renseignez votre adresse (dans le cas où le site ne connaît pas votre adresse renseignez le nom de votre commune et localisez le bâtiment pour lequel vous souhaitez faire l'estimation)</li><li>Une fois votre maison localisée, mesurez la surface de votre toiture grâce à l'outil "Mesurer une surface" (voir photos ci-contre). L'outil est accessible en cliquant sur le symbole "Outil", rubrique "Mesures", ligne "Mesurer une surface".</li><li>Notez la superficie de votre toiture, en m².</li><li>Quelques astuces et notes : Exemple en images (ci-contre) : visualisation de la superficie d'une toiture sur la commune d'Arbois (Jura) La superficie de la toiture utilisée pour le calcul est la superficie équivalente au sol (surface sur laquelle tombe l'eau de pluie) et non la superficie de la toiture en pente. Que votre toiture soit très inclinée ou faiblement inclinée, d'un point de vue récupération d'eaux de pluie, la surface reste la même. si la toiture est composée par deux ou plusieurs parties qui déversent les eaux pluviales dans des gouttières différentes et en fonction de vos projets : il peut être intéressant de faire les calculs pour chaque partie de toiture.</li><li>Exemple en images (ci-contre) : visualisation de la superficie d'une toiture sur la commune d'Arbois (Jura)</li><li>La superficie de la toiture utilisée pour le calcul est la superficie équivalente au sol (surface sur laquelle tombe l'eau de pluie) et non la superficie de la toiture en pente. Que votre toiture soit très inclinée ou faiblement inclinée, d'un point de vue récupération d'eaux de pluie, la surface reste la même.</li><li>si la toiture est composée par deux ou plusieurs parties qui déversent les eaux pluviales dans des gouttières différentes et en fonction de vos projets : il peut être intéressant de faire les calculs pour chaque partie de toiture.</li><li>Notez, pour chaque mois, le nombre de mm de pluie "habituel" qui tombe sur votre commune (précipitations) Rendez-vous sur le site gratuit https://fr.climate-data.org Dans l'onglet "Recherche" (icône recherche, couleur verte) indiquez votre commune et validez votre saisie Rendez vous à la rubrique "Tableau climatique"dans laquelle les précipitations mensuelles sont indiquées Notez, pour chaque mois de l'année, le nombre de mm de pluie indiqué. Il s'agit de la ligne "Précipitations (mm)" Quelques astuces et notes : Exemple en images (ci-contre) : visualisation des données pour la commune d'Arbois Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. Il n'a jamais exactement plu ce qui est indiqué, car certaines années étaient beaucoup plus sèches et d'autres plus humides. Les données utilisées sont des moyennes. S'il est par exemple indiqué pour le mois de juillet qu'il y a 75mm de précipitations, cela ne signifie pas qu'il a plu 75mm chaque année. Sur un intervalle de 5 ans, il est habituel de dire qu'il y a eu au moins une année sèche, et une année humide. Autrement dit il se peut qu'il n'ait que plu 25mm certaines années, et 125mm d'autres. Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. A l'étape 4 nous verrons comment prendre en compte les changements climatiques. L'astuce de Laurent Levier du groupe Low-Tech Lab : pour avoir des données encore plus précises il est possible de se rendre sur le site https://weathermap.netatmo.com/. Sur ce site sont accessibles des capteurs de pluie de maisons particulières (cliquez sur l’icône pluie). Cela peut peut fournir une position aux précipitations avec un historique de 3 mois !</li><li>Rendez-vous sur le site gratuit https://fr.climate-data.org</li><li>Dans l'onglet "Recherche" (icône recherche, couleur verte) indiquez votre commune et validez votre saisie</li><li>Rendez vous à la rubrique "Tableau climatique"dans laquelle les précipitations mensuelles sont indiquées</li><li>Notez, pour chaque mois de l'année, le nombre de mm de pluie indiqué. Il s'agit de la ligne "Précipitations (mm)"</li><li>Quelques astuces et notes : Exemple en images (ci-contre) : visualisation des données pour la commune d'Arbois Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. Il n'a jamais exactement plu ce qui est indiqué, car certaines années étaient beaucoup plus sèches et d'autres plus humides. Les données utilisées sont des moyennes. S'il est par exemple indiqué pour le mois de juillet qu'il y a 75mm de précipitations, cela ne signifie pas qu'il a plu 75mm chaque année. Sur un intervalle de 5 ans, il est habituel de dire qu'il y a eu au moins une année sèche, et une année humide. Autrement dit il se peut qu'il n'ait que plu 25mm certaines années, et 125mm d'autres. Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. A l'étape 4 nous verrons comment prendre en compte les changements climatiques. L'astuce de Laurent Levier du groupe Low-Tech Lab : pour avoir des données encore plus précises il est possible de se rendre sur le site https://weathermap.netatmo.com/. Sur ce site sont accessibles des capteurs de pluie de maisons particulières (cliquez sur l’icône pluie). Cela peut peut fournir une position aux précipitations avec un historique de 3 mois !</li><li>Exemple en images (ci-contre) : visualisation des données pour la commune d'Arbois</li><li>Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. Il n'a jamais exactement plu ce qui est indiqué, car certaines années étaient beaucoup plus sèches et d'autres plus humides. Les données utilisées sont des moyennes. S'il est par exemple indiqué pour le mois de juillet qu'il y a 75mm de précipitations, cela ne signifie pas qu'il a plu 75mm chaque année. Sur un intervalle de 5 ans, il est habituel de dire qu'il y a eu au moins une année sèche, et une année humide. Autrement dit il se peut qu'il n'ait que plu 25mm certaines années, et 125mm d'autres.</li><li>Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. A l'étape 4 nous verrons comment prendre en compte les changements climatiques.</li><li>L'astuce de Laurent Levier du groupe Low-Tech Lab : pour avoir des données encore plus précises il est possible de se rendre sur le site https://weathermap.netatmo.com/. Sur ce site sont accessibles des capteurs de pluie de maisons particulières (cliquez sur l’icône pluie). Cela peut peut fournir une position aux précipitations avec un historique de 3 mois !</li><li>Sur la base de ces deux informations, calculez les volumes d'eau de pluie théoriquement récupérables grâce à votre toiture : Réalisez un tableau simple présentant, mois par mois, les précipitations (en m) et multipliez par la superficie de votre toiture (en m2). Notez les résultats.</li><li>Réalisez un tableau simple présentant, mois par mois, les précipitations (en m) et multipliez par la superficie de votre toiture (en m2).</li><li>Notez les résultats.</li><li>Rendez-vous sur le site gratuit https://www.geoportail.gouv.fr/</li><li>Renseignez votre adresse (dans le cas où le site ne connaît pas votre adresse renseignez le nom de votre commune et localisez le bâtiment pour lequel vous souhaitez faire l'estimation)</li><li>Une fois votre maison localisée, mesurez la surface de votre toiture grâce à l'outil "Mesurer une surface" (voir photos ci-contre). L'outil est accessible en cliquant sur le symbole "Outil", rubrique "Mesures", ligne "Mesurer une surface".</li><li>Notez la superficie de votre toiture, en m².</li><li>Quelques astuces et notes : Exemple en images (ci-contre) : visualisation de la superficie d'une toiture sur la commune d'Arbois (Jura) La superficie de la toiture utilisée pour le calcul est la superficie équivalente au sol (surface sur laquelle tombe l'eau de pluie) et non la superficie de la toiture en pente. Que votre toiture soit très inclinée ou faiblement inclinée, d'un point de vue récupération d'eaux de pluie, la surface reste la même. si la toiture est composée par deux ou plusieurs parties qui déversent les eaux pluviales dans des gouttières différentes et en fonction de vos projets : il peut être intéressant de faire les calculs pour chaque partie de toiture.</li><li>Exemple en images (ci-contre) : visualisation de la superficie d'une toiture sur la commune d'Arbois (Jura)</li><li>La superficie de la toiture utilisée pour le calcul est la superficie équivalente au sol (surface sur laquelle tombe l'eau de pluie) et non la superficie de la toiture en pente. Que votre toiture soit très inclinée ou faiblement inclinée, d'un point de vue récupération d'eaux de pluie, la surface reste la même.</li><li>si la toiture est composée par deux ou plusieurs parties qui déversent les eaux pluviales dans des gouttières différentes et en fonction de vos projets : il peut être intéressant de faire les calculs pour chaque partie de toiture.</li><li>Exemple en images (ci-contre) : visualisation de la superficie d'une toiture sur la commune d'Arbois (Jura)</li><li>La superficie de la toiture utilisée pour le calcul est la superficie équivalente au sol (surface sur laquelle tombe l'eau de pluie) et non la superficie de la toiture en pente. Que votre toiture soit très inclinée ou faiblement inclinée, d'un point de vue récupération d'eaux de pluie, la surface reste la même.</li><li>si la toiture est composée par deux ou plusieurs parties qui déversent les eaux pluviales dans des gouttières différentes et en fonction de vos projets : il peut être intéressant de faire les calculs pour chaque partie de toiture.</li><li>Rendez-vous sur le site gratuit https://fr.climate-data.org</li><li>Dans l'onglet "Recherche" (icône recherche, couleur verte) indiquez votre commune et validez votre saisie</li><li>Rendez vous à la rubrique "Tableau climatique"dans laquelle les précipitations mensuelles sont indiquées</li><li>Notez, pour chaque mois de l'année, le nombre de mm de pluie indiqué. Il s'agit de la ligne "Précipitations (mm)"</li><li>Quelques astuces et notes : Exemple en images (ci-contre) : visualisation des données pour la commune d'Arbois Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. Il n'a jamais exactement plu ce qui est indiqué, car certaines années étaient beaucoup plus sèches et d'autres plus humides. Les données utilisées sont des moyennes. S'il est par exemple indiqué pour le mois de juillet qu'il y a 75mm de précipitations, cela ne signifie pas qu'il a plu 75mm chaque année. Sur un intervalle de 5 ans, il est habituel de dire qu'il y a eu au moins une année sèche, et une année humide. Autrement dit il se peut qu'il n'ait que plu 25mm certaines années, et 125mm d'autres. Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. A l'étape 4 nous verrons comment prendre en compte les changements climatiques. L'astuce de Laurent Levier du groupe Low-Tech Lab : pour avoir des données encore plus précises il est possible de se rendre sur le site https://weathermap.netatmo.com/. Sur ce site sont accessibles des capteurs de pluie de maisons particulières (cliquez sur l’icône pluie). Cela peut peut fournir une position aux précipitations avec un historique de 3 mois !</li><li>Exemple en images (ci-contre) : visualisation des données pour la commune d'Arbois</li><li>Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. Il n'a jamais exactement plu ce qui est indiqué, car certaines années étaient beaucoup plus sèches et d'autres plus humides. Les données utilisées sont des moyennes. S'il est par exemple indiqué pour le mois de juillet qu'il y a 75mm de précipitations, cela ne signifie pas qu'il a plu 75mm chaque année. Sur un intervalle de 5 ans, il est habituel de dire qu'il y a eu au moins une année sèche, et une année humide. Autrement dit il se peut qu'il n'ait que plu 25mm certaines années, et 125mm d'autres.</li><li>Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. A l'étape 4 nous verrons comment prendre en compte les changements climatiques.</li><li>L'astuce de Laurent Levier du groupe Low-Tech Lab : pour avoir des données encore plus précises il est possible de se rendre sur le site https://weathermap.netatmo.com/. Sur ce site sont accessibles des capteurs de pluie de maisons particulières (cliquez sur l’icône pluie). Cela peut peut fournir une position aux précipitations avec un historique de 3 mois !</li><li>Exemple en images (ci-contre) : visualisation des données pour la commune d'Arbois</li><li>Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. Il n'a jamais exactement plu ce qui est indiqué, car certaines années étaient beaucoup plus sèches et d'autres plus humides. Les données utilisées sont des moyennes. S'il est par exemple indiqué pour le mois de juillet qu'il y a 75mm de précipitations, cela ne signifie pas qu'il a plu 75mm chaque année. Sur un intervalle de 5 ans, il est habituel de dire qu'il y a eu au moins une année sèche, et une année humide. Autrement dit il se peut qu'il n'ait que plu 25mm certaines années, et 125mm d'autres.</li><li>Les données auxquelles vous accédez sont des mesures moyennes basées sur le passé. A l'étape 4 nous verrons comment prendre en compte les changements climatiques.</li><li>L'astuce de Laurent Levier du groupe Low-Tech Lab : pour avoir des données encore plus précises il est possible de se rendre sur le site https://weathermap.netatmo.com/. Sur ce site sont accessibles des capteurs de pluie de maisons particulières (cliquez sur l’icône pluie). Cela peut peut fournir une position aux précipitations avec un historique de 3 mois !</li><li>Réalisez un tableau simple présentant, mois par mois, les précipitations (en m) et multipliez par la superficie de votre toiture (en m2).</li><li>Notez les résultats.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Prenez-en compte les principaux facteurs limitant la récupération d'eaux de pluie sur une toiture</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/d/d5/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_eyram-ds-ifOaVLQ4gnc-unsplash_1_.jpg' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques eyram-ds-ifOaVLQ4gnc-unsplash 1 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Imaginons que nous sommes en mai et qu'il pleuve 50mm de pluie sur une toiture de 100m².</li><li>Théoriquement, cela devrait permettre de récupérer 5m3 d'eau (0,05m pluie x100 m² toiture).</li><li>Sauf qu'en réalité de nombreux facteurs entrent en compte et peuvent être pris en compte comme :<ul><li>l'inclinaison de la toiture et l'exposition et le vent. Sur le groupe Low-Tech Lab, Didvero Garwo nous indique par exemple que chez lui la pluie est principalement récupérée sur le versant sud de sa toiture. Par l'observation et en plaçant des récupérateurs d'eau de part et d'autres des gouttières de la maison, c'est un facteur facile à observer et qui permet de dimensionner des installations de stockage.</li><li>le diamètre des tuyaux pour la récupération, et tout particulièrement ceux des collecteurs. Ce facteur est important pour dimensionner ses installations. Sur le groupe Low-Tech Lab, Jean Gerard a fait remarquer qu'une bonne récupération impliquerait des tuyaux de récupération de diamètre conséquent (ex : 100mm sur toute la longueur) pour éviter les débordements. Une gouttière ou un tuyau d'arrosage de faible diamètre (ex: <30mm) ne permet par exemple pas de canaliser, sur une toiture conséquente, des fortes précipitations. Jean Gerard nous invite à réfléchir au rendement des connecteurs branchés sur les gouttières, car ceux trouvés dans le commerce sont de très faible rendement. Il nous partage le lien d'un exemple de collecteur de meilleur rendement : cliquez ici.</li><li>les matériaux de la toiture. Ces matériaux vont par exemple influencer l'évaporation ou l'absorption. Si nous sommes en août et que les tuiles sont brûlantes, des fines précipitations ne pourront pas être récupérées.</li><li>etc.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Anticipez les changements climatiques en termes de récupération d'eaux pluviales</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/b/b8/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Evolution_du_r_gime_pluviom_trie.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Evolution du r gime pluviom trie.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d5/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Evolution_du_r_gime_pluviom_trie_2.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Evolution_du_r_gime_pluviom_trie_2.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Evolution du r gime pluviom trie 2.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c6/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Evolution_du_r_gime_pluviom_trie_3.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Evolution_du_r_gime_pluviom_trie_3.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Evolution du r gime pluviom trie 3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dc/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Cumul_pr_cipiptations_-_projections.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Cumul_pr_cipiptations_-_projections.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Cumul pr cipiptations - projections.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/73/Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Jours_forte_pr_cipitations.png/800px-Estimation_d_une_volume_d_eau_r_cup_rable_par_une_toiture_et_changements_climatiques_Jours_forte_pr_cipitations.png' alt='Estimation d une volume d eau r cup rable par une toiture et changements climatiques Jours forte pr cipitations.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour réaliser cette étape du tutoriel, vous avez deux options :</li><li>- Option 1 : comprendre les évolutions à venir sur les précipitations et partir de ce raisonnement pour la récupération d'eau chez soi (facile)</li><li>- Option 2 : visualiser les données climatiques sur votre secteur à partir des outils mis à disposition par le GIEC / MeteoFrance (difficulté moyenne-difficile).</li><li>Option 1 : Comprendre les évolutions à venir sur les précipitations et partir de ce raisonnement pour la récupération d'eau chez soi</li><li>Pour cette étape, nous allons raisonner en périodes comme par exemple : la période 2015-2025, la période 2030-2040, ou encore la période 2050-2060.</li><li>Voici plusieurs "pépites" :<ul><li>Des années plus sèches sèches et d'autres plus humides : comme nous l'avons vu dans les précédentes étapes, si on prend une période climatique de 10 ans, il y a toujours au moins deux années plus sèches (en terme de précipitations) et deux années plus humides (en terme de précipitations). Repensez au climat des 10 dernières années. Si nous prenons une projection climatique comme la période 2030-2040 il est donc possible de dire qu'autour d'une moyenne il y aura toujours des années plus sèches et des années plus humides.</li><li>Des normales saisonnières qui n'existent pas. Les "normales" de saison, présentées à la télé à la météo, n'existent pas dans l'absolu, encore moins en contexte de changements climatiques. Les "normales" jusqu'à là utilisées par MétéoFrance étaient les moyennes de toutes les années entre 1980 et 2010. Depuis le 28 juin 2022 (voir article), les nouvelles "normales" sont d'ailleurs calculées sur la base des moyennes des années de la période 1990-2020. Ce qui va nous intéresser pour comprendre l'impact des changements climatiques en terme de pluviométrie ce ne sont pas les "écarts par rapport à la moyenne", c'est simplement ce que ça change concrètement parlant. Ce qui est une année sèche en 1990-2020 n'est pas une année sèche en 2040-2050. La sécheresse exceptionnelle de 2022, qui nous apparaît être une sécheresse très conséquente, va devenir sur plusieurs régions la norme aux alentours de 2050. Autrement dit la moyenne de la période 2040-2060.</li><li>Des projections climatiques qui nous renseignent sur des tendances. Les projections climatiques nous donnent une idée des tendances, mais non des données ultra-précises à une échelle du territoire.</li><li>Des projections climatiques oui. Mais des micro-climats également. Comme l'a soulevé Daniel Pino du groupe Low-Tech Lab, les micro-climats ont une forte influence. Sur sa région (Pyrénées) où les alternances de précipitations - absence de précipitations sont marquées, il n'est que possible de se baser sur des tendances générales mais sans chercher à savoir avec exactitude ce qui va se passer tant la variabilité locale, micro-locale peut avoir une influence importante. D'une vallée à l'autre, d'un versant à l'autre, les climats peuvent être différents.</li></ul></li><li>Comprendre l'évolution des précipitations<ul><li>Augmentation des extrêmes. D'un point de vue factuel l'augmentation globale des températures encourage des extrêmes climatiques : des précipitations intenses à un certain moment ("quand il pleut il pleut") et des longues périodes avec peu ou sans précipitations à d'autres ("quand ça veut pas ça veut pas"). Si vous résidez dans des territoires très habitués à ce phénomène (exemple : Cévennes), ce phénomène va s'amplifier. Une augmentation des précipitations intenses d'un côté, et des périodes sans précipitations de l'autre. Si vous résidez dans des territoires habitués à des précipitations très régulières tout au long de l'année, le phénomène de précipitations intenses / périodes avec moins de précipitations va s'amplifier. De manière assez contre-intuitive peut être, il est à souligner que c'est une des raisons pour lesquelles les régions les plus habituées aux précipitations régulières vont être très impactées par les changements climatiques. Tout ce qui est habitué à des précipitations très régulières peut potentiellement être impacté.</li><li>Pour beaucoup de régions : Jusqu'aux alentours de 2040-2050, pour beaucoup de régions de métropole, le cumul annuel moyen des précipitations restera le même. Ce n'est pas qu'il pleuvra plus ou moins. C'est qu'il ne pleuvra plus pareil : augmentation des périodes avec précipitations intenses d'un côté, augmentation des périodes avec peu ou pas de précipitations de l'autre. Si le cumul annuel moyen des précipitations restera approximativement le même pour beaucoup de régions jusqu'en 2050 pour beaucoup de régions de métropole, le cumul saisonnier moyen pourra changer. Certaines régions verront par exemple les pluies être plus conséquentes en hiver, et moins conséquentes en été. Même si le cumul annuel ne change pas trop, le cumul saisonnier peut changer (voir image 1 ci-contre).</li><li>L'augmentation des extrêmes influence la manière dont l'eau peut être récupérée. Les phénomènes de type "quand il pleut, il pleut" et de type périodes sans pluie vont s'amplifier. Plusieurs réflexions en terme de dimensionnement des installations de récupération d'eau de pluie sont présentées à l'étape suivante</li></ul></li><li>Option 2 : Utiliser le site https://drias-climat.fr qui permet de visualiser les données climatiques produites par le GIEC / MétéoFrance / CERFACS / etc.</li><li>Nous cherchons à nous faire une idée de l'évolution du nombre de mm de pluie qui va tomber en fonction de chaque saison.</li><li>Les données climatiques nous renseignent sur les tendances.</li><li>Réalisez la démarche vous-même à partir de http://drias-climat.fr/decouverte . Les paramétrages utilisés pour l'exemple sont présentés dans l'image 2 ci-contre).</li><li>Pour lire les cartes.<ul><li>Il est possible de zoomer sur la carte en cliquant dessus (la carte de métropole va apparaître). Pour plus de confort de lecture faites apparaître votre territoire en utilisant l'outil "Zones géographiques : domaine personnalisé" (image 3 ci-contre) et en faisant apparaître le fond de carte (Repères géographiques : fond de carte détaillé) et les isolignes (Représentation : isolignes) (image 4 ci-contre)</li><li>Les données pluviométriques que vous visualiserez sur l'horizon 1975-2005 représentent en quelque sorte la moyenne pluviométrique des saisons aux alentours de 1980-2000.</li><li>Les données pluviométriques que vous visualiserez sur l'horizon 1921-2050 représentent en quelque sorte la moyenne pluviométrique des saisons aux alentours de 2030-2040.</li><li>Les données pluviométriques que vous visualiserez sur l'horizon 2041-2070 représentent en quelque sorte la moyenne pluviométrique des saisons aux alentours de 2050-2060.</li></ul></li><li>Analyse saisonnière :</li><li>L'exemple pris concerne une zone du Jura. Sur le Jura, grâce à cette visualisation, il est possible de voir apparaître les tendances. Dans mon cas cela donne :<ul><li>hiver : légère augmentation progressive de la pluviométrie hivernale (cumul).</li><li>printemps : légère augmentation progressive de la pluviométrie printanière (cumul).</li><li>été : nette diminution de la pluviométrie estivale (cumul).</li><li>automne : pas de modification au niveau de la pluviométrie automnale (cumul).</li></ul></li><li>Aussi, couplé aux éléments vus dans la rubrique "Comprendre les évolutions à venir sur les précipitations et partir de ce raisonnement pour la récupération d'eau chez soi", les tendances sont les suivantes :</li><li>- des printemps plus chauds où les températures peuvent faire apparaitre des précipitations intenses et plus fortes. Il se peut que ses précipitations soient parfois rapprochées de la période hivernale et qu'elles soient suivies par des périodes sans pluie.</li><li>- des étés plus chauds et secs avec des épisodes pluvieux plus intenses. C'est particulièrement à cette période que nous utilisons le plus d'eau de pluie que nous récupérons.</li><li>- des automnes plus chauds avec des épisodes pluvieux plus intenses.</li><li>- des hivers plus chauds et peut être même plus humides.</li><li>Éléments potentiellement intéressants visualisables avec Drias-Climat sur cette thématique :</li><li>- moyenne du cumul des précipitations (mm), par saison</li><li>- moyenne du nombre de jours de fortes précipitations (plus de 2cm de précipitations / jour)</li><li>- moyenne du nombre de jours sans pluie (moins de 1mm)</li><li>Rappel :</li><li>- Les données que vous visualisez sont des estimations de moyennes. Autrement dit : autour de ces moyennes il y aura des années plus humides, et des années plus sèches.</li><li>- Les estimations climatiques donnent une idée de tendances, et non de données précises.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

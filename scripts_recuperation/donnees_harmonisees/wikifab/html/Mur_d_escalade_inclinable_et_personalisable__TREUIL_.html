@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mur d'escalade inclinable et personalisable (TREUIL)</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Mur d'escalade inclinable et personalisable (TREUIL)</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/e/e8/Mur_d_escalade_inclinable_et_personalisable_Sans_titre.png/ia-f89c9ed7786128e4d6deb9a3e52aa4f9-px-Mur_d_escalade_inclinable_et_personalisable_Sans_titre.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Mur d'escalade inclinable et programmable ( TREUIL )</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment mur d'escalade inclinable et personalisable (treuil).</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 500 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Mur_d_escalade_inclinable_et_personalisable__TREUIL_" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Mur_d_escalade_inclinable_et_personalisable__TREUIL_</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Visseuse</li><li>Découpeuse laser</li><li>Foret</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Croquis</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/e/ed/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_154038.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_154038.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-19 154038.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/7/7a/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_154148.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-19 154148.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/3/31/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_154211.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-19 154211.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Réaliser un croquis pour pouvoir visualiser les dimensions du mur et se faire une idée de la taille du mur pour pouvoir le placer</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Diagrammes</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/3/36/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_092939.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_092939.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 092939.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/9/92/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_092958.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 092958.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3d/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093043.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093043.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 093043.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e8/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093057.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093057.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 093057.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/27/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093116.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093116.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 093116.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2a/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093127.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093127.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 093127.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Créations des diagrammes pour une meilleur visualisation des taches</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Modélisation</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/3/38/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_163027.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-19 163027.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/9/94/Mur_d_escalade_inclinable_et_personalisable_boitier.png/800px-Mur_d_escalade_inclinable_et_personalisable_boitier.png' alt='Mur d escalade inclinable et personalisable boitier.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Modéliser sur SolidWorks le croquis pour avoir un aperçu 3D de la solutions envisagée<ul><li>https://wikifab.org/wiki/Fichier:Mur_d_escalade_inclinable_et_personalisable_mur_qui_tourne.mp4</li><li>https://wikifab.org/wiki/Fichier:Mur_d_escalade_inclinable_et_personalisable_boitier_.mp4</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Choix des matériaux</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/5/52/Mur_d_escalade_inclinable_et_personalisable_tas-0000_2_22.jpg/800px-Mur_d_escalade_inclinable_et_personalisable_tas-0000_2_22.jpg' alt='Mur d escalade inclinable et personalisable tas-0000 2 22.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/6/66/Mur_d_escalade_inclinable_et_personalisable_ImgPdt-Tube-Carre-1.jpg' alt='Mur d escalade inclinable et personalisable ImgPdt-Tube-Carre-1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Choisir les matériaux dans une démarche économique et durable en plus de choisir des matériaux adapté</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Découpeuse laser</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/4/46/Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0568.jpg/800px-Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0568.jpg' alt='Mur d escalade inclinable et personalisable TREUIL thumbnail IMG 0568.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/f/f9/Mur_d_escalade_inclinable_et_personalisable_TREUIL_Capture_d_cran_2025-05-20_101411.png' alt='Mur d escalade inclinable et personalisable TREUIL Capture d cran 2025-05-20 101411.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper le boitier pour pouvoir insérer les composants</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Codage</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/8/85/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_091223.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_091223.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 091223.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Réaliser le code sur Arduino</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Alghoritme</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/2/23/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093637.png/800px-Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_093637.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 093637.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Réaliser un algorithme pour permettre une meilleur compréhension du code</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Plan de câblage</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/4/46/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_090903.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 090903.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Réaliser un plan de câblage sur Frietzing pour faciliter les branchement a venir</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Composant</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/0/0c/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_164729.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-19 164729.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vérifier le bon fonctionnement des composant et réaliser les branchements</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Assemblage</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/9/93/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_164703.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-19 164703.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/4/48/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-20_094509.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-20 094509.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Assemblage du mur et mise en place des prises et des composant electronique</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Simulation</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/4/4a/Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0565.jpg/800px-Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0565.jpg' alt='Mur d escalade inclinable et personalisable TREUIL thumbnail IMG 0565.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e5/Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0567.jpg/800px-Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0567.jpg' alt='Mur d escalade inclinable et personalisable TREUIL thumbnail IMG 0567.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/07/Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0566.jpg/800px-Mur_d_escalade_inclinable_et_personalisable_TREUIL_thumbnail_IMG_0566.jpg' alt='Mur d escalade inclinable et personalisable TREUIL thumbnail IMG 0566.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/1/13/Mur_d_escalade_inclinable_et_personalisable_Capture_d_cran_2025-05-19_154418.png' alt='Mur d escalade inclinable et personalisable Capture d cran 2025-05-19 154418.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/5/54/Mur_d_escalade_inclinable_et_personalisable_TREUIL_Capture_d_cran_2025-05-20_101816.png' alt='Mur d escalade inclinable et personalisable TREUIL Capture d cran 2025-05-20 101816.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/d/d9/Mur_d_escalade_inclinable_et_personalisable_TREUIL_Capture_d_cran_2025-05-20_101800.png' alt='Mur d escalade inclinable et personalisable TREUIL Capture d cran 2025-05-20 101800.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La simulation du travail final</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

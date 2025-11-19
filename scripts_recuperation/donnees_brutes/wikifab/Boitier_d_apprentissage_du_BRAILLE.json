@@ -1,0 +1,2016 @@
+{
+    "Boitier d apprentissage du BRAILLE": {
+        "titre": [
+            "Boitier d'apprentissage du BRAILLE"
+        ],
+        "image": [
+            {
+                "url": "https://wikifab.org/images/thumb/4/4c/Boitier_d_apprentissage_du_BRAILLE_IMG_8518.JPG/800px-Boitier_d_apprentissage_du_BRAILLE_IMG_8518.JPG",
+                "alt": "Boitier d apprentissage du BRAILLE IMG 8518.JPG",
+                "description": "Ce projet a pour but de faciliter l'apprentissage du braille à travers un boîtier interactif contrôlé par reconnaissance vocale, synthèse vocale . Il utilise des servomoteurs pour afficher les caractères en braille, et propose deux modes d'apprentissage différents. Il a été réalisé dans le cadre du projet de terminale STI2D."
+            }
+        ],
+        "difficulté": [
+            "Medium Moyen"
+        ],
+        "durée": [
+            "72 hour(s) heure(s)"
+        ],
+        "coût": [
+            "180 EUR (€)"
+        ],
+        "liens": [
+            "https://wikifab.org/wiki/Boitier_d_apprentissage_du_BRAILLE"
+        ],
+        "introduction": [
+            {
+                "titre": "Ce projet consiste en la réalisation d’un boîtier interactif permettant l’apprentissage du braille, à destination des personnes non-voyantes ou malvoyantes ou toutes personnes voulant apprendre le braille. Conçu dans le cadre d’un projet de Terminale STI2D, ce dispositif utilise des servomoteurs, un Raspberry Pi, et un système de reconnaissance vocale pour traduire des lettres en braille physique.",
+                "sous_items": []
+            },
+            {
+                "titre": "Le boîtier propose deux modes d’apprentissage :",
+                "sous_items": []
+            },
+            {
+                "titre": "-Un mode où l’utilisateur prononce une lettre, et le système la répète à voix haute avant de l’afficher en braille tactile.",
+                "sous_items": []
+            },
+            {
+                "titre": "-Un mode aléatoire où le boîtier choisit une lettre, la prononce, et laisse l’utilisateur deviner.",
+                "sous_items": []
+            }
+        ],
+        "mentions légales": [],
+        "matériaux": [
+            {
+                "titre": "-1 raspberry pi 3",
+                "sous_items": []
+            },
+            {
+                "titre": "-6 servo moteurs",
+                "sous_items": []
+            },
+            {
+                "titre": "-1 shield Grove raspberry pi (Module Grove Base Hat 103030275)",
+                "sous_items": []
+            },
+            {
+                "titre": "-6 câbles Groves",
+                "sous_items": []
+            },
+            {
+                "titre": "-1 haut parleur (Module haut-parleur SKU00101)",
+                "sous_items": []
+            },
+            {
+                "titre": "-2 Câbles femelle femelle",
+                "sous_items": []
+            },
+            {
+                "titre": "-1 microphone (Microphone dongle USB ADA3367)",
+                "sous_items": []
+            },
+            {
+                "titre": "-1 Cordon Jack CA35M",
+                "sous_items": []
+            }
+        ],
+        "outils": [],
+        "étapes": [
+            {
+                "numero": 1,
+                "titre": "Étape 1 - Installer le module pour créer un environnement virtuel",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Si ce n’est pas déjà fait, installez le package python3-venv qui permet de créer un environnement virtuel Python :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "sudo apt install python3-venv",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 2,
+                "titre": "Étape 2 - Créer et activer un environnement virtuel",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Placez-vous dans le dossier où vous souhaitez créer votre projet (par exemple, ~/mon_projet_braille) avec la commande :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "cd ~/mon_projet_braille",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Puis créez un environnement virtuel en remplaçant nom_de_lenvironnement par le nom que vous souhaitez donner à cet environnement :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "python3 -m venv nom_de_lenvironnement",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Activez ensuite cet environnement avec la commande :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "source nom_de_lenvironnement/bin/activate",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 3,
+                "titre": "Étape 3 - Installer les bibliothèques Python nécessaires",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Avec l’environnement virtuel activé, installez les bibliothèques suivantes :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "pip install vosk pyaudio numpy",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 4,
+                "titre": "Étape 4 - Installer les dépendances système pour PyAudio",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "PyAudio nécessite des paquets système spécifiques pour fonctionner avec le microphone. Installez-les avec :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "sudo apt install portaudio19-dev python3-pyaudio",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 5,
+                "titre": "Étape 5 - Installer le modèle Vosk pour la reconnaissance vocale",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Pour que Vosk puisse effectuer la reconnaissance vocale en français, il faut télécharger et décompresser un modèle de langue.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Téléchargez le modèle ici :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Puis décompressez-le avec la commande :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "unzip vosk-model-small-fr-0.22.zip",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Ensuite mettez le modèle dans le même dossier que votre script Python.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 6,
+                "titre": "Étape 6 - Désactiver l’environnement virtuel (optionnel)",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Lorsque vous avez fini d’installer les bibliothèques et de travailler dans l’environnement virtuel, vous pouvez le désactiver avec la commande :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "deactivate",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 7,
+                "titre": "Étape 7 - Code",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Ce programme Python tourne sur un Raspberry Pi et permet de piloter les 6 servomoteurs qui affichent les lettres en braille, selon les commandes vocales de l'utilisateur.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Le système fonctionne en deux modes :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "-Un mode d’apprentissage : l’utilisateur dit une lettre, elle est reconnue, prononcée et affichée en braille.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "-Un mode test : le système choisit aléatoirement des lettres à afficher pour entraîner l’utilisateur.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Le code gère :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "-la configuration des moteurs via les broches GPIO,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "-la reconnaissance vocale (grâce au module Vosk),",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "-la synthèse vocale (avec espeak),",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "-la gestion des différents modes.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Ce script permet donc d’assurer à la fois l’interaction avec l’utilisateur, le traitement de la voix, et l’affichage mécanique du braille.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "from vosk import Model, KaldiRecognizer",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import pyaudio",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import json",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import RPi.GPIO as GPIO",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import time",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import subprocess",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import random",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import logging",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import os",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "import sys",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Configuration du système de journalisation",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger = logging.getLogger(__name__)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Chemins de configuration - à ajuster selon votre environnement",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "MODEL_PATH = os.getenv(\"VOSK_MODEL_PATH\", \"/home/sin2025/models/vosk-model-small-fr-0.22\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "AUDIO_PATH = os.getenv(\"AUDIO_PATH\", \"/home/sin2025/ressources\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Configuration des GPIO pour les servomoteurs",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "servo_pins = [18, 26, 16, 24, 5, 22]",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Définition des positions des servos pour représenter les lettres en braille",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "definitions_braille = {",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"A\": [1, 0, 0, 0, 0, 0], \"B\": [1, 1, 0, 0, 0, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"C\": [1, 0, 0, 1, 0, 0], \"D\": [1, 0, 0, 1, 1, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"E\": [1, 0, 0, 0, 1, 0], \"F\": [1, 1, 0, 1, 0, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"G\": [1, 1, 0, 1, 1, 0], \"H\": [1, 1, 0, 0, 1, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"I\": [0, 1, 0, 1, 0, 0], \"J\": [0, 1, 0, 1, 1, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"K\": [1, 0, 1, 0, 0, 0], \"L\": [1, 1, 1, 0, 0, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"M\": [1, 0, 1, 1, 0, 0], \"N\": [1, 0, 1, 1, 1, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"O\": [1, 0, 1, 0, 1, 0], \"P\": [1, 1, 1, 1, 0, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"Q\": [1, 1, 1, 1, 1, 0], \"R\": [1, 1, 1, 0, 1, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"S\": [0, 1, 1, 1, 0, 0], \"T\": [0, 1, 1, 1, 1, 0],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"U\": [1, 0, 1, 0, 0, 1], \"V\": [1, 1, 1, 0, 0, 1],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"W\": [0, 1, 0, 1, 1, 1], \"X\": [1, 0, 1, 1, 0, 1],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"Y\": [1, 0, 1, 1, 1, 1], \"Z\": [1, 0, 1, 0, 1, 1]",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "}",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Vocabulaire de reconnaissance vocale avec correspondances phonétiques",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "mots_vers_lettres = {",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"ah\": \"A\", \"a\": \"A\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"mais\": \"B\", \"b\": \"B\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"c'est\": \"C\", \"c\": \"C\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"des\": \"D\", \"d\": \"D\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"euh\": \"E\", \"eux\": \"E\", \"e\": \"E\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"f\": \"F\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"j'ai\": \"G\", \"g\": \"G\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"hache\": \"H\", \"h\": \"H\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"i\": \"I\", \"aïe\": \"I\", \"hey\": \"I\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"j\": \"J\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"k\": \"K\", \"ca\": \"K\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"l\": \"L\", \"elle\": \"L\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"m\": \"M\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"n\": \"N\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"o\": \"O\", \"oh\": \"O\", \"eau\": \"O\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"p\": \"P\", \"pet\": \"P\", \"paix\": \"P\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"q\": \"Q\", \"cul\": \"Q\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"r\": \"R\", \"air\": \"R\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"s\": \"S\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"the\": \"T\", \"t\": \"T\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"u\": \"U\", \"hu\": \"U\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"v\": \"V\", \"vais\": \"V\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"w\": \"W\", \"double v\": \"W\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"x\": \"X\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"y\": \"Y\", \"ii grec\": \"Y\", \"les grecs\": \"Y\", \"grec\": \"Y\", \"le grec\": \"Y\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"z\": \"Z\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"mode un\": \"Mode 1\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"mode deux\": \"Mode 2\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"mode de\": \"Mode 2\",",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"fin\": \"Fin\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "}",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "class BrailleReader:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def __init__(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Initialiser les servomoteurs",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.initialize_servos()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Initialiser l'audio et la reconnaissance vocale",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.initialize_audio()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Mode actuel de l'application (0 = sélection de mode, 1 = Mode 1, 2 = Mode 2)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.current_mode = 0",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Indicateur si l'application est en cours d'exécution",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.running = True",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Indicateur si le système est en train de parler",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.is_speaking = False",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Heure de fin de la dernière synthèse vocale (pour éviter l'auto-écoute)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.last_speech_time = 0",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Délai minimum après synthèse vocale pour éviter l'auto-écoute (en secondes)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speech_cooldown = 1.0",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Lecteur Braille initialisé et prêt\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def initialize_servos(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Initialiser les GPIO et les servomoteurs\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Initialisation des GPIO et servomoteurs\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Nettoyer toutes les configurations GPIO précédentes",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "GPIO.cleanup()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Configurer le mode GPIO",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "GPIO.setmode(GPIO.BCM)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Initialiser les servomoteurs",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.servos = []",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "for pin in servo_pins:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "GPIO.setup(pin, GPIO.OUT)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "servo = GPIO.PWM(pin, 50) # Fréquence PWM de 50Hz",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "servo.start(0)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.servos.append(servo)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Remettre tous les servos en position 0",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.reset_servos()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Servomoteurs initialisés\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def initialize_audio(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Initialiser l'entrée audio et la reconnaissance vocale\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Initialisation de l'audio et de la reconnaissance vocale\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "try:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Initialiser le modèle Vosk",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.model = Model(MODEL_PATH)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Créer la chaîne de vocabulaire à partir du dictionnaire mots_vers_lettres",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "vocabulaire = \"[ \\\"\" + \"\\\", \\\"\".join(mots_vers_lettres.keys()) + \"\\\" ]\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Initialiser le reconnaisseur avec le vocabulaire",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.rec = KaldiRecognizer(self.model, 44100, vocabulaire)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Initialiser PyAudio",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.p = pyaudio.PyAudio()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.stream = self.p.open(",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "format=pyaudio.paInt16,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "channels=1,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "rate=44100,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "input=True,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "frames_per_buffer=8000",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": ")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.stream.start_stream()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Audio et reconnaissance vocale initialisés\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "except Exception as e:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.error(f\"Erreur lors de l'initialisation audio: {e}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "sys.exit(1)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def set_servo_angle(self, servo, angle):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Définir l'angle du servomoteur\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "duty_cycle = (angle / 18) + 2",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "servo.ChangeDutyCycle(duty_cycle)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "time.sleep(0.3)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "servo.ChangeDutyCycle(0)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def reset_servos(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Remettre tous les servos en position 0\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "for servo in self.servos:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.set_servo_angle(servo, 0)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def afficher_braille(self, lettre):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Afficher une lettre en Braille en utilisant les servomoteurs\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if lettre in definitions_braille:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "for i in range(6):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.set_servo_angle(",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.servos[i],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "90 if definitions_braille[lettre][i] else 0",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": ")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "return True",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "return False",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def speak_text(self, text):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Utiliser espeak pour convertir le texte en parole\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "try:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Marquer que nous commençons à parler",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.is_speaking = True",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Mettre en pause la reconnaissance pour éviter l'auto-écoute",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.toggle_recognition_stream(pause=True)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "subprocess.run(",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "[\"espeak\", \"-v\", \"fr\", \"-s\", \"200\", \"-p\", \"100\", \"-a\", \"1000\", text],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "stdout=subprocess.DEVNULL,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "stderr=subprocess.DEVNULL",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": ")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Enregistrer quand nous avons fini de parler",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.last_speech_time = time.time()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Marquer que nous avons fini de parler",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.is_speaking = False",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Attendre un court délai avant de reprendre la reconnaissance",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "time.sleep(0.5) # Courte attente pour s'assurer qu'espeak est complètement terminé",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Reprendre la reconnaissance",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.toggle_recognition_stream(pause=False)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Ajouter un délai pour éviter la reconnaissance immédiate (auto-écoute)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "time.sleep(0.5)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "except Exception as e:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.error(f\"Erreur avec la synthèse vocale: {e}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.is_speaking = False",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.toggle_recognition_stream(pause=False)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def play_audio(self, file_name):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Lire un fichier audio en utilisant ffmpeg\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "try:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Marquer que nous commençons à parler",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.is_speaking = True",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Mettre en pause la reconnaissance pour éviter l'auto-écoute",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.toggle_recognition_stream(pause=True)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "file_path = os.path.join(AUDIO_PATH, file_name)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if os.path.exists(file_path):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "subprocess.run(",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "[\"ffmpeg\", \"-i\", file_path, \"-f\", \"alsa\", \"default\"],",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "stdout=subprocess.DEVNULL,",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "stderr=subprocess.DEVNULL",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": ")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "else:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.warning(f\"Fichier audio introuvable: {file_path}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Utiliser espeak comme solution de repli si le fichier n'est pas trouvé",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(file_name.replace(\".mp3\", \"\"))",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Enregistrer quand nous avons fini de parler",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.last_speech_time = time.time()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Marquer que nous avons fini de parler",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.is_speaking = False",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Attendre un court délai avant de reprendre la reconnaissance",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "time.sleep(0.5)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Reprendre la reconnaissance",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.toggle_recognition_stream(pause=False)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "except Exception as e:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.error(f\"Erreur lors de la lecture audio: {e}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.is_speaking = False",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.toggle_recognition_stream(pause=False)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def toggle_recognition_stream(self, pause=True):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Mettre en pause ou reprendre le flux de reconnaissance audio\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if pause:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.stream.stop_stream()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "else:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.stream.start_stream()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def recognize_speech(self, timeout=5):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Écouter la parole et retourner le texte reconnu\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Si nous sommes en train de parler ou venons de finir, ne pas écouter encore",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if self.is_speaking:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "return None",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Vérifier si nous sommes encore dans la période de délai après avoir parlé",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if time.time() - self.last_speech_time < self.speech_cooldown:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "return None",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "start_time = time.time()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "while time.time() - start_time < timeout:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "data = self.stream.read(4000, exception_on_overflow=False)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if self.rec.AcceptWaveform(data):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "result = json.loads(self.rec.Result())",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if \"text\" in result and result[\"text\"].strip():",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "recognized_text = result[\"text\"].lower()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.debug(f\"Recognized: {recognized_text}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "return recognized_text",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "return None",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def mode_selection(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Interface de sélection du mode\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Entrée dans la sélection de mode\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Remettre les servos à zéro",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.reset_servos()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Message de bienvenue",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Bienvenue au système d'apprentissage de Braille\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Dites Mode un ou Mode deux pour commencer\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "while self.current_mode == 0 and self.running:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Écouter pour la sélection de mode",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "recognized_text = self.recognize_speech()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if recognized_text:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if recognized_text in mots_vers_lettres:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "command = mots_vers_lettres[recognized_text]",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Gérer la sélection de mode",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if command == \"Mode 1\":",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Mode un sélectionné\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.current_mode = 1",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Mode 1 sélectionné\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "elif command == \"Mode 2\":",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Mode deux sélectionné\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.current_mode = 2",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Mode 2 sélectionné\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "elif command == \"Fin\":",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Au revoir\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.running = False",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "else:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Commande non reconnue\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "else:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Commande non reconnue\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def mode_1(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Mode 1: L'utilisateur dit une lettre, le système la prononce et l'affiche\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Démarrage du Mode 1\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Introduction pour le Mode 1",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Mode un. Dites une lettre, je vais la prononcer et l'afficher en braille\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Dites fin pour revenir au menu principal\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "while self.current_mode == 1 and self.running:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Attendre l'entrée d'une lettre",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "recognized_text = self.recognize_speech()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if recognized_text and not self.is_speaking:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if recognized_text in mots_vers_lettres:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "command = mots_vers_lettres[recognized_text]",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Vérifier si l'utilisateur veut sortir",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if command == \"Fin\":",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Fin du mode un\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.current_mode = 0",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Sortie du Mode 1\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "break",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Gérer l'affichage de la lettre",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if len(command) == 1 and command in definitions_braille:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(f\"Affichage de la lettre: {command}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Afficher d'abord la lettre en braille",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.afficher_braille(command)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Puis prononcer la lettre avec reconnaissance désactivée pour éviter l'auto-écoute",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(command)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "else:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Ce n'est pas une lettre valide\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "else:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Commande non reconnue\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def mode_2(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Mode 2: Le système affiche aléatoirement des lettres\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Démarrage du Mode 2\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Introduction pour le Mode 2",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Mode deux. Je vais afficher des lettres aléatoires en braille\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Dites fin pour revenir au menu principal\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "while self.current_mode == 2 and self.running:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Afficher une lettre aléatoire",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "random_letter = random.choice(list(definitions_braille.keys()))",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(f\"Affichage de la lettre aléatoire: {random_letter}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Prononcer et afficher la lettre",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.afficher_braille(random_letter)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(random_letter)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Attendre un moment pour permettre à l'utilisateur de dire \"fin\" si nécessaire",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "time.sleep(2)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Vérifier les commandes vocales (même pendant la séquence d'affichage)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "recognized_text = self.recognize_speech(timeout=1)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if recognized_text and recognized_text in mots_vers_lettres:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "command = mots_vers_lettres[recognized_text]",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if command == \"Fin\":",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.speak_text(\"Fin du mode deux\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.current_mode = 0",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Sortie du Mode 2\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "return",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def cleanup(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Nettoyer les ressources à la sortie\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Nettoyage des ressources\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Remettre les servos à zéro",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.reset_servos()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Arrêter tous les servos",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "for servo in self.servos:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "servo.stop()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Nettoyer les GPIO",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "GPIO.cleanup()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Arrêter et fermer le flux audio",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if hasattr(self, 'stream'):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.stream.stop_stream()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.stream.close()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Terminer PyAudio",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if hasattr(self, 'p'):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.p.terminate()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Nettoyage terminé\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "def run(self):",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "\"\"\"Boucle principale de l'application\"\"\"",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Démarrage de l'application Lecteur Braille\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "try:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "while self.running:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Sélection de mode",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if self.current_mode == 0:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.mode_selection()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Mode 1",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "elif self.current_mode == 1:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.mode_1()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "# Mode 2",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "elif self.current_mode == 2:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.mode_2()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "except KeyboardInterrupt:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.info(\"Application terminée par l'utilisateur\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "except Exception as e:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "logger.error(f\"Erreur inattendue: {e}\")",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "finally:",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "self.cleanup()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "if __name__ == \"__main__\":",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "reader = BrailleReader()",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "reader.run()",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 8,
+                "titre": "Étape 8 - Branchement",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Branchez les servo-moteurs comme sur la photo à gauche sur les broches D18, D26, D16, D24, D5, D22.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Branchez le haut parleur sur la prise jack et sur les broches du shield comme sur l'image.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Branchez le Microphone sur un port USB.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/3/33/Boitier_d_apprentissage_du_BRAILLE_branchement_servo.png",
+                                "alt": "Boitier d apprentissage du BRAILLE branchement servo.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/e/e8/Boitier_d_apprentissage_du_BRAILLE_1.png",
+                                "alt": "Boitier d apprentissage du BRAILLE 1.png",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 9,
+                "titre": "Étape 9 - Conception SolidWorks",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Afin d'avoir un support pour les composants assurez vous de crée un boitier dimensionné en fonction de vos composants :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "- Premièrement crée un socle qui accueillera la source d'énergie (batterie externe)",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "- Ensuite crée un boite qui servira de pièce intermédiaire et qui accueillera la carte Raspberry pi avec son microphone",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "-Enfin crée un couvercle en vous assurant de laisser apparaitre la matrice 3*2 et des sortis de son pour le haut parleur",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/2/28/Boitier_d_apprentissage_du_BRAILLE_boitier_batterie.png",
+                                "alt": "Boitier d apprentissage du BRAILLE boitier batterie.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/5/5b/Boitier_d_apprentissage_du_BRAILLE_piece_millieux.png/800px-Boitier_d_apprentissage_du_BRAILLE_piece_millieux.png",
+                                "alt": "Boitier d apprentissage du BRAILLE piece millieux.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/b/b7/Boitier_d_apprentissage_du_BRAILLE_couvercle_boitier.png/800px-Boitier_d_apprentissage_du_BRAILLE_couvercle_boitier.png",
+                                "alt": "Boitier d apprentissage du BRAILLE couvercle boitier.png",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 10,
+                "titre": "Étape 10 - Impression",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Pour matérialisé notre boitier conçu précédemment sur SolidWorks munissez vous d'une imprimante 3D et du logiciel cura. Configuré les paramètres d'impression des différentes partis du boitier (vitesse de la buse, support) et lancé l'impression.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/a/a3/Boitier_d_apprentissage_du_BRAILLE_vitesse.png",
+                                "alt": "Boitier d apprentissage du BRAILLE vitesse.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/d/d2/Boitier_d_apprentissage_du_BRAILLE_adherence.png",
+                                "alt": "Boitier d apprentissage du BRAILLE adherence.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/4/44/Boitier_d_apprentissage_du_BRAILLE_impresion.png",
+                                "alt": "Boitier d apprentissage du BRAILLE impresion.png",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 11,
+                "titre": "Étape 11 - Assemblage",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Une fois toute les étapes précédente réalisé, placez tout les composant a leur place sans oublier des les fixer a l'aide de vis ou colle liquide, puis fermer le boitier à l'aide des clips précédemment fabriquer pendant l'étape \"SOLIDWORKS \"et testez votre système d'apprentissage du braille",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "https://wikifab.org/images/thumb/3/3e/Boitier_d_apprentissage_du_BRAILLE_assemblage_boitier.png/800px-Boitier_d_apprentissage_du_BRAILLE_assemblage_boitier.png",
+                                "alt": "Boitier d apprentissage du BRAILLE assemblage boitier.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/4/46/Boitier_d_apprentissage_du_BRAILLE_carte.jpg/800px-Boitier_d_apprentissage_du_BRAILLE_carte.jpg",
+                                "alt": "Boitier d apprentissage du BRAILLE carte.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "https://wikifab.org/images/thumb/3/3b/Boitier_d_apprentissage_du_BRAILLE_moteur.jpg/800px-Boitier_d_apprentissage_du_BRAILLE_moteur.jpg",
+                                "alt": "Boitier d apprentissage du BRAILLE moteur.jpg",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 12,
+                "titre": "Étape 12 - Conseils, erreurs à éviter et pistes d'amélioration",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Lors de la réalisation du boîtier, il est important de bien tester chaque élément séparément avant de tout assembler. Les servomoteurs, le micro et le haut-parleur doivent être fonctionnels de manière indépendante pour éviter de perdre du temps en cas de problème. Il est aussi conseillé de bien calibrer les servos avant de fixer le couvercle ou les pièces internes, car un mauvais alignement peut fausser l'affichage en braille.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "La reconnaissance vocale fonctionne mieux si le vocabulaire est restreint. Il est donc préférable de limiter les mots utilisés à ceux réellement nécessaires. De même, il faut penser à ajouter un petit délai après chaque message vocal pour éviter que le système ne se déclenche tout seul à cause de sa propre voix (problème de \"self-listening\").",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Plusieurs erreurs sont à éviter. Par exemple, sous-estimer la puissance nécessaire pour les électroaimants peut mener à un système inefficace ou instable. C’est l’une des raisons pour lesquelles nous avons choisi les servomoteurs, plus simples à gérer. Autre point à surveiller : l’alimentation électrique. Si elle est mal dimensionnée, cela peut provoquer des coupures ou des bugs sur le Raspberry Pi. Il est aussi risqué de vouloir tout tester d’un coup sans passer par des essais progressifs, car cela rend le diagnostic des erreurs plus compliqué.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Pour améliorer le projet, plusieurs pistes sont possibles. Le site web (Mode 3), qui permet l'envoi de texte depuis un navigateur. On pourrait aussi imaginer un système avec batterie ou alimentation mobile pour rendre le boîtier totalement autonome. Enfin, des ajouts comme un retour sonore d’erreur ou des vibrations pourraient guider davantage l’utilisateur, surtout en cas de mauvaise commande.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 13,
+                "titre": "Étape 13 - Crédits",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Le Ray Gabin T15",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Sylvestre Valentin T15",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Mur Damien T13",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "2025",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Lycée le Likes Quimper",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            }
+        ],
+        "annexes": []
+    }
+}

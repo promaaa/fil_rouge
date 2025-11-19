@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>D4E1 - HoldOn - Adaptable (Garbage) Bag Strap</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>D4E1 - HoldOn - Adaptable (Garbage) Bag Strap</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FVA/2N0S/KY79PTC4/FVA2N0SKY79PTC4.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>The rollator hack project was set up in collaboration with Howest University, Rotterdam University and Design for Everyone. In this project, several teams were formed with a mix of student designers and student occupational therapists.</p>
+      
+        <p>Each team had to investigate the wishes, needs, difficulties and opportunities of a specific assigned person with a disability. The most suitable solution for this person was sought on the basis of prototyping and co-creation.</p>
+      
+        <p>The concrete goal of this project is to devise, make and test an assistive technology for a specific person, but also to expand this concept to a wider audience. It is important to make this solution available to the community, with clear building instructions and taking into account accessible production techniques.</p>
+      
+        <p>Design for Everyone (designforerveryone.howest.be) aims to increase independence and improve quality of life. This project contributes to this by offering a DIY AT solution, which also takes into account the thinking behind open-ended design and the limited resources available to people.</p>
+      
+        <p>Our client was having difficulties taking out the garbage as she had mobility and stability issues. She had to balance her garbage on her rollator and then walk a long way with various obstacles (ramps, borders, ...) in order to put the garbage in the assigned place on the street.</p>
+      
+        <p>Her strength was her pursuit of independence and her will to achieve it. She lives alone and many things in the house are already adapted to her needs. Still, taking out trash was a stumbling block that manifested itself in her daily life.</p>
+      
+        <p>An elastic was designed for our customer that was easy to attach to her walker. This elastic was adjustable to the volume of the garbage bag and was easy to manipulate with one hand. This increased safety when using the product as well as self-confidence.</p>
+      
+        <p>This project was made by industrial design students Eva Albrecht and Maider Gardoki and occupational therapist student Jelle Gantois.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/HoldOn-Adaptable-Garbage-Bag-Strap/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/HoldOn-Adaptable-Garbage-Bag-Strap/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>ball-and-strap</li><li>3m long elastic</li><li>cord stopper</li><li>pair of scissors</li><li>your hands</li><li>The materials you need for this project are:</li><li>The ball-and-strap can be found in a DIY store and is used to strap down a tent canvas to a frame. Thicker elastics can be found in a DIY store, thinner elastics in a sewing shop. When using a cord stopper, you should take into account that there are different types (smaller, bigger, one hole, two holes, ...).</li><li>To create a double string an elastic should be chosen that fits four times through the (one) hole of that cord stopper. If the cord stopper has two holes, the elastic should be able to fit twice in each hole.</li><li>If there is no preference or need for a double string, it is possible to just pull the double string through one hole of the cord stopper or single string through one of each hole (if two holes).</li><li>The tools you need for this project are:</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Shortening the Ball-and-strap</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F39/MBGX/KY79Q0LC/F39MBGXKY79Q0LC.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shortening the Ball-and-strap' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQL/SC1W/KY79Q0M6/FQLSC1WKY79Q0M6.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shortening the Ball-and-strap' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJP/33O7/KY79Q0N0/FJP33O7KY79Q0N0.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shortening the Ball-and-strap' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYA/VUXX/KY79Q0OL/FYAVUXXKY79Q0OL.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Shortening the Ball-and-strap' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Take the ball-and-strap apart</li><li>Cut the strap to the requires size (also take the knot into account)</li><li>Make a knot and tighten it</li><li>Pull the ball back over the strap</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Attaching the Cord Stopper</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FYJ/ZWWR/KY79Q5MD/FYJZWWRKY79Q5MD.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching the Cord Stopper' loading='lazy'></figure><figure><img src='https://content.instructables.com/F12/2FHH/KY79Q5LY/F122FHHKY79Q5LY.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching the Cord Stopper' loading='lazy'></figure><figure><img src='https://content.instructables.com/FNG/RHFG/KY79Q5LW/FNGRHFGKY79Q5LW.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching the Cord Stopper' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Fold the long elastic double</li><li>Make a knot about 10cm from the loop</li><li>Pull the loop through the cord stopper</li><li>Make another knot to close the cord stopper in</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: The Big Loop</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FLH/OIOB/KY79Q5MA/FLHOIOBKY79Q5MA.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Big Loop' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDK/J3R2/KY79Q5LZ/FDKJ3R2KY79Q5LZ.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='The Big Loop' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Take the two long ends of the elastic and pull them through the cord stopper. If all went well, you now have a big loop.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Connecting the Parts</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F5M/K3A6/KY79Q5MF/F5MK3A6KY79Q5MF.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connecting the Parts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQP/QIH7/KY79Q5M0/FQPQIH7KY79Q5M0.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connecting the Parts' loading='lazy'></figure><figure><img src='https://content.instructables.com/F46/J6F3/KY79Q5LU/F46J6F3KY79Q5LU.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connecting the Parts' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDZ/SJFY/KY79Q5LS/FDZSJFYKY79Q5LS.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Connecting the Parts' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Take the ball-and-strap and pull the ball half way over the strap</li><li>Pull the two ends of the elastic through the ball, so they line up with the knot of the strap</li><li>Knot the two ends above the knot of the strap, tighten it as hard as you can</li><li>Pull the ball back in place</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Installing the Product</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FX8/1LRQ/KY79Q7G7/FX81LRQKY79Q7G7.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Installing the Product' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZR/YE6F/KY79PTLY/FZRYE6FKY79PTLY.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Installing the Product' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0K/YZYG/KY79Q7G8/F0KYZYGKY79Q7G8.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Installing the Product' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSW/2N1Q/KY79PTLU/FSW2N1QKY79PTLU.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Installing the Product' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Putting the big loop in place</li><li>Attaching the ball-and-strap<ul><li>Take out the aluminum tube of the other side</li><li>Put the tube back in, through the big loop</li><li>Wrap the strap around the aluminium tube of one side of the rollator</li><li>Pull it over the ball</li><li>Due to the elasticity, the ball-and-strap will be tightened around the tube</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Using the Product</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FTS/50R0/KY79PTLV/FTS50R0KY79PTLV.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Using the Product' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZY/32LY/KY79PTM6/FZY32LYKY79PTM6.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Using the Product' loading='lazy'></figure><figure><img src='https://content.instructables.com/F56/9QT7/KY79QDDD/F569QT7KY79QDDD.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Using the Product' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSA/Q4BG/KY79Q7G9/FSAQ4BGKY79Q7G9.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Using the Product' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The use of the cord stopper</li><li>Place the garbage bag on the rollator</li><li>Pull the strap over the bag</li><li>If needed, detach the ball-and-strap and attach to a better fitting place</li><li>When not in use, the elastic can be tightened and tucked under the seating<ul><li>Push down the button on the cord stopper</li><li>Slide to the left/right to expand the elastic</li><li>Slide the cord stopper to the left/right to tighten the elastic</li><li>Spread out the two strings to hold the whole volume of the bag</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Water - Biosand Filter</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Water - Biosand Filter</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/8/8c/DIY_Wood_Mold_for_the_Production_of_Concrete_BioSand_Filters_OHorizons_BioSand_Water_Filter_Bangladesh.jpg/800px-DIY_Wood_Mold_for_the_Production_of_Concrete_BioSand_Filters_OHorizons_BioSand_Water_Filter_Bangladesh.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Le filtre biosable est un filtre à eau domestique qui rend potable l’eau sale.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce document vous aidera à comprendre les principes fondamentaux du filtre biosable (FBS): comment il fonctionne, ses différents éléments et pourquoi ce pourrait être une bonne technologie pour votre projet. Si vous avez d'autres questions auxquelles ce document ne répond pas, n'hésitez pas à nous contacter (info@ohorizons.org).</p>
+      
+        <p>Le filtre biosable (FBS) a été inventé dans les années 1990 par le Dr David Manz à l'Université de Calgary. En termes simples, le FBS est un filtre à eau domestique qui rend potable l’eau sale. Ce type particulier de filtre est une adaptation du filtre à sable lent traditionnel utilisé pour le traitement de l'eau communautaire depuis près de 200 ans.</p>
+      
+        <p>Le FBS est plus petit et adapté pour une utilisation intermittente, ce qui le rend plus approprié pour les ménages d’environ cinq personnes. Le corps du filtre, ou l'extérieur du filtre également connu sous le nom de boîtier du filtre, est couramment fait de béton, mais peut également être fabriqué en plastique. Quel que soit le type de boîtier du filtre, un FBS est rempli de couches soigneusement préparées de sable et de gravier. Le FBS élimine presque toutes les impuretés et les agents pathogènes de l'eau-jusqu'à 99%! Le FBS est un excellent moyen à faible technicité de purifier l'eau de boisson et est utilisé dans les communautés à travers le monde.</p>
+      
+        <p>Donner accès à l'eau potable est un problème complexe et à multiples facettes; le choix de la technologie appropriée n'est qu'un aspect du projet. D’autres aspects comme l'éducation des utilisateurs, l'enseignement des bonnes pratiques d'hygiène et la surveillance sont également extrêmement importants et doivent être pris en considération.</p>
+      
+        <p>L'approvisionnement en eau potable est compliqué en partie parce que la contamination de l'eau peut se produire de plusieurs manières et à presque n’importe quelle étape du processus de collecte de l'eau. Certaines causes fréquentes de contamination de l’eau sont: mauvaise élimination des déchets humains (installations sanitaires inadéquates), mauvaise hygiène (ne pas se laver les mains), excréments de bétail (ce qui est particulièrement vrai si l'eau est collectée dans une rivière ou un ruisseau non protégé), écoulements agricoles et déchets industriels. Ce ne sont là que quelques-unes des façons de contaminer l’eau.</p>
+      
+        <p>Dans de nombreuses régions, l’eau de boisson est collectée dans des lacs, des cours d’eau ou des étangs où le taux de contamination peut être très élevé. Dans d'autres endroits, les gens obtiennent leur eau de boisson d'un puits communautaire ou d'un forage. L'eau pompée peut être propre ou non. Même si elle est propre, il y a de multiples possibilités de recontamination, en particulier si l’eau n'est pas stockée dans un récipient sécurisé.Parce que l’eau peut être contaminée de nombreuses façons, même si l'eau collectées est propre, OHorizons a concentré ses efforts sur le FBS, qui est une technologie employée au point d’utilisation. Comme le nom le suggère, cette technologie traite l'eau là où elle est utilisée, généralement dans le ménage. Cela donne aux utilisateurs un contrôle maximal du traitement de leur eau et réduit les risques de recontamination</p>
+      
+        <p>Le manuel de construction du filtre est open-source et peut être téléchargé gratuitement à l'adresse: https://www.biosandfilters.info/</p>
+      
+        <p>Une série de vidéos conçue pour montrer, étape par étape, comment construire et installer un filtre à sable biologique en béton: https://washresources.cawst.org/fr/collections/714c93ae/how-to-build-a-biosand-filter-video-collection</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 80 USD ($)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Water_-_Biosand_Filter" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Water_-_Biosand_Filter</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Construction d'1 moule en bois OHorizons:<ul><li>Contreplaqué de 4x8 pieds et 3/4 pouces d'épaisse</li><li>Bois de Charpente 1,5 x 1,5 pouces (8 morceaux de 46 cm de long, 4 morceaux de 40 cm de long, 4 morceaux de 35 cm de long)</li><li>16 Boulons à têtes hexagonales et entièrement filetés</li><li>12 Charnières avec des vis d'environ 2,5 pouces de long.</li><li>17 Écrous</li><li>33 Rondelles</li><li>75 vis à bois de 4cm de long</li><li>60 vis à bois de 3cm de long</li><li>1 Boulon de 4-5 pouces de long</li></ul></li><li>Construction du corps de filtre en béton<ul><li>Tubes plastiques (polyéthylène ou vinyle) de 6 mm (¼") ID et 9 mm (3/8") OD</li><li>Du ruban adhésif solide</li><li>Huile (produits comestibles)</li><li>Brosse ou un chiffon pour appliquer l'huile</li><li>12 litres de ciment</li><li>24 litres de sable de 1 mm (0.04")</li><li>12 litres de gravier de 12 mm (½")</li><li>12 litres de gravier de 6 mm (¼")</li><li>De l'eau - environ 7-10 litres</li><li>Savon</li></ul></li><li>Préparation du gravier et du sable:<ul><li>Protection (par exemple une bâche ou des feuilles de plastique), un toit ou bâtiment pour empêcher le sable de se mouiller et d'être contaminé</li><li>De l'eau propre</li><li>Gravier de 12 mm (½")</li><li>Gravier de 6 mm (¼")</li><li>Sable de 0,7 mm (0,03 ")</li></ul></li><li>Installation d'un filtre:<ul><li>Environ 3 litres de graviers 12 mm (½") lavés (couche de drainage)</li><li>Environ 3 ¼ de litres de graviers de 6 mm (¼") lavés (couche séparatrice)</li><li>Environ 25 litres de sable de 0,7 mm (0,03") lavé 40-80 litres (10 - 20 gallons) d'eau</li><li>Du chlore</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li>Construction du corps de filtre en béton<ul><li>Couteau tout usage</li><li>Source de chaleur si vous utilisez des tubes polyéthylène (par exemple: propane ou une torche kérosène, feu de bois, brûleur électrique)</li><li>Brosse métallique, du papier de verre ou laine d'acier pour nettoyer le moule</li><li>Niveau</li><li>Cales en bois de différentes tailles</li><li>2 clés 9/16"</li><li>Conteneurs pour mesurer le sable, le gravier et le ciment</li><li>1 tige de métal de 1,5m (5') (comme une barre d'armature) ou un morceau de bois</li><li>Maillet en caoutchouc ou en bois</li><li>Truelle</li><li>Pelles</li><li>1 clé 1-1/2"</li><li>Marteau</li><li>4 blocs de bois (env. 5cm carré)</li><li>Pinceau</li></ul></li><li>Préparation du gravier et du sable:<ul><li>Tamis de 12 mm (½ ")</li><li>Tamis de 6 mm (¼")</li><li>Tamis de 1 mm (0.04 ")</li><li>Tamis de 0,7 mm (0,03 ")</li><li>Pelles</li><li>Brouette (si disponible)</li><li>Plusieurs grands conteneurs d'environ 40 cm (15") de profondeur</li><li>Petit conteneur transparent avec couvercle</li><li>Installation d'un filtre:</li><li>Mètre ruban</li><li>Un bâton [environ 100 cm (40") de long, 2,5 cm x 5 cm (1"x 2") de préférence]</li><li>Diffuseur</li><li>Conteneur de stockage</li><li>Montre</li><li>Récipient de mesure gradué de 1 litre</li><li>1 m (3") de tuyau qui correspond à fixer sur le tuyau de sortie</li><li>Étau (si disponible)</li><li>Entonnoir (peut être fait avec le haut d'une bouteille d'eau)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Comment fonctionne le filtre biosable?</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/c/c3/Water_-_Biosand_Filter_fonctionnement1.JPG' alt='Water - Biosand Filter fonctionnement1.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/5a/Water_-_Biosand_Filter_pathog_ne.JPG' alt='Water - Biosand Filter pathog ne.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b5/Water_-_Biosand_Filter_fonctionnement2.JPG' alt='Water - Biosand Filter fonctionnement2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/df/Water_-_Biosand_Filter_fonctionnement3.JPG' alt='Water - Biosand Filter fonctionnement3.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b6/Water_-_Biosand_Filter_couche.JPG' alt='Water - Biosand Filter couche.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les différents parties d'un FBS (voir photo 1) :</li><li>Le filtre biosable dispose de cinq zones distinctes:<ul><li>la zone du réservoir</li><li>la zone d'eau au repos</li><li>la zone biologique,</li><li>la zone non-biologique,</li><li>la zone de gravier.</li></ul></li><li>Qu'arrive-t-il aux agents pathogènes et aux impuretés dans le filtre ? (voir photo 2)</li><li>Les pathogènes et les matières en suspension sont éliminés par une combinaison de processus physiques et biologiques qui ont lieu dans la couche biologique et au sein de la couche de sable. Ces processus incluent: le piégeage mécanique, la prédation, l'adsorption, et la mort naturelle.<ul><li>Piégeage mécanique. Les matières en suspension et les pathogènes sont physiquement pris au piège dans les espaces entre les grains de sable.</li><li>Prédation. Les pathogènes sont consommés par d'autres microorganismes dans la biologique.</li><li>L'adsorption. Les pathogènes sont attachés les uns aux autres, aux matières en suspension dans l'eau, et aux grains de sable.</li><li>La mort naturelle. Les pathogènes terminent leur cycle de vie ou meurent parce qu'il n'y a pas assez de nourriture ou d'oxygène pour leur survie.</li></ul></li><li>Fonctionnement du FBS :</li><li>Pendant la filtration (l'eau s'écoule)</li><li>(voir photo 3)</li><li>Lorsque de l'eau est versée dans le filtre, le niveau de l'eau (aussi appelé charge hydraulique) s'élève et pousse l'eau ) travers le diffuseur et le filtre. Le niveau de l'eau dans le réservoir descend tandis que l'eau s'écoule régulièrement à travers le sable. Lorsque le réservoir est plein, le débit devrait être de 400mL par minute. Le débit va diminuer au fur et à mesure que le réservoir se vide car il y a moins de pression pour pousser l'eau à travers le filtre. L'eau que l'on verse dans le filtre contient de l'oxygène dissous, des nutriments et des contaminants. Elle apporte une partie de l'oxygène et des nutriments dont ont besoin les micro-organismes de la couche biologique.Les particules en suspension et les agents pathogènes de grande taille sont arrêtés dans la couche supérieure du sable et ils bouchent en partie les pores entre les grains de sable. Ce colmatage entraine un ralentissement du débit du filtre dans le temps. Les utilisateurs peuvent occasionnellement avoir recours à une procédure de maintenance du "remuer et jeter" pour rétablir le débit du filtre.</li><li>Période de repos (pas d'écoulement d'eau) (voir photo 4)</li><li>L'eau s'arrêtera de s'écouler lorsque l'eau dans le réservoir aura atteint le même niveau que l'extrémité du tuyau de sortie. (C'est vrai pour les filtres dont le tuyau de sortie a un diamètre de 6 mm. voir page précédente). Une partie de l'oxygène de l'air se diffuse à travers l'eau au repos vers la couche biologique pendant la période de repos. La période de repos laisse aux microorganismes de la couche biologique le temps de consommer les agents pathogènes et les nutriments présents dans l’eau. Les agents pathogènes de la zone non biologique (sous la couche biologique) meurent par manque de nutriments et d'oxygène au cours de la période de repos. La période de repos devrait durer au moins 1 heure</li><li>Qu’est-ce qui fait la particularité du FBS? La couche biologique! (voir photo 5)</li><li>Dans un FBS, de petits microbes vivent dans la couche supérieure du sable. On parle de COUCHE BIOLOGIQUE. La couche biologique est très importante pour rendre l’eau potable. Elle met environ 30 jours à se former.<ul><li>Jour 1: De nombreux microbes vivent dans l’eau. Ils sont invisibles à l’œil nu, mais ils sont là! Lorsque l’on verse de l’eau dans le filtre, les microbes commencent à vivre dans la couche supérieure du sable.</li><li>Jour 15: Avec l’utilisation du filtre, de plus en plus de microbes commencent à vivre dans le sable. La couche biologique croît. Les microbes sont à l’aise et commencent à chercher de la nourriture.</li><li>Jour 30: Au bout de quelques semaines, les microbes commencent à se manger entre eux. Maintenant, à chaque fois que vous verserez de l’eau, les microbes dans le sable mangeront les nouveaux microbes dans l’eau, notamment les agents pathogènes.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Manuel de construction du moule en bois OHorizons</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/7/71/Water_-_Biosand_Filter_Moule_bois.JPG' alt='Water - Biosand Filter Moule bois.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce manuel est gratuit et open-source. Il peut être téléchargé à l'adresse suivante: https://static1.squarespace.com/static/5afb5f6225bf020305339c10/t/5bf67b714fa51a471a435d36/1542880476379/ohorizons_LeMouleEnBois_Manuel_Francais.pdf</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Manuel de construction du filtre en béton</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/0/09/Water_-_Biosand_Filter_cawst.JPG' alt='Water - Biosand Filter cawst.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce manuel produit par le Center for Affordable Water and Sanitation Technologies (CAWST) est gratuit et open-source. Il peut être téléchargé à l'adresse suivante: https://resources.cawst.org/construction-manual/a90b9f50/biosand-filter-construction-manual</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Série vidéo de construction du filtre bio-sable</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/3/38/Water_-_Biosand_Filter_Screenshot_2023-01-11_at_11-24-08_D_mouler_un_filtre_biosable_FBS_en_b_ton_Ressources_WASH.png' alt='Water - Biosand Filter Screenshot 2023-01-11 at 11-24-08 D mouler un filtre biosable FBS en b ton Ressources WASH.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette série vidéo produite par le Center for Affordable Water and Sanitation Technologies (CAWST) est conçue pour montrer, étape par étape, comment construire et installer un filtre à sable biologique en béton. Elle est gratuite et peut être visionnée ici: https://washresources.cawst.org/fr/collections/714c93ae/how-to-build-a-biosand-filter-video-collection</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Question fréquemment posées</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a8/Water_-_Biosand_Filter_HydrAid_BioSand_Water_Filter.jpg/800px-Water_-_Biosand_Filter_HydrAid_BioSand_Water_Filter.jpg' alt='Water - Biosand Filter HydrAid BioSand Water Filter.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Réponses issus du document suivant: https://static1.squarespace.com/static/5afb5f6225bf020305339c10/t/5b4c1df8758d462d957b8a49/1531715067103/french-intro-to-bsfs_ohorizons_Introduction_au_filtre_biosable.pdf</li><li>Combien d'eau peut-on filtrer par jour?</li><li>Un filtre biosable fabriqué à partir du moule en bois d’OHorizons filtrera 11 litres par utilisation, ce qui signifie qu'il filtrera 11 litres chaque fois qu’il est rempli. Il est recommandé de remplir le filtre au maximum quatre fois par jour et au minimum une fois par jour. Ceci signifie que le propriétaire du filtre peut obtenir de 11 à 44 litres d'eau ou environ 3-12 gallons par jour. Un maximum de quatre remplissages par jour est recommandé pour permettre des périodes de pause assez longues entre chaque opération du filtre.</li><li>Combien coûte un filtre biosable?</li><li>Le coût varie selon l'endroit où le filtre est fabriqué et le coût local des matériaux et de la main-d'œuvre. En général, le coût varie entre 25 et 65dollars US par filtre.</li><li>Combien pèse un filtre?</li><li>Un filtre installé (avec le média filtrant) peut peser jusqu'à350lb ou 160kg. Une fois installés, les filtres ne doivent jamais être déplacés.La stabilisation du sable contribue à améliorer l'élimination des agents pathogènes et le sable peut être perturbé en déplaçant le filtre. Le boîtier du filtre en béton pèse environ 150lb ou 70kg. Si le filtre doit être déplacé, le sable et le gravier doivent être retirés, lavés et réinstallés au nouvel emplacement du filtre.</li><li>Combien de temps est-ce que la couche biologique met à se développer?</li><li>Après environ 30 jours d'utilisation, la couche biologique sera entièrement développée et le filtre fonctionnera à son taux optimal d'élimination des agents pathogènes. Au cours des 30 premiers jours d'utilisation, le filtre élimine environ 70% ou plus des agents pathogènes et environ 100% des agents pathogènes résistants au chlore. Pendant cette période, l'eau du filtre peut être consommée, mais nous recommandons aux utilisateurs d’aussi faire bouillir l'eau ou d'utiliser du chlore pour s'assurer que l'eau est complètement potable. OHorizons recommande cette approche à barrières multiples même au-delà de la période initiale de 30 jours. Bien que le filtre fonctionne de façon optimale après le premier mois, divers facteurs pourraient modifier son efficacité au fil du temps, comme une utilisation inappropriée par l'utilisateur ou des changements de niveaux de contamination de la source d'eau. L'emploi d'une approche à barrières multiples tout au long de la durée de vie du filtre garantit que les utilisateurs pourront toujours boire l'eau la plus sûre possible.</li><li>Pourquoi le sable ne descend-t-il pas dans le tube ou le tuyau en PVC?</li><li>Le sable ne constitue que la couche supérieure. Les deux couches inférieures du filtre se composent de gravier petit et gros. Le petit gravier empêche le sable de s’écouler et le gravier gros empêche le petit gravier de s’échapper ou d'obstruer le tube de sortie.</li><li>Outre le remplissage du filtre avec de l'eau, comment le filtre est-il entretenu? Comment le nettoyer?</li><li>Le filtre biosable nécessite très peu de nettoyage. Une fois que le boîtier en béton a complètement pris, il devrait être bien nettoyé avec de l'eau et du savon pour éliminer tout résidu de sable ou de saleté. Ensuite, il peut être rempli de sable, de gravier et d'eau en toute sécurité dans la maison de l'utilisateur. Il est recommandé d'essuyer régulièrement l'extérieur, le couvercle et la plaque du diffuseur.</li><li>Le filtre est très simple à utiliser, tout comme il est simple de prendre soin d’une plante d'intérieur. La partie la plus importante de l'entretien est de s'assurer que la couche biologique reste saine en l'alimentant une à quatre fois par jour avec de l'eau contaminée. Une fois alimentée, la couche biologique doit digérer et récupérer, il doit donc y avoir au moins une heure entre chaque utilisation. Tout comme une plante d'intérieur, la couche biologique ne peut pas survivre si il y a trop ou trop peu d'eau. Lorsque le filtre n'est pas utilisé, une couche d'eau de 5cmrecouvre le sommet du sable. Cette couche doit être maintenue ou les micro-organismes vivants peuvent mourir. Si l’on verse de l'eau trouble ou visiblement sale dans le filtre, le sable va accumuler de la saleté ce qui ralentira le débit d'eau. Pour corriger cela, une méthode non invasive qui ne perturbe pas la couche biologique appelée«remuer et jeter» est utilisée pour nettoyer la partie supérieure du sable et améliorer le débit.</li><li>Qui est responsable du maintien des filtres biosable?</li><li>Le propriétaire du filtre est responsable de son maintien. Les propriétaires sont généralement formés à la maintenance avant ou pendant l'installation du filtre. OHorizons s'assure que tous nos partenaires ont une formation approfondie en matière d'entretien et d'installation. Ces partenaires sont à la disposition des ménages pour répondre aux questions, effectuer des réparations, rééduquer et fournir une assistance supplémentaire, au besoin.</li><li>Combien de temps dure un filtre? A quelle fréquence faut-il remplacer le sable?</li><li>Sauf circonstances exceptionnelles qui causeraient une fuite dans le boîtier en béton, il ne devrait pas y avoir de raison de remplacer le filtre. S'il est correctement entretenu et installé, un filtre peut durer toute une vie et le sable n'a pas besoin d’être remplacé. Si l’on utilise de l'eau particulièrement trouble ou visiblement sale, le propriétaire du filtre emploiera régulièrement la technique du remuer et jeter pour enlever la saleté. Cette méthode enlève une petite quantité de sable et,au fil du temps, le filtre pourrait avoir besoin d’un ajout de sable de filtration supplémentaire.</li><li>Le filtre a-t-il besoin d'une pompe, de l'électricité ou d'un système mécanique pour fonctionner?</li><li>Non, le filtre biosable fonctionne par la force de gravité. La gravité tire l'eau vers le bas à travers le sable et le tuyau en raison d'un effet de siphon naturel. Il n'y a pas besoin d'électricité ni de pompes. Ceci signifie que c'est une excellente solution pour les zones quine sont pas connectées à un réseau électrique.</li><li>Y-a-t-il besoin de types spécifiques de sable?</li><li>Oui, le meilleur sable est la roche concassée qui peut être obtenue dans la plupart des carrières locales. La roche concassée ne contient pas de matière organique ou de sel que l’on trouve souvent dans le sable de la rivière ou de la plage. Le sable de roche concassée est également plus varié entaille et forme ce qui rend le filtre plus efficace. Le sable doit être lavé et tamisé avant d'être mis dans le filtre de sorte que seuls les grains d'une certaine gamme de tailles sont utilisés et rien de nuisible n’est introduit dans le filtre. Le gravier doit également être de formes variées et doit être lavé avant d'être placé dans le filtre. Veuillez consulter notre appendice pour plus d'informations sur quel est le meilleur type de sable à utiliser comme matériel de filtration.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

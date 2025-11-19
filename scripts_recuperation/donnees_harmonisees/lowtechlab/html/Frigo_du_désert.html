@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Frigo du désert</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Frigo du désert</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/9/9f/Photo_ZEER_POT.jpg/800px-Photo_ZEER_POT.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Fabriquer un réfrigérateur qui fonctionne sans électricité !</div>
+        
+      </div>
+    
+    
+      
+        <p>Dans les pays où la température monte fréquemment au-dessus de 20°C, la nourriture ne reste pas fraîche longtemps. Une tomate, par exemple, s’abime en seulement 2 jours. Aussi, compte tenu du prix et de la consommation énergétique d’un frigo, la conservation des aliments est un problème récurant dans les pays en voie de développement. Ainsi, sans moyens de conservation, même si une famille touchée par la pauvreté produit suffisamment de nourriture pour pouvoir s’alimenter, elle a peu de moyens de lutter contre la faim.</p>
+      
+        <p>Un système permettant la préservation des aliments peut ainsi grandement améliorer la vie quotidienne de nombreuses familles. Il ouvre notamment des opportunités économiques : conserver ses aliments c’est aussi pouvoir les vendre.</p>
+      
+        <p>En dehors de tout soucis financiers, une famille peut également rechercher à consommer moins d’énergie en privilégiant des moyens de réfrigération naturels et ainsi diminuer son impact environnemental.</p>
+      
+        <p>Le Zeer Pot – frigo du désert – peut s’avérer une solution viable au problème. C’est un dispositif de réfrigération qui maintient les aliments au frais, sans électricité, grâce au principe de refroidissement par évaporation.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Frigo_du_désert" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Frigo_du_désert</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>• 1 pot en terre cuite (ou argile) de 50 x 46 cm, de préférence rond (50cm de diamètre)</li><li>• 1 pot en terre cuite (ou argile) de 30 x 40 cm, de préférence rond (30cm de diamètre)</li><li>• Environ 45 kg de sable fin</li><li>• Environ 15 litres d’eau potable*</li><li>• 1 tissu respirant ou couvercle</li><li>Adaptabilité :</li><li>Les dimensions des deux pots varient selon la quantité d’aliments que vous souhaitez pouvoir conserver. Ici nous proposons de construire un Zeer Pot pouvant contenir 12 kg d’aliments. Pour cela il faudra un pot externe de 50 cm de diamètre et un pot interne de 30 cm de diamètre. La taille peut être adaptée en fonction des besoins à condition de respecter les proportions.</li><li>Précautions sanitaires :</li><li>Attention : *utiliser une eau souillée risquerait de contaminer les aliments déposés dans le pot interne. Il en sera de même si le sable contient des éléments nocifs comme des hydrocarbures.</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Aucun outil n'est nécessaire pour fabriquer un Zeer Pot</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Fonctionnement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Fonctionnement.jpg/800px-Fonctionnement.jpg' alt='Fonctionnement.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le Zeer Pot c’est : 2 poteries en terre cuite (ou en argile) imbriquées l’une dans l’autre avec une couche de sable humide d’environ 4 cm entre les deux. Le pot interne contient les aliments à garder au frais. Le sable permet la réfrigération du système. Le pot externe contient le tout.</li><li>L’eau contenue dans le sable a besoin d’énergie pour se transformer en vapeur, c’est le principe d’évaporation. Dans le cas présent c’est notamment la chaleur contenue dans le pot interne qui va fournir cette énergie et permettre à l’eau de s’évaporer. Cette réaction thermique permet ainsi de faire descendre la température du pot interne et de conserver les aliments au frais.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Pot externe</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/46/Pot_externe.jpg/800px-Pot_externe.jpg' alt='Pot externe.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans le fond du pot externe disposer une couche de sable suffisamment épaisse pour que le haut du pot interne soit à la même hauteur que le haut du pot externe. Puis humidifier.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Pot Interne</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fa/Pot_interne.jpg/800px-Pot_interne.jpg' alt='Pot interne.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Placer le pot interne à l’intérieur du pot externe.</li><li>Attention : le pot doit être bien stabilisé sur la première couche de sable et disposé au centre du pot externe.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Sable</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c9/Sable2.jpg/800px-Sable2.jpg' alt='Sable2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Combler le vide entre les deux pots par plusieurs couches de sable successives...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Eau</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a3/Eau2.jpg/800px-Eau2.jpg' alt='Eau2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>... sans oublier d'humecter le sable à chacune des couches.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Utilisation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Utilisation2.jpg/800px-Utilisation2.jpg' alt='Utilisation2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>• Placer le système dans une zone sèche, à l’abri du soleil et dans un courant d’air.</li><li>• Remplir le Zeer Pot avec les aliments.</li><li>• Humecter le tissu respirant et le placer à la surface du système en guise de couvercle.</li><li>• Ré-humidifier le sable dès qu’il commence à sécher, soit deux fois par jour environ.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Se servir au mieux du Zeer Pot</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1d/Se_servir_au_mieux_du_Zeer_Pot.jpg/800px-Se_servir_au_mieux_du_Zeer_Pot.jpg' alt='Se servir au mieux du Zeer Pot.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Que mettre dans un Zeer Pot ?</li><li>• Tous les légumes frais qui sont susceptibles de pourrir rapidement</li><li>• De l’eau, afin qu’elle reste fraiche</li><li>• Des médicaments supportant mal la chaleur</li><li>Attention : le sable doit rester bien humide et le système doit bénéficier d’un flux d’air continu, qui puisse passer tout autour du pot. Il est vivement conseillé de surélever le pot (sur un trépier par exemple) afin que l’air puisse circuler au mieux.</li><li>Attention : Certains légumes dégagent un gaz (l’étylène) en murissant. Cependant d’autres aliments peuvent pourrir au contact de ce gaz. Il est donc conseillé d’éviter le mélange des cucurbitacés avec des pommes, tomates, poivrons... Pour plus de précisions à ce sujet, le document en lien contient un tableau récapitulatif de la conservation d’aliments du quotidien : http://horizonalimentaire.fr/sites/horizonalimentaire.fr/files/fichiers/guide_conservation_fetl_comite_conso_aprifel.pdf</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/5/50/Frigo_du_d_sert_frigo.JPG' alt='Frigo du d sert frigo.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux")</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

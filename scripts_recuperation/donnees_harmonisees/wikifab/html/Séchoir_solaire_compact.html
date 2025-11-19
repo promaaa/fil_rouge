@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Séchoir solaire compact</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Séchoir solaire compact</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/2/23/S_choir_solaire_compact_1659194800711.jpg/800px-S_choir_solaire_compact_1659194800711.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Tutoriel en cours de création, merci d'être indulgent et de me signaler les fautes d'orthographe et de frappe. Ce tutoriel a pour objectif de vous permettre de construire un séchoir solaire compact, qui trouvera sa place sur un balcon, dans un jardin etc... et qui peut être réalisé avec un grand nombre d'éléments recyclés. Le séchoir sera capable de déshydrater des plantes, des fruits et des légumes en quelques heures ou quelques jours selon la quantité d'eau contenue dans l'aliment à sécher.</div>
+        
+      </div>
+    
+    
+      
+        <p>Pour conserver les aliments, il est possible de les sécher puis de les stocker hermétiquement, mais cela nécessite un équipement spécifique et énormément d'énergie. La période estivale est celle où les étals des marchés sont les plus remplis mais c'est aussi la période où les stocks sont les moins écoulés car les clients sont, pour une grande partie, partis en vacances.</p>
+      
+        <p>Partant de cette observation et de ma situation de citadine en altitude (1000m) sans jardin, j'ai décidé de créer un séchoir compact que l'on pourrait trouver aussi bien sur les balcons que dans les jardins et qui serait assez compact pour être facilement rangé dans un grenier en basse saison.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 8-10 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 200 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Séchoir_solaire_compact" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Séchoir_solaire_compact</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - liste de matériel</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>planches de bois d'épaisseur de votre choix (je recommande une épaisseur entre 6 et 12mm)</li><li>morceau de tôle 365x324mm, épaisseur de 41mm max</li><li>peinture noir pour métal</li><li>tasseaux en sapin 48 x 24mm</li><li>carrelets de 41mm de profil</li><li>tige fileté de 8mm de diamètre coupées 12x à 120mm de longueurs</li><li>vis papillon 8mm x12</li><li>rondelles 8mm diamètre intérieur x12</li><li>plexis ?? x ??</li><li>20aine de baguettes 5x 20mmx100</li><li>2 panneaux solaire 5v</li><li>ventilateur ordinateur 12V</li><li>tissu type tulle à maillage fin</li><li>mousse sagex 25mm d'épais où autre matière isolante (ex broya de textiles)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - couper les panneaux de bois</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/4/47/S_choir_solaire_compact_panneaux_d_couper_et_c_tes.jpg/800px-S_choir_solaire_compact_panneaux_d_couper_et_c_tes.jpg' alt='S choir solaire compact panneaux d couper et c tes.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/28/S_choir_solaire_compact_CamScanner_07-30-2022_13.02.jpg/800px-S_choir_solaire_compact_CamScanner_07-30-2022_13.02.jpg' alt='S choir solaire compact CamScanner 07-30-2022 13.02.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>découpez les panneaux de bois avec les outils à votre disposition (scie sur table, à onglet, à ruban, circulaire etc.) et selon le plan en photo et ou en svg dans l'onglet fichier du tuto (pour laser et cnc)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - couper les tasseaux</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/5/5b/S_choir_solaire_compact_d_coupe_tasseaux.jpg/800px-S_choir_solaire_compact_d_coupe_tasseaux.jpg' alt='S choir solaire compact d coupe tasseaux.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/03/S_choir_solaire_compact_photo_panneaux_tasseaux.jpg/800px-S_choir_solaire_compact_photo_panneaux_tasseaux.jpg' alt='S choir solaire compact photo panneaux tasseaux.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1a/S_choir_solaire_compact_1659189660951.jpg/800px-S_choir_solaire_compact_1659189660951.jpg' alt='S choir solaire compact 1659189660951.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>coupez les tasseaux aux dimensions indiquées sur le schéma ci-contre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - percez certains tasseaux pour les tiges filetés</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/c/cc/S_choir_solaire_compact_trous_tasseaux.jpg/800px-S_choir_solaire_compact_trous_tasseaux.jpg' alt='S choir solaire compact trous tasseaux.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1c/S_choir_solaire_compact_1659190447868.jpg/800px-S_choir_solaire_compact_1659190447868.jpg' alt='S choir solaire compact 1659190447868.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/ba/S_choir_solaire_compact_1659190539291.jpg/800px-S_choir_solaire_compact_1659190539291.jpg' alt='S choir solaire compact 1659190539291.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f4/S_choir_solaire_compact_1659190447824.jpg/800px-S_choir_solaire_compact_1659190447824.jpg' alt='S choir solaire compact 1659190447824.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8d/S_choir_solaire_compact_1659190447860.jpg/800px-S_choir_solaire_compact_1659190447860.jpg' alt='S choir solaire compact 1659190447860.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Percez (perceuse manuelle ou encore mieux perceuse à colonne) les tasseaux latéraux de la base et du dessus du séchoir avec 3 trous traversants de 8mm,</li><li>1 trou au centre et les deux autres à 25 mm du bord.</li><li>Agrandir le trou avec une mèche de 12 mm à une profondeur de 8-10 mm d'un côté de la latte et de l'autre faire de même avec une mèche de 18 mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - fixer les tiges filetées avec les écrous</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/1/1f/S_choir_solaire_compact_1659190993713.jpg/800px-S_choir_solaire_compact_1659190993713.jpg' alt='S choir solaire compact 1659190993713.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1f/S_choir_solaire_compact_1659191301688.jpg/800px-S_choir_solaire_compact_1659191301688.jpg' alt='S choir solaire compact 1659191301688.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/11/S_choir_solaire_compact_1659191301700.jpg/800px-S_choir_solaire_compact_1659191301700.jpg' alt='S choir solaire compact 1659191301700.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A l'aide d'une pince, d'une clé de 13mm et d'un cliquet torx avec un embout de 13mm, positionnez les tiges filetées dans les trous précédemment réalisés dans vos tasseaux. Maintenez-les grâce aux écrous de 8mm, serrez-les bien.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - découper et placer la mousse isolante</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/c/cc/S_choir_solaire_compact_photo_panneaux_mousse.jpg/800px-S_choir_solaire_compact_photo_panneaux_mousse.jpg' alt='S choir solaire compact photo panneaux mousse.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découpez la mousse isolante (à l'aide d'un cutter ou d'une scie à ruban) de manière à ce qu'elle s'insère parfaitement entre les tasseaux précédemment découpés.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - assemblez les panneaux</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/0/0e/S_choir_solaire_compact_1659194405924.jpg/800px-S_choir_solaire_compact_1659194405924.jpg' alt='S choir solaire compact 1659194405924.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3c/S_choir_solaire_compact_IMG_20220909_183600.jpg/800px-S_choir_solaire_compact_IMG_20220909_183600.jpg' alt='S choir solaire compact IMG 20220909 183600.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>à l'aide de colle à bois, de pinceaux, de pinces et de serre-joints, assemblez les panneaux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - (optionnel) percer les trous restants pour la ventilation et les tiges</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/1/10/S_choir_solaire_compact_1659194337853.jpg/800px-S_choir_solaire_compact_1659194337853.jpg' alt='S choir solaire compact 1659194337853.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si vous n'avez pas encore percé les trous pour les tiges filetées et l'évent, c'est le moment de le faire, en regardant attentivement où ils doivent être alignés.</li><li>Utilisez une mèche de 8 mm minimum pour les tiges et une mèche circulaire correspondant au diamètre de votre ventilateur (85 mm dans notre cas).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - découper des carrelés et la bande percée</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/0/0d/S_choir_solaire_compact_1659195584127.jpg/800px-S_choir_solaire_compact_1659195584127.jpg' alt='S choir solaire compact 1659195584127.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f1/S_choir_solaire_compact_planche_15_trous.jpg/ia-8d40d5484a7c1ab7d279bfcdce937ce8-px-S_choir_solaire_compact_planche_15_trous.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>découpez des carrelés de sections 41mm pour une longueur 365 mm et une plaque de bois percée de 41x400 mm. Les trous ont un diamètre de 8mm, ils sont alignés à 15mm du bord haut et sont espacés de 25mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - découper de la tôle</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/8/89/S_choir_solaire_compact_1659195734153.jpg/800px-S_choir_solaire_compact_1659195734153.jpg' alt='S choir solaire compact 1659195734153.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>découper à la meuleuse une morceau de tôle d'épaisseur max de 41mm (en prenant en compte l'ondulation) et de dimension 365 x 324mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - peindre la tôle</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/d/da/S_choir_solaire_compact_1659195705910.jpg/800px-S_choir_solaire_compact_1659195705910.jpg' alt='S choir solaire compact 1659195705910.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si votre tôle n'est pas noire, elle doit être peinte. Je vous recommande d'utiliser un spray résistant à la chaleur comme celui qui figure sur la photo, afin que la chaleur ne fasse pas échapper des éléments chimiques.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - assembler la partie cadre de tôle</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/0/09/S_choir_solaire_compact_IMG_20220916_112214.jpg/800px-S_choir_solaire_compact_IMG_20220916_112214.jpg' alt='S choir solaire compact IMG 20220916 112214.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a3/S_choir_solaire_compact_IMG_20220916_113659.jpg/800px-S_choir_solaire_compact_IMG_20220916_113659.jpg' alt='S choir solaire compact IMG 20220916 113659.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/80/S_choir_solaire_compact_IMG_20220916_114022.jpg/800px-S_choir_solaire_compact_IMG_20220916_114022.jpg' alt='S choir solaire compact IMG 20220916 114022.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3e/S_choir_solaire_compact_IMG_20220822_110848.jpg/800px-S_choir_solaire_compact_IMG_20220822_110848.jpg' alt='S choir solaire compact IMG 20220822 110848.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d7/S_choir_solaire_compact_IMG_20220916_114349.jpg/800px-S_choir_solaire_compact_IMG_20220916_114349.jpg' alt='S choir solaire compact IMG 20220916 114349.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e3/S_choir_solaire_compact_IMG_20220822_110802.jpg/800px-S_choir_solaire_compact_IMG_20220822_110802.jpg' alt='S choir solaire compact IMG 20220822 110802.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avec de la colle à bois et/ou des vis, assemblez les carrelets, la planche percée de 50x400mm, la planche de 400x365mm et positionnez la tôle au centre. Vous pouvez la fixer mais elle est déjà suffisamment contrainte si vous avez bien coupé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - préparer les éléments avant pour l'arrivée d'air</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/4/43/S_choir_solaire_compact_1659196559711.jpg/800px-S_choir_solaire_compact_1659196559711.jpg' alt='S choir solaire compact 1659196559711.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>l'arrivée d'air se compose de 3 éléments :<ul><li>une baguette de section carré 25x25 mm et de 400mm de long</li><li>une baguette de section triangle 25x25mm et de 400mm de long</li><li>un morceau de planche de 50x400mm</li></ul></li><li>les deux premières baquettes doivent être collées ensemble à la colle à bois comme sur l'image.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - percer l'arrivée d'air</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/d/d1/S_choir_solaire_compact_1659196559719.jpg/800px-S_choir_solaire_compact_1659196559719.jpg' alt='S choir solaire compact 1659196559719.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/04/S_choir_solaire_compact_1659196589760.jpg/800px-S_choir_solaire_compact_1659196589760.jpg' alt='S choir solaire compact 1659196589760.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>percer les trois éléments précédents avec une mèche de 8 mm. Les trous sont espacés de 2,5 cm et doivent passer à 45° par rapport à l'assemblage des deux baguettes (voir photo ci-contre).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - protéger les arrivées et sorties d'air des intrus</strong><div class='step-images count-5'><figure><img src='https://wikifab.org/images/thumb/e/ea/S_choir_solaire_compact_IMG_20220916_093642.jpg/800px-S_choir_solaire_compact_IMG_20220916_093642.jpg' alt='S choir solaire compact IMG 20220916 093642.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/73/S_choir_solaire_compact_IMG_20220916_094643.jpg/800px-S_choir_solaire_compact_IMG_20220916_094643.jpg' alt='S choir solaire compact IMG 20220916 094643.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/fc/S_choir_solaire_compact_IMG_20220916_101309.jpg/800px-S_choir_solaire_compact_IMG_20220916_101309.jpg' alt='S choir solaire compact IMG 20220916 101309.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/cd/S_choir_solaire_compact_IMG_20220916_101707.jpg/800px-S_choir_solaire_compact_IMG_20220916_101707.jpg' alt='S choir solaire compact IMG 20220916 101707.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/0b/S_choir_solaire_compact_IMG_20220916_121009.jpg/800px-S_choir_solaire_compact_IMG_20220916_121009.jpg' alt='S choir solaire compact IMG 20220916 121009.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découpez un arceau en bois de 85 mm de diamètre extérieur et d'environ 75 mm de diamètre intérieur.</li><li>Recouvrez ce cerceau et votre élément d'admission d'air avec le tissu de type tulle que vous avez.</li><li>Utilisez de la colle à bois pour fixer le tissu, mais évitez de le mettre dans le diamètre intérieur de l'arceau et dans les trous d'admission d'air.</li><li>L'objectif est de laisser l'air circuler tout en empêchant les mouches à fruits de passer dans le séchoir.</li><li>une fois sec découper le surplus de textile.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - découpe plexiglas</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/6/6b/S_choir_solaire_compact_IMG_20220916_123025.jpg/800px-S_choir_solaire_compact_IMG_20220916_123025.jpg' alt='S choir solaire compact IMG 20220916 123025.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>découpez à la scie ou au laser une planche de plexiglas d'environ 400x490mm</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - placer la protection de la sortie d'air</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/c/cd/S_choir_solaire_compact_IMG_20220822_111747.jpg/800px-S_choir_solaire_compact_IMG_20220822_111747.jpg' alt='S choir solaire compact IMG 20220822 111747.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/65/S_choir_solaire_compact_IMG_20220916_144830.jpg/800px-S_choir_solaire_compact_IMG_20220916_144830.jpg' alt='S choir solaire compact IMG 20220916 144830.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Chassez dans le trous de sortie d'air, l'arceau recouvert de textile. Utilisez de la colle à bois s'il y a trop de jeux</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - pré-assembler</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/b/b4/S_choir_solaire_compact_IMG_20220916_141941.jpg/800px-S_choir_solaire_compact_IMG_20220916_141941.jpg' alt='S choir solaire compact IMG 20220916 141941.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b1/S_choir_solaire_compact_IMG_20220916_142016.jpg/800px-S_choir_solaire_compact_IMG_20220916_142016.jpg' alt='S choir solaire compact IMG 20220916 142016.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Assemblez la base, le dessus et les côtés de votre séchoir. Créez une tension en vissant des écrous à ailettes de 8 mm sur les tiges filetées, n'oubliez pas de glisser une rondelle avant de procéder.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - fixer l'arrivée d'air à la base</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/9/9d/S_choir_solaire_compact_IMG_20220916_142117.jpg/800px-S_choir_solaire_compact_IMG_20220916_142117.jpg' alt='S choir solaire compact IMG 20220916 142117.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/af/S_choir_solaire_compact_IMG_20220916_181651.jpg/800px-S_choir_solaire_compact_IMG_20220916_181651.jpg' alt='S choir solaire compact IMG 20220916 181651.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Positionnez votre admission d'air à l'avant du séchoir et le module en tôle au dessus. Ajustez jusqu'à ce que vous soyez satisfait. Vous pouvez par exemple utiliser de la colle chaude pour tester les emplacements.</li><li>Une fois que vous avez trouvé la bonne position, collez l'entrée d'air à la base du séchoir avec de la colle à bois.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - fixer le plexiglas</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/d/d4/S_choir_solaire_compact_IMG_20220916_160230.jpg/800px-S_choir_solaire_compact_IMG_20220916_160230.jpg' alt='S choir solaire compact IMG 20220916 160230.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7c/S_choir_solaire_compact_IMG_20220916_160652.jpg/800px-S_choir_solaire_compact_IMG_20220916_160652.jpg' alt='S choir solaire compact IMG 20220916 160652.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e1/S_choir_solaire_compact_IMG_20220916_183157.jpg/800px-S_choir_solaire_compact_IMG_20220916_183157.jpg' alt='S choir solaire compact IMG 20220916 183157.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/55/S_choir_solaire_compact_IMG_20220822_114436.jpg/800px-S_choir_solaire_compact_IMG_20220822_114436.jpg' alt='S choir solaire compact IMG 20220822 114436.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Placez une bande en bois de section triangulaire de 40x40mm sur le dessus du module en tôle, contre le bord de l'élément supérieur du séchoir.</li><li>Vous devrez couper un bord de ce triangle pour l'assembler correctement.</li><li>Marquez, percez (mèche de 3mm) et vissez la plaque de plexiglas sur les carrelets du module "tôle" et sur la bande de section triangle.</li><li>note : la plaque dépasse volontairement des côtés du séchoir et au dessous.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - assembler vos panneaux solaires</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/f/f9/S_choir_solaire_compact_IMG_20220916_151630.jpg/800px-S_choir_solaire_compact_IMG_20220916_151630.jpg' alt='S choir solaire compact IMG 20220916 151630.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/ea/S_choir_solaire_compact_IMG_20220916_152403.jpg/800px-S_choir_solaire_compact_IMG_20220916_152403.jpg' alt='S choir solaire compact IMG 20220916 152403.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/88/S_choir_solaire_compact_IMG_20220916_153950_1.jpg/800px-S_choir_solaire_compact_IMG_20220916_153950_1.jpg' alt='S choir solaire compact IMG 20220916 153950 1.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d4/S_choir_solaire_compact_IMG_20220916_154008_1.jpg/800px-S_choir_solaire_compact_IMG_20220916_154008_1.jpg' alt='S choir solaire compact IMG 20220916 154008 1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>souder un fil sur le + d'un panneau vers le - de l'autre. (=montage en série)</li><li>dénuder les deux autres fils sertir des cosses "clips" mâles</li><li>collez vos panneaux au pistolet à colle sur un support en bois avec un trou pour la sortie des fils dessous</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>22. Étape 22 - fixer les panneaux solaires</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>pré-positionnez vos panneaux sur le dessus du séchoir</li><li>marquez la sortie des fils du support des anneaux sur le dessus du séchoir</li><li>percez (mèche de 8mm) outre tout le dessus du séchoir à cet endroit</li><li>faites passer les fils de vos panneaux solaires dans ce trou</li><li>coller le support de vos panneau solaire sur le dessus du séchoir</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>23. Étape 23 - fixer votre ventilateur</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/0/00/S_choir_solaire_compact_IMG_20220916_141018.jpg/800px-S_choir_solaire_compact_IMG_20220916_141018.jpg' alt='S choir solaire compact IMG 20220916 141018.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/01/S_choir_solaire_compact_IMG_20220916_153238.jpg/800px-S_choir_solaire_compact_IMG_20220916_153238.jpg' alt='S choir solaire compact IMG 20220916 153238.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>positionner votre ventilateur devant la sortie d'air, le visser</li><li>dénuder les fils</li><li>sertir de cosses "clips femelles</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>24. Étape 24 - créer les étages pour les clayettes</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/b/b5/S_choir_solaire_compact_IMG_20220822_145748.jpg/800px-S_choir_solaire_compact_IMG_20220822_145748.jpg' alt='S choir solaire compact IMG 20220822 145748.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a7/S_choir_solaire_compact_IMG_20220822_152350.jpg/800px-S_choir_solaire_compact_IMG_20220822_152350.jpg' alt='S choir solaire compact IMG 20220822 152350.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/5b/S_choir_solaire_compact_IMG_20220916_150521.jpg/800px-S_choir_solaire_compact_IMG_20220916_150521.jpg' alt='S choir solaire compact IMG 20220916 150521.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/ad/S_choir_solaire_compact_IMG_20220916_133714.jpg/800px-S_choir_solaire_compact_IMG_20220916_133714.jpg' alt='S choir solaire compact IMG 20220916 133714.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/fa/S_choir_solaire_compact_IMG_20220916_150300.jpg/800px-S_choir_solaire_compact_IMG_20220916_150300.jpg' alt='S choir solaire compact IMG 20220916 150300.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/dc/S_choir_solaire_compact_IMG_20220916_150325.jpg/800px-S_choir_solaire_compact_IMG_20220916_150325.jpg' alt='S choir solaire compact IMG 20220916 150325.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour l'étage le plus bas :<ul><li>prenez des lattes de bois de 20x5mm</li><li>coupez une extrémité à 45°</li><li>couper l'autre extrémité à 90°</li><li>il faut que le bout à 45° s'appuie contre le dessous du module tôle et que l'autre se trouve juste à quelques millimètre de votre ventilateur et à niveau avec le dessus de celui-ci.</li></ul></li><li>Pour les autre étage :<ul><li>prenez des lattes de bois de 20x5mm</li><li>coupez une extrémité à 45°</li><li>couper l'autre extrémité à 90°</li><li>il faut que le bout à 45° s'appuie contre le dessous du module tôle et que l'autre se trouve à 30mm de l'extérieur</li><li>espacez de 35mm environ chaque étage</li></ul></li><li>vous pouvez pré-positionnez les étages avec de la colle chaude puis les fixer avec des petits clous</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>25. Étape 26 - tendre le filet sur le cadre des clayettes</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/4/40/S_choir_solaire_compact_IMG_20220824_185850.jpg/800px-S_choir_solaire_compact_IMG_20220824_185850.jpg' alt='S choir solaire compact IMG 20220824 185850.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7d/S_choir_solaire_compact_IMG_20220730_180324.jpg/800px-S_choir_solaire_compact_IMG_20220730_180324.jpg' alt='S choir solaire compact IMG 20220730 180324.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>26. Étape 27 - créer les système de fermeture de la porte</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/2/28/S_choir_solaire_compact_Capture_d_cran_2022-09-06_100350.jpg' alt='S choir solaire compact Capture d cran 2022-09-06 100350.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/7/70/S_choir_solaire_compact_Capture_d_cran_2022-09-06_100423.jpg' alt='S choir solaire compact Capture d cran 2022-09-06 100423.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>imprimez le modèle de fermeture que vous retrouvez dans le fichier joints ou en cliquant ici.</li><li>collez le papier sur une planche de bois de la même épaisseur que la porte. découpez grossièrement à la scie à ruban et affiner les mesures à la ponceuse</li><li>percez les trous avec une mèche de 3mm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>27. Étape 28 - mettre en place les systèmes de fermeture</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/3/3d/S_choir_solaire_compact_IMG_20220916_164154.jpg/800px-S_choir_solaire_compact_IMG_20220916_164154.jpg' alt='S choir solaire compact IMG 20220916 164154.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/9/93/S_choir_solaire_compact_IMG_20220916_172805.jpg/800px-S_choir_solaire_compact_IMG_20220916_172805.jpg' alt='S choir solaire compact IMG 20220916 172805.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/27/S_choir_solaire_compact_IMG_20220916_172745.jpg/800px-S_choir_solaire_compact_IMG_20220916_172745.jpg' alt='S choir solaire compact IMG 20220916 172745.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c8/S_choir_solaire_compact_IMG_20220916_174257.jpg/800px-S_choir_solaire_compact_IMG_20220916_174257.jpg' alt='S choir solaire compact IMG 20220916 174257.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Fermez la porte du séchoir.</li><li>Vissez les parties rectangulaires des fermetures dans les bords du séchoir, en vous assurant qu'elles sont bien serrées contre la porte.</li><li>Prenez une grande vis, glissez-y une rondelle, puis le pivot en bois et une autre rondelle.</li><li>Vissez l'ensemble au centre de la pièce rectangulaire, en serrant suffisamment pour qu'il y ait une pression, mais en laissant un jeu suffisant pour faire tourner la pièce.</li><li>Répétez l'opération 3 fois.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>28. Étape 29 - créer la porte "étanche"</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/e/ea/S_choir_solaire_compact_IMG_20220916_174247.jpg/800px-S_choir_solaire_compact_IMG_20220916_174247.jpg' alt='S choir solaire compact IMG 20220916 174247.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8f/S_choir_solaire_compact_IMG_20220916_174407.jpg/800px-S_choir_solaire_compact_IMG_20220916_174407.jpg' alt='S choir solaire compact IMG 20220916 174407.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/87/S_choir_solaire_compact_IMG_20220916_174953.jpg/800px-S_choir_solaire_compact_IMG_20220916_174953.jpg' alt='S choir solaire compact IMG 20220916 174953.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3e/S_choir_solaire_compact_IMG_20220916_175037.jpg/800px-S_choir_solaire_compact_IMG_20220916_175037.jpg' alt='S choir solaire compact IMG 20220916 175037.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>mesurez l'ouverture arrière de votre séchoir et découpez de la mousse isolante qui fait très exactement cette dimension. La mousse doit se loger dans l'ouverture avec difficulté.</li><li>Positionnez la mousse dans l'ouverture arrière,</li><li>Avec de la colle chaude coller la planche "porte" sur la mousse. Utiliser un poids à poser sur la mousse pour qu'elle se fixe bien à la porte.</li><li>Pour sécuriser la mousse rajoutez 4 vis.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>29. Étape 30 - ajouter des poignets</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/4/45/S_choir_solaire_compact_IMG_20220916_180457.jpg/800px-S_choir_solaire_compact_IMG_20220916_180457.jpg' alt='S choir solaire compact IMG 20220916 180457.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e4/S_choir_solaire_compact_IMG_20220916_180447.jpg/800px-S_choir_solaire_compact_IMG_20220916_180447.jpg' alt='S choir solaire compact IMG 20220916 180447.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>vissez des poignets sur la porte arrière, et les deux côtés du séchoir. testez avant de porter votre séchoir pour trouvez son centre de gravité et positionner en conséquence les poignets latérales.</li><li>Si vous souhaiter imprimer les poignets en 3D le modèle large de cette création thingiverse et tout à fait adapté lien ici</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>30. Étape 31 - utiliser votre séchoir</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/1/1b/S_choir_solaire_compact_IMG_20220730_165411.jpg/800px-S_choir_solaire_compact_IMG_20220730_165411.jpg' alt='S choir solaire compact IMG 20220730 165411.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e0/S_choir_solaire_compact_IMG_20220730_165323.jpg/800px-S_choir_solaire_compact_IMG_20220730_165323.jpg' alt='S choir solaire compact IMG 20220730 165323.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/86/S_choir_solaire_compact_IMG_20220730_165220.jpg/800px-S_choir_solaire_compact_IMG_20220730_165220.jpg' alt='S choir solaire compact IMG 20220730 165220.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/bc/S_choir_solaire_compact_1659179116581.jpg/800px-S_choir_solaire_compact_1659179116581.jpg' alt='S choir solaire compact 1659179116581.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découpez des fruits et des légumes très finement et disposez dans votre clayette sans qu'il y ai de contact.</li><li>Mettre un thermomètre pour les curieux sur la clayette de votre choix. La température peut varier jusqu'à 10-15°C entre le haut et le bas du séchoir.</li><li>Posez votre séchoir au soleil et tournez le de temps à autre pour qu'il suive la trajectoire du soleil.</li><li>Récoltez vos chips de fruits et de légumes et conservez les dans des bocaux hermétique mais préférez les consommer immédiatement pour plus de croquant.</li><li>Le séchage peut prendre 4h comme il peut prendre 3 jours, cela dépend de l'ensoleillement et du pourcentage d'eau dans votre fruit (la tomate est gorgée d'eau à 80-90% prévoir plusieurs jour de séchage alors que la pomme sèche facilement en 6h de beau).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

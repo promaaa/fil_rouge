@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Lampe solaire à batteries lithium récupérées</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lampe solaire à batteries lithium récupérées</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/ef/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_IMG_0354.JPG/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_IMG_0354.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel permet la fabrication d'une lampe solaire munie d'un chargeur USB, utilisant des cellules lithium récupérées sur des batteries d'ordinateurs portables usagées. Ce système permet, avec une journée de charge au soleil, de recharger complètement un portable et d'avoir en plus environ 4h de lumière.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le lithium est une ressource naturelle dont les stocks sont de plus en plus utilisés pour les voitures électriques, les téléphones, et les ordinateurs. Cette ressource s’épuise progressivement au fil du temps. Son utilisation accrue dans la fabrication de batteries est due principalement à sa capacité à stocker plus d’énergie que le nickel et le cadmium. Le remplacement des équipements électriques et électronique s’accélère et ils deviennent une source de déchets (DEEE : Déchets d'équipements électriques et électroniques) de plus en plus importante. La France produit aujourd'hui 14kg à 24kg de déchets électroniques par habitant et par an. Ce taux augmente de 4% environ par an. En 2009, seuls 32% des jeunes Français de 18 à 34 ans ont recyclés leurs déchets électroniques. Cette même année 2009, selon Eco-Systèmes, de janvier à septembre 2009, ce sont 113000 tonnes de CO2 qui auraient été évitées via le recyclage de 193000 tonnes de DEEE.</p>
+      
+        <p>Or, ces déchets présentent un fort potentiel de recyclage. On peut notamment retrouver et réutiliser le lithium présent dans les cellules des batteries d'ordinateur. Lorsqu’une batterie d’ordinateur ne fonctionne plus, c’est qu’une ou plusieurs cellules sont défectueuses, certaines restent cependant en bon état et sont réutilisables. A partir de ces cellules il est possible de créer une batterie à part, qui pourra servir à alimenter une perceuse électrique, recharger son téléphone ou encore être reliée à un panneau solaire pour faire fonctionner une lampe. En associant plusieurs cellules il est aussi possible de former des batteries de stockage de dispositif plus important.</p>
+      
+        <p>Le design de cette lampe est inspiré d'un système documenté par l'expédition Nomade des Mers sur l'île de Luzong au nord de Philippines. L'association Liter of Light installe depuis bientôt 6 ans des systèmes semblables dans des villages sans électricité, organisant aussi des formations pour permettre aux villageois de réparer les lampes en toute autonomie (déjà 500 000 lampes installées).</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Lampe_solaire_à_batteries_lithium_récupérées" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Lampe_solaire_à_batteries_lithium_récupérées</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Batteries d’ordinateur portable usagées (Li-ion 18650)</li><li>Supports de batteries Li-ion 18650</li><li>Panneau solaire 5V-6V / 1-3W</li><li>Régulateur de charge et de décharge (ex : 4-8V 1A Module de Chargeur Charge Batterie Mini Li-ion USB Arduino TP4056)</li><li>Convertisseur de tension : DC/DC booster MT3608 (composant électrique qui va transformer le 3,7 V des batteries en 5V)</li><li>Lampe LED (ex : LED boutons 3W max)</li><li>Interrupteur (pour couper le circuit et éteindre la lampe)</li><li>Scotch électrique</li><li>Boitier (matériel en fonction du modèle choisi, voir étapes 7 ou 8)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Pour l’extraction des cellules :</li><li>Gants (pour ne pas se couper avec le plastique de la batterie d’ordinateur ou avec les rubans en nickel qui relient les cellules)</li><li>Marteau</li><li>Burin</li><li>Pince coupante</li><li>Pour la fabrication de la lampe :</li><li>Pistolet à colle (et bâtons de colle)</li><li>Décapeur thermique ou sèche-cheveux ou petit chalumeau</li><li>Scie à bois</li><li>Tourne-vis</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Fonctionnement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2b/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_R_cup_ration_de_batteries_Re_cuperation_batteries_-_fonctionnement.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_R_cup_ration_de_batteries_Re_cuperation_batteries_-_fonctionnement.jpg' alt='Lampe solaire à batteries lithium récupérées R cup ration de batteries Re cuperation batteries - fonctionnement.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce tutoriel montre comment récupérer des cellules d’ordinateur pour refabriquer une nouvelle batterie. Alimentée par un panneau solaire, ou par un port USB, elle permettra d'allumer une lampe à LED.</li><li>Le système fonctionne autour de trois modules :<ul><li>le module de réception de l'énergie : le panneau solaire et son régulateur de charge</li><li>le module de stockage de l'énergie : la batterie</li><li>le module qui rend l'énergie : la lampe LED et son régulateur de tension</li></ul></li><li>Module de réception de l'énergie : panneau photovoltaïque & régulateur de charge</li><li>Le panneau photovoltaïque concentre l'énergie du soleil. Il permet de récupérer son énergie afin de la stocker ensuite dans la batterie. Mais attention, la quantité d'énergie reçue par le panneau étant irrégulière en fonction de l'heure qu'il est, du temps qu'il fait... il est important d’installer un régulateur de charge/décharge entre le panneau et la batterie. Celle-ci sera protégée entre autre contre la surcharge.</li><li>Module de stockage de l'énergie : la batterie</li><li>Elle est composée de deux cellules en lithium récupérées dans un ordinateur. Pour schématiser à l'extrême, une batterie, c'est un peu comme un boîtier qui contiendrait plusieurs piles : chacune d'entre elles est une cellule, une unité qui fournit du courant à l'appareil par réaction électrochimique.</li><li>Les cellules qu’on trouve dans les ordinateurs sont des cellules au lithium. Elle ont toutes la même capacité à stocker l’énergie, par contre, leur capacité à la rendre est différente pour chacune. Pour former une batterie à partir de cellules il est important que ces dernières aient toutes la même capacité à rendre de l’énergie. Il faut donc mesurer la capacité de chacune des cellules pour composer des batteries homogènes.</li><li>Module qui rend l'énergie : la lampe LED, le port USB 5V et son convertisseur de tension</li><li>Notre batterie nous délivre du courant en 3,7V et les lampes LED que nous avons utilisé fonctionnent à cette même tension. Par ailleurs, les ports USB délivrent une tension de 5V. Nous avons donc besoin de transformer l'énergie de la cellule de 3,7V à 5V : à l'aide d'un convertisseur de tension appelé DC/DC booster</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Étapes de fabrication</strong><p><strong>Étapes :</strong></p><ol><li>1) Extraction des cellules de la batterie d’ordinateur</li><li>2) Mesure du voltage des cellules</li><li>3) Réalisation des 3 modules :<ul><li>panneau solaire + régulateur de charge</li><li>batterie</li><li>régulateur de tension + lampe à LED</li></ul></li><li>4) Liaison des 3 modules :<ul><li>le panneau solaire et son régulateur</li><li>la batterie</li><li>la lampe et son régulateur de tension</li></ul></li><li>5) Construction du boîtier</li><li>6) Intégration des modules dans le boîtier</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Extraction des cellules de la batterie d’ordinateur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_R_cup_ration_de_batteries_1_-_Ouverture_batterie.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_R_cup_ration_de_batteries_1_-_Ouverture_batterie.jpg' alt='Lampe solaire à batteries lithium récupérées R cup ration de batteries 1 - Ouverture batterie.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/68/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_R_cup_ration_de_batteries_2_-_De_cortiquer_cellules.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_R_cup_ration_de_batteries_2_-_De_cortiquer_cellules.jpg' alt='Lampe solaire à batteries lithium récupérées R cup ration de batteries 2 - De cortiquer cellules.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette partie, nous vous invitons à consulter le tutoriel Récupération de batteries<ul><li>Enfiler des gants pour protéger les mains.</li><li>Fixer la batterie sur un étau afin qu’elle ne bouge plus, et avec l’aide d’un marteau et d'un burin l'ouvrir. (image 1)</li><li>Isoler chaque cellule : décortiquer les cellules à l’aide d’une pince coupante, afin d'enlever tous les autres composants. (image 2)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Mesure du voltage et de la capacité des cellules</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/65/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Powerbank_simple_IMG_0952.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Powerbank_simple_IMG_0952.jpg' alt='Lampe solaire à batteries lithium récupérées Powerbank simple IMG 0952.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Lampe_solaire_batteries_lithium_r_cup_r_es_R_cup_ration_de_batteries_3_-_Charge_batteries.jpg/800px-Lampe_solaire_batteries_lithium_r_cup_r_es_R_cup_ration_de_batteries_3_-_Charge_batteries.jpg' alt='Lampe solaire batteries lithium r cup r es R cup ration de batteries 3 - Charge batteries.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ab/Lampe_solaire_batteries_lithium_r_cup_r_es_R_cup_ration_de_batteries_4_-_De_charger_cellules_IMax_.jpg/800px-Lampe_solaire_batteries_lithium_r_cup_r_es_R_cup_ration_de_batteries_4_-_De_charger_cellules_IMax_.jpg' alt='Lampe solaire batteries lithium r cup r es R cup ration de batteries 4 - De charger cellules IMax .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette partie, nous vous invitons à consulter le tutoriel Récupération de batteries</li><li>Mesure du voltage:</li><li>On commence par mesurer le voltage des cellules afin de savoir si elles sont toujours en état de marche. Toutes les cellules ayant une tension inférieure à 2V ne sont pas récupérables.<ul><li>A l’aide d’un voltmètre, à utiliser en mode courant continu, mesurer la tension des cellules et marquer celles qui sont réutilisables.</li></ul></li><li>Attention : Si des cellules ont coulé (visible à l’extérieur de la batterie d’ordinateur), ne pas les démonter, à forte dose le lithium est dangereux pour la santé.</li><li>Mesure de la capacité :</li><li>Pour mesurer la capacité d'une cellule il faut la charger au maximum puis la décharger. Nos cellules sont constituées de lithium, or le lithium a besoin d’être chargé et déchargé correctement, la tension de charge maximale étant de 4,2 V. Dépasser ce seuil endommagerait les cellules.<ul><li>Se munir d’une Power Bank : un dispositif qui permet de charger plusieurs cellules en même temps via un port USB.</li><li>Charger les cellules et attendre que la charge soit complète (tous les voyants seront allumés), compter environ 24h. (image 3)</li><li>Les cellules sont toutes chargées au maximum (4,2 V), il faut désormais les décharger.</li><li>Se munir d'un Imax B6 ou mieux avec le testeur Opus BT-C3100 (ou équivalent) : un dispositif permettant de décharger les cellules une par une et de calculer la capacité (énergie qu'elle peut fournir).</li><li>Régler le dispositif :</li><li>le voltage : il vous est demandé quel type de piles vous voulez charger, choisir des cellules lithium. Le voltage va alors être réglé automatiquement à 3V (la décharge n’ira pas en dessous de 3V).</li><li>l’ampérage : régler à 1A pour que la décharge soit assez rapide et sécurisée. Dans ces conditions comptez à peu près 1h à 2h pour la décharge.</li><li>Connecter les aimants au néodyme aux pinces crocodiles, puis les connecter aux cellules, les aimants servent à faire passer le courant entre l'Imax B6 et les cellules. (image 4)</li><li>Décharger la cellule jusqu’à ce que la décharge soit complète.</li><li>Noter la capacité sur la cellule. Plus la capacité de la cellule à rendre de l’énergie est importante mieux c’est.</li><li>Trier vos cellules: <1000 mAh, entre 1000 et 1300, 1300 et 1500 et >1800 mAh.</li></ul></li><li>Remarque : Il est important de réaliser des batteries homogènes avec des cellules ayant à peu près la même capacité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Réalisation des chacun des 3 modules</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/1/11/Lampe_solaire_batteries_lithium_r_cup_r_es_Sch_ma_circuit.JPG' alt='Lampe solaire batteries lithium r cup r es Sch ma circuit.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d8/Lampe_solaire_batteries_lithium_r_cup_r_es_Sch_ma_montage_lampe_LED-1.jpg/800px-Lampe_solaire_batteries_lithium_r_cup_r_es_Sch_ma_montage_lampe_LED-1.jpg' alt='Lampe solaire batteries lithium r cup r es Sch ma montage lampe LED-1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Module 1 : Panneau solaire et régulateur de charge<ul><li>Se munir de deux fils, un rouge et un noir, les dénuder à l'aide d'une pince coupante.</li><li>Souder le fil rouge sur le pôle positif du panneau solaire et le fil noir sur son pôle négatif.</li><li>Le régulateur de charge possède 2 entrées : IN - et IN + (qui sont indiquées sur le composant)</li><li>Souder le fil rouge (positif) au pôle IN + du régulateur de charge et le fil noir (négatif) au pôle IN -. (image 5)</li></ul></li><li>Module 2 : Batterie<ul><li>Insérer la cellule lithium dans le porte batterie.</li></ul></li><li>Module 3 : LED / USB convertisseur</li><li>Le convertisseur de tension DC/DC possède deux entrées et deux sorties :</li><li>Entrées : VIN + et VIN - / Sorties : OUT + et OUT -<ul><li>Se munir de deux fils (rouge et noir).</li><li>Souder le fil rouge avec l'entrée VIN + du régulateur de tension et le fil noir avec l'entrée VIN -.</li></ul></li><li>La LED possède deux fils d'entrée, un fil positif et un fil négatif.</li><li>Attention : La polarité des fils n'est parfois pas indiquée sur la LED. Afin de la connaître munissez vous d'un ohmmètre ou plus simplement connectez la à la batterie et notez la configuration passante qui allume la LED. Ce test est non destructif tant que la tension reste faible (< 4-5V)</li><li>Idéalement la plupart des LED blanches ont besoin d'une tension proche de 3.5 V, en tout cas < 4.2 V. Et plus la tension est grande, plus le courant augmente (et donc l'instensité lumineuse) , et ce, de façon exponentielle. Il est donc recommandé d'ajouter une resistance en série (en amont ou aval de la LED, c'est pareil). Cette résistance permet d'abaisser la tension, ici de 4.2 V max à qqchose d'inférieur. Le calcul de la resistance se fait en suivant ces explications. Dans notre cas ici, la valeur typique de resistance est de 2 Ohms (entre 1 et 3 Ohms en fonction de l'intensité lumineuse recherchée). Sans résistance, la LED éclaire plus fort et s'échauffe fortement, ce qui réduit sa durée de vie et videra plus rapidement les batteries.<ul><li>Souder le fil positif de la LED à la sortie OUT + du convertisseur de tension et le fil négatif à la sortie OUT -. (image 7)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Liaison des 3 modules</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/79/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_59617234_1691814157630745_3212849031642349568_n.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_59617234_1691814157630745_3212849031642349568_n.jpg' alt='Lampe solaire à batteries lithium récupérées 59617234 1691814157630745 3212849031642349568 n.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le régulateur de charge possède 2 entrées : IN - et IN + (qui sont indiquées sur le composant).<ul><li>Souder le fil rouge du panneau solaire (positif) au pôle IN + du régulateur de charge et le fil noir (négatif) au pôle IN -.</li><li>Le régulateur de charge possède 2 entrées : B - et B+ (qui sont indiquées sur le composant)</li><li>Souder le fil rouge du porte batterie (positif) au pôle B + du régulateur de charge et le fil noir (négatif) au pôle B-.</li><li>Souder le fil rouge (positif) du module convertisseur USB/LED au pôle OUT+ du régulateur de charge et le fil négatif (noir) au pôle OUT- Remarque :' Le circuit est alors fermé et la lumière s’allume.</li><li>Couper le fil positif qui relie le régulateur au convertisseur pour ouvrir le circuit, et y souder l’interrupteur en série. Celui-ci permettra d’ouvrir et de fermer le circuit. Le type de commutation de notre interrupteur est On-Off-On : on soude donc le fil rouge provenant de la lampe avec le bras du milieu (Off), et le fil rouge provenant du régulateur de charge sur une branche du côté (On).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Construction du boitier - Version 1</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/a/a6/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Photo_tupperware.jpg' alt='Lampe solaire à batteries lithium récupérées Photo tupperware.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/55/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Photo_tupperware4.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Photo_tupperware4.jpg' alt='Lampe solaire à batteries lithium récupérées Photo tupperware4.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Photo_tupperware2.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Photo_tupperware2.jpg' alt='Lampe solaire à batteries lithium récupérées Photo tupperware2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f3/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Photo_tupperware3.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_Photo_tupperware3.jpg' alt='Lampe solaire à batteries lithium récupérées Photo tupperware3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Version 1 : Tupperware</li><li>Ce design est celui de Open Green Energy, n'hésitez pas à consultez le tutoriel d'origine . Il nous parait très intéressant, c'est pourquoi nous le partageons. Néanmoins, il faudrait adapter le boitier à notre circuit, notamment pour la sortie USB. Nous proposerons notre propre modèle inspiré de ce design prochainement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Construction du boitier - Version 2</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/77/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0262_Moment.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0262_Moment.jpg' alt='Lampe solaire à batteries lithium récupérées MVI 0262 Moment.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0279_Moment.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0279_Moment.jpg' alt='Lampe solaire à batteries lithium récupérées MVI 0279 Moment.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/db/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0282_Moment.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0282_Moment.jpg' alt='Lampe solaire à batteries lithium récupérées MVI 0282 Moment.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0290_Moment.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0290_Moment.jpg' alt='Lampe solaire à batteries lithium récupérées MVI 0290 Moment.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0309_Moment.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0309_Moment.jpg' alt='Lampe solaire à batteries lithium récupérées MVI 0309 Moment.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e1/Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0334_Moment.jpg/800px-Lampe_solaire_%C3%A0_batteries_lithium_r%C3%A9cup%C3%A9r%C3%A9es_MVI_0334_Moment.jpg' alt='Lampe solaire à batteries lithium récupérées MVI 0334 Moment.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Un bidon de 5L d’eau</li><li>Des planches de contreplaqué (ou bois brute) d’épaisseur entre 1 et 2cm</li><li>Un tasseau de 80 cm minimum (largeur entre 3 et 5cm)</li></ul></li><li>Fabrication des deux socles :</li><li>Il s’agit des deux extrémités de la lampe, la supérieur accueillant le panneau solaire d’un côté et le circuit électrique de l’autre, l’inférieur servant juste à refermer la lampe tout en l’étanchéifiant.<ul><li>Découper2 planches de 15/13cm et 2 planches de 11/13cm. Positionner sur chaque grande planche une petite en prenant soin de bien les centrer. Chaque couple sera vissé plus tard.</li><li>Découper dans le tasseau 4 tronçons d’une vingtaine de centimètres. Les positionner aux 4 coins des petites planchettes découpées plus haut (les 11/13 cm) et les visser tête de vis côté planchette. De l’autre côté positionner l’autre planchette et la visser de la même manière. On obtient ainsi un parallélépipède de dimensions 11/13/20 qui servira à thermoformer la bouteille en plastique (voir photo).</li></ul></li><li>Thermoformage de l’enveloppe de la lampe :<ul><li>Découper le fond de la bouteille de 5L et y insérer le moule verticalement (le côté de 20cm dans la longueur de la bouteille)</li><li>Chauffer doucement au décapeur thermique (ou à défaut au sèche-cheveux) chaque face du rectangle (le décapeur doit être à environ 10 cm de la bouteille). Une fois que la bouteille a pris la forme du modèle, continuer à chauffer pour effacer les motifs et bien tendre le plastique.</li><li>En laissant la bouteille déformée sur le moule, couper proprement au ras du moule le haut de la bouteille et refaire une découpe propre à environ 17 cm de la première.</li><li>Une fois les découpes effectuées, dévisser les tasseaux des deux côtés afin de pouvoir démouler la forme (le retrait du plastique aura provoqué un serrage important du moule).</li><li>A chaque extrémité de la bouteille déformée, replier à 90° vers l’intérieur des languettes d’une largeur d’environ 1 cm biseautées de chaque côté (voir photo). Celles-ci viendront s’immiscer entre les deux planchettes de chaque socle afin d’améliorer l’étanchéité de la lampe. Pour pouvoir plier correctement les languettes, tracer une fine ligne au cutter à l’intérieur puis plier à la main.</li></ul></li><li>Une fois le corps de la lampe terminé, il ne manque plus qu’à intégrer le circuit électrique.</li><li>Intégration du circuit électrique :<ul><li>Pour cela, reprendre une des petites planchettes utilisées pour le moule (11/13cm) et y visser tous les composants comme désiré, sachant qu’un minimum de symétrie permet de garantir l’équilibre de l’objet (voici en photo un exemple de disposition). Attention à bien fixer le port USB et l'interrupteur, afin qu'ils ne bougent pas lorsqu'ils seront manipulés</li><li>A l’aide d’un marqueur tracer sur l’enveloppe en plastique l’emplacement du bouton ON/OFF et de la prise USB</li><li>et faire les trous correspondant.</li><li>Placer la planche avec le circuit à l’intérieur de l’enveloppe en plastique puis visser une des planches de 15/13cm dessous en prenant soin de bien coincer les languettes entre les deux planches</li></ul></li><li>Fixation du panneau solaire :<ul><li>Placer le panneau sur la grande planchette, déterminer l’emplacement des sorties + et – du panneau et faire un trou d’environ 5mm à cet endroit dans les deux planchettes (vérifier qu’aucun composant n’est à cet endroit auquel cas il faudra décaler le trou suffisamment).</li><li>Faire passer les fils venant du contrôleur de charge dans ce trou et les souder aux sorties correspondantes.</li><li>Pour coller l’idéal est d’utiliser un tissu fin collé à la planchette puis d’y coller le panneau (à la super glu par exemple).</li><li>Pour le socle de la lampe faire de même de l’autre côté ; placer la petite planchette à l’intérieur de l’enveloppe puis y visser la grande en prenant soin de coincer les languettes entre les deux.</li><li>Pour l’étanchéité de la prise USB, agrafer un petit rectangle de chambre à air de vélo sur l'extérieur, pour couvrir l'ouverture du port.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 -</strong><p><strong>Étapes :</strong></p><ol><li>Comme tout le travail du Low-tech Lab, ce tutoriel est participatif, n'hésitez pas à ajouter les modifications qui vous semblent importantes, et à partager vos réalisations en commentaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

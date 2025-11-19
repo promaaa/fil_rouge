@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Capteur - Enregistreur de température</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Capteur - Enregistreur de température</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/8/80/Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_03.JPG/ia-1e9eb22314094f0dcd1a6994a1ac323b-px-Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_03.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel présente comment réaliser un système de mesure, d'enregistrement et de visualisation de données de température.</div>
+        
+      </div>
+    
+    
+      
+        <p>Avec la hausse du prix de l'énergie, vous recherchez probablement un moyen économique de mieux isoler votre habitation pour plus de confort pendant les périodes hivernales. Ce qui est proposé ici n'est pas une solution miracle pour réparer une mauvaise isolation, mais juste une petite installation permettant de réaliser des mesures de température, que ce soit dans une pièce fermée, à l'extérieur ou bien même dans un liquide.</p>
+      
+        <p>A priori, ce système n'est pas vraiment une low-tech. On pourrait même le comparer à un simple thermomètre. Mais la différence avec un thermomètre est que ce montage est capable d'enregistrer les températures qu'il capte au fur et à mesure.</p>
+      
+        <p>En effet, les données de température cheminent du/des capteur(s) vers une carte électronique, qui les envoie elle-même vers un serveur appelé broker MQTT où s'échangent de nombreuses données en temps réel. Enfin, celles qui nous intéressent seront alors récupérables grâce à un programme.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 25 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Capteur_-_Enregistreur_de_température" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Capteur_-_Enregistreur_de_température</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Un ou plusieurs capteurs de température du type DS18B20</li><li>Une carte électronique ESP8266</li><li>Une résistance électrique de 4,7 kΩ</li><li>Une mini Breadboard</li><li>Des fils électriques (une dizaine sera largement suffisant)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Un câble USB micro B pour brancher l'ESP8266</li><li>Un ordinateur avec : Un logiciel capable de lire et d'exécuter des programmes en Python (comme par exemple VSCode ou Thonny) Le logiciel Tasmotizer téléchargeable via le lien disponible dans la rubrique "Fichiers" de ce tuto Une prise USB</li><li>Un logiciel capable de lire et d'exécuter des programmes en Python (comme par exemple VSCode ou Thonny)</li><li>Le logiciel Tasmotizer téléchargeable via le lien disponible dans la rubrique "Fichiers" de ce tuto</li><li>Une prise USB</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Montage de la carte ESP</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Capteur_-_Enregistreur_de_temp_rature_IMG_20231103_172417.jpg/800px-Capteur_-_Enregistreur_de_temp_rature_IMG_20231103_172417.jpg' alt='Capteur - Enregistreur de temp rature IMG 20231103 172417.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/cc/Capteur_-_Enregistreur_de_temp_rature_1641779293_438_MicroPython-Capteur-de-temperature-DS18B20-avec-ESP32-et-ESP8266.png' alt='Capteur - Enregistreur de temp rature 1641779293 438 MicroPython-Capteur-de-temperature-DS18B20-avec-ESP32-et-ESP8266.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/85/Capteur_-_Enregistreur_de_temp_rature_1641779293_320_MicroPython-Capteur-de-temperature-DS18B20-avec-ESP32-et-ESP8266.png/800px-Capteur_-_Enregistreur_de_temp_rature_1641779293_320_MicroPython-Capteur-de-temperature-DS18B20-avec-ESP32-et-ESP8266.png' alt='Capteur - Enregistreur de temp rature 1641779293 320 MicroPython-Capteur-de-temperature-DS18B20-avec-ESP32-et-ESP8266.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2e/Capteur_-_Enregistreur_de_temp_rature_images.png' alt='Capteur - Enregistreur de temp rature images.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2a/Capteur_-_Enregistreur_de_temp_rature_download5.png' alt='Capteur - Enregistreur de temp rature download5.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour commencer, nous devons tout d'abord réaliser le montage qui nous permettra de brancher nos capteurs de température à l'ESP8266. Pour cela, nous aurons besoin de brancher les capteurs DS18B20, les fils électriques et la résistance à la mini breadboard comme sur le 1er schéma ci-dessus.</li><li>Notez que le 1er et le 2e schéma sont identiques, seul le type de breadboard utilisée est différent. Le 3e schéma montre comment brancher plusieurs capteurs de température sur une breadboard classique. A vous d'adapter le montage sur la mini breadboard pour pouvoir brancher plusieurs capteurs si besoin.</li><li>Si, pour mieux comprendre les schémas, vous ne savez pas comment fonctionne une breadboard classique, vous pouvez cliquer ici pour avoir des explications.</li><li>Notez également que les capteurs du modèles DS18B20 ont des broches qui doivent être branchés d'une manière bien spécifiques :<ul><li>la broche d'entrée VDD (rouge)</li><li>la broche de collecte de donnée DQ (jaune)</li><li>la broche de sortie GND (noir)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Utilisation de Tasmotizer</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/b/bb/Capteur_-_Enregistreur_de_temp_rature_Screenshoot1.png' alt='Capteur - Enregistreur de temp rature Screenshoot1.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/98/Capteur_-_Enregistreur_de_temp_rature_Screenshoot2.png' alt='Capteur - Enregistreur de temp rature Screenshoot2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant que votre système de capteurs est prêt, branchez votre carte ESP à votre ordinateur, puis lancez Tasmotizer.</li><li>Vous allez devoir réaliser les configurations suivantes :<ul><li>Déjà, sélectionnez le port USB de votre ordinateur sur lequel est branché votre ESP (ce sera sûrement déjà fait).</li><li>Il va falloir sélectionner un fichier .bin pour configurer le mode de Tasmota plus tard. Tasmotizer téléchargera celui que vous choisirez dans "Release" (comme par exemple le mode Tasmota en français indiqué sur l'image) si vous n'en avez pas déjà un.</li><li>Ensuite il faudra faire en sorte que, avant d'utiliser l'ESP, que tout programme qui pourrait déjà s'y trouver soit effacé. Pour cela, cochez la case "Erase before flashing"</li><li>Enfin, vous pouvez cliquer sur "Tasmotize!", et un téléchargement devrait s'être lancé.</li></ul></li><li>La phase d'après consistera à cliquer sur "Send config" pour connecter votre carte :<ul><li>à un réseau Wifi : c'est obligatoire pour que votre carte puisse se connecter à Tasmota par Wifi</li><li>à un broker MQTT : pour cela vous aurez besoin : "Host" : de l'adresse du broker "Port" : du numéro de port du broker "Full Topic" : le nom complet (sous forme de cheminement) du topic sur lequel vous voulez placer vos données "User" : l'identifiant pour se connecter au broker (si nécessaire) "Password" : le mot de passe pour se connecter au broker (si nécessaire)</li><li>"Host" : de l'adresse du broker</li><li>"Port" : du numéro de port du broker</li><li>"Full Topic" : le nom complet (sous forme de cheminement) du topic sur lequel vous voulez placer vos données</li><li>"User" : l'identifiant pour se connecter au broker (si nécessaire)</li><li>"Password" : le mot de passe pour se connecter au broker (si nécessaire)</li><li>Dans "Module/template", il faudra choisir le module "Generic"</li><li>"Host" : de l'adresse du broker</li><li>"Port" : du numéro de port du broker</li><li>"Full Topic" : le nom complet (sous forme de cheminement) du topic sur lequel vous voulez placer vos données</li><li>"User" : l'identifiant pour se connecter au broker (si nécessaire)</li><li>"Password" : le mot de passe pour se connecter au broker (si nécessaire)</li></ul></li><li>A présent que votre ESP est configurée, l'étape suivante consiste à accéder au menu de Tasmota qui est liée à votre carte. Pour cela, demandez à Tasmotizer l'adresse IP de votre ESP ("Get IP"), copiez la et, dans votre navigateur de recherche, coller cette adresse IP dans la barre de recherche. A partir de là, vous devriez pouvoir accéder à Tasmota.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Utilisation de Tasmota</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/9/98/Capteur_-_Enregistreur_de_temp_rature_Screenshoot5.png' alt='Capteur - Enregistreur de temp rature Screenshoot5.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b0/Capteur_-_Enregistreur_de_temp_rature_Screenshoot6.png' alt='Capteur - Enregistreur de temp rature Screenshoot6.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/ac/Capteur_-_Enregistreur_de_temp_rature_Screenshoot7.png' alt='Capteur - Enregistreur de temp rature Screenshoot7.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois arrivé dans le menu principal de Tasmota, il va falloir que ce dernier détecte que la carte ESP utilise des capteurs de température de type DS18B20. Pour cela, aller dans "Configuration", puis dans "Configuration du Module".</li><li>Puis, sélectionnez sur la prise adéquate le bon modèle d'appareil (ici, dans notre cas, on sélectionne "DS18x20" sur la borne D4). Puis cliquez sur "Enregistrer" : le module de la carte va recharger pour afficher sur le menu principal les températures en temps réel de chaque capteurs que vous avez branché.</li><li>Vous pouvez également vérifiez les infos liées au broker MQTT sur lequel vous envoyez toutes vos données de température en cliquant sur "Configuration MQTT"</li><li>Si vous retournez dans le menu principal de Tasmota et que vous cliquez sur "Console", le logiciel va vous montrer ce que la carte envoie au broker en temps réel. Ainsi, vous pouvez donc constater que la carte renvoie une valeur de prise de mesure du temps (date et heure) et une valeur de température pour chaque capteur branché à la carte.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - (Optionnel) Vérification des données que contient le broker MQTT</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/af/Capteur_-_Enregistreur_de_temp_rature_Screenshoot3.png/800px-Capteur_-_Enregistreur_de_temp_rature_Screenshoot3.png' alt='Capteur - Enregistreur de temp rature Screenshoot3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/67/Capteur_-_Enregistreur_de_temp_rature_Screenshoot4.png/800px-Capteur_-_Enregistreur_de_temp_rature_Screenshoot4.png' alt='Capteur - Enregistreur de temp rature Screenshoot4.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il existe un outil qui permet de vérifier le contenu par topic sur un broker MQTT : MQTT Explorer.</li><li>Vous pouvez donc, en le téléchargeant en suivant le lien correspondant dans la section outil du wiki et en renseignant les informations de votre broker (host, port, username, password), afin de pouvoir observer le contenu de chaque topic compris dans ce broker, et donc regarder le contenu de celui qui vous intéresse. Vous pouvez dès lors constater que les données sont stockées sous format json, ce qui est un bon format pour envoyer plusieurs valeurs différentes en une seule fois.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Récupération des données du serveur</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ac/Capteur_-_Enregistreur_de_temp_rature_dossier1.png/800px-Capteur_-_Enregistreur_de_temp_rature_dossier1.png' alt='Capteur - Enregistreur de temp rature dossier1.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6c/Capteur_-_Enregistreur_de_temp_rature_dossier2.png/800px-Capteur_-_Enregistreur_de_temp_rature_dossier2.png' alt='Capteur - Enregistreur de temp rature dossier2.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2c/Capteur_-_Enregistreur_de_temp_rature_dossier3.png/800px-Capteur_-_Enregistreur_de_temp_rature_dossier3.png' alt='Capteur - Enregistreur de temp rature dossier3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Capteur_-_Enregistreur_de_temp_rature_dossier4.png/800px-Capteur_-_Enregistreur_de_temp_rature_dossier4.png' alt='Capteur - Enregistreur de temp rature dossier4.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A présent que les données qui nous intéressent sont stockées dans un serveur, il nous faut alors de quoi les récupérer. Un programme codé en langage Python est suffisant.</li><li>Dorénavant, si vous recopiez le programme Python ci-contre, votre logiciel devrait pouvoir vous détecter normalement toutes les commandes que vous avez entré.</li><li>Pour plus de précision, on peut constater que le programme est composé en plusieurs parties :<ul><li>On commence par importer toutes les bibliothèques dont on a besoin.</li><li>On créer plusieurs variables qui vont par la suite stocker les données de température et de temps (max_data_points peut être modifiable, servant à déterminer le nombre de mesures maximal que prendra en compte votre graphique).</li><li>La fonction on_message sert à recevoir les données du topic qui nous intéresse et à les "ajouter" à nos variables précédemment créées. S'il y a une erreur avec vos données, alors la fonction vous enverra un message sur votre console d'exécution.</li><li>La fonction update_plot sert à mettre le graphique à jour avec les nouvelles données à chaque fois qu'elle est appelée.</li><li>La fonction show_plot va afficher le graphique mis à jour.</li><li>Le reste du programme sert majoritairement à configurer l'abonnement au topic MQTT.</li></ul></li><li>Le programme va donc former une boucle et modifier le graphique au fur et à mesure du temps.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Exemple d'utilisation</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ad/Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_08.JPG/800px-Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_08.JPG' alt='Capteur - Enregistreur de temp rature 231017 Chauffe-eau Anouk S bastien - Low-tech Lab 08.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/58/Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_06.JPG/800px-Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_06.JPG' alt='Capteur - Enregistreur de temp rature 231017 Chauffe-eau Anouk S bastien - Low-tech Lab 06.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/33/Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_22.JPG/800px-Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_22.JPG' alt='Capteur - Enregistreur de temp rature 231017 Chauffe-eau Anouk S bastien - Low-tech Lab 22.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d4/Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_02.JPG/800px-Capteur_-_Enregistreur_de_temp_rature_231017_Chauffe-eau_Anouk_S_bastien_-_Low-tech_Lab_02.JPG' alt='Capteur - Enregistreur de temp rature 231017 Chauffe-eau Anouk S bastien - Low-tech Lab 02.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Comme exemple d'utilisation du Capteur/Enregistreur de température, voici un montage de ce système dans une cuve en inox d'une brasserie, contenant de l'eau chaude permettant au brassage de la bière. L'objectif étant de faire des mesures de température à l'intérieur et à l'extérieur, puis de recommencer après avoir mis en place un système d'isolation sur la cuve.</li><li>Le montage comprend donc 4 capteur DS18B20, trois à l'intérieur (fond, milieu et surface de la cuve pour avoir une mesure plus complète) et un à l'extérieur de la cuve. Ces 4 capteurs sont accrochés à un câble d'une longueur assez conséquente pour atteindre le fond de la cuve par des colliers de serrage.</li><li>De plus, au lieu d'utiliser une breadboard classique, on utilise comme alternative un autre modèle de board qui nous oblige à souder les fils pur les connecter entre eux.</li><li>Pour le reste, la manipulation reste pratiquement la même. Résultat: les données apparaissent sur un site Internet sous la forme d'un graphique représentant la température mesurée par rapport au temps, et ce pour les 4 capteurs.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

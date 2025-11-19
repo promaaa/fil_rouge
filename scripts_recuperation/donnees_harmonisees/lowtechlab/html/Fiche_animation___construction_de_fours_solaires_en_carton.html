@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fiche animation : construction de fours solaires en carton</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Fiche animation : construction de fours solaires en carton</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/2/26/Fiche_animation_-_construction_de_fours_solaires_en_carton_classe.jpg/ia-e785d31632e18d195ba97ac5a32b5457-px-Fiche_animation_-_construction_de_fours_solaires_en_carton_classe.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Animer un atelier de construction de 3 fours solaires en carton différents en milieu scolaire</div>
+        
+      </div>
+    
+    
+      
+        <p>Thèmes : alimentation, énergie, recyclage, réemploi, gestion des déchets</p>
+      
+        <p>Niveau scolaire : primaires (et +)</p>
+      
+        <p>Disciplines : (à adapter selon le niveau)</p>
+      
+        <p>· Mathématiques, géométrie : utilisation de la règle et de l’équerre, tracés, mesures</p>
+      
+        <p>· Physique : rayonnement solaire, effet de serre, énergie</p>
+      
+        <p>· Chimie : colle à base de farine et d’eau</p>
+      
+        <p>· Cuisine</p>
+      
+        <p>· Histoire : feu, cuisson à travers les époques</p>
+      
+        <p>Durée de l’atelier : une matinée +</p>
+      
+        <p>Le matin : introduction + construction + cuisine</p>
+      
+        <p>Avant le déjeuner : mettre les gâteaux mis au four</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Fiche_animation___construction_de_fours_solaires_en_carton" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Fiche_animation___construction_de_fours_solaires_en_carton</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour les fours<ul><li>Cartons de toutes tailles (surtout des grands) : 6 cartons de 40x40x40cm ou +, 1 carton plat de 120x70cm ou +, 12 morceaux de carton plat de 70x30cm ou +</li><li>Papier journal</li><li>Papier aluminium : l’équivalent de 148 tablettes de chocolat … oups :D – compléter avec des chutes de couverture de survie, cartons de pharmacie, etc</li><li>Ficelle ou bâtons pur maintenir les réflecteurs</li><li>Facultatif : 1 plaque de plexi/verre par four ou un couvercle de casserole en verre</li><li>Facultatif : 1 plaque de four à poser au fond des fours solaires</li></ul></li><li>Pour la colle<ul><li>Farine</li><li>Eau</li><li>Sucre</li></ul></li><li>Pour les gâteaux<ul><li>Ingrédients selon recette choisie</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Pour les fours</li><li>Paires de ciseaux</li><li>Règle</li><li>Equerre (+ rapporteur ?)</li><li>Crayons</li><li>Pour la colle</li><li>Casserole</li><li>Plaque de cuisson</li><li>Fouet</li><li>Cuillère</li><li>Pinceaux</li><li>Pour les gâteaux</li><li>Moules à gâteaux (petits moules, ou moule à cake) ou plaques de cuisson ou moules à tarte selon la recette choisie</li><li>Fouets</li><li>Saladiers</li><li>Maryses</li><li>Casserole + bain marie (selon la recette choisie) + plaque de cuisson</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Constat</strong><p><strong>Étapes :</strong></p><ol><li>Plusieurs fois par jour, on utilise de l’énergie pour cuisiner : four, plaques de cuisson, bouilloire. On appuie sur un bouton, et ça chauffe. Mais comment ça marche ? D’où vient l’énergie qui permet de chauffer et cuire nos aliments ?</li><li>A gaz ou électriques, ces équipements consomment de l’énergie. Le gaz est une ressource fossile limitée, et l’électricité (produite à 75% par du nucléaire en France) est coûteuse et sa production nécessite des processus compliqués (pour passer d’un vecteur énergétique à un autre - transformation). En France, on a généralement facilement accès à l’énergie. Mais ce n’est pas le cas pour tout le monde. à Accès limité à l’énergie</li><li>Et si on trouvait d’autres solutions, d’autres sources d’énergie pour cuisiner et réchauffer nos plats ?</li><li>Avez-vous déjà remarqué à quel point il fait chaud dans une voiture l’été ? Etes-vous déjà entré.e.s dans une serre ?<ul><li>D’où vient cette chaleur ? Quel phénomène observons-nous ? à Soleil = grosse boule d’énergie, effet de serre</li></ul></li><li>Pourrait-on utiliser l’énergie du soleil directement pour cuisiner ? Comment ? Pourquoi ?</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Description de l’animation</strong><p><strong>Étapes :</strong></p><ol><li>1. Une partie théorique courte pour introduire la notion de low-tech à travers la présentation du Low-Tech Lab.</li><li>2. Jeux / Intro : pour amener les élèves à se questionner, participer et découvrir les notions</li><li>- Jeu Revolt : sélection des cartes liées à la cuisson à prendre conscience de l’énergie nécessaire à la cuisson</li><li>- Miroir/loupe : faire du feu avec un miroir ou une loupe à produire de la chaleur en concentrant les rayons du soleil</li><li>- BD Déchets land – la face cachée de nos déchets : Cycle de vie des emballages/fin de vie : déchets, réemploi, recyclage, etc</li><li>3. Manipulation : construction de différents types de fours solaires en carton, par petits groupes</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - 1. Introduction aux Low-tech</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dc/Fiche_animation_-_construction_de_fours_solaires_en_carton_ltl_image.PNG/800px-Fiche_animation_-_construction_de_fours_solaires_en_carton_ltl_image.PNG' alt='Fiche animation - construction de fours solaires en carton ltl image.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voir le site du Low-tech Lab</li><li>Présentation d'une vidéo introductive, de photos, ...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - 2. Jeu d’introduction</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Fiche_animation_-_construction_de_fours_solaires_en_carton_revolt.PNG/800px-Fiche_animation_-_construction_de_fours_solaires_en_carton_revolt.PNG' alt='Fiche animation - construction de fours solaires en carton revolt.PNG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>REVOLT par Clément Chabot, disponible sur la-revolt.org, un jeu sous licence CC BY-NC-SA.</li><li>Sélectionner les cartes objets liées à la cuisine.</li><li>L’énergie est omniprésente dans notre quotidien, on l’utilise tout le temps, sans même s’en rendre compte, pour se déplacer, se chauffer, travailler, et même pour se nourrir !! Et nous savons qu’il faut réduire notre consommation d’énergie pour faire face au changement climatique. Mais comment consommer moins quand on ne sait pas ce qu’on consomme ?</li><li>On vous propose de jouer à Revolt pour redécouvrir l’énergie, ce truc abstrait qu’on ne peut ni voir ni toucher, et qu’on peine à définir… Enfourchons toustes nos vélos, c’est parti !</li><li>Dans le jeu, on estime qu’un.e cycliste délivre une puissance de 50W électriques.</li><li>La dernière personne à avoir pris une décharge électrique commence. Si personne ne s’est électrocuté récemment, la dernière personne qui a pédalé commence.</li><li>La première personne pioche une carte et estime à voix haute le temps de pédalage nécessaire correspondant à la consommation. Ensuite elle la place, face CONSO visible, au milieu du plan de jeu. C’est le début de votre frise, les autres cartes la complèteront.</li><li>La deuxième personne pioche une seconde carte, face OBJET, et doit la placer à côté de la première, à sa gauche si elle pense que cet objet consomme moins que le premier objet, à sa droite si elle pense qu’il consomme plus. Vous pouvez évidemment en discuter tous ensemble, c’est une coopération. Une fois placée, retournez la carte, face CONSO.</li><li>- si vous l’avez placée au bon endroit : BRAVO !</li><li>- si vous l’avez placée au mauvais endroit, ce n’est pas grave, déplacez la carte où elle devrait être sur la frise.</li><li>C’est maintenant au tour de la personne suivante de piocher une nouvelle carte et d’essayer de la placer sur la frise. Au fur et à mesure de la partie, la frise est de plus en plus complète, la nouvelle carte peut se placer entre deux autres cartes voire être égale à une autre. Si une carte est égale à l’une des deux cartes qui l’entourent, le point est validé.</li><li>VARIANTE : DE L’ELECTRICITE DANS L’AIR</li><li>La partie se joue de la même manière mais debout, dans l’espace. Chaque personne prend une carte dans la pioche et la place contre son torse, face CONSO bien cachée de tous les regards, même du sien. De la même manière, il va falloir constituer une frise mais sous forme de chaine humaine.</li><li>DÉCOMPTE DES POINTS</li><li>En tant que collectif, vous prenez un malus à chaque fois qu’une carte est mal placée. A la fin de la partie, comptabilisez vos malus. Si vous avez :</li><li>5 ou + : Vous êtes à la masse. Une nouvelle partie s’impose !</li><li>3-4 : Bon, pas mal, mais attention aux mollets. Ce n’est pas en pédalant à longueur de journée que nous réaliserons la transition énergétique.</li><li>1-2 : Ça devient une affaire sérieuse, l’énergie n’a plus de secrets pour vous. Quand vous passez devant vos appareils, vous vous imaginez sur un vélo.</li><li>0 : L’énergie est votre quotidien, vous la visualisez derrière chaque mouvement, chaque lumière, chaque variation de température, chaque bruit.</li><li>0+ : Vous avez rejoint la vélorution énergétique. Vous êtes les ambassadeurs et ambassadrices de la transition et en mesure d’autoproduire, à vélo, le peu d’énergie dont vous avez besoin au quotidien.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - 3. Manipulation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/10/Fiche_animation_-_construction_de_fours_solaires_en_carton_fours_en_test.jpg/800px-Fiche_animation_-_construction_de_fours_solaires_en_carton_fours_en_test.jpg' alt='Fiche animation - construction de fours solaires en carton fours en test.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/26/Fiche_animation_-_construction_de_fours_solaires_en_carton_classe.jpg/800px-Fiche_animation_-_construction_de_fours_solaires_en_carton_classe.jpg' alt='Fiche animation - construction de fours solaires en carton classe.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Est-ce qu’on est prêt.e.s à pédaler 10 heures pour se faire un plat de pâtes ? Vous vous imaginez pédaler 3 jours et 8 heures sans s’arrêter pour avoir le luxe de déguster un poulet rôti ?</li><li>Si l’énergie musculaire n’est pas prête de remplacer l’électricité, nous sommes au moins conscient.e.s maintenant de l’effort physique à fournir pour produire l’énergie nécessaire à notre alimentation.</li><li>On pourrait pas trouver une solution pour chauffer et faire cuire nos aliments plus simplement ? Par exemple en utilisant l’énergie directe du soleil…</li><li>On vous propose d’expérimenter la cuisson solaire par nous-mêmes. On va commencer par fabriquer différents fours solaires à partir de matériaux de récup, puis on enfournera des gâteaux, qu’on pourra déguster pour le goûter !</li><li>Matériaux :</li><li>Nous proposons de construire des fours solaires à partir de matériaux de récupération uniquement (carton, papier alu, papier journal, colle « maison » à partir de farine et d’eau). Cette démarche a plusieurs intérêts :<ul><li>- Montrer qu’on peut réutiliser et valoriser des matériaux destinés à être jetés = ré-emploi</li></ul></li><li>- Prendre conscience du contenu de nos poubelles</li><li>- Construire des objets à faible impact : même s’ils ne servent qu’une fois pour l’atelier, comme il s’agit de déchets, c’est moins grave de les remettre à la poubelle</li><li>(moins d’impact que d’acheter du bois, le découper et l’assembler, pour finalement ne pas l’utiliser…)</li><li>- Pas de production supplémentaire de déchets</li><li>Mesures :</li><li>Il est possible de réaliser différents types de fours solaires, et intéressant de comparer les performances de chaque modèle.</li><li>L’idée est de construire ensemble différents fours pendant la matinée, de préparer des gâteaux (ou autre idée) qu’on enfournera avant la pause déjeuner, qui cuiront au soleil et qu’on pourra déguster dans l’après-midi.</li><li>On pourra apprécier la différence de cuisson selon les types de fours utilisés, l’orientation par rapport au soleil, etc. Selon le niveau scolaire des élèves, on peut chercher à mesurer davantage de paramètres (température, chronométrage du temps de cuisson, épaisseur d’isolant, orientation variable, suivi de la course du soleil, etc).</li><li>Mise en place :</li><li>Préparation avant l’atelier (une semaine avant au moins) :</li><li>Demander aux élèves de collecter dans leurs poubelles les matériaux nécessaires.</li><li>Bien insister sur le fait de NE PAS acheter de matériaux neufs (notamment le papier alu, pas de rouleau), sinon la démarche perd tout son sens.</li><li>Il faut un peu anticiper pour avoir assez. (journaux, cartons, c’est facile ; pour le papier alu, conserver l’alu du chocolat, de la quiche, … des cartons de pharmacie argentés, utilisés pour le transport de médicaments, sont aussi très pratiques !)</li><li>Imprimer les gabarits à l’échelle ou les plans avec les mesures.</li><li>Imprimer les tutoriels pas à pas.</li><li>Imprimer les recettes (colle et gateaux).</li><li>Déroulement de l’atelier :</li><li>Par groupes de 5 à 10 élèves :</li><li>Il n’y a pas forcément besoin d’un.e encadrant.e par groupe, tâches assez simples pour être réalisées en autonomie avec l’encadrant.e qui passe parmi les groupes.</li><li>Alterner les participant.e.s pour permettre à toustes de bricoler</li><li>- Répartir les matériaux et les outils</li><li>- Tracer les découpes</li><li>- Découper les cartons aux bonnes dimensions</li><li>- Marquer les pliures</li><li>- Assembler et coller les cartons</li><li>- Insérer l’isolant</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 7 - Ressources</strong><p><strong>Étapes :</strong></p><ol><li>- Jeu Revolt : règles du jeu et cartes à imprimer</li><li>- BD Déchets land – la face cachée de nos déchets</li><li>Tutos :</li><li>- Four solaire type boîte – 4 réflecteurs : deux cartons, l’un dans l’autre : https://fr.wikihow.com/fabriquer-et-utiliser-un-four-solaire</li><li>- Four solaire type boîte – 2 réflecteurs : https://wiki.lowtechlab.org/wiki/Four_solaire_(cuiseur_type_bo%C3%AEte) (remplacer le bois par du carton)</li><li>- Four solaire type semi-parabole pliable : https://www.natura-lien.fr/realisations-articles/four-solaire/<ul><li>- Four solaire type parabole : https://www.youtube.com/watch?v=RSE-Pz9tmEk</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

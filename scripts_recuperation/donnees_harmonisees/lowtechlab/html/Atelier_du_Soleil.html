@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Atelier du Soleil</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Atelier du Soleil</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/9/9c/Atelier_du_Soleil_nawel_atelier.jpg/800px-Atelier_du_Soleil_nawel_atelier.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Fiche Atelier pour la réalisation d'un atelier de réflexion et de partage autour de l'énergie dans l'habitat puis de l'énergie solaire.</div>
+        
+      </div>
+    
+    
+      
+        <p>Cet atelier est le premier d’une série qui s’incrit dans le cadre du projet FIL ROUGE des étudiants du Semestre PISTE (Ense3) en collaboration avec le Low Tech Lab Grenoble et la maison des familles de St Bruno. Cette série d’atelier a pour but de co construire avec les mamans de la maison des familles des cuiseurs solaires de type Barbecue dans une démarche d’échange et de partage. Ce premier atelier vise à orienter une réflexion sur l’énergie dans l’habitat, et une présentation de l’énergie solaire et de son potentiel. Cet atelier est dimensionné pour une quinzaine de personne, pour une heure.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Atelier_du_Soleil" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Atelier_du_Soleil</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour le Kit Atelier (3 pour 15 personnes) :</li><li>Une quinzaine de Feuilles A4</li><li>Une feuille A3</li><li>Sur les feuilles A4 imprimer les cartes Revolt (Lien : https://la-revolt.org/)</li><li>Modèle A3 disponible à la fin de ce tuto</li><li>Pour support "effet de serre" :</li><li>Une boite de mouchoir</li><li>Du film alimentaire</li><li>Un thermomètre et/ou un logiciel d’acquisition de température (facultatif)</li><li>Une lampe halogène (au cas ou le soleil vienne à manquer)</li><li>Une maquette énergie solaire</li><li>Low Techs solaires à présenter</li><li>Nous avons utilisé un sécheur solaire, un four solaire, et une lampe solaire</li><li>Un gateau</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7f/Atelier_du_Soleil_exp_rience_bo_te_de_mouchoir.jpg/800px-Atelier_du_Soleil_exp_rience_bo_te_de_mouchoir.jpg' alt='Atelier du Soleil exp rience bo te de mouchoir.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cet atelier demande de préparer en amont une maquette ’'Effet de Serre" très simple à fabriquer. Prenez une boîte de mouchoir en carton vide, venez mettre une couche de film plastique sur le dessus de la boîte, recouvrez bien l’ouverture de sorte à rendre la boîte étanche à l’air. Percez un petit trou sur le côté de la boîte, il doit être petit pour éviter les pertes de chaleur mais suffisamment grand pour laisser passer le thermomètre.</li><li>Si vous disposez d’un logiciel d’acquisition de température, pensez à bien le paramétrer c’est</li><li>à dire à bien vérifier si vos capteurs fonctionnent, à bien calibrer votre nombre d’aquisition et</li><li>la durée de vos acquisitions</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Temps de présentation et d’introduction (10 min)</strong><p><strong>Étapes :</strong></p><ol><li>Tout d’abord, prenez un temps au tout début de l’atelier pour vous présentez aux participants, d’expliquer qui vous êtes, pourquoi vous êtes là et dans quel cadre. Il n’est pas nécessaire que cela dure longtemps, une ou deux phrases suffisent.</li><li>Une fois que le contexte de l’atelier est posé, inviter les gens à se présenter tour à tour et à dire un petit mot. Un jeu "Brise Glace" peut être envisagé, par exemple le "Caillou Bâton" : Chacun dit une chose négative et une chose positive sur sa journée.</li><li>Exemple : "Je m’appelle Emma, Mon caillou c’est que j’ai fait un super atelier à la Maison des Familles aujourd’hui, mais mon bâton c’est que j’ai pris une amende dans le tram tout à l’heure"et ça passe au suivant.</li><li>Conseils d’animations : Pour que cet exercice se passe bien, faites se disposer les participant.es en cercle (assis ou debout) de sorte à ce que tout le monde puisse voir tout le monde. Cela mets les gens sur un pied d’égalité pour prendre la parole. Et quand vous faîtes un brise glace comme le bâton caillou, commencez par faire l’exercice pour donner l’exemple et éviter le silence du "qui veut commencer ?". Cela permet au participant.es de comprendre plus rapidement la consigne et ça lance directement la dynamique de l’atelier.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Réflexion par groupe autour de l’énergie (15 min)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/2/2a/Atelier_du_Soleil_Capture_d_cran_2023-01-10_112054.png' alt='Atelier du Soleil Capture d cran 2023-01-10 112054.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Divisez les participant.es en petit groupe (de 3 à 5 avec un animateur dans chaque groupe) et faites les déambuler dans le lieu dans lequel vous vous trouver. Repérez avec eux les différentes sources d’énergie et leurs utilisations (ampoules, prises électrique, machine à laver...). Ceci étant fait, toujours par petit groupes se mettre autour d’une table et y disposer un kit</li><li>d’atelier comprenant les cartes Revolt et la feuille A3. Remémorez vous les dispositif repérés plus tôt et tirez les cartes Revolt correspondantes. A l’arrière de ces cartes se trouvent la quantité d’énergie dépensée pour une utilisation moyenne (par exemple : 10 minutes de sèche cheveux) et le temps que cela mettrait pour une personne lambda de produire cette énergie en pédalant</li><li>sur un vélo. Prenez le temps de discuter ensemble de ces notions. Définissez si l’énergie mobilisée est plutôt de type "énergie électrique" ou "énergie thermique", et disposez les cartes dans les colonnes</li><li>correspondantes.</li><li>NB : Ces deux catégories ne sont pas figées : le frigo fournit de l’énergie thermique mais a besoin d’électricité pour fonctionner.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Mise en commun et explication de l’énergie solaire</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/73/Atelier_du_Soleil_nawel_parlotte.jpg/800px-Atelier_du_Soleil_nawel_parlotte.jpg' alt='Atelier du Soleil nawel parlotte.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois la première étape réalisée, prenez le temps de rassembler tout le monde au même endroit. Si vous avez le temps, faites une petite mise en commun sur l’exercice que vous venez de réaliser. Posez des questions comme "De quoi avons nous parlé ?", "Quels types d’énergie avons nous vu ?", "En terme de pédalage, c’est plus dur de produire de l’électricité ou de la chaleur ?".</li><li>Viens maintenant la présentation d’une nouvelle source d’énergie : le soleil. Introduisez l’énergie solaire par une présentation courte, pas besoin de rentrer dans le détail. L’idée est de faire comprendre que cette énergie mobilisée dans la maison peut très bien être d’origine solaire et non fossile.</li><li>Voici le texte de présentation que nous avons utilisé, libre à vous de l’utiliser ou non. Pensez à bien adapter vos mots par rapport au public auquel vous vous adressez.</li><li>"Le soleil émet des rayons visibles par nos yeux, mais également des rayons invisibles et ce</li><li>sont eux qui permettent de réchauffer la terre. On les appelle les rayons UV et infrarouges et</li><li>ce sont d’eux qu’on parle quand on parle d’énergie solaire.</li><li>On peut utiliser cette énergie solaire de différentes manières : lorsque les rayons traversent les fenêtres dans une maison ils viennent réchauffer l’intérieur de la maison, c’est une utilisation</li><li>thermique. Une autre utilisation possible de l’énergie solaire est l’énergie électrique : ce sont les panneaux solaires qui transforment l’énergie du soleil en électricité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Présentation et manipulation des deux maquettes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/1b/Atelier_du_Soleil_313215974_1802116480145155_371889246345258154_n.png' alt='Atelier du Soleil 313215974 1802116480145155 371889246345258154 n.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce nouveau temps sert à la démonstration de ce que vous venez de présenter sur l’étape 4. Nous disposions d’une petite maquette (gentiment prêtée par l’association Épice) équipée d’un panneau solaire, d’une petite hélice et d’un voltmètre. Si vous pouvez vous procurer une petite maquette de la sorte c’est parfait, car cela permet une visualisation directe de l’énergie solaire électrique.</li><li>NB : S’il n’y a pas de soleil, une lampe halogène fait bien l’affaire également.</li><li>La deuxième expérimentation consiste à mettre au soleil la maquette "boîte de mouchoir" préalablement préparée, et d’observer la montée en température progressive de l’intérieur de la boîte due à l’effet de serre : les rayons lumineux pénètrent en traversant le film alimentaire,</li><li>mais la chaleur reste bloquée par ce dernier, la chaleur s’accumule et la température monte.</li><li>NB : Je trouve personnellement cela plus parlant d’effectuer l’acquisition de la température</li><li>sur un logiciel et d’observer la montée en température instantanément avec un graphique, mais il es tout à fait possible et pertinent de prendre la température régulièrement avec un thermomètre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Déambulation et discussions sur les Low Techs</strong><p><strong>Étapes :</strong></p><ol><li>Disposez les différentes Low tech amenées dans l’espace et laissez les participant.es déambuler autour. Mettez un animateur à côté de chaque Low Tech pour répondre aux questions . Encouragez les à se demander comment marchent ces low techs et à quoi elles servent, manipulez les, touchez les. Le but est de rendre réel et accessible le potentiel de l’énergie solaire, avec des applications concrètes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Remerciements distribution du gateau et fin d’atelier</strong><p><strong>Étapes :</strong></p><ol><li>Si vous disposez d’un four solaire et que le soleil est au rendez vous, disposez du chocolat ou du beurre dans le four et mettez</li><li>le au soleil. Une fois le beurre ou le chocolat fondu en donnez un petit peu à chacun sur une part du gâteau.</li><li>Profitez de ce moment convivial pour remercier les participants et les animateurs de l’atelier.</li><li>N’hésitez pas à donner vos contact pour de futurs atelier</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

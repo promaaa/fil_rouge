@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Remorque pour fauteuil roulant électrique</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Remorque pour fauteuil roulant électrique</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/a/aa/Remorque_officielle_473546566_520635990429734_4074412376257225762_n.jpg/ia-fbd80dbce1988d19ff436b13382d2d81-px-Remorque_officielle_473546566_520635990429734_4074412376257225762_n.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel décrit la fabrication d’une remorque low-tech conçue pour être attachée à un fauteuil roulant électrique. Pensée pour être fonctionnelle, légère et accessible, cette remorque permet de transporter facilement des objets.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce tutoriel a été réalisé dans le cadre d’un projet étudiant au cours du semestre PISTE (Pour une Ingénierie Sobre Techno et Eco-responsable) porté par l’Ense3 à Grenoble. Le projet se nomme “Handi’capable” et avait pour objectif de construire une remorque low-tech pour une artiste pouvant s’accrocher à son fauteuil roulant électrique lors de ses spectacles. Ce tutoriel peut s'adapter à d'autres véhicules, notamment des vélos, en modifiant la pièce d'"ancrage" au vélo.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 200 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Remorque_pour_fauteuil_roulant_électrique" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Remorque_pour_fauteuil_roulant_électrique</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour le châssis :<ul><li>Tubes carrés en acier de 20 mm de largeur et 1.5 mm d'épaisseur : 2 de 610 mm de longueur (bords du cadre) 3 de 370 mm de longueur (bords du cadre + barre centrale) 1 de 400 mm de longueur (attache) 2 de 200 mm de longueur (support pieds)</li><li>2 de 610 mm de longueur (bords du cadre)</li><li>3 de 370 mm de longueur (bords du cadre + barre centrale)</li><li>1 de 400 mm de longueur (attache)</li><li>2 de 200 mm de longueur (support pieds)</li><li>2 tubes carrés en acier de 15 mm de largeur, 400 mm de longueur, et 1.5 mm d'épaisseur (pieds)</li><li>2 plaquettes d'acier de 30 mm/30 mm d'épaisseur 2 mm (pieds)</li><li>2 morceaux de bois d'épaisseur 20 mm (pieds)</li><li>4 cornières en acier 20 mm de largeur et 3 mm d'épaisseur, 500 mm de longueur</li><li>Fers plats en acier de 20 mm de largeur et 4 mm d'épaisseur : 4 de 100 mm de longueur (contreventements base châssis) 8 de 200 mm de longueur (contreventements cornières)</li><li>4 de 100 mm de longueur (contreventements base châssis)</li><li>8 de 200 mm de longueur (contreventements cornières)</li><li>2 équerres en acier : 60/60 mm épaisseur 2 mm</li><li>2 roues de 340 mm de diamètre</li><li>2 vis, 2 goupilles</li><li>Des réflecteurs optiques</li></ul></li><li>Pour l'attache (entre le châssis et le fauteuil roulant électrique) :<ul><li>Tubes carrés en acier de 20 mm de largeur et 1.5 mm d'épaisseur : 2 de 120 mm de longueur (parties horizontales du Z) 1 de 170 mm de longueur (partie diagonale du Z)</li><li>2 de 120 mm de longueur (parties horizontales du Z)</li><li>1 de 170 mm de longueur (partie diagonale du Z)</li><li>1 rotule issue de barres stabilisatrices de voiture</li><li>1 vis, 2 écrous, 1 barre en acier (manivelle)</li></ul></li><li>Pour l'ancrage 1:<ul><li>1 tube carré en acier de 25 mm de côté, 2 mm d'épaisseur, 110 mm de longueur</li><li>1 plaque d'acier de 115 mm sur 35 mm, d'épaisseur 4 mm</li></ul></li><li>Pour l'ancrage 2:<ul><li>Tubes carrés en acier de 25 mm de côté, 2 mm d'épaisseur, 110 mm de longueur 1 de 270 mm de longueur (liaison des plaques) 1 de 90 mm de longueur (barre verticale) 1 de 160 mm de longueur (liaison avec le Z)</li><li>1 de 270 mm de longueur (liaison des plaques)</li><li>1 de 90 mm de longueur (barre verticale)</li><li>1 de 160 mm de longueur (liaison avec le Z)</li><li>4 plaques d'acier de 150 mm sur 40 mm, d'épaisseur 4mm</li></ul></li><li>Accessoires pour le châssis :<ul><li>Goupilles</li><li>Ficelles</li><li>Plaquettes d'acier</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Nous avons réalisé ce projet dans le fablab de notre école : nous avions donc de nombreux outils à notre disposition. Cependant, certaines étapes peuvent être réalisées avec d'autres outils, cette liste n'est qu'indicative.</li><li>Perceuse/visseuse</li><li>Scie circulaire fixe à métal inclinable (ou scie à ruban)</li><li>Meuleuse/disqueuse</li><li>Ponceuse à bande fixe</li><li>Scie circulaire à bois portative</li><li>Poste à souder à la baguette</li><li>Perceuse à colonne</li><li>Scie à chantourner</li><li>Scie à ruban</li><li>Tarauds et tourne-à-gauche</li><li>Filière à main</li><li>Outils à main divers: pinces, marteau, limes à métaux, pointeau, clefs, etc...</li><li>Équipements de Protection Individuelle (EPI) : blouse, gants, casque, lunettes, masque, tablier en cuir et masque de soudure (pour certaines étapes)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Réfléchir au projet</strong><p><strong>Étapes :</strong></p><ol><li>Avant de se lancer dans la construction d'une remorque, il est important de réfléchir aux usages prévus, aux contraintes techniques et aux matériaux disponibles.</li><li>Réalisez vos plans, puis lancez-vous dans la fabrication.</li><li>Pour notre projet, la remorque devait être légère, stable et rapidement attachable à un fauteuil roulant électrique, tout en étant robuste pour transporter le matériel nécessaire aux spectacles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Châssis</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Remorque_officielle_473830861_1148026753643021_6697482067223413347_n.jpg/800px-Remorque_officielle_473830861_1148026753643021_6697482067223413347_n.jpg' alt='Remorque officielle 473830861 1148026753643021 6697482067223413347 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Remorque_officielle_blbl.png/ia-adf3bf361ecab805f57e37f5cdcc08e3-px-Remorque_officielle_blbl.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Remorque_officielle_680c53d1-a15c-4cea-b4eb-7eb007152c2c.jpeg/ia-d81e39d52ff1dbba99842481f2e06978-px-Remorque_officielle_680c53d1-a15c-4cea-b4eb-7eb007152c2c.jpeg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le châssis constitue la base de la remorque et joue un rôle crucial dans la stabilité et la solidité de l’ensemble. Pour notre projet, nous avons choisi un châssis en acier, plus lourd que de l'aluminium et du bois mais robuste, le tout associé à une boite en bois. Il est constitué d'une base rectangle, montée de cornières pour caler la boite. Les plans détaillés et les CAO sont disponibles dans les fichiers joints à ce tuto.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Châssis - base</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f2/Remorque_officielle_jhjv.jpg/ia-772e8b9f038ec0d3747d26ced62d8005-px-Remorque_officielle_jhjv.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Remorque_officielle_Zoom_soudure_cadre.jpg/ia-7e6e01f4a2340fb3037098943297f13e-px-Remorque_officielle_Zoom_soudure_cadre.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1c/Remorque_officielle_4f84b54c-9e1d-44be-812b-004165ee7547.jpg/800px-Remorque_officielle_4f84b54c-9e1d-44be-812b-004165ee7547.jpg' alt='Remorque officielle 4f84b54c-9e1d-44be-812b-004165ee7547.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6c/Remorque_officielle_Fers_plats.jpg/800px-Remorque_officielle_Fers_plats.jpg' alt='Remorque officielle Fers plats.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d0/Remorque_officielle_Zoom_soudure_contreventements.jpg/800px-Remorque_officielle_Zoom_soudure_contreventements.jpg' alt='Remorque officielle Zoom soudure contreventements.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a4/Remorque_officielle_tutute.jpg/800px-Remorque_officielle_tutute.jpg' alt='Remorque officielle tutute.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour réaliser la base rectangulaire du châssis:</li><li>A l'aide d'une scie circulaire fixe à métal (ou scie à ruban), découper les 4 tubes carrés, et les 4 morceaux de fer plats coupés en biseau.</li><li>Disposez les tubes pour former un rectangle. Serrez le tout avec des serres joints. Vérifiez que les angles sont parfaitement droits à l’aide d’une équerre. Réalisez un pointage.</li><li>Ajout des contreventements : placez les contreventements en diagonale dans le cadre. Ces pièces renforcent la structure et préviennent les déformations sous charge.</li><li>Vous pouvez contraindre la structure avec des serre-joints pour rattraper des angles, une fois les contreventements soudés, la structure sera très rigide.</li><li>Pointez d’abord les contreventements à leurs extrémités pour les stabiliser. Lorsque tout est bien positionné, soudez-les définitivement en procédant, là encore, par petites passes pour éviter les déformations (plus une partie chauffe beaucoup et plus elle se déformera en refroidissant).</li><li>Aux 4 coins des tubes, coupez légèrement les coins du châssis en prévention des cornières (voir photo ci-contre).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Châssis - montants</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Remorque_officielle_kjerfje.jpg/ia-807adde029bafd6f2b0d600c09043dd3-px-Remorque_officielle_kjerfje.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d1/Remorque_officielle_Soudure_corniere_1.jpg/800px-Remorque_officielle_Soudure_corniere_1.jpg' alt='Remorque officielle Soudure corniere 1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8d/Remorque_officielle_467210198_1587375098554369_9189706219517757643_n.jpg/ia-0ff9014ff52aee593fd0f3ddc162d54e-px-Remorque_officielle_467210198_1587375098554369_9189706219517757643_n.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour réaliser des montants, nous avons utilisé des cornières dans l'optique que la boite puisse glisser à l'intérieur. Libre à vous de choisir des montants qui correspondent à votre besoin.</li><li>Positionnez les quatre cornières métalliques verticales aux coins externes du châssis.</li><li>Pointez toutes les cornières à leur base puis soudez.</li><li>Après la soudure, il est possible que les cornières aient subi de légères déformations en raison de l’échauffement puis refroidissement du métal.</li><li>Ajustez progressivement les cornières pour qu’elles soient droites, en les contraignant, puis en soudant des contreventements entre les cornières et la base du châssis. Pour cela, vous pouvez réaliser le montage en photo ci-contre : un tube solidaire de la table sert de support pour tirer avec un serre-joint la cornière vers la position droite. Quand la position vous convient, pointez le contreventement, puis soudez-le. Il faut donc faire cette manip 8 fois (si vos cornières ne sont vraiment pas droites! Dans ce cas, bon courage ;))</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Châssis - roues</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/Remorque_officielle_Chassis_avec_roues.jpg/800px-Remorque_officielle_Chassis_avec_roues.jpg' alt='Remorque officielle Chassis avec roues.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/01/Remorque_officielle_14e06fc9-3da7-4a3e-9ebc-daa01407f078.jpg/800px-Remorque_officielle_14e06fc9-3da7-4a3e-9ebc-daa01407f078.jpg' alt='Remorque officielle 14e06fc9-3da7-4a3e-9ebc-daa01407f078.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e9/Remorque_officielle_de40554f-bc98-4b5c-9e57-5bd4a55e713c.jpg' alt='Remorque officielle de40554f-bc98-4b5c-9e57-5bd4a55e713c.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/1f/Remorque_officielle_a09d4d7c-38d4-430b-979b-4cecfdd93131.jpg' alt='Remorque officielle a09d4d7c-38d4-430b-979b-4cecfdd93131.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e8/Remorque_officielle_474153318_596981176374715_3652432565247966206_n.jpg/ia-136ddcecba8783a37390ea331bed7ef9-px-Remorque_officielle_474153318_596981176374715_3652432565247966206_n.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est conseillé que le centre de gravité de la remorque soit décalé de l'axe des roues, pour que la remorque penche naturellement vers l'avant et éviter qu'elle ne bascule.</li><li>Équerres :<ul><li>Réalisez des trous dans les équerres au diamètre de l’axe des roues + 1 mm pour garantir un ajustement facile.</li><li>Percez les équerres à l'endroit de l'axe voulu des roues.</li><li>Disquez légèrement les équerres avec une disqueuse pour y former des rainures permettant d’insérer les axes des roues.</li><li>Soudez les équerres au châssis (soyez sûr·e que la roue est suffisamment écartée du châssis pour ne pas qu'elle le touche en roulant).</li><li>Contreventez les équerres.</li></ul></li><li>Fixation des roues :<ul><li>Pour fixer les roues aux équerres on réalise le montage suivant : Rondelle > Équerre > Rondelle > Châssis > Écrou (voir schéma ci-contre)</li><li>Testez le montage en faisant tourner les roues. Elles doivent tourner librement sans jeu latéral excessif.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Attache - fonctionnement global</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/76/Remorque_officielle_474809330_1603850830496140_8924683250084934304_n.jpg/ia-4ac03921ebf34c11e89eb365f810dd11-px-Remorque_officielle_474809330_1603850830496140_8924683250084934304_n.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a3/Remorque_officielle_473772713_2619449718445790_3111584489526923212_n.jpg/800px-Remorque_officielle_473772713_2619449718445790_3111584489526923212_n.jpg' alt='Remorque officielle 473772713 2619449718445790 3111584489526923212 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/38/Remorque_officielle_Design_sans_titre.png/ia-5454f7c7e2ea5b91ebf4608f97a73977-px-Remorque_officielle_Design_sans_titre.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Remorque_officielle_hzzhzhzh.jpg/ia-a95a56d5b1817cdafba48576131b6d30-px-Remorque_officielle_hzzhzhzh.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'attache est une partie importante de ce projet. En effet, il a fallu trouver un système robuste qui permettait à la fois une grande liberté de mouvement, le tout pouvant s'attacher rapidement sur un fauteuil roulant électrique.</li><li>L'avantage de cette attache est qu'elle est adaptable à tout type de véhicule dans la mesure où les points centraux sont la rotule et la fixation sur le châssis. Si vous souhaitez refaire cette attache pour un vélo, il vous faudra alors changer la pièce d'ancrage sur votre vélo .</li><li>Notre attache constitue le système de lien entre le fauteuil et la remorque. Elle se compose de 4 parties:<ul><li>La rotule : elle permet d'autoriser les rotations libres entre le châssis et le fauteuil. La rotule ne permettant pas un tangage très important, il est important de permettre ce mouvement (sur un autre véhicule comme un vélo, cela évite de casser l'attache en cas de chute latérale), c'est le rôle de la liaison châssis/rotule. Nous avons utilisé une rotule issue de barres stabilisatrices de voiture.</li><li>La liaison entre la rotule et le châssis : un tube fixé au châssis avec une plaque taraudée au bout, qui permet d'accueillir la tige filetée de la rotule, et permet le tangage à 360°.</li><li>La liaison entre la rotule et l'ancrage : cette pièce est constituée de tubes coupés en biseau et soudés pour rattraper la différence de hauteur entre le châssis et l'ancrage du véhicule (forme un "Z"). Cette partie vient s'arrimer sur l'ancrage avec une manivelle. Pour s'arrimer, on vient emboiter le Z dans l'ancrage, et on vis à l'aide de la manivelle ces deux pièces. Cette pièce s'attache à la rotule grâce à la vis originelle de la rotule : le tube du Z est plaqué entre un écrou et la rotule.</li><li>L'ancrage : l'ancrage est une pièce qui vient se fixer solidement sur le véhicule, et offre une accroche rapide avec la remorque. Cette pièce peut être laissée de manière "permanente" sur le véhicule, elle peut prendre quelques minutes à installer/désinstaller.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Attache - liaison rotule/châssis</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bb/Remorque_officielle_473597168_985672803476426_659806650539042546_n.jpg/ia-07b29b79eada112fe6637e17ec9e22b1-px-Remorque_officielle_473597168_985672803476426_659806650539042546_n.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c1/Remorque_officielle_472442965_1664898181075017_1561614263220482004_n.jpg/ia-67f4b9192cff070e4d6001039f0f9a3a-px-Remorque_officielle_472442965_1664898181075017_1561614263220482004_n.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Coupez un tube carré de largeur 20mm, d’épaisseur 1,5 mm et de longueur 315 mm (à adapter en fonction de la liaison que vous voulez faire : il faut simplement que le tube dépasse un peu à l’avant du châssis).</li><li>Découpez une petite plaquette d’acier de la dimension de la section du tube (épaisseur > 4 mm).</li><li>Réalisez un taraudage adapté au filetage de l'axe de la rotule : percez la plaquette au centre à 7mm et taraudez-la avec un diamètre équivalent au filetage de l'axe de la rotule (M8).</li><li>Soudez cette plaquette sur la section du tube.</li><li>Venez ensuite souder le tube en dessous du châssis comme indiqué sur les plans.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Attache - rotule</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Remorque_officielle_rotule.jpg/ia-98ec9a0b0125f1c83fe0b8f7288a643a-px-Remorque_officielle_rotule.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2b/Remorque_officielle_3bc2a6a1-5272-469c-8db6-6e1d3fca8c92.jpeg' alt='Remorque officielle 3bc2a6a1-5272-469c-8db6-6e1d3fca8c92.jpeg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b6/Remorque_officielle_473883764_1356308399071276_7915770311936167059_n.jpg/800px-Remorque_officielle_473883764_1356308399071276_7915770311936167059_n.jpg' alt='Remorque officielle 473883764 1356308399071276 7915770311936167059 n.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour réaliser notre rotule, pièce centrale de notre remorque, nous avons récupéré des barres stabilisatrices de voiture, issues du système de suspension. Les garages automobiles jettent régulièrement ce genre de pièces lors des contrôles techniques, qui sont toujours largement fonctionnelles pour l'utiliser sur une remorque. Le premier garage que nous avons croisé nous en a donné deux paires.</li><li>La rotule offre une rotation latérale de 360°, une rotation verticale d'environ ± 45°, et un tangage d'environ ± 20°. Afin de prévoir au cas où un tangage excessif (en cas de chute latérale), on va ajouter une liaison tangage, en venant visser partiellement l'axe de la rotule dans le taraudage de la liaison châssis/rotule .<ul><li>Coupez la barre stabilisatrice en deux : une seule moitié vous sera utile pour la liaison, récupérez la rotule. Taillez l'axe en pointe avec une ponceuse à bande par exemple.</li><li>Filetez l'axe coupé.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Attache - liaison rotule/ancrage</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/27/Remorque_officielle_474475339_1333454484455955_3470861938735395324_n.jpg/ia-68bf9870c5f6de671bcde52051667c87-px-Remorque_officielle_474475339_1333454484455955_3470861938735395324_n.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/80/Remorque_officielle_471573464_2091607974575842_725001520629517275_n.jpg/ia-c3c5cd22bedd18e969a0f3c6cc8687b1-px-Remorque_officielle_471573464_2091607974575842_725001520629517275_n.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b3/Remorque_officielle_474107270_1038652208279924_1924848928380162121_n.jpg/ia-be01b6641fc498d940c1d1aba66d8c94-px-Remorque_officielle_474107270_1038652208279924_1924848928380162121_n.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pièce en Z :<ul><li>Coupez un tube carré avec un biseau de chaque côté (adaptez le biseau en fonction de l’angle que vous souhaitez avoir).</li><li>Coupez 2 autres tubes carrés avec le même biseau sur chaque bout.</li><li>Percez à 8 mm de chaque côté du Z.</li><li>Soudez les 3 tubes pour former le Z comme sur la photo ci-contre.</li></ul></li><li>La butée:</li><li>Afin que le trou du Z s'aligne bien avec le trou de l’ancrage, vous pouvez souder une petite plaquette en dessous afin de créer une butée avec le bord du tube de l'ancrage. Pour cela, avant de souder la plaquette, vissez le Z avec l'ancrage afin de savoir où souder la butée.</li><li>La manivelle:</li><li>Pour pouvoir serrer à la main le bras à l'ancrage, nous avons réalisé une manivelle (12 cm de long) pour avoir du couple lors du serrage. Pour cela, nous avons soudé une vis M8 à deux écrous (pour surélever la manivelle par rapport au tube), et soudé le haut de l'écrou à une tige ronde. Pour souder plus facilement la tige, aplanissez l'endroit de la soudure avec une meuleuse munie d'un disque à lamelles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Attache - ancrage</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/31/Remorque_officielle_473377801_9466988423319925_7863250123434274055_n.jpg/ia-08a866f67f6ab1583ccad824f7c71217-px-Remorque_officielle_473377801_9466988423319925_7863250123434274055_n.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b2/Remorque_officielle_473788451_1115057030080974_897336251528820084_n.jpg/ia-21b81ab283b2329c149c4ef80a0bbd67-px-Remorque_officielle_473788451_1115057030080974_897336251528820084_n.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7c/Remorque_officielle_472350827_1229773271422011_7250850203379767819_n.jpg/ia-dba59aeead71288f9b88f128c84c2467-px-Remorque_officielle_472350827_1229773271422011_7250850203379767819_n.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/89/Remorque_officielle_Design_sans_titre_1_.png/ia-309b6e6eb78d1349b01cf14acf10c896-px-Remorque_officielle_Design_sans_titre_1_.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Remorque_officielle_Design_sans_titre_5_.png/ia-b703f31f28874c70aaf546f25f9eab26-px-Remorque_officielle_Design_sans_titre_5_.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette pièce est unique et s’adapte en fonction du véhicule que vous avez. Nous avons ici réalisé un ancrage pour 2 types de fauteuils roulants électriques. Cette pièce est destinée à rester sur le fauteuil et permettre un accrochage rapide de la remorque sur celui-ci (avec le système de manivelle créé à l’étape précédente). On peut cependant attacher et détacher cette pièce en relativement peu de temps (pour l'attache 1 : 1 min, pour l'attache 2 : 3 min).</li><li>Partie commune d'arrimage:</li><li>La partie commune d'arrimage est constituée d'un grand tube carré (partie "femelle") qui vient accueillir un tube plus petit (partie "mâle"). La manivelle vient plaquer le haut du tube mâle pour serrer le petit tube sur le bas du tube femelle grâce à son taraudage .</li><li>Pour cela:<ul><li>Coupez le tube carré femelle pouvant accueillir le tube mâle: 10 cm de long, 25 mm de large, 2 mm d'épaisseur.</li><li>Soudez une plaquette épaisse sous le bord du tube (> 5 mm d'épaisseur).</li><li>Percez au centre de la plaquette à 7 mm de diamètre, taraudez pour accueillir du M8.</li><li>Réalisez la fente : Tronçonnez le tube à plusieurs reprises à l'aide d'une disqueuse Retirez les languettes à la pince Passer avec un disque à ébarber dans la fente.</li><li>Tronçonnez le tube à plusieurs reprises à l'aide d'une disqueuse</li><li>Retirez les languettes à la pince</li><li>Passer avec un disque à ébarber dans la fente.</li><li>Tronçonnez le tube à plusieurs reprises à l'aide d'une disqueuse</li><li>Retirez les languettes à la pince</li><li>Passer avec un disque à ébarber dans la fente.</li></ul></li><li>Pour l'ancrage, fixez-vous sur une partie solide du fauteuil (élément du châssis).</li><li>Nous avons réalisé deux ancrages différents pour deux fauteuils différents:</li><li>Ancrage 1 : nous avons décidé de nous fixer sur une plaque située à l’arrière du fauteuil. Notre ancrage vient se plaquer contre une platine d'1cm d'épaisseur du fauteuil, qui est préalablement taraudée, avec deux vis M8.</li><li>Les étapes:<ul><li>Coupez une plaque de 4 mm d’épaisseur et des dimensions de la platine (dans notre cas 115 mm sur 33 mm). Percez 2 trous de 9 mm de diamètre (pour accueillir du M8 avec un petit jeu) aux 2 extrémités de la plaque (il faut que ces trous soient situés en face de ceux sur la plaque du fauteuil).</li><li>Pointez puis soudez la pièce d'arrimage au milieu de la plaque.</li></ul></li><li>Ancrage 2 :</li><li>Pour l'ancrage 2, nous avons choisi de nous ancrer sur les deux attaches taxis (plaques épaisses avec des gros trous oblong au centre). Le système de fixation est le suivant : deux plaques viennent pincer chaque attache taxi, en les serrant avec deux boulons chacun. A noter que ces attaches taxi ne sont pas standard, elles sont souvent de travers par rapport à la verticale.</li><li>Nous avons dimensionné cette pièce selon la pièce en Z que nous avions réalisé pour la bonne hauteur de l'ancrage 1. Ainsi, cette pièce n'est pas censée réaliser un "L" pour rattraper la bonne hauteur du Z (c'est au rôle du Z de rattraper la hauteur de fixation du fauteuil).</li><li>Les étapes :<ul><li>Coupez le tube carré biseauté de chaque côté : le tube sera soudé à une plaque de chaque côté, qui doivent être plaquées sur les attaches taxis (qui sont de travers). Ainsi les tubes carrés seront biseautés en parallèle des attaches taxis.</li><li>Coupez 4 plaques rectangles identiques de 4 mm d'épaisseur (dans notre cas 4 cm sur 15 cm)</li><li>Percez chaque plaque avec deux trous de 7 mm centrés pour accueillir des vis M6 (les deux trous doivent être au même écartement sur chaque plaque pour que les vis traversent bien les deux trous). Les trous doivent être assez écartés pour permettre qu'elles entourent les attaches taxis.</li><li>Soudez une plaque de chaque côté du tube carré biseauté.</li><li>Soudez cette pièce au tube d'arrimage.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Sangle de maintien</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e4/Remorque_officielle_473758351_2889520944542371_7357888520419224817_n.jpg/800px-Remorque_officielle_473758351_2889520944542371_7357888520419224817_n.jpg' alt='Remorque officielle 473758351 2889520944542371 7357888520419224817 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7a/Remorque_officielle_473806208_2414893918845528_3317787775749724637_n.jpg/800px-Remorque_officielle_473806208_2414893918845528_3317787775749724637_n.jpg' alt='Remorque officielle 473806208 2414893918845528 3317787775749724637 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ea/Remorque_officielle_473854014_1334382351248805_6883115253375899364_n.jpg/ia-21e338b66f4c8b9001462cf79b5a2ba4-px-Remorque_officielle_473854014_1334382351248805_6883115253375899364_n.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour maintenir la boite calée dans le châssis pendant que la remorque roule, nous avons opté pour un système de sangles entourant le haut de la boite.</li><li>Les deux morceaux de sangle sont fixés sur des "ranges sangles": des tubes carrés avec un fer plat soudé au fond de chaque, soudés sur le côté du châssis.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Pieds</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2e/Remorque_officielle_Design_sans_titre_2_.png/ia-78aedf19e89692e1a42dfaa0f7ac7f2c-px-Remorque_officielle_Design_sans_titre_2_.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Remorque_officielle_Pieds.jpg/ia-75e240154e2db6c7dc57f620e2f58603-px-Remorque_officielle_Pieds.jpg.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Remorque_officielle_Support_pieds.jpg/800px-Remorque_officielle_Support_pieds.jpg' alt='Remorque officielle Support pieds.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/35/Remorque_officielle_Goupilles.jpg/800px-Remorque_officielle_Goupilles.jpg' alt='Remorque officielle Goupilles.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e9/Remorque_officielle_Design_sans_titre_7_.png/ia-0b45f9421623cbd5e7491b28791f0d28-px-Remorque_officielle_Design_sans_titre_7_.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous avons décidé de faire un système de stabilisation avec des pieds pour que la remorque puisse tenir à l'horizontale à l'arrêt.</li><li>Le système de pieds ajustables est le suivant : un tube carré de section inférieure qui rentre à l'intérieur d'un tube plus grand. Lorsque la remorque roule, le pied est à l'intérieur du tube et tient grâce à une goupille (position haute du pied). Lorsque la remorque est à l'arrêt, on enlève la goupille, le pied glisse jusqu'à toucher le sol et à l'aide d'une vis papillon (demie rondelle soudée sur une vis), on vient plaquer le petit tube dans le grand : le pied tient et la remorque est stabilisée (voir photo ci-contre).</li><li>Pour cela :<ul><li>Sur deux côtés du châssis, soudez les 2 tubes carrés de longueur 25 cm sur les cornières</li><li>Coupez des tubes carrés dont la largeur extérieure est un peu plus petite que la largeur intérieure des plus gros tubes (15 mm de large sur 400 mm de long)</li></ul></li><li>Pour chaque pied :<ul><li>Trouez entièrement le tube du pied et de son support (pour pouvoir mettre une goupille)</li><li>Trouez une paroi du support seulement (pour pouvoir y insérer une vis qui appuiera sur le pied en position basse) + le tarauder.</li></ul></li><li>Rajoutez des plaquettes de bois en dessous du pied pour que le contact avec le sol soit plus stable.</li><li>Réalisez des goupilles adaptées au trou que vous avez fait (ou l'inverse en fonction de ce que vous avez). Nous avons fait les goupilles nous-mêmes à partir d'une tige filetée (c'est mieux si la tige est lisse) en la tordant petit à petit sur un étau : le résultat est très satisfaisant et nous avons pu adapter la courbure au tube carré que nous avions (pensez à poncer la partie de la goupille qui s'insère dans le trou pour qu'elle glisse bien).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Rangement de l'attache</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b3/Remorque_officielle_474031619_1036103151895202_5683532141543205161_n.jpg/800px-Remorque_officielle_474031619_1036103151895202_5683532141543205161_n.jpg' alt='Remorque officielle 474031619 1036103151895202 5683532141543205161 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d4/Remorque_officielle_474581184_2543057139238912_136079813137867677_n_1_.jpg/ia-251500d57ac764b5b76823ef100562ae-px-Remorque_officielle_474581184_2543057139238912_136079813137867677_n_1_.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si les dimensions de votre châssis le permettent, vous pouvez réaliser une pièce pour ranger l'attache sous votre châssis. En effet, grâce à la rotule, à la hauteur du châssis et à la position des roues, nous pouvons faire passer le bras sous le châssis sans toucher les roues.</li><li>Nous avons réalisé une pièce en forme de clanche que nous avons soudé sous la barre du milieu du châssis.</li><li>L'attache viens ainsi se clipser dans la clanche.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Réflecteurs optiques</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/aa/Remorque_officielle_474444343_1734161987142312_6372736123249024556_n.jpg/800px-Remorque_officielle_474444343_1734161987142312_6372736123249024556_n.jpg' alt='Remorque officielle 474444343 1734161987142312 6372736123249024556 n.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pensez à mettre un système de réflecteurs optiques pour plus de sécurité lorsque vous roulez de nuit.</li><li>Nous avons fixé un catadioptre issue d'un triangle de présignalisation avec deux colliers de serrage en plastique accrochés à l'arrière du châssis.</li><li>Nous avons aussi fixé des catadioptres sur les deux roues du châssis.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Accessoires spécifiques</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Remorque_officielle_Design_sans_titre_3_.png/ia-8f6282f2bac646a5e63299373a523224-px-Remorque_officielle_Design_sans_titre_3_.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La suite concerne des accessoires du châssis qui peuvent ne pas être nécessaires en fonction de l'utilisation de la remorque. Dans notre cas, la remorque devait être à une certaine hauteur pour la personne qui allait l'utiliser : nous avons donc fait un système où la boite glisse dans les cornières et grâce à des goupilles reste à la hauteur fixée.</li><li>Vous pouvez réaliser des petites plateformes pour poser les goupilles et vis pendant que la remorque roule (et ne pas les perdre). Nous avons relié ces vis et goupilles au châssis avec des cordelettes pour ne pas les perdre (prévoyez un petit trou supplémentaire sur chaque plateforme pour accrocher les ficelles).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Boite en bois</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/54/Remorque_officielle_Bo_te_decoree_2.jpg/800px-Remorque_officielle_Bo_te_decoree_2.jpg' alt='Remorque officielle Bo te decoree 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour rappel, cette remorque a pour but d'accompagner une artiste</li><li>sur scène et ses demandes étaient donc très spécifiques : les dimensions de la boite, les compartiments, la hauteur des rangements,... sont adaptés à la personne pour laquelle nous avons fait cette remorque.</li><li>Nous ne détaillerons pas les étapes pour fabriquer cette boite car elle n'est spécifique qu'à un usage. On laisse chacun·e libre de faire la boite avec les dimensions qu'iel souhaite.</li><li>Vous trouverez tout de même les plans CAO avec les fichiers en début de tutoriel.</li><li>Et voici un petit aperçu de la boite telle que nous l'avons réalisé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Position finale</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5d/Remorque_officielle_474116931_1206691521071343_8445782940410236426_n.jpg/800px-Remorque_officielle_474116931_1206691521071343_8445782940410236426_n.jpg' alt='Remorque officielle 474116931 1206691521071343 8445782940410236426 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bf/Remorque_officielle_474148407_1861196547961047_1773881156055619009_n.jpg/ia-0010a024f00fc61c2d8bb6a2beb14878-px-Remorque_officielle_474148407_1861196547961047_1773881156055619009_n.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voici à quoi ressemble la remorque en position haute avec ses accessoires !</li><li>En bonus une photo de la remorque accompagnée de ses co-concepteur·rices ;)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

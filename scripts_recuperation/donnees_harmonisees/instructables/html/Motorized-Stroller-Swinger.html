@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Motorized Stroller Swinger</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Motorized Stroller Swinger</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FY0/2HMZ/KXBU04K3/FY02HMZKXBU04K3.jpg?auto=webp&crop=1%3A1&frame=1&width=130&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>In this instructable I'll show you how I made a portable, motorized stroller rocker / cradle swinger. It can easily fit lots of different types of strollers and cradles, so you can use one setup for multiple baby accessories.</p>
+      
+        <p>Why make a motorized stroller rocker? Well, my elder brother and his wife had the first grandson of the family. When the dust settled, it turns out that being a parent is tiring. Apparently, babies don't sleep that well, and one of the things that helped his baby boy fall asleep was swinging his stroller back and forth. He said that they're swinging the stroller about 5 (!!) hours a day, so this problem had to be solved. They tried to buy a motorized stroller swinger online, but couldn't find a decent solution. He wanted something portable so he could use it at different spots around the house. It took a really long time to make working prototype (you can see my failed attempts at the bottom), find the right engine, and shipments from china took a really long time. So by the time it was ready, he didn't need the stroller rocker for his baby boy anymore... But then, he told me they're having a baby girl. So, long overdue, I made this motorized stroller rocker.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Motorized-Stroller-Swinger/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Motorized-Stroller-Swinger/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>I got the big clip from an mini jumper wire (from a portable jump starter).</li><li>I found the long metal rod in an old printers (old printers are a treasure!! if you like electronics, don't throw them out! it's full of goodies!!).</li><li>You'll also need something to attach to the motor which will rotate and perform the push-pull motion. I used a 'disc-like' component made of metal. It's actually a broken part from a microscope that I didn't want to throw out. This object doesn't have to be round, but it should have a sufficient diameter (a single stroke of the stroller swinger will be twice it's radius/length).</li><li>I ended up replacing the potentiometer of the speed-controller with different one that I took apart from an old experiment at the lab.</li><li>I needed a piece of foam which I took from an amazon package (see step 3).</li><li>Finally, I used a cheap, old, wooden box to house everything.</li><li>Most of the parts I used were scraps that I salvaged from old stuff I made or dissembled (see the image), so finding the exact same ones would be impossible. But! you don't need to exact same items, others can work just as well. If you go over my instructable you'll see what it takes to assemble your own stroller-rocker, and then it's all about gathering the materials. In any case, this is where I got my salvaged items from:</li><li>Stuff I had to buy:</li><li>(1) One thing you will probably have to buy is a high-torque & low RPM motor. It took me a while to find a decent one for a fair price, and this one optimizes both aspects (12V, 47RMP, 33kg/cm torque). A speed controller could be useful as well (different babies need different conditions to fall asleep). I bought mine along with the motor. A different lower RPM motor would work just as well, as long as it has sufficient torque.</li><li>(2) You'll need a 12V (~2A) DC power supply. You can buy the motor with one, or you can buy (much) cheaper options.</li><li>(3) Suction cups (with screws) - this is used to hold the cradle-rocker to the floor.</li><li>(4) Ball bearings. Honestly, any size would work, just make sure it fits the design. Feel free to ask for help :)</li><li>* Some of the likes above are affiliate links - if you use these links to purchase the supplies I might get a small fee (100% of which goes back into future projects!). Also - the links I'm attaching are to the exact same products that I bought and tested :)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Prepare the Housing</strong><div class='step-images count-5'><figure><img src='https://content.instructables.com/F0R/DVH0/KYCZG5D8/F0RDVH0KYCZG5D8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Housing' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1M/MBJN/KYCZG5EB/F1MMBJNKYCZG5EB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Housing' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0L/GTFS/KYCZG5HM/F0LGTFSKYCZG5HM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Housing' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZ6/4XFK/KYCZG5HP/FZ64XFKKYCZG5HP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Housing' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRR/D42C/KYCZG5HT/FRRD42CKYCZG5HT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Housing' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Start by turning a box into the base of the product. Eventually, the motor controller will be placed inside the box, and the motor will be on top of the box.<ul><li>Cut a slit for the on/off switch (1st image).</li><li>Drill holes for the suction cups to be screwed through (2nd image).</li><li>Add holes for ventilation (3rd image).</li><li>Add another hole connecting the inside of the box to the top part for wires going from the controller to the motor.</li><li>Finally, drill a hole in the back of the box for the power supply to go through.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Attach Suction Cups</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FCN/BOO7/KYCZG5YM/FCNBOO7KYCZG5YM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Suction Cups' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0S/17UH/KYCZG5Y1/F0S17UHKYCZG5Y1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Suction Cups' loading='lazy'></figure><figure><img src='https://content.instructables.com/F4H/OX1S/KYCZG603/F4HOX1SKYCZG603.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Suction Cups' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Screw the suction cups into their holes and lock them in place with bolts.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Prepare the Arm</strong><div class='step-images count-5'><figure><img src='https://content.instructables.com/FQV/IYLC/KYCZG3M8/FQVIYLCKYCZG3M8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Arm' loading='lazy'></figure><figure><img src='https://content.instructables.com/F8P/OTK2/KYCZG26X/F8POTK2KYCZG26X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Arm' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBN/B2R1/KYCZG2DR/FBNB2R1KYCZG2DR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Arm' loading='lazy'></figure><figure><img src='https://content.instructables.com/FTK/XZPC/KYCZG1KQ/FTKXZPCKYCZG1KQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Arm' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYC/GT08/KYCZG1OC/FYCGT08KYCZG1OC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Arm' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>We need an arm to hold the stroller. I use a huge clamp which I took from an old jumper cable. Attach the clamp to one end of the metal rod. I also added some packing foam from an amazon package to make the clamp's grip better. To the other end of the rod, attach some sort of a connector. This connector will later be attached to the rotating piece that's connected to to the motor (see steps 4 & 7).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Attach Bearings (and Baby-proofing)</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FIA/H6FX/KYCZFZ7R/FIAH6FXKYCZFZ7R.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Bearings (and Baby-proofing)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMM/P3QL/KYCZFZ7Y/FMMP3QLKYCZFZ7Y.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Bearings (and Baby-proofing)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQO/LQL2/KYCZFZBN/FQOLQL2KYCZFZBN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attach Bearings (and Baby-proofing)' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>We now need to make the part that will be attached to the motor on one side and to the swinging arm on the other (take a look at step 9 or the intro video to see what it looks like). The swinging arm should have freedom to rotate, so you'll need to attach some kind of a bearing here. I used a ball bearing. The 'connector' side of the arm will be attached to this bearing soon.</li><li>Attach the bearing to this piece (the disc in my case, or some other object in yours). To connect the bearing to the rotating disc I 3D printed an adapter and glued everything with superglue. You'll most likely be using a different part instead of the odd disc I used, so I didn't include the STL files (but if you want it - let me know).</li><li>I tried to make sure everything is baby-proof and so there are no holes in the rotating disc. I covered the remaining holes with 3D printed covers.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Mount the Motor</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F6O/BMQF/KYCZG5T4/F6OBMQFKYCZG5T4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount the Motor' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSI/MY9K/KYCZG5T7/FSIMY9KKYCZG5T7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Mount the Motor' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Attach the motor to the box using some kind of a mount. You can make your own, but I bought it along with the motor. Next, attach the rotating object to the motor (the disc with a bearing in it in my case). Again, I used some 3D printed connectors, but it's only suitable for the scraps I used and so I didn't think it'd be helpful to share the designs - but let me know if I'm wrong here!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Prepare the Electronics (speed Control Unit)</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FMD/W3CK/KYCZG5LG/FMDW3CKKYCZG5LG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Electronics (speed Control Unit)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FR4/E6YZ/KYCZG5LS/FR4E6YZKYCZG5LS.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Electronics (speed Control Unit)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FE8/R63T/KYCZG5M2/FE8R63TKYCZG5M2.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Electronics (speed Control Unit)' loading='lazy'></figure><figure><img src='https://content.instructables.com/F10/DIC6/KYCZG5LX/F10DIC6KYCZG5LX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Prepare the Electronics (speed Control Unit)' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>It's time to connect everything.</li><li>Make sure everything is working properly before moving on!<ul><li>Place the speed-controller inside the box and hold it in place (with screws or hot-glue).</li><li>Connect the motor to the controller.</li><li>Connect the potentiometer (the knob) to the controller.</li><li>Connect the power-supply (12V, 2A or more) to the controller.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Final Attachments</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FQX/L9KQ/KYCZG5US/FQXL9KQKYCZG5US.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Attachments' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6K/25WK/KYCZG5VR/F6K25WKKYCZG5VR.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Final Attachments' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Almost done! Just a few final details :)<ul><li>Attach the knob to the other side of the potentiometer.</li><li>Connect the arm to the rotating disc (or what-ever you're using in its place).</li><li>Apply some hot glue to seal the hole of the power-supply (so the cable can't be pulled out). You can use a zip-tie instead if you like.</li><li>Finally, I wanted to make sure the box can't be opened too easily, but that I could open it if needed (make sure everything is working before proceeding!). I took a small piece of scrap metal and drilled a couple of holes in it (kind of like a mending plate). I then attached it to the top and bottom parts of the box, holding the box closed.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Done! ... Almost :) (+ a Peek at the Previous Version)</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FQW/H54O/KYCZG68D/FQWH54OKYCZG68D.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Done! ... Almost :) (+ a Peek at the Previous Version)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP9/KO52/KYCZG68E/FP9KO52KYCZG68E.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Done! ... Almost :) (+ a Peek at the Previous Version)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQV/DJGV/KYCZG6U4/FQVDJGVKYCZG6U4.jpg?auto=webp&fit=bounds&frame=1&height=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Done! ... Almost :) (+ a Peek at the Previous Version)' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEE/560X/KYCZHLIY/FEE560XKYCZHLIY.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Done! ... Almost :) (+ a Peek at the Previous Version)' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>At this point, I thought it's all done (see the first 2 images). I was pretty proud! But apparently, 3D printed parts can be a bad idea sometimes! . 3D printed objects rely on the adhesion of each layer to the next. So, for a 3D printed part to fail, on one of the layers has to fail. In my case, the connector holding the swinging arm and the rotating disc broke, so we had to fix it (see 3rd image). I'll show you the fix in the next step, but first...</li><li>I thought this is a good place to mention that this is actually the 2nd prototype I've been making for this project! The first one was based on a linear actuator controlled by an Arduino and a Bluetooth-connected app (see 4th image). This was really nice to play with, and taught me quite a lot, but it was over-complicated. Making gentle, speed controlled, strokes using a linear actuator is not simple (you need to keep track of it's position and so on). The simplest way to make a gentle motion is by having a sinusoidal motion - transfer circular motion (rotation) to a linear one. Moreover, I wanted to make this product available to as many people as possible, and as popular as Arduino is for tinkerers, most people are still unfamiliar with it. These two reasons made me abandon the old design for the new one :) Let me know what you think!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: One Mechanical Failure Later</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F2F/IOIP/KYCZG6LV/F2FIOIPKYCZG6LV.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='One Mechanical Failure Later' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS1/V29I/KYCZG6QU/FS1V29IKYCZG6QU.gif?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='One Mechanical Failure Later' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>As a quick fix to the broken 3D printed connector, my father suggested that we weld bolts to metal rod which makes the swinger-arm to act as 'breaks', and another bolt to the rotating disc (see picture, it's much clearer than my explanation). This seems to work well, and since then, the cradle rocker has been operating pretty often.</li><li>Future improvements include replacing the motor with a slightly quieter motor, using stronger suction cups, and putting everything in a more elegant box. Other suggestions are more than welcome!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

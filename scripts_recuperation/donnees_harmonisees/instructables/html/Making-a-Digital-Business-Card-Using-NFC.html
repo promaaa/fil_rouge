@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Making a Digital Business Card Using NFC</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Making a Digital Business Card Using NFC</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F66/OCKK/LE8JK1RT/F66OCKKLE8JK1RT.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>If you've ever wanted a smoother, easier, or even more "futuristic" way of exchanging contact information, then a digital business card may be for you.</p>
+      
+        <p>Here's the idea - your contact info is saved on a card, very much like a credit card. When you need to share that info, tap the card to another person's phone and your contact magically appears, giving them the option to simply save it to their device. It's quick, simple, and usually leaves an impression to boot.</p>
+      
+        <p>The idea isn't new, and a quick search will provide you with several companies where you can order them. But I prefer the DIY route so I can learn how things work along the way. So if you're interested in how to make one of these for yourself, read on! (Or if you're not interested but want to know out of spite, you can read on too)</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Making-a-Digital-Business-Card-Using-NFC/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Making-a-Digital-Business-Card-Using-NFC/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Inkjet Printable PVC Cards with NFC Chip (NTAG 215) - small orders can be sourced from eBay or Amazon, and packages of 50 are sold from Brainstorm ID (Important: These MUST be the ones for inkjet printers as they have a special coating that allows them to accept the ink. Traditional PVC cards need a heat sublimation printer, if you have access you one of those feel free to use that and buy regular PVC cards instead.)</li><li>Printer Tray for PVC Cards from Brainstorm ID</li><li>Inkjet printer compatible with one of the card trays</li><li>Clear acrylic or lacquer sealant (not strictly necessary but recommended)</li><li>iPhone or Android device that supports NFC</li><li>NFC Tools app (App Store | Google Play)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Understanding How This All Works</strong><p><strong>Étapes :</strong></p><ol><li>I can't explain any technical details, but here's a quick overview: there's a chip embedded within the card, it's essentially a small amount of storage connected to some copper coiling. When it comes into close proximity with an NFC device, power is induced and the data contained in storage can be read. In this case, the data we will be storing, and then sharing, is our contact information.</li><li>And when it comes to sharing contact information, vCards are a solid and widely compatible choice. While it is possible to write the vCard data directly to the NFC chip, iOS does not currently support reading that type of data via NFC. So, in the interest of compatibility, we will be creating a vCard and hosting the file on a server, then writing a URL onto the NFC chip linking directly to that file.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Prepare a VCard</strong><p><strong>Étapes :</strong></p><ol><li>Create a contact for yourself using Contacts, Outlook, etc. and export the entry as a vCard. You then need to host this file on a server and get the URL.</li><li>The trick is for your URL to be a direct link. If you upload your file to a cloud service like Drive, Dropbox, etc and simply use their "share" link, the URL will direct to that service's own interface where you can view or save the vCard. But if you want that magic moment where the contact just appears on their phone, it has to be a direct URL, which essentially starts trying to download the vCard, and results with the "add contact" prompt automatically appearing on their device.</li><li>If you have your own way of hosting files, it might be best to upload your vCard there. If not, there are also ways to get direct links for files hosted in the cloud. I used Google Drive to host my vCard and used this site to get the direct link. I then used bit.ly to shorten it.</li><li>I know this can be done with other cloud platforms, too; if needed just search around for getting direct links on your preferred service.</li><li>I also came across a very nifty site (https://www.vcard.link) that will create and host vCards for you, if you would rather go with a simpler alternative. This gives you less control over certain things like custom labels, but circumvents the rigmarole explained above.</li><li>Before writing any data onto the card, I recommend designing and printing the card first - the more you handle the card, the more dirt and oils could be left behind, and it's best to print on as clean a surface as possible.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Make a Design</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F0S/AR1P/LDU95CJH/F0SAR1PLDU95CJH.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Make a Design' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The cards are shaped to a standard size called CR80, which is 2.125" x 3.375". If you are using the printing tray from Brainstorm ID, they have a design editor available to help you create a design and properly format it for printing. You can also find templates available on their website to use with your preferred design software.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Add Legacy Support</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F4M/N31V/LDU95CJI/F4MN31VLDU95CJI.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Legacy Support' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Occasionally the person you are sharing your info with has an older device that does not support NFC. However these older devices usually do support QR codes. So, again with compatibility in mind, I generated a QR code for the URL that links to my vCard, and made that the design for the back of the card. Following the link results in the same magic as the link on the chip.</li><li>I don't have any particular site to recommend, if you search for "QR code generator" you will find many options to choose from. If you are using the vcard.link site mentioned above, that can generate a QR code for you too.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Print and Finish</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FNB/CAEW/LDU95CBB/FNBCAEWLDU95CBB.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print and Finish' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUH/7UCZ/LDU95CL0/FUH7UCZLDU95CL0.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print and Finish' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHB/EBXJ/LE8JK1Z7/FHBEBXJLE8JK1Z7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Print and Finish' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>If using the Brainstorm ID printing tray and software just follow their directions for printing on your particular model and you should be good to go.</li><li>Once the cards are printed and dry I recommended applying a coat of clear acrylic or lacquer. This will protect the ink from smudging, scratching, or running if exposed to water.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Write Your Data</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FNV/V2WO/LDW1MTIA/FNVV2WOLDW1MTIA.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Write Your Data' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3E/L5XO/LDW1MTIB/F3EL5XOLDW1MTIB.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Write Your Data' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>To write my data I used an app called NFC Tools, which is free, easy to use, and available on both iOS and Android. First erase the tag just to be sure no other data is present, which is an option in the Utilities section. Then add the URL by going to Write / Add a Record / URL/URI. Once that is entered just select Write.</li><li>And that's it, you now have a digital business card!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Final Thoughts</strong><p><strong>Étapes :</strong></p><ol><li>In the end I made two cards; one is very simple for casual exchanges, with my name, number, and email, while the other is more business oriented, with websites, work email, work number, etc. The simpler card stays in my wallet, and the business card comes to work events. I focused here on using vCards, but you could also link to a social media account, a splash page like linktr.ee, or any other site you prefer. These cards provide a much smoother experience for exchanging info, I highly recommend making one for yourself!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

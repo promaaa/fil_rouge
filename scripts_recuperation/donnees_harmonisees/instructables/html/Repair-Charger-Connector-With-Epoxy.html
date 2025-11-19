@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Repair Charger Connector With Epoxy</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Repair Charger Connector With Epoxy</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FK2/71BA/LP2MVV89/FK271BALP2MVV89.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Hi everyone!</p>
+      
+        <p>At my workbench, I've encountered a common issue many of us can face: a laptop charger with a damaged jack. This isn't the first time this charger has seen trouble; it's been previously mended by the owner and then by myself, where I had to reattach the cable to the internal circuit board with some handy hot glue.</p>
+      
+        <p>But accidents happen, and now the jack has been yanked off once again. In this Instructable, I'll guide you step by step on how to assess the damage, check for functionality, and ultimately solder and reinforce the connector for a durable fix.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Repair-Charger-Connector-With-Epoxy/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Repair-Charger-Connector-With-Epoxy/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Soldering Station - https://s.click.aliexpress.com/e/_DekIE5z</li><li>High-strength epoxy glue - https://s.click.aliexpress.com/e/_Dcw7ud9</li><li>Wire Stripper - https://s.click.aliexpress.com/e/_DCEjEIB</li><li>Wire Snips - https://s.click.aliexpress.com/e/_DeYSpwF</li><li>Multimeter - https://s.click.aliexpress.com/e/_Dk5A6n1</li><li>Heatshrink tubing - https://s.click.aliexpress.com/e/_DFc27lZ</li><li>Mini Screwdriver Set - https://s.click.aliexpress.com/e/_DFzAQub</li><li>Screwdriver Set - https://s.click.aliexpress.com/e/_DlEEkfZ</li><li>Bench power Supply - https://s.click.aliexpress.com/e/_DFNcs1N</li><li>Fumes Extractor Light - https://s.click.aliexpress.com/e/_Dery2np</li><li>Tools and materials for the repair. By buying through the links below, you are supporting me and my channel at no extra cost to you!</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Inspect the Charger Output and Jack Continuity</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FS0/7GUA/LP2MVV8B/FS07GUALP2MVV8B.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Inspect the Charger Output and Jack Continuity' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2S/FOPG/LP2MVV8C/F2SFOPGLP2MVV8C.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Inspect the Charger Output and Jack Continuity' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2G/XXLX/LP2MVV8I/F2GXXLXLP2MVV8I.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Inspect the Charger Output and Jack Continuity' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Alright, before we dive into the repair, it's crucial to ensure the charger is still functioning properly. We don't want to waste time fixing a connector if the charger itself is gone. So, first things first, I plug the charger in and check for any signs of life. A green LED light comes on – that's a promising start. But to be sure, I grabbed my multimeter and set it to measure the voltage output. With the probes in place, we're getting 19.5 volts, which is exactly what we want for this charger.</li><li>With the multimeter still in hand, I switched it to continuity mode to test the connector. Continuity tests will tell us if the path for the electricity is uninterrupted. Thankfully, the connector passes the continuity test on both the center and the outside, which means we can proceed with the repair.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Expose Good Copper on the Connector</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FXO/S36H/LP2MVV8D/FXOS36HLP2MVV8D.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Expose Good Copper on the Connector' loading='lazy'></figure><figure><img src='https://content.instructables.com/FY7/TUOM/LP2MVV8E/FY7TUOMLP2MVV8E.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Expose Good Copper on the Connector' loading='lazy'></figure><figure><img src='https://content.instructables.com/F81/YHV5/LP2MVV8H/F81YHV5LP2MVV8H.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Expose Good Copper on the Connector' loading='lazy'></figure><figure><img src='https://content.instructables.com/FOG/09HL/LP2MVV8K/FOG09HLLP2MVV8K.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Expose Good Copper on the Connector' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>As I prepare to solder, it's essential to have good copper wire exposed on the connector to ensure a strong electrical connection. Since the wires are trimmed all the way to the end and show signs of damage, I need to carefully remove additional insulation without causing further harm. For this, I resort to using a sharp knife. Carefully, I cut into the plastic, peeling back just enough to reveal the wire underneath. It takes a steady hand because we don't want to nick the copper strands inside.</li><li>Once I strip away the plastic, I notice that the damage on the red wire extends pretty far, which means I need to keep going until I'm certain that the exposed wire is healthy and free of nicks. Stripping wires might sound straightforward, but it's crucial for preventing future shorts.</li><li>With the insulation gone, I can see there is not much length of wire left to work with, which complicates things a bit. I can't simply cut off the damaged ends and start fresh. So, instead, I carefully trim just the very tips, ensuring I'm not losing more length than necessary. Now the exposed copper looks good—there's no evident damage, just shiny metal ready for soldering.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Solder the Wires</strong><div class='step-images count-6'><figure><img src='https://content.instructables.com/FU9/E9L0/LP2MVV8L/FU9E9L0LP2MVV8L.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Solder the Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FU4/RPQT/LP2MVV8M/FU4RPQTLP2MVV8M.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Solder the Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLX/N1ZN/LP2MVV8N/FLXN1ZNLP2MVV8N.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Solder the Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0I/T070/LP2MVV8O/F0IT070LP2MVV8O.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Solder the Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FR6/KJOK/LP2MVV8T/FR6KJOKLP2MVV8T.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Solder the Wires' loading='lazy'></figure><figure><img src='https://content.instructables.com/FA0/67D2/LP2MVV8U/FA067D2LP2MVV8U.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Solder the Wires' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>With all of the prep work done, this one is really easy. I first tinned both the wires on the barrel jack and on the connector and I then joined the two with the soldering iron.</li><li>Since the wires were separated enough and away from each other I was also sure that they wouldn't touch in the future to cause a short but I covered them with heat shrink tubing just to be on the safe side.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Add Strain Relief With Epoxy</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FSA/R9TP/LP2MVV8X/FSAR9TPLP2MVV8X.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Strain Relief With Epoxy' loading='lazy'></figure><figure><img src='https://content.instructables.com/F9F/P764/LP2MVV8Y/F9FP764LP2MVV8Y.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Strain Relief With Epoxy' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2R/BYNE/LP2MVV8Z/F2RBYNELP2MVV8Z.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Strain Relief With Epoxy' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1Y/RA73/LP2MVV91/F1YRA73LP2MVV91.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Strain Relief With Epoxy' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Having the charger electrically repaired is only half the battle; we've got to ensure the repair will last. You know how it is — chargers get pulled from the laptop forcefully or yanked out of sockets in a hurry. So, this repair needs to be not just electrically reliable, but also mechanically robust. To do this, I'm going to reinforce the soldered connector with some 5-minute epoxy, which is perfect for adding extra strength and strain relief.</li><li>First, I mix the epoxy thoroughly according to the instructions. Then, I carefully apply it around the base of the wires where they attach to the connector. It's a bit runny at first, so I keep the charger in constant motion to prevent the epoxy from pooling in one spot. After a few minutes, the epoxy starts to set, turning into a jelly-like substance that stays where I put it. This is when I ensure that the epoxy doesn't cover any part of the connector that'll be inserted into the laptop, as that needs to remain clear for proper connection.</li><li>I give it sufficient time to harden, occasionally checking its consistency until it's no longer tacky. The result is a solidly encased joint that provides a robust physical bond, greatly reducing the risk of future breaks when the charger is inevitably tugged or twisted. The epoxy acts like a customized, hard shell around the repair, protecting it from mechanical strains. After more than 24 hours to fully cure, the epoxy is rock-hard, and the repair is sturdy enough to withstand regular use.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Enjoy</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F75/ARG8/LP2MVV92/F75ARG8LP2MVV92.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Enjoy' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZE/KKXT/LP2MVV93/FZEKKXTLP2MVV93.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Enjoy' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>And there we have it — a laptop charger that's not only back in working order but now also boasts a reinforced connector that’s ready to handle the daily plug-and-pull hustle.</li><li>If you enjoyed this tutorial and found the Instructable helpful, don't keep the good stuff to yourself—share it with friends or anyone who might benefit from a bit of DIY repair magic. Also, subscribe to my channel for more tutorials like this; there's plenty more where that came from, and I'm always excited to help you save the day with various fixes.</li><li>Curious about what else you can repair or create with your own two hands? Check out my other Instructables for more inspiration and practical guidance.</li><li>Thanks for tuning in, and as always, best of luck with all your DIY endeavors. Cheers!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

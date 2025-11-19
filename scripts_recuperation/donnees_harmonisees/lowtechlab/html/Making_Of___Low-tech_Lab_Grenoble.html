@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Making Of : Low-tech Lab Grenoble</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Making Of : Low-tech Lab Grenoble</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/8/8c/Making_Of_-_Low-tech_Lab_Grenoble_LTTour2020_Barban_Chaillot.jpg/ia-cbd82ec5e87db48998e1a29576c75d92-px-Making_Of_-_Low-tech_Lab_Grenoble_LTTour2020_Barban_Chaillot.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Retour d'expérience sur le montage de l'association Low-tech Lab Grenoble, ayant pour but de diffuser la philosophie et les savoir-faire low-tech sur le territoire isérois.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce document a pour but de présenter l’émergence, la construction et l’état actuel de l’association Low-tech Lab Grenoble afin d’inspirer et d’aider les autres communautés.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 66 month(s) mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Making_Of___Low-tech_Lab_Grenoble" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Making_Of___Low-tech_Lab_Grenoble</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Les grandes lignes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/3/3b/Making_Of_-_Low-tech_Lab_Grenoble_1.jpg' alt='Making Of - Low-tech Lab Grenoble 1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Création : 08 Janvier 2019</li><li>Structure juridique : Association Loi 1901 (reconnue d'intérêt général depuis 2023)</li><li>Siège social : 48 avenue Washington 38000 Grenoble</li><li>Local : Un local mis à disposition par la mairie (Local Associatif Chatelet) depuis 2020 et un atelier au sein d'un habitat partagé pour les grosses constructions (Vaulnaveys-le-bas) depuis 2023</li><li>Budget :<ul><li>3 000€ de recettes et 1 700€ de charges en 2020</li><li>6 700€ de recettes et 2 800€ de charges en 2021</li><li>32 000€ de recettes (subvention s'étalant sur les années à venir) et 14 000€ de charges en 2022</li><li>56 000€ de recettes (subvention s'étalant sur les années à venir) et 30 000€ de charges en 2023</li></ul></li><li>Les personnes :<ul><li>50 Membres/an depuis 2020 (vingtaine actifs)</li><li>Stage et service civique : 2 en 2020, 2 en 2021, 4 en 2022, 4 en 2023, 4 en 2024</li><li>Salariés : 3 personnes (2ETP) depuis 2024, payés 120% du SMIC horaire 13,98€brut/heure</li></ul></li><li>Activités :</li><li>D'une vingtaine d’actions en 2020, le Low-tech Lab Grenoble a animé en 2023 :<ul><li>1000-1500 bénéficiaires</li><li>10 ateliers internes ou externes</li><li>3 chantiers participatifs de durée > 2 j</li><li>15 animations / stands / événements festifs</li><li>2 low-tech tours</li><li>2 tables rondes / conférences</li><li>2 accompagnements de projets étudiants</li></ul></li><li>Photo : Inauguration du local associatif, LTLGrenoble janvier 2020</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Les objectifs & missions</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/43/Making_Of_-_Low-tech_Lab_Grenoble_2.png/800px-Making_Of_-_Low-tech_Lab_Grenoble_2.png' alt='Making Of - Low-tech Lab Grenoble 2.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Les Phases territoriales : 1-Emergence</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/16/Making_Of_-_Low-tech_Lab_Grenoble_3.png' alt='Making Of - Low-tech Lab Grenoble 3.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Moteurs de l'action :<ul><li>Liberté d'entreprendre</li><li>Recherche de sens et nouveauté</li></ul></li><li>Engagement :<ul><li>Bénévolat 1 à 2j semaine non régulier</li><li>En emploi à 80% à côté</li></ul></li><li>Durée de la phase :</li><li>18 mois (mi 2018 à fin 2019)</li><li>Relations visées :<ul><li>Construire un noyau de base</li><li>Prendre contact avec les acteurs existants (publics, associations, entreprises)</li></ul></li><li>Structuration :<ul><li>Une association (01/2019)</li><li>Un bureau associatif</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Les Phases territoriales : 2-Structur'actions</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/a/a0/Making_Of_-_Low-tech_Lab_Grenoble_4.png' alt='Making Of - Low-tech Lab Grenoble 4.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d9/Making_Of_-_Low-tech_Lab_Grenoble_4b.png/800px-Making_Of_-_Low-tech_Lab_Grenoble_4b.png' alt='Making Of - Low-tech Lab Grenoble 4b.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Moteurs de l'action :<ul><li>Structuration</li><li>Impact local</li><li>Reconnaissance</li></ul></li><li>Engagement collectif :<ul><li>Plusieurs bénévoles 1j/semaine</li><li>Contrat de prestation</li><li>Mise en place des réunions mensuelles</li><li>Construction d'une gouvernance partagée</li></ul></li><li>Durée de la phase :</li><li>4 ans (fin 2019 à fin 2023)</li><li>Relations visées :<ul><li>Recherche de subventions</li><li>Recherche de mécénats</li><li>Recherche de prestations</li><li>Occupation de lieux pour les ateliers</li></ul></li><li>Structuration :<ul><li>Une association devenue association d'intérêt général en 2023</li><li>Un CA entre 4 et 7 personnes</li><li>Des services civiques encadrés par des bénévoles/prestataires</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Les Phases territoriales : 3-Communs</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/c7/Making_Of_-_Low-tech_Lab_Grenoble_5.png' alt='Making Of - Low-tech Lab Grenoble 5.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Moteurs de l'action :<ul><li>Création d'emplois</li><li>Impact local</li><li>Travail en réseau</li></ul></li><li>Engagement collectif :<ul><li>Plusieurs temps collectifs thématiques par mois les mercredi (forum, gouvernance, permanence)</li><li>Bureau employeur d'une équipe salariée</li><li>Facilitation de la communication entre les sphères de l'association (bénévoles, salariées, partenaires...)</li></ul></li><li>Durée de la phase :</li><li>en cours (fin 2023), le but étant qu'elle perdure</li><li>Relations visées :<ul><li>Recherche de subventions</li><li>Recherche de mécénats</li><li>Recherche de prestations</li><li>Occupation de lieux pour les ateliers</li><li>Création de communs</li><li>Création de formations</li></ul></li><li>Structuration :</li><li>mise à jour en juin 2024<ul><li>Un CA (4 personnes)</li><li>Un coordinateur salarié</li><li>Deux coordinateurs de projet salariés</li><li>4 stagiaires/service civique</li><li>Cinquantaine de bénévoles dont une dizaine de bénévoles en comptant le CA</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - La Gouvernance</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4f/Making_Of_-_Low-tech_Lab_Grenoble_6.png/800px-Making_Of_-_Low-tech_Lab_Grenoble_6.png' alt='Making Of - Low-tech Lab Grenoble 6.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous avons entrepris en décembre 2020 de construire la gouvernance partagée de l’association. Après plusieurs séances de travail avec des personnes ayant expérimenté ce genre de fonctionnement dans d’autres structures, nous avons mis en lumière les rôles de notre organisation, leurs redevabilités / périmètre d’autorité et modes d’affectation.</li><li>En voici un schéma récapitulatif, la description complète étant accessible à ce lien (version Mai 2021).</li><li>En juin 2024, l'association souhaite travailler à la refonte de sa gouvernance pour prendre en compte l'apparition de salariés dans son organisation. Une fois communiquée, la nouvelle gouvernance sera partagée ici.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Focus sur une action : Low-tech Tour Grenoble</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/9/93/Making_Of_-_Low-tech_Lab_Grenoble_9.png' alt='Making Of - Low-tech Lab Grenoble 9.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Making_Of_-_Low-tech_Lab_Grenoble_IMG_20230810_170011.jpg/800px-Making_Of_-_Low-tech_Lab_Grenoble_IMG_20230810_170011.jpg' alt='Making Of - Low-tech Lab Grenoble IMG 20230810 170011.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Principe et éléments d’organisation</li><li>Le Low-tech Tour Grenoble est un événement estival d’environ une semaine, visant à rassembler jusqu’à une quinzaine de membres sur un périple en vélo pour aller rencontrer des acteurs de la low-tech dans nos environs. Une fois sur place, l’ambiance est au partage, à l’apprentissage, au faire, et à passer du bon temps ensemble !</li><li>Vous pouvez trouver ici un tutoriel méthodologique pour en organiser un près de chez vous !</li><li>L'association a continué à en organiser un par an à part en 2022 (suite à une annulation). Depuis 2023, 2 Low-tech Tour sont organisés par an. L'organisation de ces évènements est ouverte et se nourrit des expériences précédentes.</li><li>Depuis 2023, les Low-tech Tour Grenoble retournent voir des lieux, visités dans le passé, pour deux raisons, les lieux et nos hôtes ont pu évoluer et de nouveaux membres ne les connaissent pas.</li><li>La documentation n'est pas un objectif principal des tours mais ces derniers peuvent donner des idées pour la suite.</li><li>Illustration : Itinéraire du Low-tech Tour Grenoble 2019</li><li>Illustration2 : Low-tech Tour 2023 - Test du Vhelio chez Barnabé Chaillot</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Focus sur une low-tech : Le cuiseur à bois</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/7/78/Making_Of_-_Low-tech_Lab_Grenoble_10.png' alt='Making Of - Low-tech Lab Grenoble 10.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Making_Of_-_Low-tech_Lab_Grenoble_remorque_et_cuiseur.jpg/800px-Making_Of_-_Low-tech_Lab_Grenoble_remorque_et_cuiseur.jpg' alt='Making Of - Low-tech Lab Grenoble remorque et cuiseur.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une low-tech pouvant être très simple et très complexe !</li><li>Le premier atelier que nous avons animé dans l’association était un atelier de construction de réchaud de montagne à partir de boîtes de conserves.</li><li>A partir de là, nous avons continué à explorer le potentiel de ces techniques, en allant se former chez Feu Follet et Oxalis/Du Soleil dans nos Assiettes, en découvrant et utilisant chez eux leurs cuiseurs.</li><li>Par la suite, nous avons monté un projet de cuisine événementielle conviviale au bois transportable à vélo, pour les événements de l’association sur Grenoble !</li><li>C’est pour nous une super opportunité d’amener les low-tech dans une discussion au travers d’une activité conviviale et basée sur le partage : la cuisine.</li><li>Ce qui nous a particulièrement séduit est le potentiel de réemploi d’un grand nombre des matériaux nécessaires, du travail que l’on peut faire intégralement avec des outils à main si on le souhaite, et un résultat assez impressionnant visible rapidement !</li><li>Ressources :</li><li>http://www.feufollet.org/rocket-stove/<ul><li>http://www.oxalis-asso.org/?page_id=4866</li></ul></li><li>http://atelierduzephyr.org/stages-et-formations/stages-poele-cuiseur-rocket/</li><li>Photos : Les cuiseurs à bois de l'association Low-tech Lab Grenoble, 2021 et la remorque pour les transporter</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Focus sur un élément d'organisation : Les réunions mensuelles</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/a/ac/Making_Of_-_Low-tech_Lab_Grenoble_11.jpg' alt='Making Of - Low-tech Lab Grenoble 11.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/7f/Making_Of_-_Low-tech_Lab_Grenoble_Les_temps_collectifs.JPG' alt='Making Of - Low-tech Lab Grenoble Les temps collectifs.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’outil de base pour se rencontrer et accueillir</li><li>Depuis les débuts de l’aventure Low-tech Lab Grenoble, nous avons mis en place un rendez-vous (qui n’a rien de novateur ni d’exceptionnel) régulier : les réunions mensuelles.</li><li>La forme de ces réunions a évolué au fil du temps. Aujourd'hui, ces réunions sont thématisées et séquencées dans le mois. Le but étant que chaque personne désirant rejoindre ou contribuer à l'association puisse trouver ce qu'elle cherche.</li><li>Nous nous retrouvons tous les mercredis du mois de 18h à 20h :<ul><li>1er mercredi du mois : FORUM = temps d'accueil des nouvelleaux, on y présente les projets de l'association et on réfléchit à de nouveaux projets en discutant autour d'un maxi repas au cuiseur à bois.</li><li>2ème mercredi du mois : GOUVERNANCE PARTAGÉE = moment de prise de décisions à propos du fonctionnement de l'association et de création de liens entre les projets, pour s'orienter et s'entraider.</li><li>3ème mercredi du mois : PERMANENCE = temps de convivialité pour discuter de tout et rien, grignoter, bricoler, partager des idées...</li><li>4ème mercredi du mois : Permanence du projet Abbaye (projet porté par le Low-tech Lab) destiné aux bénéficiaires du projet, accueilli par le Collectif Voisin</li></ul></li><li>Plus d'informations sur le fonctionnement des réunions mensuelles ici !</li><li>Photos : Inauguration du local associatif, LTLGrenoble janvier 2020 et Affichage sur la porte du local du LTLGrenoble</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Focus outils numériques</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/1e/Making_Of_-_Low-tech_Lab_Grenoble_r_union.JPG' alt='Making Of - Low-tech Lab Grenoble r union.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Communication en interne : Framateam</li><li>Hébergement site internet, donnée et gestion boîte mail : CHATONS Collectif des Hébergeurs Alternatifs, Transparents, Ouverts, Neutres et Solidaires</li><li>Agenda : Framateam, Low-tech Lab</li><li>Réseau sociaux : Facebook</li></ul></li><li>Photos : en juin 2024 dans le local du Low-tech Lab Grenoble</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Focus sur un événement : Conférence de Corentin de Chatelperron</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/8/8b/Making_Of_-_Low-tech_Lab_Grenoble_12.png' alt='Making Of - Low-tech Lab Grenoble 12.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On peut le voir au graphisme et à la date, cet événement n’est pas tout jeune, l’association grenobloise n’était pas encore créée !</li><li>Pourtant il a grandement participé à la dynamique, rassemblant beaucoup de monde hors de nos réseaux de base.</li><li>La recette :</li><li>-Se rapprocher d’autres structures associatives locales pour co-organiser l’événement (Ingénieurs sans frontières / Ingénieur·es citoyen·nes dans notre cas, ainsi que EVE – Espace de Vie Etudiante)</li><li>-Se rapprocher du Low-tech Lab (ou autre) afin de trouver quelqu’un pour animer la conférence</li><li>-Organiser l’événement avec un temps d’échange informel ensuite (buffet participatif par exemple)</li><li>-Passer l’info que vous montez une association autour des low-tech ! C’est le meilleur moyen de récupérer une base de contacts de personnes motivées</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

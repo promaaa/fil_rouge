@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Four solaire tubulaire</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Four solaire tubulaire</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/3/3f/Rack_pour_four_solaire_tubulaire_Capture_d_e_cran_2023-07-12_a_11.54.38.png/ia-c1b4bcaeb8ab0aa953cafa0a43565afe-px-Rack_pour_four_solaire_tubulaire_Capture_d_e_cran_2023-07-12_a_11.54.38.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel présente les étapes de fabrication d’un rack de four solaire tubulaire, conçu et fabriqué dans le cadre du projet expérimental "Biosphère, capsule en milieu aride" porté par Corentin de Chatelperron et Caroline Pultz du Low-tech Lab. Ce prototype a été fabriqué dans les locaux de l'association durant la période de préparation à l'expérimentation, à partir de matériaux et outils disponibles dans l'atelier.</div>
+        
+      </div>
+    
+    
+      
+        <p>Contexte</p>
+      
+        <p>Après une dizaine d’années d'exploration, en quête de nouveaux et épanouissants modes de vie, l'une des ambitions du Low-tech Lab est de proposer un autre scénario du futur où la low-tech est vecteur d’émancipation, de convivialité et d’épanouissement. En ce sens, le projet Biosphère se veut être un démonstrateur d’une vie prospective, spécifique à un contexte bien précis et abritant un écosystème vivant produisant suffisamment de nourriture, d'eau et d'énergie pour subvenir aux besoins identifiés sur une période de 4 mois.</p>
+      
+        <p>Conception</p>
+      
+        <p>L’utilisation du four solaire permet une cuisson sans apport d'énergie et plus lente, gardant ainsi tous les éléments nutritifs des aliments. Son principe est simple : le revêtement sombre du tube permet de transformer les rayonnements solaires en chaleur. Celle-ci est conservée à l’intérieur du tube hermétique pour permettre la cuisson.</p>
+      
+        <p>Ce four solaire tubulaire est fabriqué à partir d'un tube Pyrex, particulièrement performant de part ses parois sous vide et son revêtement sombre. Destinés au départ à produire de l'eau chaude, l'association "Du Soleil dans nos Assiettes" a détourné l'utilisation de ces tubes pour cuire et stériliser de façon low-tech des aliments. Généralement aux alentours de 150°C, la température intérieure peut atteindre jusqu'à 300°C en plein été tout en gardant ses parois froides. Pour garantir la longévité du tube, il est notamment conseillé d'éviter d'heurter le fond du tube durant l'utilisation, de respecter une phase de refroidissement en fin de cuisson et d'être doux et prudent lorsqu'on manipule le rack ou des bocaux. Si ce produit vous intéresse, il est possible de réaliser une commande groupée sur le site de cette association pour un achat à prix coutant.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Four_solaire_tubulaire" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Four_solaire_tubulaire</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Tube inox creux ⌀ 120 ou 125 mm de 500 à 540 mm de longueur (type tuyau cheminée ou poêle)</li><li>2 bouchons inox ⌀120 ou 125 mm (type bouchon de conduit de cheminée)</li><li>Poignée</li><li>Sonde de température</li><li>Liège en rouleau pour isolation</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Meuleuse</li><li>Visseuse, perçeuse avec foret de ⌀ 3-4 mm</li><li>3 vis et écrous inox ⌀ 4 mm</li><li>Machine à rivets</li><li>Rivets</li><li>Colle glue liquide</li><li>Ciseaux</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Bouchon avec poignée</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a0/Rack_pour_four_solaire_tubulaire_IMG_9857.jpg/800px-Rack_pour_four_solaire_tubulaire_IMG_9857.jpg' alt='Rack pour four solaire tubulaire IMG 9857.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2f/Rack_pour_four_solaire_tubulaire_IMG_9858.jpg/800px-Rack_pour_four_solaire_tubulaire_IMG_9858.jpg' alt='Rack pour four solaire tubulaire IMG 9858.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cd/Rack_pour_four_solaire_tubulaire_IMG_9862.jpg/800px-Rack_pour_four_solaire_tubulaire_IMG_9862.jpg' alt='Rack pour four solaire tubulaire IMG 9862.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6c/Rack_pour_four_solaire_tubulaire_IMG_9869.jpg/800px-Rack_pour_four_solaire_tubulaire_IMG_9869.jpg' alt='Rack pour four solaire tubulaire IMG 9869.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Placer la poignée au centre d’un des 2 bouchons. Repérer l’emplacement des 3 vis puis percer avec un foret ⌀ 4 mm</li><li>Fixer la poignée au bouchon avec 3 vis et écrous de ⌀ 4 mm</li></ul></li><li>Installation de la sonde (cadran de ⌀ 5 mm, tige de ⌀ 3 mm)<ul><li>Percer un trou de ⌀ 3 mm au centre du bouchon</li><li>Couper un disque de ⌀ 5 mm dans le rouleau en liège</li><li>Appliquer de la colle glue liquide sur la base de la tige de la sonde. Placer la sonde en insérant la tige à travers le liège et le trou du bouchon. Maintenir en position quelques minutes puis vérifier que la sonde est bien plaquée au liège</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Tube</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/92/Rack_pour_four_solaire_tubulaire_Capture_d_e_cran_2023-07-12_a_11.45.54.png/800px-Rack_pour_four_solaire_tubulaire_Capture_d_e_cran_2023-07-12_a_11.45.54.png' alt='Rack pour four solaire tubulaire Capture d e cran 2023-07-12 a 11.45.54.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Bouchon fin de rack</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/17/Rack_pour_four_solaire_tubulaire_IMG_9859.jpg/800px-Rack_pour_four_solaire_tubulaire_IMG_9859.jpg' alt='Rack pour four solaire tubulaire IMG 9859.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>A l'aide d'une meuleuse, couper en 2 le tube du bouchon inox restant, en s'assurant de conserver l'intégralité du chapeau du bouchon (cf. photo)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblage</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Rack_pour_four_solaire_tubulaire_IMG_9851.jpg/800px-Rack_pour_four_solaire_tubulaire_IMG_9851.jpg' alt='Rack pour four solaire tubulaire IMG 9851.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/79/Rack_pour_four_solaire_tubulaire_IMG_9868.jpg/800px-Rack_pour_four_solaire_tubulaire_IMG_9868.jpg' alt='Rack pour four solaire tubulaire IMG 9868.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Rack_pour_four_solaire_tubulaire_Capture_d_e_cran_2023-07-12_a_11.54.12.png/800px-Rack_pour_four_solaire_tubulaire_Capture_d_e_cran_2023-07-12_a_11.54.12.png' alt='Rack pour four solaire tubulaire Capture d e cran 2023-07-12 a 11.54.12.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Insérer les bouchons à chaque extrémité du tube. S'assurer que la longueur final du rack est bien de 580 mm (cf. photo)</li><li>Riveter les bouchons au tube (rivets de ⌀ 3 mm)</li></ul></li><li>On pourra poncer légèrement les parties potentiellement en contact avec le verre (dont les têtes de rivets) afin de réduire les frottements et donc le risque de casse du tube.</li><li>Il est conseillé d'utiliser un papier cuisson (sulfurisé ou fibre de verre) en interface verre métal, ainsi que dans la cuillère.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

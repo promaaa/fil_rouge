@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Biosphère Urbaine : Filière culture de champignons</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Biosphère Urbaine : Filière culture de champignons</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/6/6b/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.27.15.png/ia-05ac3ee201311c2ba8a251645138656c-px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.27.15.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a été créé dans le cadre de l'expérience de mode de vie low-tech en ville menée par Biosphère Expérience à Boulogne Billancourt. Il présente les étapes de fabrication des tours de champignons utilisées par Corentin, Caroline, Virginie et Laurine durant l'expérience, mais aussi les étapes de culture depuis l'inoculation jusqu'à la fructification des pleurotes.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le projet - Biosphère Urbaine</p>
+      
+        <p>Pendant 4 mois, Corentin et Caroline ont expérimenté un mode de vie low-tech en ville en collaboration avec un réseau d'acteurs locaux. L'idée est de profiter de la forte densité de population pour répartir les connaissances, diviser le travail et mutualiser le matériel. Ainsi, Emma a constitué et coordonné des filières temporaires composées de structures locales mais aussi de citoyens. Au total, ce sont 14 personnes du territoire de Boulogne Billancourt qui ont participé à cette expérience !</p>
+      
+        <p>Filière - culture de pleurotes</p>
+      
+        <p>Les champignons sont délicieux et nutritifs, mais leur coût élevé sur le marché pose souvent un défi financier. Pour résoudre ce problème, Emma a créé une filière temporaire de culture de pleurotes qui assure tout le cycle de reproduction. À partir de pellets de paille et de mycélium en grains confectionnés au ChampiLab, Virginie, Laurine, Corentin et Caroline ont reconstitué tout le cycle de culture du pleurote. L’idée est de mutualiser un espace pour créer des ateliers de confection des tours de culture mais aussi pour stocker le matériel et les tours pendant la phase d'incubation. Ce tutoriel vise à démocratiser la culture de pleurotes à l'échelle d'un territoire.</p>
+      
+        <p>Déroulé de l'organisation durant l'expérience :<ul><li>Toutes les 2 semaines, du mycélium en grains était confectionné au ChampiLab (voir tutoriel Biosphère Urbaine - Clônage de champignons)</li><li>Toutes les 2 semaines, les 4 participants à l'expérience se retrouvaient au ChampiLab pour confectionner 8 kits de culture. À cette occasion, chaque personne repartait avec 2 tours de champignons à faire fructifier chez elle.</li></ul></p>
+      
+        <p>L'objectif de cette expérience était de produire 1kg de pleurotes par personne. Pour produire cette quantité de pleurotes, il est conseillé d'utiliser 5 kg de substrat (ici de la paille). Pour éviter d'avoir des tours trop lourdes, nous avons préféré construire 8 tours de 2,5 kg produisant 500 g de pleurotes chacune (2 tours par personne).</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Filière_culture_de_champignons" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Filière_culture_de_champignons</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Fabrication de 8 tours de champignons</li><li>Ceci est une liste de matériaux exhaustive. Si vous avez déjà certains éléments, nous vous conseillons de favoriser la seconde main et d’adapter les dimensions et tailles tout au long du tuto.<ul><li>Plaque PLA flexible (ou autre matière selon disponibilité) 8 x (48 x 66) cm 8 x (20 x 20) cm</li><li>8 x (48 x 66) cm</li><li>8 x (20 x 20) cm</li><li>2 m de tasseaux de bois. Ici nous avons choisi un profil de 24x13 cm</li><li>Planche en bois : 8 x (20x15) cm</li><li>56 vis de Ø 5 mm</li><li>Suspension des tours (optionnel) : 8 x 2 m de corde . La longueur de 2 m dépend de l'installation de votre habitat</li></ul></li><li>Confection des 8 kits de culture<ul><li>5,7 kg de pellets de paille</li><li>1 boîte de 45L pour préparer le substrat</li><li>28 g de chaux éteinte</li><li>14,5 L d’eau</li><li>1,7 kg de mycélium en grains</li><li>Tissu en coton</li><li>1 flacon d'alcool à 90°</li><li>Billes d'argile</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Ceci est une liste d'outils exhaustive à adapter en fonction de ce que vous possédez déjà.</li><li>Une paire de ciseaux</li><li>Agrafeuse</li><li>Fer à souder ou clou (voir étape 4)</li><li>Scie manuelle ou scie sauteuse</li><li>Mètre</li><li>Perceuse / visseuse</li><li>Forets à bois : Ø 3 mm ; Ø 8 mm</li><li>Gants de bricolage</li><li>Lunettes de protection</li><li>Masque hygiénique</li><li>Gants hygiéniques</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Monter la filière</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Biosph_re_Urbaine_-_Culture_de_champignons_Capture_d_e_cran_2024-10-28_a_14.30.49.png/800px-Biosph_re_Urbaine_-_Culture_de_champignons_Capture_d_e_cran_2024-10-28_a_14.30.49.png' alt='Biosph re Urbaine - Culture de champignons Capture d e cran 2024-10-28 a 14.30.49.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si vous souhaitez monter une filière de ce type, il vous faudra trouver un espace partagé sur le territoire et des voisins motivés pour participer à la filière. Bien évidement, je vous invite à adapter cette filière selon vos besoins et l'organisation qui vous va le mieux.</li><li>Comment trouver un espace partagé ?</li><li>Il me fallait trouver un endroit avec plusieurs espaces : un laboratoire, un local de stockage et un espace atelier. En prospectant sur le territoire, j'ai cherché des lieux déjà existants comme un biolab (laboratoire collaboratif pour explorer le vivant) ou des espaces de la ville. Dans notre cas, il n'existe pas de Biolab à Boulogne Billancourt ce qui m'a amené à discuter avec la ville pour trouver le bon espace : la Maison de la Planète.</li><li>Comment trouver des personnes pour monter une filière ?</li><li>De mon côté, j'ai largement diffusé l'information via les réseaux de la ville (site internet, article dans le journal de la ville), nos réseaux sociaux ou encore les associations du territoire en les contactant par mail et par téléphone. Quelques exemples d'associations : Shifters, Ville en transition, Low-tech Lab..</li><li>Plus généralement, j'ai parlé du projet à toutes les personnes que je rencontrai au quotidien. Si vous souhaitez en parler à votre entourage, à vos amis, à vos collègues, je vous invite à utiliser toute la documentation présente sur ce tutoriel pour vous sentir capable de présenter les objectifs et intérêts de monter une telle filière à l'échelle du territoire.</li><li>Par ailleurs, 250 citoyens en France et à l'étranger ont expérimenté la culture de pleurotes dans le cadre du programme de sciences participatives. N'hésitez pas à rejoindre les groupes WhatsApp mis en place durant l'expérience! Vous trouverez peut être des personnes, proche de chez vous, intéressées pour monter cette filière.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Achat du matériel</strong><p><strong>Étapes :</strong></p><ol><li>Suivant le montage que vous choisissez et votre utilisation du réemploi, nous estimons entre 10 et 50 euros le coût pour réaliser cette culture de champignons. Cela dépend des matériaux utilisés, de la provenance de votre mycélium en grains (fait maison ou acheté auprès d'un fournisseur) etc.</li><li>Avant de faire vos achats, nous vous conseillons fortement de lire en entier le tutoriel. Nous vous encourageons à réaliser des achats groupés pour éviter le gaspillage et partager les éventuels frais de livraison.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Les étapes suivantes concernent la fabrication des 8 tours de champignons</strong><p><strong>Étapes :</strong></p><ol><li>Si vous souhaitez découvrir la confection des kits de culture, rendez-vous à l'étape 7 !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Découpe des matériaux</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e7/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_14.57.52.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_14.57.52.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 14.57.52.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/08/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_14.51.55.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_14.51.55.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 14.51.55.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8d/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_14.51.45.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_14.51.45.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 14.51.45.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour rappel, ce tutoriel permet de fabriquer 8 tours de champignons. Adaptez les indications selons le nombre que vous souhaitez réaliser. Par ailleurs, chaque tour nécessite 2 cadres en bois.</li><li>Cadre en bois<ul><li>A l'aide d'une scie manuelle (ou scie sauteuse), découpez 28 morceaux de tasseau de bois de 13 cm de longueur (1)</li><li>A l'aide d'une scie manuelle (ou scie sauteuse), découpez 28 morceaux de tasseau de bois de 15 cm de longueur (2)</li><li>Réalisez 14 cadres en assemblant 2 morceaux de bois (1) et 2 morceaux de bois (2). Pour avoir de belles finitions, réalisez des pré-trous en utilisant un forêt de Ø 3 mm, puis assemblez avec des vis de Ø 5 mm</li><li>Optionnel : sur tous les cadres, percez 2 trous de ⌀8 mm sur 2 tasseaux opposés (voir photo 1). Cela permettra le passage de la corde si vous souhaitez suspendre vos tours durant la fructification (voir étape 5). Le diamètre des trous dépend du diamètre de votre corde</li></ul></li><li>PLA<ul><li>Après avoir tracé 8 rectangles de 48 x 66 cm et 8 carrés de 20 x 20 cm sur votre plaque de PLA flexible, découpez ces derniers avec des ciseaux</li></ul></li><li>Planche en bois<ul><li>Coupez 8 morceaux de bois de 20x15 cm. Ces derniers permettront de soutenir le poids des tours</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Fabrication des 8 tours de champignons</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9a/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.01.24.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.01.24.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.01.24.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bd/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.03.26.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.03.26.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.03.26.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.08.21.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.08.21.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.08.21.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/90/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.08.27.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.08.27.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.08.27.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1 tour<ul><li>Positionnez une extrémité d'un morceau de PLA de 48 x 66 cm à l'intérieur d'un cadre puis agrafez-le. Il est tout à fait normal que le PLA se juxtapose.</li><li>Positionnez l'autre extrémité du PLA à l'intérieur du second cadre puis agrafez-le</li><li>Agrafez un carré de PLA de 20 x 20 cm sur le second cadre</li><li>Fixez une planche en bois de 20x15 cm au second cadre (elle permettra de soutenir le poids de la tour). Pour avoir de belles finitions, réalisez des pré-trous en utilisant un forêt de Ø 3 mm, puis assemblez avec des vis de Ø 5 mm</li></ul></li><li>8 tours<ul><li>Réalisez à nouveau ces opérations pour confectionner les 8 tours de champignons</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Finitions</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.15.06.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.15.06.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.15.06.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/98/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.24.33.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.24.33.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.24.33.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.15.13.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.15.13.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.15.13.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cf/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.35.59.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.35.59.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.35.59.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/9c/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.15.21.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.15.21.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les champignons devront trouver un chemin pour pousser à l'extérieur de la tour. Pour ce faire, nous allons réaliser des trous dans le PLA afin de faciliter le développement des pleurotes.</li><li>1 tour<ul><li>Réalisez des trous d'environ 5 mm de diamètre sur les parois de PLA, à l'aide d'un fer à souder (voir photo 1) ou d'un clou chauffé (voir photo 2). Vous pouvez les espacer de 10 cm environ</li><li>Optionnel : de la même manière, réalisez 2 trous dans le carré de PLA, au niveau des trous du cadre inférieur, afin de permettre le passage de la corde (voir étape 5)</li></ul></li><li>8 tours<ul><li>Réalisez à nouveau ces opérations pour confectionner les 8 tours de champignons</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Système d'accroche des tours (optionnel)</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/b/bf/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.35.42.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.35.42.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.36.07.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.36.07.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.36.07.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/4b/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.41.42.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.41.42.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette étape concerne celles et ceux souhaitant suspendre leurs tours de champignons lors de la phase de fructification (chez vous).<ul><li>Passez la corde dans l'un des trous du cadre supérieur, puis dans celui du cadre inférieur (voir photo 1). Réalisez un noeud à cette extrémité (voir photo 2).</li><li>La corde passe ensuite par les 2 autres trous des cadres supérieur et inférieur. Réalisez un noeud à cette extrémité (voir photo 3)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Les étapes suivantes concernent la confection des kits de culture</strong><p><strong>Étapes :</strong></p><ol><li>Où trouver les intrants ?</li><li>Les pellets de paille</li><li>Il faut bien faire attention à récupérer des pellets de pailles organiques et sans fongicides. Dans le cadre de cette expérience nous avons récupéré des sacs de 20L de pellets de paille. Vous pouvez en trouver chez des spécialistes de la culture de champignons ou en animalerie.</li><li>La chaux éteinte (ou fleur de chaux)</li><li>Elle permet de pasteuriser le substrat afin d'éviter les contaminations (voir étape 8) et se trouve facilement en magasin de bricolage (10 euros pour 4kg, Bricorama)</li><li>Le mycléium en grains</li><li>Dans le cadre de cette expérience nous avons recréé tout le cycle du pleurote. Retrouvez le tutoriel pour découvrir comment on a fabriqué le mycélium en grains ici : Mycélium en grain au ChampiLab. Si vous ne souhaitez pas le réaliser vous même, vous pouvez en acheter auprès d'un fournisseur comme Breizh Bell (Bretagne) ou La Mycosphère (Belgique).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Préparation de l'espace de travail</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.47.08.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.47.08.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.47.08.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de commencer, il est important de bien désinfecter tout le matériel utilisé pour éviter les contaminations.<ul><li>Équipez-vous de gants et d’un masque</li><li>Nettoyez les surfaces de travail, le bac de préparation du substrat, tous les contenants et matériels que vous utilisez avec un tissu imbibé d'alcool à 90°</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Pasteurisation et réhydratation des pellets de paille</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7b/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.51.32.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.51.32.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.51.32.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.51.46.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.51.46.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.51.46.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.52.05.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.52.05.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.52.05.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.55.28.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.55.28.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.55.28.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La pasteurisation des pellets de paille permet d'éviter les contaminations dans le substrat. Plusieurs techniques existent mais ici nous avons choisi de tester la pasteurisation à la chaux. Cette opération consiste à introduire de la chaux éteinte dans les pellets de paille afin de détruire les germes pathogènes. La chaux éteinte est particulièrement utilisée pour augmenter le pH de la paille, afin de créer un terrain peu propice au développement des bactéries ou moisissures mais plus propice au développement du mycélium de pleurotes. Les pellets de paille ont ensuite besoin d'être réhydraté pour constitué un terrain propice à la pousse de champignons.</li><li>Pour l'étape de réhydratation des pellets de paille, il faut arriver à environ 60% d'humidité (pas d'eau qui coule lorsque vous pressez la paille). Ici, nous utilisons 2,5 L d'eau froide par kilo de pellets de paille à réhydrater mais cela dépent de la qualité et de la taille de vos pellets de paille. Je vous invite à réaliser plusieurs test pour trouver le ratio qui vous convient le mieux.</li><li>Pour la pasteurisation, il est conseillé d'utiliser une tasse de chaux éteinte (environ 80 g) pour 50 L d'eau froide. Ici nous utilisons 14,5 L d'eau froide pour 5,7 kg de pellets de paille donc 23 g de chaux éteinte.</li><li>Pour rappel, les quantités indiquées conviennent pour réaliser 8 kits de culture de pleurotes. Adaptez les quantités selons le nombre de kit que vous souhaitez réaliser :<ul><li>Versez 5,7 kg de pellets de paille dans le bac de préparation du substrat</li><li>Versez 23 g de chaux éteinte dans le bac de préparation du substrat</li><li>Réhydratez les pellets de paille en introduisant 14,5 L d'eau à température ambiante dans le bac de préparation du substrat</li><li>Laissez tremper les pellets de paille dans l'eau pendant au moins 20 minutes pour permettre l'absorption de l’eau. Au cours du processus, vous pouvez mélanger le contenu pour répartir l'eau uniformément</li><li>Votre substrat est prêt lorsque l’eau ne s’écoule pas quand vous serrez une poignée de substrat</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Préparation des 8 tours de champignons</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.52.36.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.52.36.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.52.36.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/03/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.52.45.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.52.45.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.52.45.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9e/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.53.15.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.53.15.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.53.15.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>De la même manière, il est important de bien nettoyer les tours de champignons pour éviter toute contamination.</li><li>Si vous réutilisez les tours après fructification<ul><li>Enlever le bloc de mycélium et gardez-le pour réaliser des objets en mycélium, des briques isolantes ou comme paillage pour le potager. Vous pouvez aussi le planter dans votre jardin : le mycélium trouvera des nouveau nutriments dans la terre ce qui favorisera put être la pousse de champignons (nous n'avons jamais testé cette technique).</li><li>Nettoyez bien les tours avec une brosse et de de l'eau pour enlever les éventuels morceaux de mycélium</li><li>Nettoyez les tours avec un tissu imbibé d'alcool à 90°. Gardez le carré de tissu, il servira à la fin.</li></ul></li><li>Si vous utilisez des nouvelles tours<ul><li>Nettoyez les tours de champignons avec un tissu imbibé d'alcool à 90°. Gardez le carré de tissu, il servira à la fin.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Inoculation des 8 tours de champignons</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/90/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.56.56.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_15.56.56.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 15.56.56.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/73/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.01.50.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.01.50.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.01.50.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/6b/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.07.08.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.07.08.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e7/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.09.24.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.09.24.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.09.24.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4e/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.09.55.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.09.55.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.09.55.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.10.12.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.10.12.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.10.12.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’inoculation consiste à introduire le mycélium en grains dans son milieu de culture, ici les pellets de pailles.<ul><li>Utilisez une paire de ciseaux désinfectée à l'alcool à 90° pour ouvrir le sac de mycélium en grains. Retrouvez les indications pour acheter ou réaliser du mycélium en grains à l'étape 5 du tutoriel</li><li>Cassez délicatement le bloc de mycélium en grains à travers son sachet (voir photo 1)</li><li>Remplissez vos tours en lasagne : une couche de substrat, une couche de mycélium, une couche de substrat, une couche de mycélium, et ainsi de suite en finissant avec une couche de pellets de paille (voir photo 2). Idéalement, une personne se charge de distribuer le mycélium tandis que les autres s'occupent de remplir de substrat. Nous vous conseillons de continuer à porter votre masque pour cette étape afin d'éviter les contaminations.</li><li>Tassez légèrement pour éliminer les poches d’air (attention, si trop tassé ça risque de pourrir)</li><li>Recouvrez le haut des tours afin de garder l'humidité et d'éviter l'introduction de comatinations : Des billes d'argile (voir photo 4) Un morceau du tissu imbibé d’alcool qui a servi à désinfecter les tours (voir photo 5). Attention, les champignons risquent de le décomposer Un morceau de PLA ou du marc à café usagé (nous n'avons jamais testé ces techniques)</li><li>Des billes d'argile (voir photo 4)</li><li>Un morceau du tissu imbibé d’alcool qui a servi à désinfecter les tours (voir photo 5). Attention, les champignons risquent de le décomposer</li><li>Un morceau de PLA ou du marc à café usagé (nous n'avons jamais testé ces techniques)</li><li>Des billes d'argile (voir photo 4)</li><li>Un morceau du tissu imbibé d’alcool qui a servi à désinfecter les tours (voir photo 5). Attention, les champignons risquent de le décomposer</li><li>Un morceau de PLA ou du marc à café usagé (nous n'avons jamais testé ces techniques)</li><li>N'oubliez pas de dater vos tours afin de faciliter le suivi (voir photo 6) !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Incubation des 8 tours de champignons</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/e/ec/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.16.00.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.16.00.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0d/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.16.18.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.16.18.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'incubation, aussi appelée colonisation, est la période où le mycélium grandit et stocke un maximum de nourriture pour préparer le développement du champignon.</li><li>Des conditions strictes sont à respecter pour favoriser la bonne colonisation du substrat :<ul><li>obscurité</li><li>température stable (jour/nuit) : minimum 20°C pour les pleurotes (varie selon les espèces)</li></ul></li><li>Ici, nous plaçons les 8 tours de champignons dans une salle du ChampiLab. Nous vous conseillons de placer un thermomètre pour contrôler la température tous les jours. La période d’incubation dure environ 2 semaines !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Fructification</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6b/Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.27.15.png/800px-Biosph_re_Urbaine_-_Culture_de_pleurotes_Capture_d_e_cran_2024-10-21_a_16.27.15.png' alt='Biosph re Urbaine - Culture de pleurotes Capture d e cran 2024-10-21 a 16.27.15.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/be/Biosph_re_Urbaine_-_Culture_de_champignons_Capture_d_e_cran_2024-09-06_a_11.49.16.png/800px-Biosph_re_Urbaine_-_Culture_de_champignons_Capture_d_e_cran_2024-09-06_a_11.49.16.png' alt='Biosph re Urbaine - Culture de champignons Capture d e cran 2024-09-06 a 11.49.16.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a3/Biosph_re_Urbaine_-_Culture_de_champignons_Capture_d_e_cran_2024-09-06_a_11.50.09.png/800px-Biosph_re_Urbaine_-_Culture_de_champignons_Capture_d_e_cran_2024-09-06_a_11.50.09.png' alt='Biosph re Urbaine - Culture de champignons Capture d e cran 2024-09-06 a 11.50.09.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>À ce stade, la paille de votre kit est sensé être colonisée par le mycélium (plusieurs zones blanches dans votre kit, voir photo 1). Si ce n’est pas le cas, attendez encore quelques jours.</li><li>Comment assurer une bonne fructification ? Dans la forêt, le mycélium loge sous l’écorce dans la pénombre; en automne lorsqu’il se met à pleuvoir et que la température diminue, cela provoque un stress qui le pousse à fructifier afin de pouvoir se reproduire. Les quatre principaux facteurs environnementaux à contrôler lors de l’initiation fructifère sont : l’humidité, l’aération, la température et la lumière.<ul><li>Une fois que le mycélium a colonisé la paille (plusieurs zone blanches dans la tour), récupérez vos tours de champignons au ChampiLab et placez-les chez vous dans un endroit : lumineux (sans lumière directe sur le sac) comme dans votre douche, votre salle de bain ou votre cuisine bien ventilé</li><li>lumineux (sans lumière directe sur le sac) comme dans votre douche, votre salle de bain ou votre cuisine</li><li>bien ventilé</li><li>lumineux (sans lumière directe sur le sac) comme dans votre douche, votre salle de bain ou votre cuisine</li><li>bien ventilé</li></ul></li><li>Si vous placez vos tours dans votre douche<ul><li>Vous n'avez pas besoin de les asperger d'eau : la tour de culture bénéficie de l'humidité ambiante pour se développer</li></ul></li><li>Si vous placez vos tours à un autre endroit<ul><li>Arrosez environ 2 fois par jour la tour (au niveau des trous) avec un vaporisateur désinfecté au préalable. Il est conseillé d'utiliser de l'eau préalablement bouillie pour éviter les contaminations</li></ul></li><li>Conseils en cas de problèmes lors de la fructification<ul><li>Contamination (voir photo 3) : mettre du scotch sur les trous de la zone contaminée et il est possible que des champignons pousseront sur les zones non contaminées. Si la contamination est généralisée, il vaut mieux tout jeter</li><li>Trop d'eau (voir photo 4) : La mettre au chaud ou dans un endroit moins humide</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Récolte des pleurotes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/07/Biosph_re_Urbaine_-_Fili_re_culture_de_champignons_Capture_d_e_cran_2024-11-25_a_10.38.37.png/800px-Biosph_re_Urbaine_-_Fili_re_culture_de_champignons_Capture_d_e_cran_2024-11-25_a_10.38.37.png' alt='Biosph re Urbaine - Fili re culture de champignons Capture d e cran 2024-11-25 a 10.38.37.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dès que des primordia (ébauches de pleurotes) se forment, ils doublent de volume chaque jour. Dans de bonnes conditions, les pleurotes commenceront à se développer par les trous au bout de 2-3 semaines !</li><li>Récoltez les pleurotes avant que les chapeaux ne se relèvent et ne libèrent trop de spores.<ul><li>Pour ce faire, tournez délicatement la grappe avec la main, le tout en une fois. Attention, ils poussent vite ! Si vous les récoltez un peu tard, ce n'est pas grave, mais ils risquent d'être un peu moins savoureux et tendre (et de répandre ces spores).</li></ul></li><li>Dans de bonnes conditions, on peut obtenir 2 à 3 récoltes (dépend de la force et qualité du mycélium). Avec une tour, vous pouvez espérer récolter environ 500 g de pleurotes !<ul><li>Lorsque votre tour ne donne plus de pleurotes, rendez-vous à l'étape 8 (à revoir) pour confectionner une nouvelle tour de culture !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Idées de recettes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Biosph_re_Urbaine_-_Fili_re_culture_de_champignons_Capture_d_e_cran_2024-11-26_a_10.03.29.png/800px-Biosph_re_Urbaine_-_Fili_re_culture_de_champignons_Capture_d_e_cran_2024-11-26_a_10.03.29.png' alt='Biosph re Urbaine - Fili re culture de champignons Capture d e cran 2024-11-26 a 10.03.29.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Effiloché de pleurotes (4 personnes)</li><li>Ingrédients<ul><li>500g de pleurotes</li><li>2 oignons</li><li>3 CAS d’huile d’olive</li><li>2 CAS de sauce soja salé</li><li>1 CAS sirop d’agave</li><li>2 CAS d'eau</li><li>paprika fumé</li><li>ail en poudre</li><li>herbes de provence ou mélange d’épices de votre choix</li></ul></li><li>Instructions<ul><li>Préchauffer le four à 190°C</li><li>Si besoin, nettoyer les pleurotes avec une brosse ou un torchon légèrement humide. Surtout ne pas les passer sous l’eau</li><li>Puis les casser dans la longueur pour obtenir de fines lanières</li><li>Émincer les oignons en rondelles</li><li>La marinage : dans un plat qui passe au four, mélanger l'huile, la sauce soja, le sirop d'agave, les gousses d’ail pressées et toutes les épices</li><li>Ajouter les pleurotes et oignons dans le plat. Mélanger le tout pour bien répartir la marinade</li><li>Enfourner 25min et remuer à mi-cuisson</li><li>Croustillant sur le dessus et fondant à l'intérieur, il ne reste plus qu'à déguster !</li></ul></li><li>Spaghetti aux pleurotes (2 personnes)</li><li>Ingrédients<ul><li>300 g de pleurotes</li><li>140 g de spaghetti</li><li>1 oignon</li><li>1 gousse d'ail</li><li>25 cl de crème végétale</li><li>1 CAS levure de bière</li><li>sel, poivre</li><li>optionnel : vin blanc</li></ul></li><li>Instructions<ul><li>Faire dorer l'oignon et la gousse d'ail émincés dans une poêle avec un filet d'huile</li><li>Si besoin, nettoyer les pleurotes avec une brosse ou un torchon légèrement humide. Surtout ne pas les passer sous l’eau</li><li>Déchirer dans la poêle les 300g de pleurotes</li><li>Quand c'est doré, ajouter les 25 cL de crème végétale, le sel et le poivre. Vous pouvez ajouter un peu de vin blanc mais c'est pas obligatoire. Baisser à feux doux puis couvrir quelques minutes</li><li>Pendant ce temps, faire cuire les 200 g de spaghetti</li><li>Au dernier moment, mélanger les spaghetti à la sauce pleurotes dans la poêle avec 2 CAS de levure de bière, c'est super bon !</li><li>Servir dans de belles assiettes et rajouter du poivre et de la levure de bière par-dessus</li></ul></li><li>Pleurote géant pour wrap (dépend de la grappe récoltée : 2-3 personnes)</li><li>Ingrédients<ul><li>pains à wrap</li><li>une belle grappe de pleurote</li><li>2 CAS d’huile d’olive</li><li>1 CAS de sauce soja</li><li>1 CAC d’ail en poudre</li><li>1 CAC de paprika fumé</li><li>sel, poivre</li><li>accompagnement : salade de légumes frais et levure de bière</li></ul></li><li>Instructions<ul><li>La marinade : mélanger l’huile d’olive, la sauce soja et les différentes épices. Mettre de côté</li><li>Si besoin, nettoyer les pleurotes avec une brosse ou un torchon légèrement humide. Surtout ne pas les passer sous l’eau</li><li>Cuire la grappe de pleurote 1 à 2 minutes à feu vif, dans une poêle, avec un filet d’huile d’olive pour la colorer de chaque côté</li><li>Baisser le feu et aplatir la grappe avec beaucoup de poids sur le dessus (dans l’idéal appuyer avec une casserole)</li><li>Couper le feu puis badigeonner la grappe de marinade</li><li>Enfourner le tout environ 15 minutes à 180 degrés pour avoir une peau bien croquante mais pas brûlée</li><li>Confectionner votre wrap avec des morceaux de pleurotes, des légumes frais et de la levure de bière</li></ul></li><li>Wings de pleurotes (2 personnes)</li><li>Ingrédients<ul><li>100 g de pleurotes</li><li>100 g de farine</li><li>100 g de semoule de blé</li><li>1 CAC d’oignon en poudre</li><li>1 CAC d’ail en poudre</li><li>1 CAC de paprika</li><li>herbes de provence</li><li>Huile neutre pour la friture</li><li>accompagnement : salade de légumes frais et levure de bière</li></ul></li><li>Instructions<ul><li>La pâte à panure : mélanger la farine avec les aromates et épices puis ajouter l’eau</li><li>Si besoin, nettoyer les pleurotes avec une brosse ou un torchon légèrement humide. Surtout ne pas les passer sous l’eau</li><li>Dans une petite casserole, verser 4-5 cm d’huile et porter à 180 °C</li><li>Tremper les morceaux de pleurote dans la pâte à panure, puis dans la semoule de blé</li><li>Plonger dans le bain de friture et laisser frire jusqu’à ce que le morceau soit bien doré. Mélanger avec une écumoire à mi-cuisson</li><li>Sortir du bain de friture avec l’écumoire et déposer sur une grille placée sur une plaque ou un plateau pour laisser l’excédent d’huile s’écouler, ou encore sur une plaque recouverte de papier absorbant ou d’un torchon dédié à cet usage (bien le nettoyer au savon et à l’eau avant de le mettre à laver)</li><li>Faire frire toutes les pleurotes de la même manière</li><li>Dégustez les wings de pleurote avec une belle salade de saison !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

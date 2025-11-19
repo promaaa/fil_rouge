@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Cuisinière améliorée - Modèle Patsari</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Cuisinière améliorée - Modèle Patsari</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/3/3f/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Patsari_Ladrillo_0.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Un modèle de cuisinière à économie de bois développé au Mexique par l'organisme GIRA dans les années 2000. Simple à construire, économique et saine pour la santé, la cuisinière Patsari s'est diffusée à grande échelle dans les communautés rurales du Mexique.</div>
+        
+      </div>
+    
+    
+      
+        <p>La cuisinière Patsari est une adaptation et une amélioration du modèle Lorena qui fut développé au Guatemala et au Mexique dans les années 80. Elle a été conçue et distribuée par le Grupo Interdisciplinario de technologia Rural Apropriada (GIRA) situé à Patzcuaro, Michoacan, Mexique. Durant 20 ans, un travail de terrain en collaboration entre utilisateurs, Par rapport à la Lorena, plusieurs améliorations ont été incorporées dans la conception de la Patsari :<ul><li>L'extérieur est fait de brique afin d'augmenter sa durée de vie</li><li>Des moules sont utilisés dans le processus de construction afin de garantir les dimensions correctes de la chambre de combustion pour la standardisation</li><li>Une chambre de combustion optimisée</li><li>Brûleurs secondaires qui maximisent le transfert de chaleur vers plusieurs surfaces de cuisson</li><li>Les chicanes redirigent les gaz chauds vers les brûleurs secondaires</li><li>Les surfaces de chauffage (comales) sont scellées pour empêcher la fumée de pénétrer dans l'habitat</li><li>Une base de cheminée préfabriquée qui facilite le nettoyage</li></ul></p>
+      
+        <p>Patsari signifie " celui qui prend soin de " dans la langue des peuples indigènes Purhe'pecha des régions du lac Patzcuaro ; le poêle est conçu pour prendre soin de la santé des utilisateurs ainsi que de l'environnement global. Les principaux avantages de cette cuisinière sont :<ul><li>50% de réduction de la consommation de combustible par rapport à un feu ouvert.</li><li>Réduction de 66 % de la concentration de particules et de gaz toxiques (CO) dans l'air intérieur par rapport à un feu ouvert.</li><li>Réduction de l'irritation des yeux et des maladies respiratoires dues aux fumées dans la cuisine.</li><li>Économie de temps et d'argent, car moins de bois est consommé, moins de temps est consacré à la collecte ou d'argent est dépensé pour acheter du bois.</li><li>Se construit avec des matériaux locaux, de la terre et du sable.</li><li>Facilement appropriable, simple d'utilisation au quotidien.</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 70 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Cuisinière_améliorée_-_Modèle_Patsari" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Cuisinière_améliorée_-_Modèle_Patsari</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>-</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>-</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Plans de construction</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a3/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Capture2.JPG/800px-Cuisini_re_am_lior_e_-_Mod_le_Patsari_Capture2.JPG' alt='Cuisini re am lior e - Mod le Patsari Capture2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/08/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Capture7.JPG' alt='Cuisini re am lior e - Mod le Patsari Capture7.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/05/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Capture3.JPG' alt='Cuisini re am lior e - Mod le Patsari Capture3.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/cb/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Capture4.JPG' alt='Cuisini re am lior e - Mod le Patsari Capture4.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/11/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Capture5.JPG' alt='Cuisini re am lior e - Mod le Patsari Capture5.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0f/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Capture6.JPG' alt='Cuisini re am lior e - Mod le Patsari Capture6.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les dimensions peuvent éventuellement être adaptées.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Base de la cuisinière</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/8/81/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-2.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-2.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de construire la cuisinière Patsari, il est nécessaire d'avoir une base solide et stable non seulement offre un plus grand confort à l'utilisateur, mais pour éviter pour des raisons de sécurité vis-à-vis des enfants et des animaux domestiques. En général, la base mesure 1m de large par 1,20 m de long et 60 cm de haut ; ces mesures garantissent qu'il y a suffisamment d'espace pour placer, par exemple, des ustensiles de cuisine.</li><li>Matériaux pour la construction</li><li>La base peut être construite avec les matériaux disponibles dans la maison ou ceux qui sont à la portée de l'économie familiale. Certains des matériaux qui peuvent être utilisés sont :<ul><li>adobe</li><li>béton</li><li>brique</li><li>métal</li></ul></li><li>Ces bases peuvent être construites complètement remplies ou creuses. La base creuse présente de plus grands avantages, car elle peut être utilisée pour stocker et sécher le bois, ou pour stocker la vaisselle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Construction du coffrage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/c/cb/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-3.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-3.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Sur la base, on réalise un coffre pour couler le mélange. Ce coffre sera constitué de quatre planches de bois (recouvertes d'huile de décoffrage) ou de tôles métalliques avec quatre barres métalliques pour l'ajustement.</li><li>Dimensions conseillées: 80cm x 100cm x 27,5cm</li></ul></li><li>Si la cuisinière doit être construite dans un coin de la maison ou près d'un mur, laissez un espace (environ 5cm ) pour que les pièces du coffre puissent être retirées .</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Réalisation des mortiers</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/e/eb/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-33.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-33.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f9/Cuisini_re_am_lior_e_-_Mod_le_Patsari_tammiser.jpg' alt='Cuisini re am lior e - Mod le Patsari tammiser.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Réalisation du mortier basique :</li><li>Mélanger 3 seaux de sable de construction (20L) + 1 seau de ciment (type Multibat)</li><li>Bien mélanger à la pelle</li><li>Ajouter 5 à 10L d'eau petit à petit en continuant à mélanger</li></ul></li><li>Ce mélange servira à coller les briques.</li><li>2.Réalisation du mortier de terre<ul><li>Mélanger 2 seaux de sable de construction + 1,5 seaux de terre (finement tamisés)</li><li>Remuer parfaitement jusqu'à l'obtention d'une couleur uniforme.</li><li>Ajouter 3-4 pelletées de mortier.</li><li>Ajouter 5-10L d'eau, en la versant petit à petit sur le mélange. Il est recommandé de remuer le mélange, de façon à ce qu'il soit uniformément humide, jusqu'à ce qu'il atteigne une consistance collante. Pour savoir si le mélange a la bonne humidité, prenez en une poigneé avec la main et s'il ne coule pas, cela signifie qu'il est prêt à être utilisé.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Construction des bords de la cuisinière</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/d/d6/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-4.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-4.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/ab/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-5.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-5.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/06/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-7.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-7.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/5c/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-9.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-9.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/18/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-12.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-12.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/63/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-19.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-19.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Tremper les briques dans un sceau d'eau et les assembler avec du mortier en suivant les plans ci-dessus. L'épaisseur conseillée de mortier est souvent 2cm.</li><li>Casser certaines briques pour adapter leurs dimensions au besoin.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Construction de la chambre de combustion</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/3/37/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-23.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-23.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/7d/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-24.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-24.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/8/8b/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-26.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-26.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/78/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-29.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-29.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/99/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-30.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-30.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/40/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-31.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-31.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Tremper les briques dans un sceau d'eau et les assembler avec du mortier en suivant les plans ci-dessus. L'épaisseur conseillée de mortier est souvent 2cm.</li><li>Sur la dernière rangée, casser 1 brique en deux sur la longueur pour créer une bordure qui permettra de caler le "comal" (plaque chauffante).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Remplissage de la base</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/6/68/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-32.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-32.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/3c/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-34.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-34.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a6/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-35.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-35.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f4/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-36.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-36.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Remplir l'espace autour de la chambre de combustion avec du gravier jusqu'à la même hauteur.</li><li>Au bout de la cuisinière, positionner le "chacuaco"( la pièce d'évacuation des fumées</li><li>Recouvrir le gravier d'une fine couche de sable pour combler les espaces. Aplanir le tout.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Positionnement du premier comal et des tunnels d'évacuations de fumées</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/6/6e/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-37.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-37.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/1e/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-38.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-38.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2c/Cuisini_re_am_lior_e_-_Mod_le_Patsari_Patsari-39.JPG' alt='Cuisini re am lior e - Mod le Patsari Patsari-39.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/99/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-40.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-40.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner le grand comal. S'assurer qu'il soit bien au centre de la cuisinière.</li><li>Positionner deux briques creuses ou deux morceaux de profilés d'aluminium ou deux boites de conserves (risque de s'oxyder assez rapidement), contre le comal à la sortie de la chambre de combustion, de façon à former deux tunnels d'évacuations pour les fumées. Assurez-vous de laisser 2cm de hauteur entre le haut du tunnel et les bordures de la cuisinière.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Positionnement des comales secondaires</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/9/99/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-41.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-41.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a1/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-42.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-42.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Verser deux sceaux du mortier de terre à l'emplacement des comales secondaires.</li><li>Enfoncer les moules à l'emplacement des comales. On pourra éventuellement utiliser deux basines platiques du diamètres des comales + deux morceaux de bois à la place des moules.</li><li>S'assurer que les comales soient bien à niveau avec les bordures de la cuisinière.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Remplissage de la cuisinière</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/2/2c/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-43.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-43.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/04/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-44.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-44.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/23/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-45.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-45.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/26/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-47.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-47.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Remplir le vide avec du mortier de terre jusqu'au niveau des bordures du four. Laisser des espaces vides au niveau de la chambre de combustion et à l'intérieur des moules de comales secondaires. Veillez également à ne pas obstruer le conduit de cheminée.</li><li>Marquer les mesures exactes des 3 comales et découper le contour à l'aide d'une truelle de maçon.</li><li>Veillez à ne pas obstruer la chambre de combustion.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Circuit d'évacuation des fumées</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/b/b5/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-48.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-48.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/40/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-49.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-49.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>A l'aide d'une truelle, creuser dans le mortier de façon à libérer l'accès aux tunnels d'évacuation des fumées et créer un circuit entre la chambre de combustion et les deux comales secondaires.</li><li>S'assurer de laisser un passage de 2cm de hauteur entre le comal et la bosse dans les chambres secondaires.</li><li>Creuser un passage entre les chambres secondaires et la base du conduit de cheminée.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Installation des comales</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/f/fc/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-50.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-50.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b5/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-52.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-52.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner les 3 comales à leur emplacement.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Finitions et pose de la cheminée</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/9/9d/Cuisini_re_am_lior_e_-_Mod_le_Patsari_449px-Patsari-54.JPG' alt='Cuisini re am lior e - Mod le Patsari 449px-Patsari-54.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Donner un bel aspect lissé à la surface en l'humidifiant un peu et en lissant à la truelle.</li><li>Retirer avec précaution le coffre autour de la cuisinière.</li><li>Au besoin, lisser et frotter les joints des bordures de la cuisinière pour une meilleure finition.</li><li>Insérer les tubes sur le conduit d’évacuation des fumées de façon à former la cheminée.</li><li>Le temps de séchage complet de la cuisinière est d'environ 1 semaine.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Recommendations d'utilisation</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Bien répartir le bois à l'entrée de la chambre de combustion de manière à avoir une température uniforme sur le comal principal.</li></ul></li><li>Environ une fois par semaine:<ul><li>Nettoyer les cendres dans la chambre de combustion.</li><li>Nettoyer les tunnels d'évacuations des fumées.</li><li>Nettoyer le conduit de la cheminée.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

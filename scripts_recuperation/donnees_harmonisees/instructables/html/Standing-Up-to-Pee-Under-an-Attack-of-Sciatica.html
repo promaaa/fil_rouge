@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Standing Up to Pee (Under an Attack of Sciatica)</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Standing Up to Pee (Under an Attack of Sciatica)</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FII/WIRW/M4CRARYA/FIIWIRWM4CRARYA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Why would I need to standing up to pee?I don't.(Usually)</p>
+      
+        <p>Although owning a body is generally a cause for joy, everything has its exceptions. Living under an attack of sciatica is one of them. It creates a new range of needs. Among them, the ability to pee standing up.</p>
+      
+        <p>It happened to me last year. I was fine. 30 minutes later, I wasn't able to get up or sit down without howling in pain. 30 minutes more, and I wasn't able to stand up or to sit down by myself. Not even howling.</p>
+      
+        <p>I live alone, and I like it. It's only a problem when your body is malfunctioning or if you want to change the duvet cover. But I use blankets instead, and I also have good friends. That day, a good friend came over with food in tupperwares, lots of fruits and some painkillers. I had almost everything I needed to survive for a few days: water, food, the ability to take a shower and also to get in and out of bed (using a method that involved strange contortions, rolling movements, and a lot of arm strength, but was very effective).</p>
+      
+        <p>But I need, like every human being I know, to pee several times a day.I could not sit down and get up without help.</p>
+      
+        <p>Really, was I going to have to call a friend every time I needed to go to the bathroom?</p>
+      
+        <p>I tried to pee standing up using a jar. But you have to hold the jar under you, in a half-tilted posture that in a sciatic attack is also unfeasible. Also, there are medical devices for urinating lying down in a hospital bed, but they were not compatible with my strange ways of getting in and out of bed.</p>
+      
+        <p>There are ready-made items for women to pee standing up, which you can buy online. They are meant for camping or festivals. I don't know anyone who uses one. Problably because, in order to solve one problem, those things create a bigger one: If you're away from home, how do you manage it after you've used it? Where do you put it? (We handle menstrual cups out of home because, as you store it inside you, the storage problem is solved. And yet their use has a steep learning curve).</p>
+      
+        <p>But in my condition, and indoors, one of those devices would be the perfect solution. Since I didn't have one, and the problem was serious and urgent, I decided to build one with whatever I had at home.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Standing-Up-to-Pee-Under-an-Attack-of-Sciatica/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Standing-Up-to-Pee-Under-an-Attack-of-Sciatica/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Kitchen funnel</li><li>Hose. (A small piece of hose is ideal because it is flexible and allows you to enjoy the joy of training your aim. But if you don't have a piece of hose, you can make a tube with a piece of plastic and duct tape)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Get a Funnel From the Kitchen</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FTB/OL80/M4CRARU9/FTBOL80M4CRARU9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Get a Funnel From the Kitchen' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Get a funnel from the kitchen. Mine was 12 cm in diameter at its widest part. I think this is the most comfortable and ergonomic size. Clean it thoroughly.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Cut a Piece of Hose</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FGD/OLRM/M4CRARUF/FGDOLRMM4CRARUF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut a Piece of Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMF/7R12/M4CRARUQ/FMF7R12M4CRARUQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut a Piece of Hose' loading='lazy'></figure><figure><img src='https://content.instructables.com/FB5/NEWL/M4CRARUX/FB5NEWLM4CRARUX.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut a Piece of Hose' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>As the device turned out to be not only practical but also fun, I tried different hose lengths to find the ideal ratio between "ease of aiming" and "ease of cleaning". The longer the length, the better the aim, but the more messy it was to rinse it in the sink. The best "aim-cleaning" ratio, in my opinion, was achieved with a 15 cm long hose.</li><li>If you don't have a hose at home, here's plan B: you can make a tube out of a plastic sheet (for example, by cutting a rectangle from the cover of a notebook, a folder...) . Roll it up and tape it with duct tape.</li><li>This solution is worse, in two ways: it is less hygienic, and, as it is a rigid tube, it is more difficult to correct the trajectory of the liquid if you are not aiming well. But it works too.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Insert the Tip of the Funnel Into the Hose. Do Not Use Tape to Hold Them Together</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FYD/7594/M4CRARUK/FYD7594M4CRARUK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Insert the Tip of the Funnel Into the Hose. Do Not Use Tape to Hold Them Together' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7X/W13G/M4CRARV5/F7XW13GM4CRARV5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Insert the Tip of the Funnel Into the Hose. Do Not Use Tape to Hold Them Together' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I was lucky, and the piece of hose I had at home was just the right size for the tip of the funnel to go through and fit perfectly. If the hose you have at home is much wider than the tip of the funnel, I don't think that will be a problem either.</li><li>Don't tape both parts together: everything cleans much better after each use if you can separate the funnel and the hose easily.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Relieve Yourself and Have Fun</strong><p><strong>Étapes :</strong></p><ol><li>I think it is unnecessary to post photos or videos of this step. You can imagine it.</li><li>After every use, take the funnel and the hose apart, and rinse them.</li><li>I have to say that I found it a lot of fun to pee standing up. It's also true that I could hardly do anything else those days, and any little activity that would get me out of the tedium seemed like a treat. Maybe I'm overestimating the fun of the action. Fortunately, the sciatica attack, in its acute phase, lasted only three days, so I didn't have time to get bored of using the device either. I was soon able to return to my usual pissing position: sitting down.</li><li>The food my friend brought me lasted long enough. Happy end.</li><li>Of course, I hope that none of you will ever need to use this thing.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

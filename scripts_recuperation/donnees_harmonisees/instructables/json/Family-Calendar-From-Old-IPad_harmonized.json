@@ -1,0 +1,76 @@
+{
+    "titre": "Family Calendar From Old IPad",
+    "main_image_url": "https://content.instructables.com/F3C/R6J7/MH9IACPL/F3CR6J7MH9IACPL.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75",
+    "main_image_caption": "",
+    "difficulte": "",
+    "duree": "",
+    "cout": "",
+    "source_link": "https://www.instructables.com/Family-Calendar-From-Old-IPad/",
+    "intro": "Found my old iPad 4 lying around and decided to turn it into a family calendar",
+    "intro_items": [
+        "Found my old iPad 4 lying around and decided to turn it into a family calendar"
+    ],
+    "materiaux": [
+        "Supplies<ul><li>iPad 4</li><li>Google account</li><li>Google script</li><li>Dakboard account</li></ul>"
+    ],
+    "outils": [],
+    "etapes": [
+        {
+            "html": "<strong>1. Step 1: Introduction: Old Ipad</strong><p><strong>Étapes :</strong></p><ol><li>I found this old iPad 4, it still worked like a charm and some of the apps still launched.</li><li>Unfortunately not a single app could be installed from the App store because of the outdated iOS version. Even installed apps could not be updated. This fine tablet actually seemed to be quite useless...</li><li>But: Safari was still capable of displaying some internet pages...<ul><li>Also, the Calendar app could not retrieve data from a google calendar anymore because of outdated security settings.</li><li>Also the Safari app could not display the apple or google calendar anymore.</li></ul></li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        },
+        {
+            "html": "<strong>2. Step 2: DakBoard and Google Calendars</strong><p><strong>Étapes :</strong></p><ol><li>Since Safari was capable of displaying some internet pages, I tried DAKboard: a kiosk display,</li><li>https://dakboard.com/pricing</li><li>It worked!</li><li>So I signed up for a free plan, and the old iPad displayed this DAKboard calendar nice and well.</li><li>My family members all use their google account as their digital calendars.</li><li>DAKboard free plan only allows 2 calendars to be displayed ... so I needed a solution for this.</li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        },
+        {
+            "html": "<strong>3. Step 3: Google Script to Merge Calendars</strong><p><strong>Étapes :</strong></p><ol><li>I created a google account called something like \"family\" and shared all my family members to that family calendar.</li><li>Do this in google calendar for each member: under settings -> Shared with -> add your \"family\" account.</li><li>At this point, the newly created family account is capable to display the agenda of each family member.</li><li>But the family calender does not contain all events from all family members calendars, it only displays them. DAKboard was still empty at this point.</li><li>I needed to merge all calendars into the family calendar.</li><li>To merge all calendars, I use script.google.com</li><li>As the family user, create a google script to merge all calendars into one.</li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        },
+        {
+            "html": "<strong>4. Step 4: Google Script</strong><p><strong>Étapes :</strong></p><ol><li>This is the functionality of my google script, I built it with a little help from chatgpt.</li><li>What this script does:</li><li>How to use:</li><li>This is my anonymized script:</li><li>/**</li><li>* Calendar Sync Script - v9 (Anonymized)</li><li>*</li><li>* Features:</li><li>* - Keeps full titles from source calendars</li><li>* - ICS feed: only category name in event title</li><li>* - Syncs up to 6 months ahead</li><li>* - 200ms throttle between event creations</li><li>* - Removes deleted events from both sources and ICS feeds</li><li>*/<ul><li>const TARGET_CALENDAR_ID = \"familycalendar@example.com\"; // target (merged) calendar</li><li>const SOURCE_CALENDARS = [</li></ul></li><li>\"person1@example.com\",</li><li>\"person2@example.com\",</li><li>\"person3@example.com\",</li><li>\"person4@example.com\",</li><li>\"calendar@example.com\",</li><li>];<ul><li>const ICS_FEEDS = [</li></ul></li><li>{</li><li>url: \"https://example.com/path/to/icalfeed.ics\",</li><li>sourceId: \"ICS_WASTE_CALENDAR\",</li><li>},</li><li>];<ul><li>const MAX_MONTHS_AHEAD = 6;</li><li>const THROTTLE_MS = 200;</li></ul></li><li>function syncCalendars() {<ul><li>Logger.log(\"=== CalendarSync v9: Started ===\");</li><li>const targetCalendar = CalendarApp.getCalendarById(TARGET_CALENDAR_ID);</li></ul></li><li>if (!targetCalendar) {</li><li>Logger.log(\"❌ Target calendar not found: \" + TARGET_CALENDAR_ID);</li><li>return;</li><li>}<ul><li>const today = new Date();</li></ul></li><li>today.setHours(0,0,0,0);<ul><li>const future = new Date(today);</li></ul></li><li>future.setMonth(future.getMonth() + MAX_MONTHS_AHEAD);<ul><li>const validEventKeys = new Set();</li></ul></li><li>// --- Sync source calendars ---</li><li>for (const sourceId of SOURCE_CALENDARS) {</li><li>try {<ul><li>const src = CalendarApp.getCalendarById(sourceId);</li></ul></li><li>if (!src) {</li><li>Logger.log(`⚠️ Source calendar not found: ${sourceId}`);</li><li>continue;</li><li>}<ul><li>const events = src.getEvents(today, future);</li></ul></li><li>Logger.log(`[CalendarSync] ${sourceId}: ${events.length} events found`);</li><li>for (const e of events) {<ul><li>const key = syncEvent(e, targetCalendar);</li></ul></li><li>if (key) validEventKeys.add(key);</li><li>}</li><li>} catch (err) {</li><li>Logger.log(`⚠️ Error in source calendar ${sourceId}: ${err.message}`);</li><li>}</li><li>}</li><li>// --- Sync ICS feeds ---</li><li>for (const feed of ICS_FEEDS) {</li><li>try {<ul><li>const keysFromICS = syncICSFeed(feed.url, targetCalendar);</li><li>keysFromICS.forEach(k => validEventKeys.add(k));</li></ul></li><li>} catch (err) {</li><li>Logger.log(`[CalendarSync] ⚠️ Error in ICS feed ${feed.url}: ${err.message}`);</li><li>}</li><li>}</li><li>// --- Cleanup target calendar ---</li><li>cleanupTargetCalendar(targetCalendar, validEventKeys, today, future);<ul><li>Logger.log(\"=== CalendarSync v9: Completed ===\");</li></ul></li><li>}</li><li>// --- Copy one event from a source calendar to target ---</li><li>function syncEvent(sourceEvent, targetCalendar) {<ul><li>const title = (sourceEvent.getTitle() || \"\").trim();</li></ul></li><li>if (!title) return null;<ul><li>const start = sourceEvent.getStartTime();</li><li>const end = sourceEvent.getEndTime();</li><li>const key = `SRC_${title}_${start.getTime()}`;</li><li>const existing = targetCalendar.getEvents(start, end, {search: title});</li><li>const duplicate = existing.some(e => e.getTitle() === title && e.getStartTime().getTime() === start.getTime());</li></ul></li><li>if (!duplicate) {</li><li>targetCalendar.createEvent(title, start, end, {</li><li>description: sourceEvent.getDescription() || \"\",</li><li>location: sourceEvent.getLocation() || \"\"</li><li>});</li><li>Logger.log(`[CalendarSync] ➕ New event: ${title}`);</li><li>Utilities.sleep(THROTTLE_MS);</li><li>}</li><li>return key;</li><li>}</li><li>// --- Import events from an ICS feed ---</li><li>function syncICSFeed(url, targetCalendar) {</li><li>Logger.log(`[CalendarSync] Processing ICS feed: ${url}`);<ul><li>const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });</li><li>const icsText = response.getContentText();</li><li>const events = parseICSEvents(icsText);</li><li>const keys = [];</li></ul></li><li>for (const ev of events) {</li><li>if (!ev.title || !ev.start) continue;<ul><li>const cleanTitle = ev.title.split(\" \")[0].trim();</li><li>const key = `ICS_${cleanTitle}_${ev.start.getTime()}`;</li><li>const existing = targetCalendar.getEvents(ev.start, ev.end, { search: cleanTitle });</li><li>const duplicate = existing.some(e => e.getTitle() === cleanTitle && e.getStartTime().getTime() === ev.start.getTime());</li></ul></li><li>if (!duplicate) {</li><li>targetCalendar.createEvent(cleanTitle, ev.start, ev.end, { description: \"\", location: \"\" });</li><li>Logger.log(`[CalendarSync] ➕ ICS event: ${cleanTitle} (${ev.start.toDateString()})`);</li><li>Utilities.sleep(THROTTLE_MS);</li><li>}</li><li>keys.push(key);</li><li>}</li><li>return keys;</li><li>}</li><li>// --- Parse .ICS text into event objects ---</li><li>function parseICSEvents(icsText) {<ul><li>const events = [];</li><li>const lines = icsText.split(/\\r?\\n/);</li><li>let ev = null;</li></ul></li><li>for (const line of lines) {<ul><li>if (line === \"BEGIN:VEVENT\") ev = {};</li><li>else if (line === \"END:VEVENT\") {</li></ul></li><li>if (ev?.title && ev?.start) events.push(ev);<ul><li>ev = null;</li></ul></li><li>} else if (ev) {<ul><li>if (line.startsWith(\"SUMMARY:\")) ev.title = line.substring(8).trim();</li><li>else if (line.startsWith(\"DTSTART\")) ev.start = parseICSTime(line);</li><li>else if (line.startsWith(\"DTEND\")) ev.end = parseICSTime(line);</li></ul></li><li>}</li><li>}</li><li>return events;</li><li>}</li><li>// --- Parse an ICS datetime line ---</li><li>function parseICSTime(line) {<ul><li>const m = line.match(/:(\\d{8}T\\d{6})/);</li></ul></li><li>if (!m) return null;<ul><li>const s = m[1];</li></ul></li><li>return new Date(</li><li>s.substring(0, 4),</li><li>parseInt(s.substring(4, 6)) - 1,</li><li>s.substring(6, 8),</li><li>s.substring(9, 11),</li><li>s.substring(11, 13),</li><li>s.substring(13, 15)</li><li>);</li><li>}</li><li>// --- Remove obsolete events from target calendar ---</li><li>function cleanupTargetCalendar(targetCalendar, validEventKeys, start, end) {<ul><li>const targetEvents = targetCalendar.getEvents(start, end);</li><li>let removed = 0;</li></ul></li><li>for (const ev of targetEvents) {<ul><li>const idSRC = `SRC_${ev.getTitle()}_${ev.getStartTime().getTime()}`;</li><li>const idICS = `ICS_${ev.getTitle()}_${ev.getStartTime().getTime()}`;</li></ul></li><li>if (!validEventKeys.has(idSRC) && !validEventKeys.has(idICS)) {</li><li>try {</li><li>ev.deleteEvent();</li><li>removed++;</li><li>Logger.log(`[CalendarSync] 🗑️ Removed: ${ev.getTitle()}`);</li><li>Utilities.sleep(THROTTLE_MS);</li><li>} catch (err) {</li><li>Logger.log(`[CalendarSync] ⚠️ Error removing ${ev.getTitle()}: ${err.message}`);</li><li>}</li><li>}</li><li>}</li><li>Logger.log(`[CalendarSync] Cleanup done – ${removed} events removed`);</li><li>}<ul><li>🗓 Combines multiple Google Calendars into a single shared “family” calendar.</li><li>🔁 Two-way sync direction: It copies from multiple source calendars and from an ICS feed (this are the garbage collection dates from an open calendar of the municipal waste processing company, when to put the bins in the street to get them emptied :-) ) into one target calendar.</li><li>🧩 Keeps full event details: Title, description, and location are preserved.</li><li>🧹 Automatically removes deleted events: If a source or ICS event is gone, it’s deleted from the target too.</li><li>⏱ Performance-friendly: Adds a short delay (200 ms) between event creations for API throttling.</li><li>⏳ Time-limited sync: Only synchronizes events within the next 6 months (configurable).</li><li>📅 ICS feed support: Can import events from public .ics URLs (e.g. garbage collection schedules).</li><li>🧼 De-duplication: Prevents duplicate events in the target calendar.</li><li>📋 Logging: Every sync step is logged in the Apps Script console for troubleshooting.</li><li>Open Google Apps Script</li><li>Create a new project and paste this code.</li><li>Update the TARGET_CALENDAR_ID, SOURCE_CALENDARS, and ICS_FEEDS to match your setup.</li><li>Authorize the script the first time you run it.</li><li>(Optional) Add a time-based trigger (e.g. daily) to automate synchronization.</li></ul></li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        },
+        {
+            "html": "<strong>5. Step 5: Using the Calendar</strong><p><strong>Étapes :</strong></p><ol><li>The google script is time triggered, you can find this in de sctipt.google environment.</li><li>The DAKboard agenda is refreshed twice per 24h, which is enough for this family calendar.</li><li>Some tips to display the calendar nicely:</li><li>This method removes the browser bars and gives a “native app” look.</li><li>Now a DAKboard icon appears on your home screen.</li><li>When you launch it from there, it will:</li><li>If you want your DAKboard display to stay on permanently (for example on a wall-mounted iPad):<ul><li>Open Safari on your iPhone or iPad.</li><li>Go to your DAKboard URL, e.g.</li><li>https://dakboard.com/app?p=your_dashboard_id</li><li>Tap the Share icon (square with an arrow pointing up).</li><li>Scroll down and tap “Add to Home Screen.”</li><li>Give it a name, e.g. “DAKboard.”</li><li>Tap Add.</li><li>Open full screen (no Safari bars).</li><li>Stay in that mode even if you lock/unlock the device.</li><li>Go to Settings → Display & Brightness → Auto-Lock.</li><li>Set it to Never.</li><li>Plug in the device so it stays powered.</li></ul></li></ol>",
+            "fichiers": [
+                {
+                    "nom": "",
+                    "type": "",
+                    "description": "",
+                    "lien": ""
+                }
+            ]
+        }
+    ],
+    "remarques": "",
+    "mentions_legales": []
+}

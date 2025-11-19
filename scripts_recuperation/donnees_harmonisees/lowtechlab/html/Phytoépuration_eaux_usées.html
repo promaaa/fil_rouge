@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Phytoépuration eaux usées</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Phytoépuration eaux usées</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/9/96/Phyto%C3%A9puration_eaux_us%C3%A9es_47959486016_881fc69611_k.jpg/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_47959486016_881fc69611_k.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Assainissement écologique des eaux usées</div>
+        
+      </div>
+    
+    
+      
+        <p>L’assainissement a pour objectif de transformer les eaux polluées par l’activité humaine (domestique, agricole, industrielle) en eau assimilable par le milieu naturel. Il existe de nombreuses solutions d’assainissement à l’échelle collective comme des solutions individuelles dites autonomes. Toutes reposent sur l’activité bactériologique pour dépolluer l’eau souillée. De même, chaque système, en sortie, renvoie l’eau dans le milieu naturel par infiltration ou champ d’épandage. En sortie d’assainissement l’eau n’est pas potable. Elle est très riche en minéraux assimilables par le sol et les plantes, comparable à un engrais. Le renvoie dans le milieu aquatique est interdit sauf en cas d’impossibilité d’épandage ou d’infiltration. Le milieu aquatique est plus sensible que le sol, l’apport d’eau chargée en nutriments comporte un fort risque de perturbation du milieu naturel allant jusqu’à son asphyxie ou eutrophisation.</p>
+      
+        <p>Les pollutions de l’eau sont rassemblées dans quatre familles :<ul><li>la pollution organique (carbonée, azotée, phosphorée) est principalement issue des substances d’origine biologique (excréments, urines, fumiers, lisiers …). Ces particules sont oxydables, c’est-à-dire qu’en présence d’oxygène des bactéries sont capables de les dégrader et de les transformer en minéraux.</li><li>la pollution microbiologique est liée à la précédente. En étant chargée d’excréments, les eaux usées sont riches en micro-organismes pathogènes : virus, bactéries … qui sont nuisibles pour la santé et l’environnement. Une forte concurrence bactérienne permet d’empêcher le développement et la prolifération de ces parasites.</li><li>la pollution chimique regroupe l’ensemble des grands polluants issus de l’activité humaine tels que les médicaments, les pesticides, les hydrocarbures, les métaux et métaux lourds… Ces produits chimiques sont dangereux pour l’environnement qu’ils polluent durablement de par leur haute toxicité et leur faible biodégradabilité. Les systèmes actuels d’assainissement (collectif ou non) sont très peu efficaces face cette pollution complexe et variée. Les polluants se retrouvent donc dans le milieu naturel et sont bio-accumulés. Ils remontent ainsi la chaine alimentaire et augmentent leur concentration à chaque nouvel échelon.</li><li>Les matières en suspension (MES) sont des particules solides insolubles. A long terme elles provoquent le colmatage des systèmes de filtration.</li></ul></p>
+      
+        <p>Comme tous les autres systèmes d’assainissement (station d’épuration, fosse septique, fosses toutes eaux, microstation…) la phytoépuration est basée sur le principe de séparation des matières solides et liquides ainsi que la dégradation des particules par les bactéries. La phytoépuration (ou les filtres plantés) repose sur trois acteurs :</p>
+      
+        <p>- les bactéries, elles dégradent les particules organiques pour les rendre assimilables par le milieu naturel,</p>
+      
+        <p>- le substrat, constitué de graviers ou granulats, il constitue l’habitat des bactéries qui viennent se fixer à la surface de chaque élément. Il joue également un rôle important pour l’enracinement des plantes. Avec une granulométrie allant du plus fin au plus grossier, le substrat est également un filtre permettant de laisser passer l’eau tout en bloquant les plus gros éléments.</p>
+      
+        <p>- les plantes, avec le développement de leurs racines et le mouvement de leurs parties aériennes elles décolmatent le filtre qui, contrairement à toutes les autres solutions, s’auto-entretient. De plus elles stimulent l’activité bactérienne autour de leurs racines : la rhizosphère. Elles jouent un rôle mineur dans la décontamination de l’eau en absorbant une petite proportion des minéraux.</p>
+      
+        <p>La phytoépuration est une solution performante pour la qualité de l’assainissement des eaux usées. Contrairement aux autres systèmes un filtre planté ne consomme pas d’énergie électrique (brassage, bullage, pompe…) et ne demande pas d’entretien complexe tel que la vidange des boues et son acheminement vers un lieu de traitement. En étant énergétiquement/logistiquement autonome la phytoépuration est la solution d’assainissement la plus écologique.</p>
+      
+        <p>La phytoépuration est une solution extensive, qui prend de la place (plus de place qu'un filtre compact mais moins de place qu'un filtre à sable), entre 2 et 4m²/équivalent habitant (EH). Les filtres sont dimensionnés en fonction de la capacité d’accueil de l’habitat et non pas le nombre d’habitants., avec une pièce principale = 1 EH. Par exemple une maison avec 3 chambres, 1 cuisine-salle à manger et 1 séjour a donc 5 pièces principales, l’assainissement doit donc avoir une capacité de 5 équivalents habitants. L’assainissement individuel étant contrôlé sur les moyens et non les résultats, il faudra au minimum 10m² de filtres plantés.</p>
+      
+        <p>Les filtres ainsi installés, via la diversité des plantes filtrantes, ont un rôle esthétique dans les jardins. De plus, ils recréent des zones humides, élément nécessaire au développement de la vie. De nombreux auxiliaires (insectes, oiseaux, batraciens …) font leur retour, c’est un bon pas vers la biodiversité. La phytoépuration étant différente du lagunage il n’y a pas d’eau en surface des filtres mais des graviers, il n’y a donc pas de risque de prolifération de moustiques.</p>
+      
+        <p>Il reste cependant que l’installation de filtres plantés est un investissement supérieur à celui d’une solution conventionnelle (Pour 5 EH : environ 10 000 € pour les filtres plantés contre 7 000 € pour une fosse toutes-eaux). Le système est rentabilisé en une quinzaine d’années car il ne demande ni entretien par une main d’œuvre qualifiée, ni vidange de fosse (il n'y a pas de fosse), ni énergie (hormis les cas nécessitant un poste de relevage pour l'alimentation des filtres, mais cela ne coûte que quelques euros par an le cas échéant).</p>
+      
+        <p>Si votre habitat est en assainissement collectif (tout à l’égout) vous ne pouvez pas passer en assainissement autonome. Mais ne perdez pas espoir, la phytoépuration est le système d’assainissement majoritaire en France pour les villes de moins de 1 000 habitants, vos eaux usées sont peut-être déjà aux pieds des plantes !</p>
+      
+        <p>Pour limiter la pollution du milieu naturel, les systèmes d’assainissement sont soumis à contrôle. Une obligation de résultats est demandée à l’assainissement collectif (>20 EH). L’assainissement individuel doit répondre à une obligation de moyens.</p>
+      
+        <p>La phytoépuration individuelle doit donc être agréée pour être mise en place, c’est-à-dire que si l’on souhaite passer en filtres plantés chez soi il faut commander une étude et l’installation à une entreprise dont le système est protégé est a reçu un agrément ministériel.</p>
+      
+        <p>En France, le service public d'assainissement non collectif (SPANC) est chargé du contrôle de tous les systèmes d'assainissement des eaux usées domestiques des habitations non raccordées au réseau d'assainissement collectif.</p>
+      
+        <p>Il n’empêche que l’autoconstruction est possible en faisant appel à un accompagnateur agréé qui fera l’étude des sols, le dimensionnement, fournira les matériaux et les bons conseils nécessaires à une réalisation durable et performante. L’autoconstruction permet une économie de 30% minimum sur le système global et d’aller plus loin dans la maitrise et la connaissance de son habitat.</p>
+      
+        <p>Le système présenté a été réalisé avec Kévin Quentric, accompagnateur à l’autoconstruction affilié au réseau Aquatiris. Ce tutoriel retrace les grandes étapes d’une installation, il permet d’évaluer la capacité d’autoconstruction et l’intérêt des filtres plantés. Pour passer à l’acte dans le respect de la loi Française il faudra se rapprocher d’une entreprise dons les solutions sont agréées.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 8 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 6500 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Phytoépuration_eaux_usées" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Phytoépuration_eaux_usées</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Gravier (granulométrie 12/20 ou 20/40mm)</li><li>Gravillons (granulométrie 4/8, 4/12 ou 6/10 mm)</li><li>Sable siliceux lavé (granulométrie 0/4 mm)</li><li>Géotextile anti-poinçonnant</li><li>Bâche EPDM</li><li>Tuyaux PVC</li><li>2 raccords T PVC</li><li>Drains</li><li>Colle PVC</li><li>Deux regards</li><li>Deux vannes</li><li>Deux passe-parois</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Quelques pelles et de bons amis ou une pelleteuse</li><li>Pelle</li><li>Pioche</li><li>Râteau</li><li>Niveau</li><li>Scie</li><li>Cutter</li><li>Perceuse-visseuse</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Dimensionnement des filtres</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Phyto%C3%A9puration_eaux_us%C3%A9es_schema_filtre.png/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_schema_filtre.png' alt='Phytoépuration eaux usées schema filtre.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/20/Phyto%C3%A9puration_eaux_us%C3%A9es_Schema_UP_filtres.png/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Schema_UP_filtres.png' alt='Phytoépuration eaux usées Schema UP filtres.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c9/Phyto%C3%A9puration_eaux_us%C3%A9es_Plantation_FV_1-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Plantation_FV_1-min.JPG' alt='Phytoépuration eaux usées Plantation FV 1-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il existe de nombreuses solutions d’épuration par filtres plantés, le filtre proposé dans ce tutoriel est la solution la plus utilisée en assainissement collectif déclinée en « format individuel ». Il est composé de deux filtres ayant des rôles différents : un filtre vertical puis un filtre horizontal.</li><li>Le filtre à écoulement vertical (FV) reçoit les eaux usées chargées, il est constitué de deux lits en parallèle utilisés tour à tour. Le sable en surface du filtre permet de laisser passer l’eau en bloquant les grosses particules. L’alternance de lits d’une semaine à l’autre permet au matière de composter en surface du filtre.<ul><li>L’eau percole à travers les graviers et est collectée par un drain en bas du filtre, elle passe de 4 à 8 heures dans cette première étape. Le milieu n’est pas noyé dans l’eau il est donc riche en oxygène ce qui stimule l’activité bactérienne aérobie nécessaire à la minéralisation des particules organiques. La minéralisation est une suite de réactions chimiques complexes basée sur le principe d’oxydation des composés organiques. Cette minéralisation permet de transformer un élément non assimilable par une plante à un élément assimilable. La simplification des réactions ressemble à Norg => NH4+ => NO2- => NO3-.</li></ul></li><li>Le filtre verticale fait 60 à 80 cm de profondeur et a une superficie de 2m²/EH.<ul><li>Le filtre à écoulement horizontal (FH) récupère les eaux usées filtrées à la suite du filtre verticale. Le filtre horizontal travaille « en charge » c’est-à-dire que le substrat est quasi saturé d’eau en permanence. En absence d’oxygène se sont des bactéries anaérobiques qui vont dénitrifier l’eau : elles prélèvent l’oxygène dont elles ont besoin sur les molécules de nitrates qui vont se transformer en diazote : N03- => N2O => N2.</li></ul></li><li>Le filtre à écoulement horizontal mesure 2m²/EH pour une profondeur de 60cm.</li><li>Pour que l’assainissement soit entièrement autonome et qu’il ne consomme pas d’énergie nous utiliserons la gravité pour alimenter les deux filtres. Il faut donc que le haut du filtre vertical soit plus bas que le point de collecte des eaux usées de la maison. De même le haut du filtre horizontal doit être plus bas que le fond du filtre vertical. L’installation sera donc probablement sur la partie basse du jardin. Si cela n’est pas possible car le terrain est plat il faut installer une pompe de relevage entre le point de collecte et le filtre vertical, ce dernier sera hors sol, le filtre horizontal quant à lui est enterré.</li><li>Les filtres doivent être installés à plus de 3 mètres d’arbres, leurs racines risqueraient de percer les membranes d’étanchéité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - FV - Fouille</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Phyto%C3%A9puration_eaux_us%C3%A9es_Terrassement_FV-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Terrassement_FV-min.JPG' alt='Phytoépuration eaux usées Terrassement FV-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/88/Phyto%C3%A9puration_eaux_us%C3%A9es_TerrassementFV_FH-en-contrebas-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_TerrassementFV_FH-en-contrebas-min.JPG' alt='Phytoépuration eaux usées TerrassementFV FH-en-contrebas-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Phyto%C3%A9puration_eaux_us%C3%A9es_Enceinte_hors-sol_bois-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Enceinte_hors-sol_bois-min.JPG' alt='Phytoépuration eaux usées Enceinte hors-sol bois-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/17/Phyto%C3%A9puration_eaux_us%C3%A9es_Anti-racine_avec_travers_e_de_paroi_pos_e_en_attente-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Anti-racine_avec_travers_e_de_paroi_pos_e_en_attente-min.JPG' alt='Phytoépuration eaux usées Anti-racine avec travers e de paroi pos e en attente-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f7/Phyto%C3%A9puration_eaux_us%C3%A9es_Enceinte_panneaux_b_ton_3_-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Enceinte_panneaux_b_ton_3_-min.JPG' alt='Phytoépuration eaux usées Enceinte panneaux b ton 3 -min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>En fonction de la disposition du terrain<ul><li>Creuser ou maçonner ou réaliser en bois la structure du filtre vertical de 90cm X 2m X nombre d’équivalent-habitant en mètre.</li><li>Ensabler légèrement pour avoir un fond plat et une pente légère (≈1%) en direction du deuxième filtre</li><li>Pour les constructions enterrées, poser une barrière anti-racines</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - FV - Plomberie</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4c/Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Plomberie_3_voies-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Plomberie_3_voies-min.JPG' alt='Phytoépuration eaux usées FV - Plomberie 3 voies-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Installer un regard en haut du filtre pour l’arrivée des eaux usées chargées</li><li>Dans ce regard installer une vanne 3 voies pour la répartition des eaux entre les 2 lits.</li><li>Installer un regard en bas du filtre qui récupère les eaux drainées.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - FV - Etanchéité</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Phyto%C3%A9puration_eaux_us%C3%A9es_D_roulement_g_osynth_tiques-min.jpg/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_D_roulement_g_osynth_tiques-min.jpg' alt='Phytoépuration eaux usées D roulement g osynth tiques-min.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9f/Phyto%C3%A9puration_eaux_us%C3%A9es_Travers_e_de_paroi_FH_pos_e_avant_d_coupe-min.jpg/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Travers_e_de_paroi_FH_pos_e_avant_d_coupe-min.jpg' alt='Phytoépuration eaux usées Travers e de paroi FH pos e avant d coupe-min.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Poser un géotextile</li><li>Poser une membrane EPDM qui fera l’étanchéité</li><li>Poser un géotextile</li><li>Installer un passe* paroi sur la membrane EPDM dans le bas du filtre</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - FV - Drainage</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bb/Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_2_lits-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_2_lits-min.JPG' alt='Phytoépuration eaux usées FV - 2 lits-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/93/Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Drain_-_Sable-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Drain_-_Sable-min.JPG' alt='Phytoépuration eaux usées FV - Drain - Sable-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bf/Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_drain_gravillons-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_drain_gravillons-min.JPG' alt='Phytoépuration eaux usées FV - drain gravillons-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Drain_Gravier-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Drain_Gravier-min.JPG' alt='Phytoépuration eaux usées FV - Drain Gravier-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Drain-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FV_-_Drain-min.JPG' alt='Phytoépuration eaux usées FV - Drain-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cd/Phyto%C3%A9puration_eaux_us%C3%A9es_FV_rempli-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FV_rempli-min.JPG' alt='Phytoépuration eaux usées FV rempli-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Poser un drain fente vers le bas dans le bas du filtre avec un T vers le passe paroi.</li><li>Installer une cheminée d’aération du côté haut du drain et un bouchon de l’autre.</li><li>Remplir de gravier (granulométrie 10/20 mm) sur 20 cm</li><li>Séparer les deux lits en mettant une séparation en béton de 60 cm de haut sur toute la largeur</li><li>Remplir de gravillons (granulométrie 4/8 mm) sur 30 cm</li><li>Remplir de sable siliceux lavé (granulométrie 0/2 mm) sur 10 cm</li><li>Installer les tuyaux d’alimentation en sortie de la vanne 3 voies, un pour chaque lit</li><li>Sous la sortie des tuyaux d’alimentations, poser une pierre, une tuile, pour éviter que l’arrivée des eaux usées ne creusent le substrat.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - FV - Plantation</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/2/2a/Phyto%C3%A9puration_eaux_us%C3%A9es_800px-Phragmites_australis_inflorescences_-min.jpg' alt='Phytoépuration eaux usées 800px-Phragmites australis inflorescences -min.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/67/Phyto%C3%A9puration_eaux_us%C3%A9es_Plantation_FH_1-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Plantation_FH_1-min.JPG' alt='Phytoépuration eaux usées Plantation FH 1-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les plantes présentent dans le filtre vertical doivent être très rustiques en résistant à de grands écarts de température entre l’été et l’hiver, aux variations entre les phases d’inondation et de repos ainsi qu’au contact avec les eaux chargées en matière organique.</li><li>Le roseau commun (phragmites communis), à ne pas confondre avec la massette, est la plante la plus communément utilisée en filtre vertical. La densité de plantation est de 6 plants/m².</li><li>On peut également planter des Açores odorant, Populage des marais, Pontédérie à feuilles en cœur, Véronique des ruisseaux, Scirpe lacustre, Massettes à large feuille.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - FH - Fouille</strong><p><strong>Étapes :</strong></p><ol><li>Le haut du filtre horizontal devant être plus bas que le fond du filtre vertical, ce filtre est creusé.<ul><li>Creuser le filtre horizontal de 60cm X 2m X nombre d’équivalent* habitant en mètre.</li><li>Ensabler légèrement pour avoir un fond plat et une pente légère (≈1%) vers la zone d’infiltration</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - FH - Plomberie</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b7/Phyto%C3%A9puration_eaux_us%C3%A9es_Travers_e_terre_FH_1.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Travers_e_terre_FH_1.JPG' alt='Phytoépuration eaux usées Travers e terre FH 1.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Installer un regard en bas du filtre qui récupère les eaux drainées.</li><li>Installer dans le regard un système de mise en charge (trop-plein) pour garder le bassin en eau. Le niveau de l’eau doit arriver quelques centimètres plus bas que les gravillons. Il faut creuser les graviers pour avoir accès à l’eau.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - FH - Etanchéité</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/16/Phyto%C3%A9puration_eaux_us%C3%A9es_Remplissage_FH-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Remplissage_FH-min.JPG' alt='Phytoépuration eaux usées Remplissage FH-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Poser un géotextile</li><li>Poser une membrane EPDM qui fera l’étanchéité</li><li>Poser un géotextile</li><li>Installer un passe-paroi sur la membrane EPDM dans le bas du filtre</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - FH - Drainage</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8e/Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_6-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_6-min.JPG' alt='Phytoépuration eaux usées FH - Drain 6-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4f/Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_5-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_5-min.JPG' alt='Phytoépuration eaux usées FH - Drain 5-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/04/Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drainage-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drainage-min.JPG' alt='Phytoépuration eaux usées FH - Drainage-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/71/Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_2-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_2-min.JPG' alt='Phytoépuration eaux usées FH - Drain 2-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b1/Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain-min.JPG' alt='Phytoépuration eaux usées FH - Drain-min.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6a/Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_3-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_FH_-_Drain_3-min.JPG' alt='Phytoépuration eaux usées FH - Drain 3-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Poser un drain fente vers le bas dans le bas du filtre avec un T vers le passe paroi.</li><li>Remplir de gravillons (granulométrie 4/8 mm) sur 40 cm</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - FH - Plantation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a4/Phyto%C3%A9puration_eaux_us%C3%A9es_Nikon_-_2018.07.17_-_58-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Nikon_-_2018.07.17_-_58-min.JPG' alt='Phytoépuration eaux usées Nikon - 2018.07.17 - 58-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’eau du filtre à écoulement horizontale a déjà été séparée des matières organiques, les plantes épuratoires peuvent donc un peu moins résistantes que les roseaux, tout en restant rustiques et adaptées au milieu aquatique. En général, on profite de ce filtre pour augmenter la biodiversité et introduire des plantes qui fleurissent à des périodes différentes de l’année. La densité de plantation est de 6 plants/m²</li><li>Les plantes suivantes sont intéressantes dans les filtres plantés :<ul><li>Massette (Typha Latifolia)</li><li>Rubanier (Sparganium erectum)</li><li>Plantain d’eau (Alisma plantago)</li><li>Scirpe (Scirpus lacustris)</li><li>Menthe aquatique (Mentha aquatica)</li><li>Iris (Iris pseudocorus)</li><li>Salicaire ( Lythrum salicaria)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Exutoire</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/13/Phyto%C3%A9puration_eaux_us%C3%A9es_Infiltration-min.JPG/800px-Phyto%C3%A9puration_eaux_us%C3%A9es_Infiltration-min.JPG' alt='Phytoépuration eaux usées Infiltration-min.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>En sortie du filtre à écoulement horizontal l’eau est assimilable par le milieu naturel. La capacité d’absorption et de purification de l’eau par le sol est très importante dans sa couche superficielle : la terre végétale. L’objectif est que cette eau rejoigne doucement le milieu aquatique (nappe phréatique ou cours d’eau), l’infiltration doit donc être faite en surface.<ul><li>Creuser une tranchée de 30 cm de profondeur sur quelques mètres de long en aval du filtre horizontal</li><li>Installer un drain relié à la sortie du filtre horizontal.</li><li>Remplir de gravier</li></ul></li><li>Si le sol ne permet pas une infiltration car trop argileux ou compact, l’exutoire peut être un puits perdu ou directement dans un cours d’eau. Ces solutions restent toutefois à réaliser très occasionnellement et avec de grandes précautions car le milieu aquatique est particulièrement sensible aux perturbations générée par de l’apport d’eau concentrée en minéraux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Entretien et usage</strong><p><strong>Étapes :</strong></p><ol><li>Un filtre planté ne demande que très peu d’entretien et, s’il en est, on l’appelle plus communément jardinage.</li><li>Pendant l’hiver la partie aérienne des plantes va se dessécher, ce qui n’empêche pas le bon fonctionnement du système racinaire et des bactéries associées. Pour l’esthétique et favoriser la reprise végétative il faut couper ces parties sèches au début du printemps : le faucardage. Ces matières sont idéales pour le compostage ou faire du mulch, autrefois le roseau servait également à couvrir le toit des chaumières.</li><li>Avec des toilettes à eau, les eaux usées sont beaucoup plus chargées en matières organiques qu’en filière toilettes sèches, où elles sont presque inexistantes. Cette matière va composter sur le filtre vertical et s’accumuler avec le temps. Tous les 10 à 20 ans il faut récupérer les quelques centimètres de matière organique stabilisée qui feront un très bon amendement pour le sol. Il est conseillé de faire subir un cycle de compostage supplémentaire à cette matière car elle est envahie par les rhizomes de roseau. La montée en température provoquée par la dégradation du fumier va détruire les germes.</li><li>Lors des premiers mois d’utilisation des filtres plantés, il est recommandé d’apporter du compost sur le filtre vertical, ce qui permet de lancer l’activité bactérienne et de dissimuler les « premiers voyageurs » dans la masse en compostage. Par la suite, les plantes masqueront entièrement l’arrivée des eaux usées chargées et aucune odeur ne percera le mur végétal.</li><li>Pour une bonne dépollution et éviter la fermentation il faut alterner l’usage des lits du filtre vertical d’une semaine à l’autre. Après chaque semaine d’utilisation, par le jeu de vannes, changer de lit de filtration.</li><li>L’assainissement par filtre planté encourage l’utilisation de produits plus respectueux de l’environnement et c’est une bonne chose. De nombreux produits simplifiés existent pour l’entretien de la maison et l’hygiène. Plus les molécules sont simples plus elles seront facilement dégradées par les bactéries. A l’inverse les produits complexes, « huit en un », sont extrêmement difficile à réduire et polluent l’environnement.</li><li>Que ce soit en assainissement collectif ou non, il est important de rappeler que l’évier ou la chasse d’eau ne sont pas les poubelles de l’habitat. Que ce soient les huiles usagées, les peinture, les solvants, les hydrocarbures, les médicaments, les produits d’entretien… tous comportent des risques important pour l’environnement car ils ne seront que peu ou pas pris en charge par le système d’assainissement, quel qu’il soit. Ces produits doivent être pris en charge spécifiquement en déchetterie au risque de les retrouver dans la nature. L’assainissement n’est pas une poubelle !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Toilettes sèches et phytoépuration</strong><p><strong>Étapes :</strong></p><ol><li>Les agréments ministériels ne dissocient pas la filière toilettes sèches de celle à eau. Les filtres seront donc des mêmes dimensions quel que soit le système de toilettes utilisé.</li><li>Évidemment, une eau ne transportant pas les excréments est nettement moins chargée en parasites. De même, utiliser des produits d’hygiène et d’entretien simples non impactant pour l’environnement est à la portée de tous. L’utilisation de toilettes sèches permet de réduire fortement sa consommation d’eau potable et d’augmenter significativement sa production de compost si le besoin est identifié.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/4/4a/Phyto_puration_eaux_us_es_Phyto.JPG' alt='Phyto puration eaux us es Phyto.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab à l'occasion de l'exposition "En Quête d'un Habitat Durable" dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux")</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

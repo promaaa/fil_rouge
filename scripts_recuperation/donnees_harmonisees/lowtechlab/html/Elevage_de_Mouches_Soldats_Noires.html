@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Elevage de Mouches Soldats Noires</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Elevage de Mouches Soldats Noires</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/c/c5/Elevage_de_Mouches_Soldats_Noires_IMG_2488.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2488.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a pour but de faciliter la compréhension du cycle de vie de la mouche soldat noire et de permettre la création d'un élevage pour un usage domestique. Cette technologie a été documentée lors de l'escale de l'expédition Nomade des Mers en Malaisie. L'entreprise EntoFood, que nous avons visitée, effectue des recherches depuis près de 8 ans sur ces mouches et s’apprête à lancer son unité de production à grande échelle. Elle permettra le traitement de 300 tonnes de déchets organiques par jour !</div>
+        
+      </div>
+    
+    
+      
+        <p>La gestion des déchets, notamment en zone urbaine, est considérée comme l'un des enjeux environnementaux les plus important pour les prochaines années. Le recyclage des déchets organiques (biodéchets) est encore assez limité, bien que s'agissant de la plus grande fraction des déchets produits. Ils représentent plus du tiers de nos poubelles. Aujourd'hui, la plupart de ces déchets organiques, pourtant valorisables, sont enfouis ou incinérés, apportant des problèmes environnementaux majeurs (pollution des sols, de l'air et des nappes phréatiques, demande d'espaces de stockages de plus en plus grande...). La forte croissance des populations urbaines en fait un enjeu de taille pour les communes et de plus en plus de solutions sont expérimentées.</p>
+      
+        <p>Une solution de plus en plus utilisée est la conversion des déchets organiques par des insectes ou des larves, notamment celles de la mouche soldat noire (Black Soldier Fly, BSF): Hermetia illucens. Cette solution a suscité beaucoup d'attention au cours de la dernière décennie pour sa vitesse de traitement des déchets ainsi que pour la possibilité prometteuse d'utiliser les larves de BSF récoltées comme source de protéines pour l'alimentation animale, offrant ainsi une alternative précieuse aux aliments conventionnels (la farine de poisson notamment)</p>
+      
+        <p>Que ce soit à moyenne ou petite échelle, l'élevage de larves de mouches soldats noires ne demande que très peu de moyens et permet de traiter efficacement ses bio-déchets en les transformant en un résidu compostable et hyper-nutritif pour les sols. De plus, la récupération des larves est possible pour nourrir les animaux domestiques (canards, poules, oies, poissons...).</p>
+      
+        <p>En résumé, voici les avantages d'avoir un élevage de BSF:<ul><li>Les larves se composent à ±40% de protéines et à ±30% de graisse brute. Cette protéine d'insecte est de haute qualité nutritive et peut constituer une ressource intéressante pour l'alimentation animale (Poules, oies, canards, poissons...)</li><li>Il est démontré que les larves ont pour effet de neutraliser la plupart des bactéries transmettant des maladies, telles que Salmonella spp ou E.Coli, ce qui limite le risque de transmission de maladies aux animaux et aux humains. [1]</li><li>Une réduction de la masse humide de déchets organiques entre 50 et 80 %</li><li>Le résidu, une substance proche du compost, contient des éléments nutritifs et de la matière organique pouvant être utilisée directement sur les cultures.</li><li>L'élevage est peu coûteux et ne nécessite pas de moyens de production sophistiqués. Ce qui en fait une solution accessible dans toutes les régions du monde.</li><li>La mouche soldat noir (BSF) peut être rencontrée dans la nature à l'échelle mondiale dans les régions tropicales et subtropicales entre les latitudes 40°S et 45°N VIDEO DETAILLEE SUR LA CULTURE DE BSF: https://www.youtube.com/watch?v=5M6u9ZX5ecE</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Elevage_de_Mouches_Soldats_Noires" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Elevage_de_Mouches_Soldats_Noires</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Les matériaux utilisés dépendront du support utilisé pour construire le lieu de vie de vos larves. Celui-ci peut être fait dans une boite en bois, un bidon coupé en deux, une grande boite en plastique...</li><li>Pour un ordre de grandeur de taille, les dimensions de notre boîte permettent de traiter les déchets (alimentaires et issus de toilettes sèches) d'en moyenne trois personnes.</li><li>Pour la boite (120/65/30cm):<ul><li>Planches de 120/65cm x2</li><li>Planches de 120/30cm x2</li><li>Planches de 65/30cm x2</li><li>Tasseaux debois</li><li>Équerres</li><li>Charnières</li><li>Vis</li><li>Peinture et vernis</li><li>Bac en plastique de 100/60/15cm</li><li>Planchette et morceaux de bois pour fabriquer la rampe</li><li>Chambre à air</li><li>Agrafes</li><li>Boite en plastique pour récolter les larves</li></ul></li><li>Pour la volière (80/50/45cm):<ul><li>Tasseaux de 80/5/2cm x4</li><li>Tasseaux de 41/5/2cm x2</li><li>Tasseaux de 40/5/2cm x2</li><li>Planche de contreplaqué de 50/45cm (Pour le fond)</li><li>Charnières</li><li>Vis</li><li>Équerres</li><li>Moustiquaire</li><li>Planche de 50/10cm (Pour l'ouverture)</li></ul></li><li>Pour les nymphes et la ponte:<ul><li>Carton alvéolé ou plaquette de bois séparées par une punaise</li><li>Une boite pour mettre quelques déchets</li><li>Une boite pour mettre les nymphes</li><li>Du substrat sec (fibre de coco...)</li><li>Une boite pour l'hydratation des mouches</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Les outils dépendront de même de votre lieu de vie, pour la construction de la boite vous aurez besoin de:</li><li>Une scie électrique ou à main</li><li>Une scie cloche</li><li>Perceuse/Visseuse ou tournevis</li><li>Agrafeuse</li><li>Ponceuse</li><li>Pinceaux et rouleaux</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Construction de la boite d'élevage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Elevage_de_Mouches_Soldats_Noires_IMG_2471.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2471.JPG' alt='Elevage de Mouches Soldats Noires IMG 2471.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Elevage_de_Mouches_Soldats_Noires_IMG_2499.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2499.JPG' alt='Elevage de Mouches Soldats Noires IMG 2499.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/03/Elevage_de_Mouches_Soldats_Noires_IMG_2479.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2479.JPG' alt='Elevage de Mouches Soldats Noires IMG 2479.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Elevage_de_Mouches_Soldats_Noires_IMG_2475.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2475.JPG' alt='Elevage de Mouches Soldats Noires IMG 2475.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le milieu d'élevage peut-être réalisé avec des matériaux divers. Pour le prototype du bateau par exemple, nous avons construit une caisse en bois dans lequel nous mettons un bac en plastique contenant les déchets et les larves (Voir photo). On peut par exemple, utiliser un bidon en plastique coupé sur le dessus, ou une simple boîte en plastique.</li><li>Pour la construction:</li><li>1. Préparation des planches<ul><li>A l'aide d'une scie électrique ou à main, découper les 6 planches aux bonnes longueurs</li><li>Poncer les planches</li><li>Passer une sous-couche sur toutes les faces des planches et laisser sécher</li><li>Passer une couche de peinture bois et laisser sécher</li><li>Passer une couche de vernis (optionnel) et laisser sécher</li></ul></li><li>2. Assemblage de la boite<ul><li>A l'aide des équerres et des vis, assembler les planches sur le fond de la boite</li><li>A l'aide d’équerres et de vis, lier les différents côtés de la boite</li><li>Découper des tasseaux permettant de renforcer l'intérieur de la boite et d'y fixer le couvercle</li><li>A l'aide de vis, fixer les tasseaux sur la partie supérieure des parois</li><li>Préparer le couvercle en installant des charnières.</li><li>Installer le couvercle sur la boite et fixer les charnières</li></ul></li><li>3. Préparation du bac de déchet</li><li>Si votre bac de déchet n'est pas très haut, il peut être utile de mettre un obstacle supplémentaire contre la fuite des larves<ul><li>Passer une vieille chambre à air usagée tout autour de votre bac et laisser une partie sortant vers l'intérieur</li><li>Agrafer la chambre à air au bac</li><li>Déposer le bac au fond de la boite et le coller contre un côté</li></ul></li><li>4. Préparation de la rampe<ul><li>Découper la planchette en forme de trapèze pour que celle ci forme une rampe en étant posée sur les déchets et rejoigne le bord de la boite avec un angle inférieur à 45 degrés</li><li>Découper des tasseaux épousant les formes extérieurs de la rampe</li><li>Les fixer grâce à des vis sur la rampe</li></ul></li><li>5. Pose de la rampe</li><li>Pour faciliter la maintenance, nous mettons la rampe sur charnière pour pouvoir la relever et enlever facilement le bac des déchets<ul><li>Installer une charnière sur la partie inférieure de la rampe</li><li>Fixer la charnière sur la boite</li></ul></li><li>6. Découpe des ouvertures de la boite</li><li>Afin de permettre l'entrée des mouches et la sortie des larves, il faut percer des trous sur les côtés de la boite.</li><li>Pour les larves:<ul><li>Prendre les mesures de l'endroit ou arrive la rampe et compter 2cm de hauteur pour l'ouverture</li><li>A l'aide d'une perceuse, faire des trous aux 4 extrémités de votre ouverture</li><li>A l'aide d'une scie, relier ces trous afin de créer une ouverture</li></ul></li><li>Pour les mouches<ul><li>Sur les cotés de la boite, percer à l'aide d'une scie cloche une dizaine d'ouvertures de 5cm de diamètres</li></ul></li><li>7. Pose de la boite de récolte des larves<ul><li>A l'aide de vis, fixer la boite en plastique sous la fente de sortie des larves</li></ul></li><li>8. Supports de pontes (si pas de volière séparée)<ul><li>Découper des morceaux de cartons assez épais de 10cm par 5cm.</li><li>Assembler 4 morceaux grâce à de la ficelle</li><li>Fixer deux vis sur les tasseaux aux deux extrémités de la boîte</li><li>Accrocher une ficelle à ces vis</li><li>Accrocher les supports de pontes à la ficelle pour que ceux-ci soient au plus près des déchets</li></ul></li><li>Les recommandations générales pour la conception du milieu de vie sont les suivantes:</li><li>- Dimensionner votre bac de déchets en fonction de votre volume hebdomadaire. En effet, il ne faut pas une trop grosse couche de substrat donc il est mieux de pouvoir étaler ses déchets plutôt que de les empiler</li><li>- Percer des trous pour que les mouches femelles puissent venir pondre à l'intérieur.</li><li>- Mettre les supports de pontes au dessus des déchets, au plus proche. Ceux ci peuvent être constitués de cartons alvéolés ou de planchettes de bois séparées par une punaise (Il faut laisser un interstice dans lequel les mouches vont venir pondre). Lors de l'éclosion, les larves tomberont directement dans les déchets</li><li>- Avoir un bac de déchet bien étanche pour empêcher les larves de s'enfuir en cas de manque de nourriture.</li><li>- Mettre une rampe pour la sortie des larves. Celle ci peut être inclinée jusqu'à 45 degrés mais privilégier une pente plus douce. Les larves ayant tendance à suivre les bords de la boite pour trouver la sortie, il peut être bien que la rampe fasse toute la largeur de la boite</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Construction de la volière (optionnel)</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/52/Elevage_de_Mouches_Soldats_Noires_IMG_2733.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2733.JPG' alt='Elevage de Mouches Soldats Noires IMG 2733.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5e/Elevage_de_Mouches_Soldats_Noires_IMG_2735.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2735.JPG' alt='Elevage de Mouches Soldats Noires IMG 2735.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c1/Elevage_de_Mouches_Soldats_Noires_IMG_20190227_120532.jpg/800px-Elevage_de_Mouches_Soldats_Noires_IMG_20190227_120532.jpg' alt='Elevage de Mouches Soldats Noires IMG 20190227 120532.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6a/Elevage_de_Mouches_Soldats_Noires_IMG_20190227_120538.jpg/800px-Elevage_de_Mouches_Soldats_Noires_IMG_20190227_120538.jpg' alt='Elevage de Mouches Soldats Noires IMG 20190227 120538.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d9/Elevage_de_Mouches_Soldats_Noires_IMG_20190227_120637.jpg/800px-Elevage_de_Mouches_Soldats_Noires_IMG_20190227_120637.jpg' alt='Elevage de Mouches Soldats Noires IMG 20190227 120637.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si votre projet d'élevage de BSF se fait dans un milieu chaud toute l'année avec une présence naturelle des mouches, cette étape est inutile. Si au contraire vous pensez que les mouches ne viendraient/resteraient pas naturellement (comme nous sur le bateau), il est possible de créer un système en cycle fermé.</li><li>Après avoir testé un système ou la moustiquaire était directement située au dessus de la boite, nous avons décidé de construire une volière séparée, pour des questions d'étanchéité surtout. Nous avons pu reboucher les trous sur le dessus de notre boite et nous pouvons mettre les mouches et les œufs à l'abri en cas de mauvais temps.</li><li>Pour la construction de la volière:</li><li>Cadre en bois:<ul><li>Avec une scie, découper les tasseaux et la planche aux bonnes dimensions</li><li>Avec des vis, fixer les 4 tasseaux de 80cm aux 4 coins de la planches. Veiller à ce qu'ils soient tous dans le même sens.</li><li>Avec des vis, fixer un tasseau de 41cm entre deux tasseaux verticaux. Mettre son plus petit côté verticalement, sa largeur devant coller parfaitement aux tasseaux verticaux. Il devra être au plus haut, dans la continuité des tasseaux verticaux</li><li>Avec des vis, fixer le second tasseau de 41cm</li><li>Avec des équerres, fixer un tasseau de 40cm entre deux tasseaux verticaux. Mettre son plus petit côté horizontalement. Sa largeur devant coller parfaitement aux tasseaux verticaux. Il devra être au plus haut; dans la continuité des tasseaux verticaux.</li><li>Fixer le second tasseau de 40cm</li></ul></li><li>Moustiquaire et ouverture:<ul><li>Agrafer l'extrémité de la moustiquaire sur un tasseau, sur toute la hauteur.</li><li>Tirer la moustiquaire en la tendant au maximum jusqu'au tasseau suivant.</li><li>L'agrafer à chaque fois que vous passez un coin jusqu'à revenir au point de départ.</li><li>Faire de même sur le dessus de la volière</li><li>Découper la planche pour l'ouverture</li><li>Fixer deux charnières sur celle-ci</li><li>Fixer les deux charnières sur 2 tasseaux verticaux (sur leurs largeurGestion des nymphess)</li><li>Découper la moustiquaire sur toute la surface de l'ouverture</li></ul></li><li>Gestion des larves:</li><li>Dans la volière, mettre:<ul><li>Les supports de pontes placés au dessus d'une boîte dans laquelle sont placées des déchets</li><li>La boite avec les nymphes dans leurs substrat</li><li>Une boîte dans laquelle sera placée un tissu imbibé d'eau à changer régulièrement.</li></ul></li><li>Récolter les larves régulièrement et mettre le nombre voulu dans une boîte contenant le substrat sec dans lequel elles vont s'enfouir. Adapter la taille de la boîte en fonction du nombre de larves récupérées</li><li>Transférer la boîte dans cet espace et laisser la transformation en mouche, la reproduction et la ponte se faire. Récupérer les supports de pontes et les suspendre au dessus des déchets dans la boîte ou attendre que ceux ci éclosent avant de les mettre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Cycle de vie des mouches soldats noires</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a6/Elevage_de_Mouches_Soldats_Noires_IMG_2593.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2593.JPG' alt='Elevage de Mouches Soldats Noires IMG 2593.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a9/Elevage_de_Mouches_Soldats_Noires_IMG_2504.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2504.JPG' alt='Elevage de Mouches Soldats Noires IMG 2504.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3b/Elevage_de_Mouches_Soldats_Noires_IMG_2487.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2487.JPG' alt='Elevage de Mouches Soldats Noires IMG 2487.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f3/Elevage_de_Mouches_Soldats_Noires_IMG_2734.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2734.JPG' alt='Elevage de Mouches Soldats Noires IMG 2734.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de pouvoir mettre en place un élevage de BSF, il est important de comprendre son cycle de vie.</li><li>Celui se décompose en 4 phases principales:<ul><li>Stade larvaire</li></ul></li><li>Le stade larvaire est le seul ou la BSF va chercher à se nourrir. Ce sera son unique objectif, dans le but de faire une réserve de graisse suffisante pour pouvoir se transformer en nymphe, puis en mouche et se reproduire. Lors de sa vie, la larve prend 6000 fois sa masse initiale (Comme si un bébé atteignait le poids d'un éléphant en 2 semaines!!). A ce stade, la larve est de couleur blanche et passera de quelques millimètres à 2.5 cm de longueur.</li><li>Son environnement se limitera aux déchets que vous lui donnerez, dans lesquels elle s'enfouira pour se nourrir.</li><li>Ce stade dure en moyenne entre 14 et 16 jours</li><li>Pour les larves, les conditions de vie optimales peuvent être résumées ainsi :</li><li>- Climat chaud : la température idéale se situe entre 24 et 30°C. S'il fait trop chaud, les larves ramperont loin de la nourriture à la recherche d'un endroit plus frais. S'il fait trop froid, les larves ralentiront leur métabolisme, mangeront moins et se développeront plus lentement.</li><li>- Environnement ombragé : les larves évitent la lumière et recherchent toujours un environnement ombragé, à l'abri de la lumière du soleil. Si leur source de nourriture est exposée à la lumière, ils se déplaceront plus profondément dans la couche de nourriture pour échapper à la lumière.</li><li>- Taux d'humidité : la source de nourriture doit être très humide avec une teneur en eau comprise entre 60% et 90% afin que les larves puissent ingérer la substance.<ul><li>Pré-Nymphe</li></ul></li><li>Une fois qu'elle a accumulé assez de réserve, la larve va se transformer en pré-nymphe. A ce moment, elle remplace sa partie buccale par une structure en forme de crochet et devient brun foncé à gris anthracite. Elle utilisera ce crochet pour s'extraire de son environnement humide afin de rejoindre un lieu sec, ombragé et à l'abri des prédateurs pour se transformer en nymphe</li><li>Il faut donc prévoir une rampe de sortie vers un endroit sec, dans lequel elle pourra s'enterrer pour pouvoir initier le processus de nymphose<ul><li>Nymphe</li></ul></li><li>Une fois dans un environnement propice, la larve devient nymphe, arrête de bouger et est prête à se transformer en mouche. Ce processus va prendre entre deux et trois semaines.<ul><li>Mouche</li></ul></li><li>Du moment de son éclosion jusqu'à sa mort, la BSF n'aura qu'un but: se reproduire. Celle-ci vivra environ 1 semaine et n'a pas besoin de se nourrir, seule une source d'eau sera nécessaire pour qu'elle reste hydratée.</li><li>Les BSF ont par contre besoin de la lumière naturelle du soleil pour se reproduire ainsi que d'une température optimale comprise entre 25 et 32°C. Une fois qu'elles ont trouvé leur partenaire, les femelles vont chercher un endroit pour pondre. Elles apprécient particulièrement les interstices et les pondoirs peuvent être composés par exemple de carton alvéolé. De plus, elles vont chercher à pondre au plus près de la source de nourriture afin que dés leur éclosion, les larves puissent se nourrir.</li><li>La partie la plus délicate reste la reproduction, le cycle de vie de la mouche étant très court, les conditions d'accouplement doivent être remplies rapidement si l'on veut obtenir les générations suivantes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Nourriture</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Elevage_de_Mouches_Soldats_Noires_IMG_2628.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2628.JPG' alt='Elevage de Mouches Soldats Noires IMG 2628.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La larve de la BSF peut se nourrir de la plupart des déchets organiques même si elle les dégradera plus ou moins. Il est possible de ne leur rajouter de la nourriture que tous les deux à trois jours mais si les larves n'ont plus assez à manger, elles chercheront à s'extraire du bac pour partir à la recherche d'une autre source de déchets.</li><li>Les larves se nourriront surtout avec des déchets peu fibreux (fruits trop mûrs, légumes, certaines feuilles comme le chou...), il n'est donc pas utile de mettre les déchets verts (feuilles, branches, herbe). De même, les peaux de fruits épaisses (banane, orange, citron...) ou les noyaux ne seront pas dégradés complètement. Pour autant, elles gratteront toute la nourriture disponible et il peut être intéressant de les mettre, cela ne réduira juste pas le volume des déchets.</li><li>Il est aussi possible de leur donner des déjections animales ou humaines (fientes, toilettes sèches...). Les larves détruisant naturellement les bactéries telles que la salmonelle, il semble possible de pouvoir les donner aux animaux sans risque de transmission.</li><li>Les conditions de substrat optimales pour les larves peuvent être résumées ainsi :</li><li>- Profondeur: une dizaine de cm. S'il y'a plus, les larves iront s'enfouir plus profondément et pourraient ne pas ressortir. S'il y'a moins celles ci ne pourront pas s'enfouir correctement.</li><li>- Nutriments : les substrats riches en protéines et les hydrocarbonates facilement disponibles assurent une bonne croissance larvaire.</li><li>- Aspect de la nourriture: les larves n'ayant pas d’appareil de mastication, l'accès aux nutriments sera plus facile si le substrat est composé de petits morceaux ou même sous forme liquide ou pâteuse.</li><li>- Fréquence de remplissage: toujours vérifier que les larves ont assez de nourriture. Si les larves encore blanches (pas encore au stade de pré-nymphes) cherchent à s'extraire cela peut en être la cause.</li><li>- Humidité: 80% d'humidité est l'idéal. Si le substrat est trop sec elles ne pourront pas bien assimiler les aliments, s'il est trop humide elles chercheront à sortir vers un endroit plus sec.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Récolte des larves</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b8/Elevage_de_Mouches_Soldats_Noires_IMG_2642.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2642.JPG' alt='Elevage de Mouches Soldats Noires IMG 2642.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/78/Elevage_de_Mouches_Soldats_Noires_IMG_2632.JPG/800px-Elevage_de_Mouches_Soldats_Noires_IMG_2632.JPG' alt='Elevage de Mouches Soldats Noires IMG 2632.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Au bout de 2 semaines passée à se nourrir des déchets, les larves de BSF peuvent être récoltées. A ce stade, les larves ont atteint leur poids maximum, mais ne se sont pas encore transformées en pré-nymphe. Leur valeur nutritionnelle est donc à son maximum. La récolte est le processus par lequel les larves sont séparées du résidu. Pour ce faire, on peut utiliser un tamis à manuel ou automatisé qui permet de séparer facilement les larves des résidus.<ul><li>Utiliser une pelle pour étaler une couche de compost et de larves sur le tamis. D'après nos essais, il est préférable d'utiliser un tamis avec des mailles relativement grande.</li><li>Verser de l'eau sur la couche étalée pour emporter les larves dans le bac</li><li>Une fois le bac plein, verser le dans une caisse sur laquelle vous aurez au préalable installé un filtre plus fin pour récupérer les larves (une moustiquaire fonctionne très bien).</li><li>Les larves ainsi récoltées peuvent être données directement à manger à des animaux (volailles, poissons...) ou déshydratées (au four solaire par exemple) et réduites en farine pour les conserver.</li><li>Le résidu de déchets organiques peut être séché au soleil et utilisé comme compost.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

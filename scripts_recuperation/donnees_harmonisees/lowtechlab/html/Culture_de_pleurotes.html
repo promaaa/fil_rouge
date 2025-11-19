@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Culture de pleurotes</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Culture de pleurotes</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/7/78/Culture_de_pleurotes_NDM-mushrooms-IMG_6537-_Sidonie_Frances_-_Low-tech_Lab.jpg/ia-f722ed456d9bb27091c21e375b9c4bfb-px-Culture_de_pleurotes_NDM-mushrooms-IMG_6537-_Sidonie_Frances_-_Low-tech_Lab.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Culture domestique de champignons comestibles.</div>
+        
+      </div>
+    
+    
+      
+        <p>Cette notice aborde la culture domestique de champignons comestibles, ici des pleurotes grises "pleurotus ostreatus".</p>
+      
+        <p>Intérêt de la culture de pleurotes grises<ul><li>Ecologie/Economie :</li></ul></p>
+      
+        <p>Les champignons sont un des rares organismes à se nourrir de lignine et de cellulose. Ces éléments sont présents dans de nombreux déchets de l'agriculture et d'autres activités (paille, marc de café, sciure de bois, etc). C'est donc un excellent moyen de valoriser ces déchets. A la fin de la culture des champignons, il est possible de réintégrer au compost le mycélium et substrat ayant servi à la culture. La culture de champignons peut donc permettre un revenu complémentaire pour les producteurs de ce type de déchets. A titre d'exemple, une jeune entreprise de paris a produit 2,5T de pleurotes sur 30m² en 6 mois en réutilisant du marc de café.<ul><li>Nutrition :</li></ul></p>
+      
+        <p>Les pleurotes ne font pas partie des aliments les plus nutritifs, cependant ils sont quand même source de plusieurs éléments intéressants: vitamines B3 (niacine), B2, B5, de minéraux (cuivre, phosphore, potassium, fer, zinc), de plus les pleurotes contiennent 5 fois plus de protéines que la plupart des légumes. Cliquez ici pour avoir plus amples informations sur les valeurs nutritives du pleurote.</p>
+      
+        <p>Etape de la culture :<ul><li>La culture mère: La culture de démarrage (ou culture mère) se fait à partir d’une fructification fraîche (=champignon frais) et saine ou peut s'acheter chez un producteur de blanc. Le blanc: c'est le mycélium du champignon cultivé dans un milieu stérile qui sert à la multiplication. La culture mère est comme "une graine" qui permet de lancer plusieurs cultures de champignons.</li><li>L'envahissement du blanc: Avec le blanc de la culture-mère on peut alors inoculer des récipients qui contiennent le substrat, le mycélium envahira tout le substrat. Une fois le substrat complètement envahi par le blanc, la dernière phase commence.</li><li>Fructification et récolte: Quand le substrat est totalement envahit, il faut provoquer un changement des conditions environnementales (T°C, luminosité, concentration en CO2) et permettre la fructification, qui est l'apparition de la partie du champignon que l'on consomme (pied et chapeau). Il n'y a plus qu’à récolter vos champignons et les consommer.</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 month(s) mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 40 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Culture_de_pleurotes" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Culture_de_pleurotes</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Boite de Pétri</li><li>Alcool</li><li>Carton</li><li>Bouteilles plastiques</li><li>Pleurotes fraîches</li><li>Coton</li><li>Substrat (copeaux de bois, marc de café, sciure de bois, paille,...)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Scalpel, couteau</li><li>Outils de stérilisation, pasteurisation</li><li>Stériliser vos boîtes de Petri, couteau, carton.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Stérilisation et préparation des cultures mères</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Culture_de_pleurotes_IMG_0835.JPG/800px-Culture_de_pleurotes_IMG_0835.JPG' alt='Culture de pleurotes IMG 0835.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fb/Culture_de_pleurotes_IMG_0868.JPG/800px-Culture_de_pleurotes_IMG_0868.JPG' alt='Culture de pleurotes IMG 0868.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e7/Culture_de_pleurotes_IMG_0844.JPG/800px-Culture_de_pleurotes_IMG_0844.JPG' alt='Culture de pleurotes IMG 0844.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/76/Culture_de_pleurotes_IMG_1110.JPG/800px-Culture_de_pleurotes_IMG_1110.JPG' alt='Culture de pleurotes IMG 1110.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remarque : Le carton présente l'avantage d'être un milieu de culture “sélectif” car il est pauvre en nutriment et sucre. La plupart des contaminants ont besoin de sucre dans le substrat pour se développer alors que le mycélium (d’espèces poussant sur du bois) peut se contenter de carton.<ul><li>Stériliser les boites de pétri (en les passant à l'éthanol 70% et/ou sous UV) ou les bocaux en verre (les faire bouillir pendant 15-20min)</li><li>Découper des morceaux de carton de 3 cm de côté.</li><li>Stériliser les morceaux de carton en les trempant dans l'eau bouillante environ 10 minutes.</li><li>Déposez ensuite vos morceaux de carton dans des pots en verre ou des boites de Pétri. Le carton doit être bien humide mais pas complétement imbibé d’eau (laissez le égoutter quelques instants)</li><li>Laver méticuleusement le champignon</li><li>Tremper le scalpel/couteau dans l'alcool puis chauffez-le au rouge avec une flamme (sans fumée).</li><li>Laisser refroidir pendant 10 secondes</li><li>Découper les pleurotes dans le sens de la longueur et prélevez un petit morceau au niveau de l'encolure des pleurotes (voir photo).</li><li>Disposer les morceaux de pleurotes sur le carton dans vos boîtes de Pétri. Inoculer au moins 5 boîtes de Pétri pour qu'il y ait plus de chances de réussite.</li><li>Mettre les boîtes de Pétri dans un incubateur où il n'y a pas de lumière avec une température entre 25-30°C. Il faut ensuite attendre 7-15 jours que le mycélium ait bien envahit tout le carton avant d'inoculer vos bouteilles de substrat.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparation et stérilisation des bouteilles de substrat</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Culture_de_pleurotes_IMG_0925.JPG/800px-Culture_de_pleurotes_IMG_0925.JPG' alt='Culture de pleurotes IMG 0925.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Culture_de_pleurotes_IMG_0975.JPG/800px-Culture_de_pleurotes_IMG_0975.JPG' alt='Culture de pleurotes IMG 0975.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Culture_de_pleurotes_IMG_0982.JPG/800px-Culture_de_pleurotes_IMG_0982.JPG' alt='Culture de pleurotes IMG 0982.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les champignons que nous avons l’intention de cultiver pour la consommation doivent être en mesure de coloniser le substrat avant d’autres champignons et bactéries. A cette fin, on stérilise le substrat et la bouteille auquel on viendra ajouter le mycélium cultivé préalablement (exempt de tout contaminant). Cette technique donne au champignon cultivé une longueur d’avance sur les autres.<ul><li>Mettre les copeaux de bois dans un contenant.</li><li>Ajouter de l'eau jusqu'à recouvrir complétement les copeaux</li><li>Ajouter environ 3% du poids des copeaux en carbonate de calcium (de la craie ou coquilles concassées de crustacés).</li><li>Recouvrir le mélange et laisser le reposer pendant une journée pour que les endospores pathogène se développent et soient plus facile à éliminer par la suite.</li><li>Remplir les bouteilles de plastique avec votre substrat. Il doit avoir un taux d'humidité 60-65%. Percer les bouchons des bouteilles et mettre un bouchon de coton au niveau du goulot, ce qui permet les échanges gazeux tout en évitant aux germes indésirables de rentrer. Refermer avec les bouchons troués.</li></ul></li><li>Remarque : Pour connaitre le bon taux d'humidité, presser une boulette de sciure, il faut que quelques gouttelettes coulent et non un filet d'eau.<ul><li>Stériliser les bouteilles contenant le substrat. Ici nous les avons laisser dans un four solaire pendant une journée. Il est également possible d'utiliser un micro-onde. Laisser les refroidir.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Inoculation du substrat</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5b/Culture_de_pleurotes_IMG_1108.JPG/800px-Culture_de_pleurotes_IMG_1108.JPG' alt='Culture de pleurotes IMG 1108.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ab/Culture_de_pleurotes_IMG_1109.JPG/800px-Culture_de_pleurotes_IMG_1109.JPG' alt='Culture de pleurotes IMG 1109.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/14/Culture_de_pleurotes_IMG_1111.JPG/800px-Culture_de_pleurotes_IMG_1111.JPG' alt='Culture de pleurotes IMG 1111.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Ouvrir les bouteilles stérilisées pour les inoculer avec vos cultures mères, riche en mycélium, passage délicat car il faut faire assez vite pour limiter les risques de contamination pendant l'ouverture des bouteilles. Il est important de travailler dans un milieu stérile lors de cette opération (mains propres, vêtements propres,etc...)</li><li>En utilisant une pince à épiler préalablement stérilisée à l'alcool à 70°C, déposer les bouts de cartons couvert de mycélium sur le substrat de vos bouteilles.</li><li>Refermer immédiatement les bouteilles et les mettre dans votre incubateur à une température de 20-30°C, sans lumière.</li><li>Laisser vos bouteilles dans l'incubateur le temps que le mycélium se propage dans toute votre bouteille et qu'elle devienne entièrement blanche (3-4 semaines en fonction des différents paramètres utilisés (t°C, humidité, substrats...).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fructification et récolte des champignons</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/5/59/Culture_de_pleurotes_primordia-pleurotus-ostreatus.jpg' alt='Culture de pleurotes primordia-pleurotus-ostreatus.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d3/Culture_de_pleurotes_IMG_8143.JPG/800px-Culture_de_pleurotes_IMG_8143.JPG' alt='Culture de pleurotes IMG 8143.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/81/Culture_de_pleurotes_IMG_8144_.JPG/800px-Culture_de_pleurotes_IMG_8144_.JPG' alt='Culture de pleurotes IMG 8144 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5d/Culture_de_pleurotes_r_colte-de-pleurotes.jpg/800px-Culture_de_pleurotes_r_colte-de-pleurotes.jpg' alt='Culture de pleurotes r colte-de-pleurotes.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans la forêt, le mycélium loge sous l’écorce dans la pénombre; en automne lorsqu’il se met à pleuvoir et que la température diminue, cela provoque un stress qui le pousse à fructifier afin de pouvoir se reproduire.</li><li>Cette initiation fructifère est de loin l’étape la plus délicate lors de la culture de champignon. Le cultivateur doit mettre en place une stratégie d’initiation afin de produire un changement des variables environnementales pour déclencher la formation des primordias (ébauches de champignons).</li><li>Les quatre principaux facteurs environnementaux à contrôler lors de l’initiation fructifère sont: l’humidité, l’aération, la température et la lumière.</li><li>L’humidité:</li><li>Une humidité élevée comprise entre 95% et 100% doit être apporté par un arrosage léger et régulier. Le substrat doit être placé dans des conditions proches du brouillard lorsqu’il arrive dans la chambre de fructification. Lorsque les primordias commencent à se former, une légère diminution de l’humidité jusqu’à 90% est généralement bénéfique.</li><li>L’aération:</li><li>Une bonne aération favorise l'apparition de primordias. Grâce à l’aération, le taux de dioxyde de carbone (CO2) diminue rapidement alors que l’oxygène (O2) augmente.</li><li>La température:</li><li>De nombreuses espèces ne formeront pas de champignons tant que la température n’aura pas diminué. Le moment idéal pour faire varier la température (et les autres facteurs) est lorsque le substrat est complètement colonisé. Lorsque la température est changée, il faudra attendre entre 24 et 72 heures pour que la température à l’intérieur du substrat soit égale à celle de l’air ambiant.</li><li>Pour les pleurotes:</li><li>T°C d'apparition des primordias: 10-15°C</li><li>T°C de fructification: 10-21°C</li><li>La lumière:</li><li>Dans la nature, la lumière agit comme une alerte signalant au mycélium qu’il devrait former des champignons afin que leurs spores soient dispersées dans un environnement dégagé. La lumière joue une rôle sur l’allongement du pied et le développement du chapeau du champignon. Les conditions idéales d’éclairage (intensité et longueur d’onde) varient selon les espèces. La lumière indirect du soleil, ou la lumière filtrée par la canopée forestière, sont considérées comme idéales pour les champignons des bois. La photopériode et les longueurs d’ondes spécifiques n’ont pas encore étaient établies pour toutes les espèces de champignons. La lumière directe du soleil ou une lumière de forte intensité est nuisible pour le mycélium. Les néons ne nuisent pas au mycélium et peuvent être utilisés pour une culture intérieur.<ul><li>Une fois que le mycélium a colonisé tout le substrat et que la bouteille est blanche, entreposer les bouteilles dans un endroit à la lumière (indirecte), bien ventilé et si possible en 10 et 15°C.</li><li>Percer des trous d’1,5 cm de diamètre quand vous sentez ou voyez des boules de primordias à travers la bouteille.</li><li>Bien arroser les primordias (3-4x/j en spray diffus). Dès qu’on a des primordias, elles doublent de volume chaque jour. Dans de bonnes conditions on peut obtenir des pleurotes prêts en 3-4jours.</li><li>Récolter les pleurotes avant que leur chapeau ne se retourne vers le haut. Récolter la grappe en la tournant intégralement avec la main, le tout en une fois.</li></ul></li><li>Récolte potentielle: de 750g à 2kg de champignons pour 1kg de substrat selon la maturité des champignons et le nombre de récolte. Dans de bonnes conditions, on peut obtenir 3 à 4 récoltes espacées de 7 à 14 jours sur une période de 45 et 55 jours.</li><li>Informations traduites de l’ouvrage de Paul Stamets: Growing gourmet and medicinal mushroom.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimensionner une installation photovoltaïque autonome</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dimensionner une installation photovoltaïque autonome</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/8/8c/Dimensionner_une_installation_photovolta_que_autonome_P1090053.JPG/ia-169bc6074ffb24afb2592fcbd97154cc-px-Dimensionner_une_installation_photovolta_que_autonome_P1090053.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Outils pour dimensionner une installation photovoltaïque hors réseau</div>
+        
+      </div>
+    
+    
+      
+        <p>La plupart des installations photovoltaïques sont aujourd'hui</p>
+      
+        <p>branchées sur le réseau électrique erdf/enedis, que ce soit</p>
+      
+        <p>sur des formules commerciales dites en "injection du surplus", ou</p>
+      
+        <p>en "injection totale".</p>
+      
+        <p>Avec les vieux compteurs, il est encore possible de</p>
+      
+        <p>"faire tourner à l'envers" le compteur electrique lorsque</p>
+      
+        <p>les panneaux produisent (un peu comme si linky soustrayait</p>
+      
+        <p>de votre consommation ce que vos panneaux produisent quelle que</p>
+      
+        <p>soit l'heure à laquelle la production a lieu)</p>
+      
+        <p>Le recours au réseau électrique est très pratique car cela évite</p>
+      
+        <p>le besoin de stocker l'électricité produite.</p>
+      
+        <p>Cependant, que ce soit pour des raisons d'évolution sociétale (laissons nous</p>
+      
+        <p>le droit de rêver à autre modèle urbanistique où les sites autonomes</p>
+      
+        <p>écologiques sans besoins d'infrastructures sont encouragés), pour</p>
+      
+        <p>des raisons de contraintes naturelles, ou par choix, on peut souhaiter</p>
+      
+        <p>être indépendant des réseaux, 100% autonome en énergie électrique</p>
+      
+        <p>J'ai initialement fait un petit bout de code pour dimensionner correctement</p>
+      
+        <p>en réseau autonome un mobilhome que je souhaitais rendre autonome,</p>
+      
+        <p>puis pour brancher un frigo et un congélateur (qui nécessitent un</p>
+      
+        <p>approvisionnement relativement constant, c'est à dire sans coupure)</p>
+      
+        <p>L'ines propose déjà des outils ici:</p>
+      
+        <p>http://ines.solaire.free.fr/pvisole_1.php</p>
+      
+        <p>et ici:</p>
+      
+        <p>https://autocalsol.ines-solaire.org/etude/localisation/</p>
+      
+        <p>Cependant, les hypothèses sont à 1kWh produit par kWc en hiver</p>
+      
+        <p>pour le premier lien et on n'a que des moyennes pour le second lien.</p>
+      
+        <p>En outre, on n'a pas de possibilité de "data-tester" le nombre de jours de</p>
+      
+        <p>blackout selon le dimensionnement.</p>
+      
+        <p>Ce tuto permet donc de dimensionner en "data-testant", c'est à dire</p>
+      
+        <p>avec des hypothèses de production en hiver au jour le jour,</p>
+      
+        <p>moins "moyénée", et permet aussi de tester des dimensionnement</p>
+      
+        <p>plus économes en capacité de batterie (qui coutent encore cher en 2024).</p>
+      
+        <p>Compte tenu du nombre de brevets déposés dans le domaine</p>
+      
+        <p>du stockage électrique des 15 dernieres années, et compte tenu</p>
+      
+        <p>des évolutions géopolitiques au sein des brics, il est probable</p>
+      
+        <p>qu'on aboutisse à des coûts de stockage nettement diminués</p>
+      
+        <p>dans les prochaines années et l'algorithme pour optimiser</p>
+      
+        <p>le dimensionnement au stockage au plus juste sera peut</p>
+      
+        <p>être moins pertinent économiquement parlant dans les années</p>
+      
+        <p>à venir.</p>
+      
+        <p>Mais un stockage à très bas coût remettrait très fortement en question</p>
+      
+        <p>le système pétro dollar, donc on a sans doute le temps de voir venir ;)</p>
+      
+        <p>Dans tous les cas, les batteries usagées produisant pas mal de</p>
+      
+        <p>déchet, cela reste intéressant d'avoir ce bout de logique pour</p>
+      
+        <p>dimensionner au plus juste et etre dans une optique low-tech</p>
+      
+        <p>en évitant le surdimensionnement lorsqu'on peut se permettre</p>
+      
+        <p>de rares épisodes sans électricité.</p>
+      
+        <p>Démo web interactive ici:</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Dimensionner_une_installation_photovoltaïque_autonome" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Dimensionner_une_installation_photovoltaïque_autonome</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - évaluer les besoins</strong><p><strong>Étapes :</strong></p><ol><li>Il s'agit dans un premier temps d'estimer votre consommation électrique.</li><li>Pour cela, il convient de prendre en compte les bonnes échelles temporelles:</li><li>consommation moyenne d'une part, mais aussi les variations journalières (la consommation</li><li>selon l'heure de la journée) et saisonnières (la consommation en hiver et en été).</li><li>Cet exercice est intéressant à la fois pour dimensionner adéquatement la production,</li><li>mais aussi pour penser comment réduire sa consommation. Par exemple, il est aberrant de chauffer</li><li>avec des radiateurs éléctriques si votre source d'énergie est uniquement photovoltaïque.</li><li>Un autre exemple est le chauffe-eau électrique qui consomme des quantités conséquentes d'énergie</li><li>qui sont relativement linéaires du nombres de douches chaudes que vous prenez et</li><li>qui peuvent interroger la source d'énergie pertinente pour chauffer votre eau ou le nombre de douches</li><li>pertinents pour une production non fossile (on pourra utilement s'interroger sur l'opportunité de</li><li>basculer sur une source d'énergie solaire thermique et/ou chauffer au bois ou au biogaz)</li><li>NB: pour une douche de 10min à 40°C, il faut environ 3kWh, soit environ le biomethane générable par les fientes</li><li>journalieres d'une centaine de poules (en ordre de grandeur)</li><li>Pour mesurer votre consommation, vous pouvez utiliser votre compteur electrique.</li><li>Vous pouvez ainsi mesurer votre consommation journalière mais aussi la consommation horaire de chaque</li><li>appareil électrique (le plus simple étant d'enlever le fusible au compteur de tous les appareils</li><li>électriques qu'on veut sortir de la mesure).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - dimensionner le stockage</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f5/Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_163416.jpg/800px-Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_163416.jpg' alt='Dimensionner une installation photovolta que autonome IMG 20240510 163416.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3c/Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_202913.jpg/800px-Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_202913.jpg' alt='Dimensionner une installation photovolta que autonome IMG 20240510 202913.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/26/Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_202927.jpg/800px-Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_202927.jpg' alt='Dimensionner une installation photovolta que autonome IMG 20240510 202927.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/27/Dimensionner_une_installation_photovolta_que_autonome_IMG-20240513-WA0011.jpg/800px-Dimensionner_une_installation_photovolta_que_autonome_IMG-20240513-WA0011.jpg' alt='Dimensionner une installation photovolta que autonome IMG-20240513-WA0011.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_170834.jpg/800px-Dimensionner_une_installation_photovolta_que_autonome_IMG_20240510_170834.jpg' alt='Dimensionner une installation photovolta que autonome IMG 20240510 170834.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Dimensionner_une_installation_photovolta_que_autonome_IMG_20240511_102229.jpg/800px-Dimensionner_une_installation_photovolta_que_autonome_IMG_20240511_102229.jpg' alt='Dimensionner une installation photovolta que autonome IMG 20240511 102229.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>En site autonome, le chemin des électrons produits par les panneaux photovoltaïque est celui qui va</li><li>à la moindre résistance. Ainsi, si les électrons doivent "choisir" entre une appareil électrique en fonctionnement</li><li>et les batteries, ils iront alimenter l'appareil branché.</li><li>Cette considération peut être importante si vous avez une consommation électrique importante en journée (lorsque les panneaux produisent),</li><li>mais dans la plupart des cas, les variations de production journalière et la différence horaire entre la production et</li><li>la consommation font qu'on dimensionne les batteries sur le besoin journalier maximum.</li><li>Exemple: besoin journalier de 4kWh</li><li>On prend le pourcentage maximum de décharge accepté par les batteries selon la technologie</li><li>utilisée. Par exemple 80% pour des batteries lithium.<ul><li>Exemple: (besoin journalier)/(pourcentage decharge max)=(4)/(0,8)=5kWh</li></ul></li><li>NB: les capacités des batteries sont souvent exprimées en Ah. Pour obtenir les Ah à partir de la capacité</li><li>en kWh, simplement diviser les Wh par la tension aux bornes de vos batteries. Par exemple en 24V:<ul><li>500Wh/24V=208Ah</li></ul></li><li>Pour dimensionner le stockage correctement en fonction du besoin journalier maximum, on va ensuite</li><li>chercher à savoir combien de jours sans soleil le stockage doit pouvoir tenir vos besoins journaliers maximum</li><li>Pour trouver le nombre de jours maximum sans soleil, vous pouvez soit mesurer vous même l'ensoleillement (se reporter</li><li>à mon autre tuto ici : Mesure de l'ensoleillement-luminosité avec un ordinateur monocarte (raspberry-orangepi),</li><li>soit utiliser les données téléchargeable de la modélisation jrc européenne pvgis qui font référence (attention, il s'agit d'une modélisation,<ul><li>Modif 27/02: apres verification, il s'agit de données satellites horaires mondiales donc des données empiriques en entrée nottamment pour les nuages mais les hypothèses du modele sur la quantité d'irradiation qui passe à traver les nuages sont peu explicitées, voir https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/getting-started-pvgis/pvgis-data-sources-calculation-methods_en?prefLang=fr)</li></ul></li><li>Pour télécharger les données jrc, taper cette commande dans votre terminal linux:<ul><li>Les parametres lat= et lon= vous permettent d'ajuster la latitude et la longitude à votre lieu</li><li>startyear= et endyear= sont les bornes de début et de fin de la periode considéré (ici 15 ans entre 2005 et 2020)</li><li>peakpower= correspond à la puissance photovoltaique en kWc (ici 1kWc)</li></ul></li><li>On utilise ensuite un bout de code python/pandas pour obtenir le nombre de jours consécutifs maximum pour qu'1 kWc produise 1000Wh, 2000Wh et 3000Wh</li><li>Dans notre cas, on obtient:</li><li>nb de jours consécutifs maximum pour qu'1kWc produise 1kWh: 4 j</li><li>nombre d'occurences: 1</li><li>nb de jours consécutifs moyen pour qu'1kWc produise 1kWh: 1.1124367317425885 j</li><li>nb de jours consécutifs maximum pour qu'1kWc produise 2kWh: 5 j</li><li>nombre d'occurences: 3</li><li>nb de jours consécutifs moyen pour qu'1kWc produise 2kWh: 1.2801404603979711 j</li><li>nb de jours consécutifs maximum pour qu'1kWc produise 3kWh: 7 j</li><li>nombre d'occurences: 1</li><li>nb de jours consécutifs moyen pour qu'1kWc produise 3kWh: 1.4647827920708563 j</li><li>Que nous disent ces chiffres?</li><li>Que le nombre maximal de jours avec un faible ensoleillement varie de 4 à 7j selon le niveau d'ensoleillement espéré.</li><li>Mais aussi que le nombre d'occurences est relativement faible: 1 à 3 occurences seulement de ces épisodes avec tres tres peu de luminosité et de production sur 15 ans.</li><li>(si vous n'etes pas entierement satisfait des données modélisées au regard de votre expérience de la production photovoltaïque en fonction de la météo, et mon hypothèse est</li><li>que les panneaux produisent plus que ce que les données de la modélisation jrc nous donne, je vous encourage à</li><li>utiliser des données empiriques en utilisant mon autre tuto ici: Mesure de l'ensoleillement-luminosité avec un ordinateur monocarte (raspberry-orangepi) )</li><li>Et enfin que le nombre de jours moyens pour qu'un kWc de module produise 1kWh à 3kWh est compris entre 1 et 1,5 j.</li><li>On a alors le choix:</li><li>-soit surdimensionner le stockage pour tenir 4j de besoins pour faire face à ces épisodes rares sans soleil : 20kWh de batteries pour 4kWh de besoins</li><li>-soit dimensionner le stockage pour tenir 1 à 2j et avoir une source électrique d'appoint à base de groupe electrogene fossile : 5 à 10kWh de batteries pour 4kWh de besoins</li><li>pour éviter un surdimensionnement coûteux pour de très rares occasions</li><li>-soit, si la criticité des besoins n'est pas trop importante, dimensionner le stockage pour tenir 1 à 2j et</li><li>se débrouiller sans électricité lorsqu'il y a des épisodes long sans soleil : 5 à 10kWh de batteries pour 4kWh de besoins</li><li>-(ou jouer sur l'augmentation du dimensionnement de la production -le kWh produit étant tres nettement moins cher que le kWh stocké en 2024 - dans l'étape suivante pour tout recharger dès le premier jour de soleil suivant les episodes peu ensoleillés)</li><li>Nous somme en mai 2024, et on sort juste du consensus informel industriel à 1€/Wh pour les batteries "performantes".</li><li>Si vous voulez dimensionner votre stockage "à l'échelle" après avoir réduit vos besoins électriques, le mieux</li><li>est encore de faire de la récupération de batterie de voitures.</li><li>Voir photos issus de l'atelier lowtech de l'astrolab pour de la récupération de batterie de voiture lithium ion.</li><li>En mai 2024, on s'en tire à 3k€ pour 14kWh.</li><li>Il est encore difficile de se passer de BMS à cause des normes sécuritaires,</li><li>mais on peut en trouver sur aliexpress (voir photo pour les references).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - dimensionner la production</strong><p><strong>Étapes :</strong></p><ol><li>On suppose qu'on dimensionne les batteries à 10kWh pour 4kWh de besoin -soit 2j d'autonomie-</li><li>On peut dimensionner la production de plusieurs façon: 1. De façon à ce que les batteries soient entièrement rechargées sur un intervalle moyen en décembre/janvier (les mois les moins ensoleillés de l'année) 2. De façon à ce que les batteries soient entièrement rechargées en un jour d'ensoleillement "moyéné" en décembre/janvier</li><li>On notera que le dimensionnement calé sur les mois d'hiver permet de produire suffisamment pour subvenir aux besoin toute l'année, mais entraine une surproduction d'énergie en été qu'il serait utile de récupérer (par exemple en hydrolisant de l'eau pour produire de l'hydrogene puis en transformant l'hydrogene en méthane, cf scenario negawatt 2011) notamment si ce type d'installation venait à se généraliser.</li><li>On va réutiliser le bout de code précédent et l'adapter pour trouver les memes statistiques que précédemment mais uniquemnet en comptant les mois de décembre et janvier.</li><li>Dans notre cas, on obtient:</li><li>Production moyenne journalière en janvier et décembre 1.9924362701612903 kWh</li><li>nb de jours consécutifs maximum pour qu'1kWc produise 1kWh: 4 j</li><li>nombre d'occurences: 1</li><li>nb de jours consécutifs moyen pour qu'1kWc produise 1kWh: 1.3539192399049882 j</li><li>nb de jours consécutifs maximum pour qu'1kWc produise 2kWh: 5 j</li><li>nombre d'occurences: 3</li><li>nb de jours consécutifs moyen pour qu'1kWc produise 2kWh: 1.8022598870056497 j</li><li>nb de jours consécutifs maximum pour qu'1kWc produise 3kWh: 7 j</li><li>nombre d'occurences: 1</li><li>nb de jours consécutifs moyen pour qu'1kWc produise 3kWh: 2.263157894736842 j<ul><li>1. En dimensionnant sur l'intervalle moyen d'1kWh: 1kWc produit en moyenne 1kWh en 1,35j, soit 0,74kWh ramené sur un intervale d'un jour, soit une production de 10kWh/0,74=13,5kWc En dimensionnant sur l'intervalle moyen de 2kWh: 1kWc produit en moyenne 2kWh en 1,8j, soit 1,11kWh ramené sur un intervale d'un jour, soit une production de 10kWh/1,11=9kWc En dimensionnant sur l'intervalle moyen de 3kWh: 1kWc produit en moyenne 3kWh en 2,26j, soit 1,33kWh ramené sur un intervale d'un jour, soit une production de 10kWh/1,33=7,5kWc</li><li>2. En dimensionnant sur un jour moyéné, 1kWc produit en moyenne 1,99kWh par jour, soit un besoin de 10kWh/1,99=5kWc</li><li>On remarque que les données de références de l'ines pour la production d'1kWc en décembre correspondent à 1kWc===1kWh environ. (https://autocalsol.ines-solaire.org/etude/localisation/ et http://ines.solaire.free.fr/pvisole_1.php pour site isolés)</li></ul></li><li>On peut ici parler d'hypothèses plus ou moins "conservatrices", c'est à dire d'hypothèses plus ou moins "prudentes", afin d'avoir des batteries toujours rechargées en hiver. On remarquera que quelles que soit l'hypothèse retenue pour satisfaire les besoins de façon continue, y compris en hiver, on se retrouvera avec des surproductions importantes en été. Il est alors judicieux d'utiliser des systèmes de récupération de la surproduction en l'absence de réseau dans lequel on peut injecter le surplus (par exemple en hydrolisant de l'eau pour produire de l'hydrogene puis en transformant l'hydrogene en méthane, cf scenario negawatt 2011).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - dimensionner le régulateur de charge</strong><p><strong>Étapes :</strong></p><ol><li>rappel de base: branchement en série (+ sur - et + sur -) on ajoute le voltage et on garde le meme amperage, branchement en paralelle (+ sur +, - sur -) on ajoute l'amperage et on garde le meme voltage</li><li>idem pour les batteries: à mettre en paralelle pour garder la meme tension (voltage)</li><li>La première problématique du photovoltaïque lowtech autonome est le dimensionnement de l'installation.</li><li>Vous pouvez utiliser la feuille libreoffice en piece jointe en haut de ce tutoriel pour du dimensionnement "bricolé".</li><li>Les étapes précédentes ont permis de calculer à partir du modèle jrc la taille de la batterie et la production moyenne en hiver d'un kWc .</li><li>Vous pouvez lire les caractéristiques des panneaux qu'on vous a donné ou trouvés sur leboncoin à pas cher:</li><li>-puissance crete: elles s'aditionnent pour obtenir la puissance nécessaire trouvée lors de la phase de dimensionnement.</li><li>-tension : 12V,24V ou 48V. voir regles série/paralelle pour leur additions</li><li>-intensité: variable selon les modèles mais souvent inferieure à 10A. voir regles série/paralelle pour leur additions</li><li>Pour recharger des batteries, en principe, si vous connectez votre panneaux en direct sur une batterie, il suffit que la tension à la sortie de vos panneaux soit la même que celles de vos batter ie, et ca devrait charger.</li><li>Il y a un composant important à retenir pour charger correctement vos batteries:</li><li>le regulateur ou controleur de charge (nb: generalement, les onduleurs dits "hybrides", cad avec une sortie batterie et une sortie reseau, integrent un regulateur de charge, le plus souvent mppt, qui conditionne les specifications des batteries qu'on peut lui brancher)</li><li>il en existe de trois sortes: les tor (tout ou rien) les mppt (Maximum power point tracking) et les pwm (Pulse Width Modulation)</li><li>Ils sont composés d'un adaptateur DC/DC (courant continu vers courant continu) et d'un coupe circuit. Le mppt comprend également un adaptateur d'impédence (il a une résistance pour adapter l'amperage injecté dans la batterie). Les mppt accepte des puissances nominales plus élevées, cad des tensions et intensité plus élevées.</li><li>Le régulateur ou controleur de charge permet principalement de couper le circuit quand la batterie est rechargée en surveillant la tension et l'intensité de charge. Il coupe le circuit si leurs valeurs dépassent les intervalles de référence (pour cela le regulateur arrete la charge temporairement et mesure la tension aux bornes des batteries).</li><li>Le mppt a un "algorithme" électronique intégré qui va chercher le point de puissance optimal grace a son adaptateur de resistance.</li><li>Si vous connectez plusieurs panneaux et plusieurs batteries, il est recommandé d'avoir un regulateur pour couper la charge correctement lorsque la batterie est chargée.</li><li>Les tensions de charge de référence sont 12V,24V et 48V.</li><li>Cependant, les prix des modèles augmentent avec la puissance nominales (qui va dépendre de l'amperage) qu'ils acceptent.</li><li>Pour limiter l'intensité du courant de la production photovoltaïque, il est plus judicieux d'utiliser des panneaux de plus forte puissance qui sont généralement à des tensions plus élevées<ul><li>(rappel P=U*I,</li><li>rappel E=P*t se conserve dans un systeme fermé).</li></ul></li><li>note: si le systeme de stockage par batterie ou l'appareil connecté à vos panneaux n'absorbe pas toute la puissance produite, et si le régulateur de charge ne coupe pas le circuit, le reste sera dégagé en chaleur.</li><li>L'amperage va aussi dependre de la capacité de stockage de vos batteries, dimensionnées pour couvrir vos besoins pendant une periode définie au dimensionnement.</li><li>Le courant de charge est calculé en divisant par 4 ou 5 la capacité nominale de la batterie exprimée en Ah qui devrait alors se recharger en 4 ou 5h. Cependant une batterie se rechargera aussi avec un courant de charge de la capacité nominale de la batterie divisée par 20 mais plus lentement (en 20h).</li><li>Pour dimensionner correctement le regulateur de charge on peut :</li><li>-soit monter tous les panneaux en série (ce qui fait fortement augmenter la tension et il faudra peut etre un transfo ensuite pour trouver un regulateur qui accepte cette tension)</li><li>-soit monter tous les panneaux en paralelle (ce qui fait fortement augmenter l'intensité)</li><li>-soit monter les panneaux en serie/parelle pour ajuster tension et intensité aux caractéristiques de votre régulateur.</li><li>Il y a enfin un dernier point sur lequel être attentif: le déclenchement de la recharge de la batterie par le regulateur/controleur de charge (qui déclenche quand la tension de la batterie diminue en dessous d'un certain seuil).</li><li>En effet, si la puissance soutirée à la batterie est trop faible, il est possible que le temps nécessaire à la décharger avec votre consommation journalière pour déclencher la recharge dans le régulateur dépasse le temps d'ensoleillement journalier. La batterie ne se recharge alors pas du tout pendant la journée.</li><li>Dans ce cas, votre batterie ne se rechargera qu'un jour sur deux ou sur trois (selon le seuil de déclenchement de la recharge du regulateur).</li><li>C'est un paramètre à prendre en compte dans le dimensionnement (non inclus dans la feuille de calcul).</li><li>Le régulateur a 3 phases:</li><li>bulk: le regulateur laisse passer le courant</li><li>floating: le regulateur alterne interupteur fermée et ouvert à une fréquence donnée pour maintenir la batterie chargée</li><li>En outre il faut prendre des précautions car la charge des batteries présente certains risques.</li><li>absorption (pour les mppt): la tension de charge augmente un peu pour créer une difference de potentiel suffisante pour continuer à charger la batterie presque pleine.</li><li>En théorie le courant de charge diminue lorsque la batterie est presque rechargée (courant de queue etc.)</li><li>La charge de batteries en paralelle ou en série sur des batteries usagées qui n'ont pas les mêmes tensions ou intensité présente en théorie des risques. En effet vous lirez un peu partout que la résistance des fils pour relier ces batteries</li><li>créee des différences de potentiels entre les batteries qui produisent des décharges d'une batterie envers une autre etc.</li><li>créant des risques d'explosion, de degazage pour les batteries plomb etc.</li><li>Il faut bien se rapeller que les batteries sont des assemblages de composants unitaires de faible tension mis en séries et en paralelle pour obtenir un générateur de l'intensité et la tension voulue et qu'à priori faire de même avec des batterie entiere ne présente pas vraiment de risques..</li><li>On parle souvent de "battery management system" (bms) "intégré" pour les batteries lithium ion.</li><li>En réalité le régulateur de charge est déjà un "bms". En théorie, le bms intégré s'assure que les tensions et les intensités de chaque unité composant la batterie est la même et la rééquilibre au besoin.</li><li>On peut bien sûr s'interroger si tout ceci n'est pas une façon de rendre le stockage de l'énergie plus cher avec des composants BMS artificiellement chers et si ce n'est pas une façon d'éviter de réutiliser des unités de batteries usagées.</li><li>Il est par exemple étonnant qu'il n'existe pas de BMS pour rééquilibrer automatiquement des batteries plomb acide, ce qui rendrait utilisable toutes les batteries mises au rebut de l'industrie automobile pour stocker l'énergie photovoltaïque sans risque!</li><li>Dans tous les cas, si vous réutilisez des batteries au plomb, utilisez un régulateur pour éviter de continuer à charger vos batteries rechargées (risques de production d'hydrogene) -ou si vous n'en utilisez pas dimensionnez avec beaucoup de soin-, évitez les décharges profondes, et maintenez les batteries à une temperature constante autant que possible.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Optimiser le dimensionnement</strong><p><strong>Étapes :</strong></p><ol><li>On va maintenant utiliser un bout de code python pour itérer (un peu sur le principe d'essais et erreurs) en augmentant progressivement la puissance des modules, la capacité de la batterie, et le nombre de jours de blackout admissibles et en testant au jour le jour le résultat stockage - consommation electrique + production sur les données jrc précédemment téléchargées.</li><li>Explications : Le code est commenté pour expliquer ce qui est fait et les noms des variables sont relativement explicites.<ul><li>Pour la boucle d'itération: On démarre à puissance0=(consommation journaliere)/2 (hypothese hiver 1 kWc produit 2kWh en moyenne) On démarre à batterie0=consommation journaliere/0,8 au lithium et consommation journaliere/0,5 au plomb</li></ul></li><li>On itere 14 fois les puissances par pas de 1/3*puissance0 kWc On itere 40 fois les capacités de batterie par pas de 1/2*batterie0 kWh On itere 20 fois les jours admissibles de blackout par pas de 1j</li><li>On demarre à batterie pleine et on teste chaque jour si le stock d'électricité dans la batterie moins la consommation plus la production photovoltaique aboutit à un blackout ou permet de subvenir à la consommation journaliere. S'il y a black out, on arrete la boucle au bout du nombre de jours consécutifs admissibles de black out.</li><li>Pré-requis logiciels:</li><li>Pour utiliser python sous un autre os que linux, débrouillez vous avec vos daubes propriétaires intrusives.</li><li>Sous linux, python est généralement installé et pour utiliser le code partagé dans ce tuto, il suffira de copier coller le code dans un fichier processing.py puis entrer</li><li>Cependant, il faut installer la librairie pandas qui est très largement utilisé dans le monde de la finance et dans le monde scientifique, notamment pour sa gestion efficace des séries temporelles et sa capacité de vectorisation des données.</li><li>Pour cela voici les commandes à entrer dans linux debian avant de lancer le script processing.py pour être tranquille:</li><li>Penser ensuite à activer l'environnement virtuel dans lequel est installé pandas chaque fois que vous utilisez le script (apres un reboot ou si vous fermez et reouvrez votre terminal) en lançant la commande:</li><li>Nous sommes en 2024 et si vous êtes cibles d'entraves anti éco-terroristes de psychopathes comme moi, et en bon scientifique qui se respecte vous inspectez vos instruments de mesures avant de les utiliser, vous pouvez inspectez le code source de pandas qui est évidemment logiciel libre ici : https://github.com/pandas-dev/pandas , ou vous pouvez faire l'hypothèse discutable qu'on peut avoir confiance dans un logiciel aussi massivement utilisé dans le monde de la finance et de la science.</li><li>Python reposant sur des librairies C pour un certains nombres d'opérations de base, le hack, y compris le hack scientifique, n'est jamais impossible mais on laissera de coté ces considérations pro-lowtech qui n'entrent pas dans le champ de réflexion de ce tutoriel.</li><li>bout de code: (update 8.4.24: ajout commentaires, input angle&orientation&% decharge batterie)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Resultats optimisés</strong><p><strong>Étapes :</strong></p><ol><li>Pour notre exemple, on aboutit aux résultats suivant (avec 1j de blackout authorisé): Les "résultats optimisés sont tout en bas":</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

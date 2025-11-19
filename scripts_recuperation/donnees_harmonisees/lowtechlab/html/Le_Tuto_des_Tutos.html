@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Le Tuto des Tutos</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Le Tuto des Tutos</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/3/37/Le_Tuto_des_Tutos_DSC_0066.JPG/800px-Le_Tuto_des_Tutos_DSC_0066.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Comment créer un tutoriel écrit et vidéo sur le Lab' ?</div>
+        
+      </div>
+    
+    
+      
+        <p>Une low-tech peut être issue de savoir faire traditionnels ou modernes, elle trouve son utilité aussi bien en ville qu’à la campagne, et peut s’intégrer dans des environnements riches et industrialisés de la même manière que dans des sociétés en voie de développement. Nous vous conseillons de réfléchir à ces questions qui se répartissent sous trois grands thèmes : le besoin, l’accessibilité et le respect, afin de savoir si votre projet est vraiment low-tech.</p>
+      
+        <p>LE BESOIN Le dispositif répond-t-il à un besoin de base ? Besoin alimentaire, énergétique, sanitaire, hygiénique, accessibilité à l’eau potable, outillage ?</p>
+      
+        <p>L’ACCESSIBILITÉ Est-il accessible tant du point de vue financier, technique, que matériel ? Son coût de réalisation est-il abordable pour ce type de besoin ? Fait-il appel à un savoir faire artisanal ? Les ressources utilisées, matériaux et outils, sont-ils locaux ou facilement disponibles en magasin, en fablabs ou en déchetterie ?</p>
+      
+        <p>LE RESPECT Respecte-il l’environnement ? Est-il peu énergivore, réparable, ou issu du recyclage ? Respecte-il les populations locales ? Est-il en adéquation avec la culture locale ?</p>
+      
+        <p>ATTENTION ! Évitez de présenter un dispositif dit polluant Évitez de promouvoir un produit spécifique qui ne serait pas mis en open source.<ul><li>Remarque : Pour la documentation de low-tech qui ne sont pas abouties, il est demandé de remplir au moins la partie contexte et fonctionnement de la low-tech. Vous pouvez ensuite partager vos idées, retours d’expériences sur la partie discussion du lab’.</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 20 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Le_Tuto_des_Tutos" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Le_Tuto_des_Tutos</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Papier</li><li>Crayon</li><li>Ordinateur</li><li>Internet</li><li>Caméra / Appareil photo</li><li>Batterie</li><li>Carte SD</li><li>Micro</li><li>Trépied</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - La Notice de Fabrication</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/0/02/Le_Tuto_des_Tutos_Notice.jpg' alt='Le Tuto des Tutos Notice.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>PRÉREQUIS<ul><li>Titre de la low-tech (sans article devant « le, un… », ni de verbes : « Créer un … »)</li><li>Brève description de la low-tech en une phrase</li><li>Photo de la technologie</li><li>Difficulté : Facile, Moyen, Difficile, Très difficile</li><li>Durée : (min, heure, jours, semaine)</li><li>Coût : (€,$,…)</li><li>Licence : Attribution - Partage dans les mêmes conditions (CC BY-SA) (image 1)</li></ul></li><li>CONTEXTE</li><li>Se poser les bonnes questions aide à formuler un contexte précis et complet : Comment avez-vous été amené à créer ce dispositif ?</li><li>Est-ce en réponse à un problème ?</li><li>Est-ce pour une raison économique ?</li><li>Est-ce par passion, par curiosité ?</li><li>Quelle est sa plus-value, son intérêt ?</li><li>D’après notre expérience, l’implantation de la low-tech sur le terrain et son utilisation représentent des problématiques à part entières.</li><li>Votre low-tech est-elle utilisée sur le terrain ?</li><li>Si oui, à quelle échelle ?</li><li>Où ?</li><li>Comment a-t-elle été implantée (moyens de diffusion, d’implantation...) ?</li><li>Par qui (initiative locale, ONG étrangère, état...) ? (image 2)</li><li>Sinon, dans quel contexte pourrait-elle être implantée ?</li><li>Par qui ?</li><li>Au delà du besoin, quels sont les freins qui pourraient jouer en sa défaveur (changement d’habitude, contraintes économiques, problèmes ergonomiques...) ?</li><li>Par ailleurs est-ce qu’un modèle économique est envisageable autour de la low-tech ?</li><li>Dans quelle mesure peut-elle améliorer les conditions de vie de ceux qui la développent, la distribuent et la vendent ?</li><li>En effet, des entrepreneurs locaux peuvent bénéficier de la commercialisation à bas prix tout en faisant profiter la population locale de ces low-tech.</li><li>FONCTIONNEMENT</li><li>1 - Expliquer comment fonctionne la low-tech dans les grandes lignes afin d’avoir une idée globale de son fonctionnement. 2 - Détailler, ensuite, les différentes parties qui la composent. 3 - Joindre un schéma de fonctionnement. 4 - Il est également possible de citer les avantages et désavantages de cette technique. (image 3)</li><li>LISTE DES ÉTAPES DE FABRICATION</li><li>Lister les étapes de fabrication sous forme de sommaire.</li><li>1 - ...</li><li>2 - ...</li><li>3 - ...</li><li>MATÉRIEL CONSOMMABLE</li><li>Lister précisément le matériel en explicitant les dimensions (longueur, volumes…) si besoin. Proposer des alternatives de matériaux dans la mesure du possible.</li><li>1- ...</li><li>2 - ...</li><li>3 - ...</li><li>OUTILS</li><li>Lister précisément les outils nécessaires à la fabrication du système.</li><li>a - ...</li><li>b - ...</li><li>c - ...</li><li>ÉTAPES DE FABRICATION</li><li>Mettre un titre clair et précis à chacune des étapes. Lister les sous étapes comme pour une recette de cuisine. Une sous étape représente une action.</li><li>1 - Percer …</li><li>2 - Souder …</li><li>3 - Clouer …</li><li>Penser également à mentionner les conditions de sécurité : port de lunettes, gants, casques anti-bruits … Si besoin ajouter « * Remarque », ou « * Attention » pour souligner des points importants.</li><li>CONSEILS D’UTILISATION & REMARQUES</li><li>Ajouter les remarques, conseils d’utilisation ou de fabrication.</li><li>NOTES ET RÉFÉRENCES</li><li>Partager les sources afin que les lecteurs puissent aller rechercher des informations supplémentaires.<ul><li>Exemple d’un pas à pas écrit bien réalisé sur le Lab’: http://lab.lowtechlab.org/index.php?title=L%27%C3%A9olienne</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Le tournage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c0/Le_Tuto_des_Tutos_DSC_0181.JPG/800px-Le_Tuto_des_Tutos_DSC_0181.JPG' alt='Le Tuto des Tutos DSC 0181.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1 - Matériel</li><li>Une caméra ou un appareil photo HD, un micro, des cartes SD, des batteries et un trépied. Au préalable vérifier l’état de votre matériel : carte mémoire libre, batterie chargée…</li><li>2 - Lieu du tournage</li><li>Choisir son lieu d’action afin d’avoir une bonne qualité sonore et lumineuse :</li><li>- À l’intérieur, faire attention au manque de luminosité et aux lumières artificielles qui joueront sur la qualité de la vidéo. Penser également aux frigidaires, ou aux horloges qui peuvent créer des bruits de fond. Ces derniers s’avèreront fatiguant pour le spectateur lors du visionnage de la vidéo.</li><li>- À l’extérieur, faire attention aux contres jours, et au manque de luminosité. Quant au son, le vent est fatal, protéger le micro de son exposition !</li><li>Dans les deux cas :</li><li>-Faire attention à ce qu’il n’y ait pas un puits de lumière trop important dans le champ de vision.</li><li>-Eviter les espaces trop grands, l’arrière plan doit être d’assez courte distance.</li><li>-Filmer de jour est hautement conseillé, de nuit cela ajoute du grain à l’image.</li><li>3 - Placement de la caméra</li><li>Afin d’appréhender où placer la caméra, demander à l’acteur ce qu’il va faire précisément à chaque étape. On peut ainsi déterminer où placer la caméra sans être gêné par ses mains. Sur le plan de travail seul le matériel essentiel au déroulé de l’étape filmée doit être présent, cela permet d’éviter la pollution visuelle.</li><li>4 - Plans & cadrages</li><li>Décortiquer les étapes :</li><li>Filmer un plan par étape dans la mesure du possible.</li><li>- Varier les plans serrés et les plans larges pour aérer la vidéo.</li><li>- Pour les plans explicatifs (explication d’une étape, du contexte) préférer les plans larges.</li><li>- Pour les plans actifs (on filme l’action) préférer les plans serrés.</li><li>- Il est fortement conseillé d’effectuer deux cadrages par action.</li><li>- Les cadrages de la tête au pied sont déconseillés, préférer les cadrages moyens ou serrés. - Lorsqu’une personne parle, ne pas lui « couper la tête » au cadrage, laisser un espace au dessus d’elle.</li><li>- Éviter de placer la personne en plein centre de l’image. La disposer sur le côté apportera de la dynamique à votre plan.</li><li>- Effectuer des plans fixes est fortement conseillé afin d’éviter tout tremblement.</li><li>- Poser la caméra sur un trépied ou un rebord de commode.</li><li>5 - Mise au point</li><li>Pour la mise au point, vérifier si la caméra est en mode automatique ou manuel.</li><li>- Si elle est automatique, faire attention à ce que la caméra fasse la mise au point sur l’action et non sur la tête de la personne.</li><li>- Si elle est manuelle régler la mise au point sur l’action avant de commencer à filmer.</li><li>Exemple : « Là je vais souder le fil blanc sur le pôle +… ». On veut donc un plan serré, on fait la mise au point sur l’objet à souder, et on fait attention à ce que ses mains ne soient pas devant lorsqu’on filme. Attention : pour des tutoriels réalisés avec des téléphones, la difficulté est de réaliser des plans fixes. Poser le téléphone sur un endroit stable durant toute la durée de la séquence.</li><li>6 - Filmer en vue du montage</li><li>- Ne pas se dire que les erreurs se rattrapent au montage.</li><li>- Éviter de filmer en noir et blanc et à la verticale.</li><li>- Au déclenchement de la vidéo, laisser un temps de « repos » avant l’action ou la prise de parole pour faciliter le montage.</li><li>- Faire des rushs simples pour que le montage puisse se faire facilement.</li><li>7 - Contenu</li><li>Le contenu de la vidéo sera étroitement lié au pas à pas écrit.</li><li>Vidéo contexte : (2 minutes)</li><li>- Présenter la low-tech et ses intérêts économiques, environnementaux, sociaux...</li><li>- Présenter un problème auquel répond la low-tech (problème et solution)</li><li>- Ne pas hésiter à partir d’un contexte large à un plus local ou même plus personnel.</li><li>- Il est important de choisir avec la personne ce qu’elle va dire. Le plan sera explicatif, donc préférer un plan large.</li><li>- Insérer des plans de coupe (d’action) pour que cette partie contexte ne soit pas seulement un monologue face à la caméra. Penser donc également à faire des plans d’action « sur le terrain » qui seront en lien avec le contexte.</li><li>Vidéo fabrication : (5-10 minutes)</li><li>Se demander quel type de vidéo il est préférable de réaliser. Notamment en ce qui concerne les explications : seront-elles en voix off, en live ou sous forme de sous titre ?</li><li>- Faire attention à ce que les mains ne soient pas devant l’action.</li><li>- Toujours garder en tête qu’une personne lambda puisse comprendre l’action. Pour cela il peut être intéressant d’expliquer « je fais telle action pour telle raison, avec tel matériel que j’ai récupéré à tel endroit … »</li><li>- Ne pas oublier de mentionner les conseils de sécurité.</li><li>Découper la fabrication en plusieurs étapes clefs :</li><li>- Le Fonctionnement : présenter le principe de fonctionnement de la low-tech</li><li>- Le Matériel : matériel et les outils nécessaires à la fabrication</li><li>- La Fabrication : bien décortiquer chaque étape, un plan pour une action, et les expliquer de manière précise tout en articulant.</li><li>- L’utilisation : plans sur sa mise en situation</li><li>- Conseils : Il est possible de finir la vidéo en donnant quelques conseils.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Le Montage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Le_Tuto_des_Tutos_Montage.jpg/800px-Le_Tuto_des_Tutos_Montage.jpg' alt='Le Tuto des Tutos Montage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1 - Dé-rush</li><li>Une fois les plans filmés il faut les ranger et les stocker. Dans un fichier, vider la carte SD et regarder les rushs un par un.<ul><li>Remarque : reproduire le tableau 1, et le remplir, afin de garder une trace du contenu de chaque rush sans avoir besoin de les regarder plusieurs fois.</li></ul></li><li>2 - Montage<ul><li>Remarque : Vous pouvez télécharger un logiciel de montage comme Adobe CC Première Pro, ou encore Movie Maker. Après le dé-rush commence le montage. Sélectionner tous les rushs validés (dans notre cas le rush n°3 et 5). Les disposer dans l’ordre chronologique sur la table de montage. Écouter attentivement la bande son et couper les séquences « inutiles », afin de lisser la vidéo. Comme il est fortement conseillé de réaliser des vidéos courtes, couper le moindre moment de blanc, ceci permettra également de rendre la vidéo plus dynamique.</li></ul></li><li>Dans un second temps, ajuster la luminosité : - En extérieur, la lumière peut être très écrasante. En intérieur, l’image peut prendre une couleur jaune à cause des systèmes d’éclairage, ajuster les tons …</li><li>3 - Vidéo contexte</li><li>Penser à inclure des plans de coupe : des plans de secours destinés à dissimuler le plan explicatif pour rendre la vidéo dynamique, entre les plan explicatifs, pour rendre la vidéo dynamique. Il est possible avec ces logiciels de couper l’image et garder le son de manière à avoir un plan illustratif avec une voix off.</li><li>4 - Vidéo de fabrication</li><li>Il peut être intéressant de découper la vidéo en chapitres : fonctionnement, matériel, fabrication, utilisation, et conseils. Penser également à inclure un générique au début et à la fin de la vidéo pour qu’elle soit plus facilement identifiable (ajouter un logo, un site internet, ou une page Facebook, c’est l’occasion de les communiquer). Le générique du début doit au moins contenir le titre de la vidéo, et celui de la fin, les réalisateurs de la technologie et de la vidéo.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Check List</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/7/7d/Le_Tuto_des_Tutos_Checklist.jpg' alt='Le Tuto des Tutos Checklist.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>PAS A PAS ECRIT :<ul><li>J’ai réfléchi au contexte de sa fabrication, à son utilisation et à son implantation.</li><li>J’ai compris et réussi à expliquer comment fonctionne la low-tech, j’ai des photos et des schémas pour illustrer.</li><li>J’ai établi la liste des étapes de fabrication</li><li>Le moindre objet qui a été utilisé pour la fabrication est listé.</li><li>J’ai bien décortiqué les étapes de fabrication avec une sous étape par instruction, j’ai pris le soin de mentionner les conseils de sécurité.</li><li>Je me suis mis dans la tête d’un potentiel utilisateur de mon tutoriel et je lui ai donné mes conseils pour sa fabrication et son utilisation.</li><li>J’ai bien pris soin de mentionner mes sources.</li></ul></li><li>LE TOURNAGE :<ul><li>J’ai vérifié l’état de mon matériel (caméra, micro, cartes SD vides, batteries pleines)</li><li>J’ai choisi un lieu avec une bonne qualité sonore et lumineuse.</li><li>J’ai pris le soin de demander ce que va faire l’acteur à chaque étape.</li><li>J’ai pensé à varier les plans, filmé un plan par étape et effectué des plans fixes.</li><li>J’ai fait la mise au point sur l’action.</li><li>J’ai bien fait attention à ne pas me dire « ça je le rattraperais au montage » !</li><li>Ce que je filme est étroitement lié au pas à pas écrit.</li></ul></li><li>LE MONTAGE :<ul><li>J’ai stocké, rangé, regardé mes rushs un par un, puis j’ai reproduis le tableau 1 pour garder une trace du contenu.</li><li>J’ai téléchargé un logiciel de montage puis déposé tous mes rush validés sur ma table de montage. J’ai écouté attentivement la bande son et coupé les séquences inutiles, j’ai également ajusté la luminosité.</li><li>J’ai pensé à mettre des plans de coupe sur les plans explicatifs.</li><li>J’ai découpé la vidéo en chapitres comme par exemple fonctionnement, matériel, fabrication, utilisation et conseils, et j’ai mis un générique au début et à la fin pour être plus facilement identifiable.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - La phase de test</strong><p><strong>Étapes :</strong></p><ol><li>Ne pas hésiter à s’entraîner à faire ses étapes à côté de chez soi pour se rendre compte de la logistique et de la charge de travail nécessaire. C’est aussi un bon moyen de connaître ton rythme de travail afin de ne pas être surpris lors de ton voyage tout en découvrant des low-tech à côté de chez toi !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

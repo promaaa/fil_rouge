@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dentifrice maison</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dentifrice maison</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/4/4d/Dentifrice_maison_20190622_TUTPS_COSMETIQUES_14_.JPG/800px-Dentifrice_maison_20190622_TUTPS_COSMETIQUES_14_.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Une recette de dentifrice maison sain, économique, écologique.</div>
+        
+      </div>
+    
+    
+      
+        <p>Nous vous proposons de fabriquer votre propre dentifrice.</p>
+      
+        <p>Par ce geste simple, vous contribuez à :</p>
+      
+        <p>• Éviter les microbilles de plastique pouvant contenir des substances toxiques, comme les phtalates et le bisphénol-A (BPA), qui peuvent se déverser dans l’eau ET être ingérés par les poissons et les oiseaux.</p>
+      
+        <p>• Éviter le triclosane (un antibactérien), qui peut perturber le système endocrinien, favoriser la résistance de certaines bactéries aux antibiotiques ET nuire aux poissons et à d’autres organismes de la faune et la flore.</p>
+      
+        <p>• Éviter le laurylsulfate de sodium (SDS), un agent moussant présent dans bon nombre de dentifrices commerciaux qui peut aussi être contaminé par du 1,4-dioxane, un cancérigène. Éviter un nouveau scandale dans l’univers des cosmétiques, comme celui des microbilles ou du talc pour bébés au pouvoir cancérigène.</p>
+      
+        <p>• Économiser, car le dentifrice sans substances toxiques coûte généralement autour de 5 euros le tube !<ul><li>Ce dentifrice ne contient pas de fluor, mais est adapté aux adultes, les dentifrices renforcés en fluor sont destinés aux enfants, une alimentation équilibrée et riche en fruits et légumes permet un apport suffisant de fluor une fois l'émail stabilisé</li><li>Ce dentifrice ne contient pas de tensioactif ni d'agent moussant, ce n'est pas indispensable pour assurer un bon nettoyage (peut même être trop décapant et déstabiliser la flore buccale. Vous pouvez en ajouter si cela est important pour vous. Pour un produit local vous pouvez privilégier de l'huile de tournesol saponifiée (aucun goût)</li><li>Il est recommandé de se laver les dents environ 3 min, au moins une fois par jour, mais une alimentation déséquilibrée (notamment riche en acide, gras et sucre) ne sera jamais compensée par le meilleur des dentifrices/brossages.</li><li>Vous pouvez avoir envie de rajouter des ingrédients "blanchissant ou antibactériens" tels que du charbon actif ou du bicarbonate. Attention cependant, car sous forme de cristaux ils peuvent rayer l'émail si vous l'utilisez quotidiennement (le bicarbonate reste utile et inoffensif dissout dans de l'eau/salive)</li><li>Cette recette contient de l'huile essentielle de menthe poivrée, certains aromathérapeutes et médecins déconseillent son ingestion, particulièrement concernant les enfants, les femmes enceintes ou allaitantes et les personnes épileptiques. Faites attention à vérifier les risques des huiles essentielles que vous utilisez et favorisez des "arômes" moins agressifs (ex : hydrolats, plantes en poudres)</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Dentifrice_maison" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Dentifrice_maison</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>2 c-à-s d’Huile de coco (ou n'importe quelle huile plus locale)</li><li>2 grosse c-à-s d'argile blanche Kaolin (ou argile blanche ou verte) : antibactérien, protège l’émail, absorbe les toxines, abrasif doux qui élimine la plaque dentaire sans rayer l'émail</li><li>1/2 c-à-c de bicarbonate de soude (dissout dans l'eau ou l'hydrolat pour éviter de rayer les dents)</li><li>Optionnel : 3-5 gouttes d’Huile essentielle de Tea Tree : antibactérien</li><li>Optionnel : 3-5 gouttes d’Huile essentielle de menthe poivrée ou de citron : pour le goût rafraîchissant</li></ul></li><li>Rappel : avant d'utiliser des huiles essentielles vérifiez qu'elle n'est pas contre indiquée pour vous, notamment en cas d'ingestion ou de contact avec les muqueuses (buccales). D'autres options pour parfumer existent qui sont plus adaptée à tous.tes : les hydrolats et poudres de plantes.</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Un bocal en verre de 30 cl</li><li>Un entonnoir en plastique</li><li>Une cuillère à soupe classique (pour l’huile de coco)</li><li>Une cuillère en bois ou bambou (pas en métal) pour la terre de Kaolin</li><li>Une baguette en bois ou en bambou (pas en métal) pour remuer</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Détails sur les ingrédients</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Huile de coco : Utilisé ici pour ses propriétés hydratantes et antibactériennes.</li><li>Bicarbonate de sodium de qualité alimentaire : Utilisé ici pour son action blanchissante, abrasive. Il peut être utilisé pour une multitude d'emploi (produit d'entretien, désodorisant, anti brûlures d'estomac, blanchissement des dents...). Fabriqué à partir de calcaire et de sel. Peut provoquer des irritations chez certaines personnes. Peut être dissout ou remplacé dans de l'argile blanche dans ce cas. Compter ~3-4 euros/kg</li><li>Huiles essentielles (Tea Tree, citron, menthe poivrée...) pour leur pouvoir antibactérien et rafraîchissant. Utilisez-les néanmoins avec parcimonie, car leur fabrication consomme énormément de ressources naturelles.</li><li>Argile blanche Kaolin : très utilisée dans les produits bucco-dentaires et notamment pour son pouvoir abrasif qui va permettre d'éliminer les bactéries. Elle va ainsi nettoyer les dents tout en apportant une action blancheur. L'argile blanche kaolin est reconnue en soin de la bouche, notamment pour ces vertus assainissantes. Elle va ainsi permettre de réduire les inflammations et soulager les gencives sensibles. Environ 10 euros/kg</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fabrication du dentifrice</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ea/Dentifrice_maison_20190622_TUTPS_COSMETIQUES_6_.JPG/800px-Dentifrice_maison_20190622_TUTPS_COSMETIQUES_6_.JPG' alt='Dentifrice maison 20190622 TUTPS COSMETIQUES 6 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fd/Dentifrice_maison_20190622_TUTPS_COSMETIQUES_7_.JPG/800px-Dentifrice_maison_20190622_TUTPS_COSMETIQUES_7_.JPG' alt='Dentifrice maison 20190622 TUTPS COSMETIQUES 7 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Dentifrice_maison_20190622_TUTPS_COSMETIQUES_9_.JPG/800px-Dentifrice_maison_20190622_TUTPS_COSMETIQUES_9_.JPG' alt='Dentifrice maison 20190622 TUTPS COSMETIQUES 9 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cf/Dentifrice_maison_20190622_TUTPS_COSMETIQUES_12_.JPG/800px-Dentifrice_maison_20190622_TUTPS_COSMETIQUES_12_.JPG' alt='Dentifrice maison 20190622 TUTPS COSMETIQUES 12 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Verser l'argile en poudre (3 volumes) et le bicarbonate (1, voire 0,5 volume)</li><li>Mélanger avec les huiles essentielles (3 à 5 gouttes) ou les poudres de plantes en secouant le bocal ou avec un outil en bois (le métal réagit avec l'argile)</li><li>Diluer le bicarbonate dans un peu d'eau ou un hydrolat (pour parfumer)</li><li>Verser l'argile et mélanger doucement à l'eau/l'hydrolat en remuant avec un outil en bois (le métal réagit avec l'argile)</li><li>Ajouter en mélangeant doucement de l'huile, si vous cherchez une texture "douce" et moins "compacte" en bouche</li><li>Optionnel : si vous ne souhaitez pas utiliser de poudre de plante ou d'hydrolat ajoutez les huiles essentielles en dernier et bien mélanger.</li></ul></li><li>Bien respecter l'ordre eau-huile sinon obtientent des grumeaux.<ul><li>Verser deux cuillères à soupe d’huile de coco dans un bocal en verre de 30 cc. Le bocal est environ rempli à un peu moins de la mi-hauteur.</li><li>Verser 3-5 gouttes d’HE de Tea Tree</li><li>Verser 3-5 gouttes d’HE de menthe poivrée ou de citron</li><li>Ajouter une demi-cuillère à café de bicarbonate de soude. Pas plus, car le bicarbonate a des propriétés abrasives qui peuvent ne pas être agréable dans le dentifrice.</li><li>Ajouter une grosse cuillère à soupe de terre de kaolin. Pour cela, utiliser une cuillère en bois ou en bambou, car le métal annule les effets bénéfiques de l’argile. On peut utiliser un entonnoir pour faciliter l’insertion de l’argile dans le bocal.</li><li>Remuer le tout à l’aide d’une baguette en bois, pour bien mélanger les ingrédients.</li><li>Si la texture est trop liquide, ajouter de la terre de kaolin. Si la texture est trop sèche, ajouter quelques gouttes d’huile de coco.</li></ul></li><li>Remarques :<ul><li>L’utilisation de l’argile / terre de kaolin n’est pas obligatoire, mais elle permet d’apporter une texture pâteuse au dentifrice. Sinon, ce dernier aurait la texture de l’huile de coco, c’est-à-dire liquide en été et solide en hiver.</li><li>Il est conseillé d’utiliser ce dentifrice dans un délai d'un mois. On peut en faire de petites quantités et varier le goût (par exemple menthe poivrée la première fois, citron la deuxième fois)</li><li>On peut utiliser d’autres huiles essentielles (girofle, orange, sauge), mais il faut toujours vérifier que l’huile essentielle que l’on utilise est propre à la consommation.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

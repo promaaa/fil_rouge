@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Marmite Norvégienne Tissu Super Efficace</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Marmite Norvégienne Tissu Super Efficace</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/2/26/Marmite_Norv_gienne_Tissu_Super_Efficace_Marmite_norvegienne_ecocotte_tiny_rouge_vue_ouverte_cocotte_terre.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_Marmite_norvegienne_ecocotte_tiny_rouge_vue_ouverte_cocotte_terre.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Marmite norvégienne souple, nomade et élégante qui garantie un efficacité d'isolation thermique maximale et ne nécessite que quelques notions de couture. Pour une fin de cuisson saine et sobre de vos aliments.</div>
+        
+      </div>
+    
+    
+      
+        <p>La marmite norvégienne est un super outil pour terminer ses cuissons à basse température uniquement avec l'énergie nécessaire pour sa mise en température des aliments.</p>
+      
+        <p>Elle permet non seulement une cuisson saine et savoureuse mais aussi des économies d'énergie non négligeable, si on l'utilise souvent ( jusqu'à 80% d'économie par cuisson)</p>
+      
+        <p>Tutoriel sous licence : CC BY NC</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 30 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Marmite_Norvégienne_Tissu_Super_Efficace" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Marmite_Norvégienne_Tissu_Super_Efficace</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>- Laine de mouton lavée et floconnée (quantité selon taille choisie- étape 1)</li><li>- tissu naturel 2 fois 1m50 x 1m20</li><li>- Anses de 50cm 5 ( en option )</li><li>- Fils</li><li>- Cordon 3m</li><li>- Bouton</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- Machine à coudre</li><li>- Compas XXL ou une corde</li><li>- Rapporteur</li><li>- Ciseaux</li><li>- Épingles</li><li>- Règle</li><li>- Craies</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - GUIDE des Tailles</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d7/Marmite_Norv_gienne_Tissu_Super_Efficace_Taille_2.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_Taille_2.jpg' alt='Marmite Norv gienne Tissu Super Efficace Taille 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Marmite_Norv_gienne_Tissu_Super_Efficace_Taille_2_1_.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_Taille_2_1_.jpg' alt='Marmite Norv gienne Tissu Super Efficace Taille 2 1 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce type de marmite norvégienne s'adapte à toutes les formes et taille de faitout , nous parlerons donc plutôt de contenance maximale que de dimension.</li><li>Pour augmenter un peu la capacité ou prendre en compte une grosse poignet (type cocotte minute) , je vous conseille plutôt de jouer sur la taille du couvercle que sur le reste .</li><li>Rayon coussin</li><li>découpe</li><li>Rayon</li><li>intérieur</li><li>Rayon centre</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - La découpe</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/65/Marmite_Norv_gienne_Tissu_Super_Efficace_0_tra_age.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_0_tra_age.JPG' alt='Marmite Norv gienne Tissu Super Efficace 0 tra age.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1d/Marmite_Norv_gienne_Tissu_Super_Efficace_0_Tra_age_1_1_.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_0_Tra_age_1_1_.JPG' alt='Marmite Norv gienne Tissu Super Efficace 0 Tra age 1 1 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/51/Marmite_Norv_gienne_Tissu_Super_Efficace_1_D_coupe_1_.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_1_D_coupe_1_.JPG' alt='Marmite Norv gienne Tissu Super Efficace 1 D coupe 1 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Placer vous au sol ou trouver une grande table.<ul><li>Superposer les deux tissus</li><li>Marquer et fixer le centre de vos traçages sur les 2 épaisseurs par une aiguille</li><li>Tracer les cercles de la partie centrale et du coussin en fonction de la taille de cocotte souhaitée ( voir tableau guide des tailles).</li><li>Découper vos 2 épaisseurs de tissu ensemble pour faciliter la couture.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Le traçage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/42/Marmite_Norv_gienne_Tissu_Super_Efficace_2_Tra_age_1.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_2_Tra_age_1.JPG' alt='Marmite Norv gienne Tissu Super Efficace 2 Tra age 1.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dd/Marmite_Norv_gienne_Tissu_Super_Efficace_2_Tra_age_2.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_2_Tra_age_2.JPG' alt='Marmite Norv gienne Tissu Super Efficace 2 Tra age 2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8d/Marmite_Norv_gienne_Tissu_Super_Efficace_2_Tra_age_3.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_2_Tra_age_3.JPG' alt='Marmite Norv gienne Tissu Super Efficace 2 Tra age 3.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Marmite_Norv_gienne_Tissu_Super_Efficace_Photos_tuto_Ecocotte_.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_Photos_tuto_Ecocotte_.jpg' alt='Marmite Norv gienne Tissu Super Efficace Photos tuto Ecocotte .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Se munir d'une craie<ul><li>Tracer au compas un premier cercle à 8 à 10ccm du bord. Cet espace permettra le passage du cordon et de coincer le couvercle pour limiter au maximum les pertes de chaleur. (Diamètre en fonction de vos cocottes => voir tableau des tailles)</li><li>Tracer en pointillé le deuxième cercle qui matérialisera la partie centrale.</li><li>Tracer à la règle les côtés 2 à deux. Vérifier que l'espace entre les côtés de la partie basse est bien de 8-9 cm à minima (plus si vous avez de grandes mains) pour permettre le rembourrage</li><li>La longueur des côtés détermine la hauteur maximale de cocotte</li><li>Hachurer la délimitation haute d'une portion qui ne sera pas cousue pour permettre le rembourrage</li></ul></li><li>- la craie par un bout de savon (idéal pour les tissus foncés)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblage des tissus</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Marmite_Norv_gienne_Tissu_Super_Efficace_4_couture_couvercle.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_4_couture_couvercle.JPG' alt='Marmite Norv gienne Tissu Super Efficace 4 couture couvercle.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d5/Marmite_Norv_gienne_Tissu_Super_Efficace_6_couture_camemberg_2.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_6_couture_camemberg_2.JPG' alt='Marmite Norv gienne Tissu Super Efficace 6 couture camemberg 2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2a/Marmite_Norv_gienne_Tissu_Super_Efficace_6_couture_camembert_1.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_6_couture_camembert_1.JPG' alt='Marmite Norv gienne Tissu Super Efficace 6 couture camembert 1.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/15/Marmite_Norv_gienne_Tissu_Super_Efficace_7_d_coupe_des_fils_2.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_7_d_coupe_des_fils_2.JPG' alt='Marmite Norv gienne Tissu Super Efficace 7 d coupe des fils 2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/Marmite_Norv_gienne_Tissu_Super_Efficace_8_Netoyage.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_8_Netoyage.JPG' alt='Marmite Norv gienne Tissu Super Efficace 8 Netoyage.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/28/Marmite_Norv_gienne_Tissu_Super_Efficace_Photos_tuto_Ecocotte_2_.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_Photos_tuto_Ecocotte_2_.jpg' alt='Marmite Norv gienne Tissu Super Efficace Photos tuto Ecocotte 2 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'assemblage des tissus sera réalisé par la couture camembert central.<ul><li>Ajouter des épingles au centre de la partie principale pour éviter que les tissus bougent.</li><li>Coudre le cercle périphérique (1) hors zone rembourrage hachurée.</li><li>Coudre les "côtés" droits en respectant bien le traçage pour être sûr que les mains pourront passer lors du rembourrage. Les côtés de la zone de rembourrage principale pourront être rétrécis de 1cm pour faciliter le passage de la laine.</li><li>Renforcer les points d'arrêt car ces coutures seront assez sollicitées par la suite.</li><li>Couper les fils de couture</li><li>Effacer votre traçage en ne laissant que la zone hachurée du rembourrage.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Rembourrage</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_1.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_1.JPG' alt='Marmite Norv gienne Tissu Super Efficace 9 rembourrage 1.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bd/Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_2.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_2.JPG' alt='Marmite Norv gienne Tissu Super Efficace 9 rembourrage 2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_4.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_4.JPG' alt='Marmite Norv gienne Tissu Super Efficace 9 rembourrage 4.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_5.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_5.JPG' alt='Marmite Norv gienne Tissu Super Efficace 9 rembourrage 5.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/22/Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_6.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_9_rembourrage_6.JPG' alt='Marmite Norv gienne Tissu Super Efficace 9 rembourrage 6.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/03/Marmite_Norv_gienne_Tissu_Super_Efficace_Photos_tuto_Ecocotte_3_.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_Photos_tuto_Ecocotte_3_.jpg' alt='Marmite Norv gienne Tissu Super Efficace Photos tuto Ecocotte 3 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette étape est essentielle pour limiter les ponts thermiques et garantir l'efficacité d'isolation de votre marmite norvégienne (quantité de laine nécessaire dans le " Guide des tailles"- étape1)</li><li>Rembourrer avec des poignets de laine sans faire de petites boules serrées</li><li>en commençant par les coins<ul><li>Remplir les 4 premiers camemberst au 3/4 puis retourner pour faciliter la manipulation.</li><li>Terminer le remplissage des camemberts</li><li>Passer au rembourrage du centre.</li><li>Commencer par créer une liaison entre chaque camembert et le centre avec une grosse poignet de laine.</li><li>Rembourrer le centre plus fermement car il va se tasser avec le temps</li><li>Terminer par le rembourrage du dernier camembert sans faire déborder la laine pour permettre sa fermeture</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Fermeture partie centrale</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e6/Marmite_Norv_gienne_Tissu_Super_Efficace_10_fermeture_partie_centrale_supprimer_cordon.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_10_fermeture_partie_centrale_supprimer_cordon.JPG' alt='Marmite Norv gienne Tissu Super Efficace 10 fermeture partie centrale supprimer cordon.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Coudre la partie centrale suivant le marquage hachuré.</li><li>Effacer ensuite ce marquage restant</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Positionnement des anses (optionnel)</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/36/Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1106.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1106.jpg' alt='Marmite Norv gienne Tissu Super Efficace IMG 1106.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/49/Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1136.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1136.jpg' alt='Marmite Norv gienne Tissu Super Efficace IMG 1136.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Placer les anses à l'opposé l'une de l'autre en prenant soin de ne pas les vriller</li><li>Les fixer avec des épingles</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Passage du cordon</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/31/Marmite_Norv_gienne_Tissu_Super_Efficace_11_cordon.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_11_cordon.JPG' alt='Marmite Norv gienne Tissu Super Efficace 11 cordon.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/79/Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1189.jpeg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1189.jpeg' alt='Marmite Norv gienne Tissu Super Efficace IMG 1189.jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Positionner le cordon en le fixant avec des épingles pour éviter qu'il ne se prenne dans la couture</li><li>Placer et fixer la sortie du cordon au centre d'un des camemberts à 90° des anses (s'il y en a)</li><li>Préparer la fermeture extérieure en retournant les deux couches de tissus sur 1cm. Fixer avec des pinces ou des épingles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Fermeture extérieur</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/59/Marmite_Norv_gienne_Tissu_Super_Efficace_13_couture_exterieur.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_13_couture_exterieur.JPG' alt='Marmite Norv gienne Tissu Super Efficace 13 couture exterieur.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/af/Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1138.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1138.jpg' alt='Marmite Norv gienne Tissu Super Efficace IMG 1138.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_2127.jpeg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_2127.jpeg' alt='Marmite Norv gienne Tissu Super Efficace IMG 2127.jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Coudre la partie extérieure</li></ul></li><li>S'assurer de bien prendre les 2 couches de tissu et Attention aux plis<ul><li>Renforcer la couture au niveau du passage de cordon par un zigzag serré</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - "bouton"</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1124.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_IMG_1124.jpg' alt='Marmite Norv gienne Tissu Super Efficace IMG 1124.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Glisser le bouton sur le cordon</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Le coussin</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Marmite_Norv_gienne_Tissu_Super_Efficace_14_coussin_1_1_.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_14_coussin_1_1_.JPG' alt='Marmite Norv gienne Tissu Super Efficace 14 coussin 1 1 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fa/Marmite_Norv_gienne_Tissu_Super_Efficace_14_coussin_2_1_.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_14_coussin_2_1_.JPG' alt='Marmite Norv gienne Tissu Super Efficace 14 coussin 2 1 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/30/Marmite_Norv_gienne_Tissu_Super_Efficace_14_coussin_3_1_.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_14_coussin_3_1_.JPG' alt='Marmite Norv gienne Tissu Super Efficace 14 coussin 3 1 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Coudre le coussin envers-contre-envers en laissant une ouverture de 10cm pour le rembourrage.</li><li>Retourner le coussin assemblé</li><li>Rembourrer le coussin :</li></ul></li><li>Il doit former une sorte de "galet" assez compact de 8-9 cm d'épaisseur</li><li>Refermer la couture du coussin</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Résultat</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Marmite_Norv_gienne_Tissu_Super_Efficace_15_final_1.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_15_final_1.JPG' alt='Marmite Norv gienne Tissu Super Efficace 15 final 1.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8d/Marmite_Norv_gienne_Tissu_Super_Efficace_15_final_2.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_15_final_2.JPG' alt='Marmite Norv gienne Tissu Super Efficace 15 final 2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Marmite_Norv_gienne_Tissu_Super_Efficace_14_final_3.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_14_final_3.JPG' alt='Marmite Norv gienne Tissu Super Efficace 14 final 3.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f7/Marmite_Norv_gienne_Tissu_Super_Efficace_14_final_4.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_14_final_4.JPG' alt='Marmite Norv gienne Tissu Super Efficace 14 final 4.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5a/Marmite_Norv_gienne_Tissu_Super_Efficace_14_final_5.JPG/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_14_final_5.JPG' alt='Marmite Norv gienne Tissu Super Efficace 14 final 5.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/52/Marmite_Norv_gienne_Tissu_Super_Efficace_Capture_d_cran_2023-06-03_001707.jpg/800px-Marmite_Norv_gienne_Tissu_Super_Efficace_Capture_d_cran_2023-06-03_001707.jpg' alt='Marmite Norv gienne Tissu Super Efficace Capture d cran 2023-06-03 001707.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Et voilà votre Marmite norvégienne est terminée !</li><li>Il ne vous reste plus qu'à vous lancer dans la cuisson à basse température à l'étouffé : ça demande un peu d'anticipation, mais le résultat est tellement savoureux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

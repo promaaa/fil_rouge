@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Electrification facile d'un velo avec un kit du commerce a budget raisonnable</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Electrification facile d'un velo avec un kit du commerce a budget raisonnable</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/8/8a/Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable_20250922_102806.jpg/800px-Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable_20250922_102806.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Démarche pour promouvoir l'éco-mobilité visant particulièrement le train/vélo où un VAE clé en main à petit budget pèse souvent quelques kilos de trop pour être chargé dans un wagon</div>
+        
+      </div>
+    
+    
+      
+        <p>Le kit en question est le A3 ou A3 pro de la marque Yosepower : je l'ai choisi pour sa légèreté (rajoute juste 5Kg au vélo en comptant la batterie), son prix (400 ou 440€ port compris) et sa simplicité de montage (pas de démontage pédalier car le capteur pédalage est inclus dans le moteur)</p>
+      
+        <p>J'ai évité le moteur central car plus cher et plus compliqué et le moteur avant vis à vis de son comportement limite à la conduite sur mauvais revêtement</p>
+      
+        <p>Cette version est adaptée à des trajets moyens types vélotaf, bonne assistance dans les cotes ou chargé, mais s'estompe rapidement en prenant de la vitesse (législation oblige !) : ne le choisissez pas pour aller vite sur des longs plats.</p>
+      
+        <p>La motorisation arrière à une puissance de 250W (limite légale) et la batterie de 7Ah a un format de gourde qui rentre même dans le porte gourde d'un vélo à cadre dit "femme"</p>
+      
+        <p>Le A3 pro dispose d'un tableau de bord et d'un éclairage avant, le A3 est particulièrement épuré car il n'est constitué que de l'ensemble batterie relié à une roue arrière motorisée par un seul câble.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 440 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Le kit</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/58/Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable_20250616_081131.jpg/800px-Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable_20250616_081131.jpg' alt='Electrification facile d un velo avec un kit du commerce a budget raisonnable 20250616 081131.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/8/89/Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable_Capture_d_cran_2025-07-02_111131.png' alt='Electrification facile d un velo avec un kit du commerce a budget raisonnable Capture d cran 2025-07-02 111131.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le A3 comprend la roue motorisée de diamètre 700, le bloc batterie (batterie, support et chargeur) et un câblage très simple (il y a même des couleur pour ne pas se tromper !).</li><li>Le A3 pro rajoute un petit écran de contrôle (assez peu utile selon moi, et le risque de panne augmente avec le nombre d'éléments) et un éclairage avant</li><li>Les outils nécessaires (dont de quoi démonter et remonter la cassette), des serflex pour fixer les câbles et pas de capteur de pédalage car déjà inclu dans le moteur</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Assistance et location</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/48/Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable_20250625_271016.jpg/800px-Electrification_facile_d_un_velo_avec_un_kit_du_commerce_a_budget_raisonnable_20250625_271016.jpg' alt='Electrification facile d un velo avec un kit du commerce a budget raisonnable 20250625 271016.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Un modèle est visible à La Chavanne (Savoie) pour visualiser le montage et faire un essai sur route</li><li>Si vous habitez plus loin, j'échangerais avec plaisir avec vous par téléphone ou messagerie</li><li>Vous pouvez aussi louer ce vélo à Du Soleil dans nos Assiettes (10€/jour) pour être sûr qu'il corresponde à vos besoins, une bonne façon d'aider et d'encourager notre travail !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Premiers retours</strong><p><strong>Étapes :</strong></p><ol><li>Par rapport aux autres VAE que j'ai testé, l'assistance est efficace dans les côtes ou vélo chargé mais se bride relativement tôt, à 25km/h comme le veut la législation : il ne faut pas espérer augmenter sa vitesse sur de grandes lignes droites; il aurait été appréciable une tolérance un peu plus importante.</li><li>Autre différence : l'assistance se déclenche lorsque le vélo démarre et non lors de la poussée de la pédale, il y a un léger déphasage du fait que le capteur soit intégré au moteur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

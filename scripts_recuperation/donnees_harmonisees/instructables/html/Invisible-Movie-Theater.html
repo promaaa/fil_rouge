@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Invisible Movie Theater</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Invisible Movie Theater</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FRD/0WXT/LY4F6GQT/FRD0WXTLY4F6GQT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>We don't watch a TV a lot with my wife. So, we didn't want to have a black rectangle as a main thing in our living room. But we do like to watch a movies etc. So, the goal was an amazingly simple - invisible TV.</p>
+      
+        <p>Check the video in step 8.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Invisible-Movie-Theater/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Invisible-Movie-Theater/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>projector</li><li>white screen with electric drive</li><li>Shelly devices (1PM, RGBW2, socket)</li><li>engine for the lift</li><li>500 x 25 x 4 mm aluminium</li><li>5mm threaded rod</li><li>Bluetooth speaker</li><li>Chromecast</li><li>generic tools like screwdriver, drill, screws, lock nuts etc.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Don't Do It.</strong><p><strong>Étapes :</strong></p><ol><li>Yeah, really. Reason? It takes too much time. How much? Well with these instructions it can be about 60+ hours. I stopped counting my time in about 80+.</li><li>Only finding the right projector is for ages. After this project, I am quite sure, that choosing the right projector (when you have only reasonable budget) takes at least 10 hours. There is about thousand different parameters to consider.</li><li>One of the reasons I chose this way of invisible TV was also price of TV with 84 inches. Few years back it was like $5000 but now its easily available in the same price as projector.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Are You Crazy Enough? Let's Start</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FC8/HCZ9/LY4F6GH9/FC8HCZ9LY4F6GH9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Are You Crazy Enough? Let's Start' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS7/SYTW/LY4F8LZ0/FS7SYTWLY4F8LZ0.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Are You Crazy Enough? Let's Start' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Our first step was to build the flower shelf. We ordered it from a woodworking guy, but we've got to give him the dimensions. Here are some recommendations to consider:<ul><li>Height of the shelf. It shouldn't be too high, so it doesn't take too much space (thus you don't have a space for movie), but there also must be enough space for the flowerpots.</li><li>I can recommend splitting the shelf to separated boxes so when there is some water problem, it is limited in one box only.</li><li>Each box should be water tide.</li><li>It is nice to have the front panels removable so you can access the pots easily.</li><li>As you can see there is a hidden place for the screen. In our case we have there 10cm height.</li><li>Don't forget some space for the screen where it will roll out.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Choose the Right Projector</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FAL/KWB6/LY4F6GOQ/FALKWB6LY4F6GOQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Choose the Right Projector' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>With unlimited budget it's piece a cake. Our reasonable budget was around $700 and thus almost impossible. I am not going to describe how to choose it based on the picture quality, there are other specialist for this, but here are some things related to this mad project:<ul><li>If you have a given distance from the screen (as we've got since the ceiling light was already in place), you must make sure theprojector can give you picture with right size for your screen. Most projectors have some zoom options which is helpful but not much. Just check the projector manual and do the math.</li><li>Because you don't want to hit your head to the projector when you are going for new snacks, the projector will be a bit angled. So, the project must be able to compensate the angle. Again, do the math for your specific scenario.</li><li>Dimensions are important too. Usually there is a limited space above the dry wall ceiling. So, height of the projector with the other stuff above must fit in. We have about 32cm height there so it's very generous and even so I was almost not able to fit it in.</li><li>Don't bother if the projector isn't smart. If your favorite projector is without Netflix app or other things, just use Chromecast or something similar.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Scissors Mechanism</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FQX/4CU3/LY4F6GHM/FQX4CU3LY4F6GHM.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Scissors Mechanism' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSW/6SG7/LY4F6GKT/FSW6SG7LY4F6GKT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Scissors Mechanism' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>It can look hard to make buts it's one of the simplest things of the project.</li><li>Important is to use strong aluminium. Our dimensions are 500x25x4 mm. Which is reasonable for all important parameters like:</li><li>The biggest square that fits to our rounded light is with side about 54 cm so the length of the aluminium is 50cm. To each plate you must drill three holes (5mm diameter) for the screws. This is the hardest part since it must be very precise. The holes must be exactly at the same place for each plate. Otherwise, the scissors mechanism will not work smoothly. I just drilled first plate with maximum precision and then I placed this plate above second plate and drilled the holes to second plate through holes in the first plate.</li><li>When you have all plates ready with holes just put two plates above each other and tighten it with 5mm screws in middle holes. It is important to use a lock nut so it won't be loosed when the lift is moving up and down.</li><li>When you have prepared paired plates with middle screws you need to prepare threaded rods. Here it's just to cut it to proper length, which in our case was again 50 cm. Then put one lock nut to each side of the rod and you are ready for next step.</li><li>The next and last step is to put side holes of two paired plates together and put the threaded rod in the holes. Next put one lock nut to the end of the threaded rod. Repeat this until you have all plates and threaded rods together.</li><li>When all is together it is important to tighten all lock nuts just right. It cannot be too lose (the lift wouldn't be stable) or too tight (the lift wouldn't be moving).<ul><li>price</li><li>flexibility</li><li>strongness</li><li>weight</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Bottom Scissors - Light Mount</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F3I/MQAZ/LY4F6GHT/F3IMQAZLY4F6GHT.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Scissors - Light Mount' loading='lazy'></figure><figure><img src='https://content.instructables.com/FUS/NK7B/LY4F6GI1/FUSNK7BLY4F6GI1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Scissors - Light Mount' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6J/2GAM/LY4F6GIA/F6J2GAMLY4F6GIA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Scissors - Light Mount' loading='lazy'></figure><figure><img src='https://content.instructables.com/F00/QKBW/LY4F6GIV/F00QKBWLY4F6GIV.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Bottom Scissors - Light Mount' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Since the scissors spread is changing when it's going up or down there must be some moving element. In my case I used ball bearing slide. You need two pieces int the bottom and two for the top mount described in the next step. Firstly, I considered to use eight pieces for all mount points, but it's better to have one side still.</li><li>Otherwise, it's just a square from some aluminium parts I have found home and put together with light through holes drilled in the light. It is better to have longer screws so you can adjust the position of the light when it is in the top position.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Top Scissors - Engine - Ceiling Mount</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F6H/6HFU/LY4F6GIK/F6H6HFULY4F6GIK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Top Scissors - Engine - Ceiling Mount' loading='lazy'></figure><figure><img src='https://content.instructables.com/F03/JYUT/LY4F6GPE/F03JYUTLY4F6GPE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Top Scissors - Engine - Ceiling Mount' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Top mount is also not much interesting. Just another square with the engine in the middle.</li><li>The engine is just a regular that is used for outside window shades. I got it also with the mounting rail, so it was quite simple to put it to the square mount.</li><li>I put the engine in the middle. It was a mistake. It took a lot of space that could be used for the projector. I recommend putting it on the opposite side to the projector.</li><li>The position of the lift is determined by the winding of the belts, which move thanks to the engine.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Cable Duct</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F2D/3ON4/LY4F6GMW/F2D3ON4LY4F6GMW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cable Duct' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Since the projector and light needs a power and it is moving, the cables are put in the bending cable duct. It was not easy to force it to bend in the right places. The silver parts are duct tapes, so it prevents bending where it is not supposed to.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Wiring and Controlling With Shelly</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FNO/7JHG/LY4F6GO3/FNO7JHGLY4F6GO3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wiring and Controlling With Shelly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHY/ZDNF/LY4F8E9F/FHYZDNFLY4F8E9F.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wiring and Controlling With Shelly' loading='lazy'></figure><figure><img src='https://content.instructables.com/FO3/BX8S/LY4F8MRI/FO3BX8SLY4F8MRI.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wiring and Controlling With Shelly' loading='lazy'></figure><figure><img src='https://content.instructables.com/F22/U8TC/LY4F8NXP/F22U8TCLY4F8NXP.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Wiring and Controlling With Shelly' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Obviously, you need to have electricity for the screen, lift engine and projector. Luckily, I've got it all prepared before the project.</li><li>There are exactly 8 Shelly devices controlling all involved parts.</li><li>1) 3x Shelly 2PM to control white screen, lift engine and outside shades.</li><li>2) Shelly Plug to control projector.</li><li>3) Shelly Bluetooth Button to start the moving.</li><li>4) 3x Shelly RGBW2 to control lights for flowers and light under the projector.</li><li>I am using about fifty other different Shelly devices around my flat, so it was quite easy to use it and I can recommend it to anyone. You don't need to use any gateway it's all connected to wifi and to the cloud if want so you can manage it from anywhere. If you are brave enough to read it to this point, it will be really easy to setup the Shelly. :)</li><li>Some main steps to start working with Shelly:</li><li>Here is a video, how nicely it is moving. I am trying to win the Shelly contest, so I talk about Shelly there a lot :-D</li><li>As you can see in the video, after pressing one button there is several things that happens:</li><li>1) Lift, screen, and shades are going down using the Shelly 2PM.</li><li>2) Lights are dimmed and turned off using Shelly RGBW2.</li><li>3) Electricity for the projector is turned on using Shelly Plug and projector is set to turn on when it has a power.</li><li>4) Chromecast is turned on.</li><li>When I need to have it invisible again after the movie is finished, the scene is a bit different. I cannot just turn off the projector with the Shelly Plug because the lamp would be ruined soon. So, I turn off the projector with the remote and when the Shelly Plug notice, there is not a power (the projector turned off the fan) all is going to starting position with another scene in Home assistant.</li><li>It all could be controlled only with Shelly devices scripting, but since I am using Home assistant for other things I have it all done in Home assistant automations.<ul><li>Power up the Shelly (2PM with 230V, RGBW2 with 12V or 24V)</li><li>It will create wifi AP named shellyXXXXXXXXX</li><li>Connect your phone (laptop, pc) to the shelly AP and go to 192.168.33.1 in the browser</li><li>In the web UI setup connection to your wifi</li><li>You can set fixed IP, which is something I can recommend</li><li>Or you can just put wifi credentials and then you have to find what IP it has</li><li>Access the Shelly</li><li>Download Shelly Smart Control app to your phone and follow the inscructions there</li><li>Or go to the IP of the device</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Ceiling Hole</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F2F/S4P9/LY4F6GNH/F2FS4P9LY4F6GNH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Ceiling Hole' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>We have a dry wall ceiling, so cutting was easy. Just be careful with the proper positioning. You don't want to have the hole visible when the light is up. :)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Setup Tunning</strong><p><strong>Étapes :</strong></p><ol><li>There is a lot of positioning that must be done after all is in place:</li><li>All takes hours of testing and is quite annoying because you change the angle of the projector and it aims not in the middle etc.<ul><li>The screen (how much down it goes)</li><li>The top and bottom lift ends</li><li>Angle of the projector</li><li>Left/right and top/bottom positioning the projector beam, so it aims to the middle of the screen</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Missteps</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/F8F/L6PW/LY4F6GH4/F8FL6PWLY4F6GH4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Missteps' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ1/29WC/LY4F6GJ7/FJ129WCLY4F6GJ7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Missteps' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZF/H6A5/LY4F6GKD/FZFH6A5LY4F6GKD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Missteps' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I've made several mistakes. Here they are so you don't have to repeat them:</li><li>1) Too clumsy aluminium plates. I wanted to save some money so originally, I bought 500x15x2 aluminium. It was usable but lift movement was unstable.</li><li>2) The top position was reached when the stop button on the engine was pressed. Again, usable solution, but the stop button stopped working properly and the lift was trying to put it through the dry ceiling. It is better to set ending positions in the motor.</li><li>3) One safety screw for belt winding failed and the light was suddenly hold only on one side so it was angled, and the engine couldn't reach the stop button. The other belt was still working but connection in the bottom failed because of the force the engine was putting on it and the whole construction just fell. To fix this I used better safety screw and ditched the stop button and used ending positions set directly in the engine.</li><li>I was there when it happened. I saw something is wrong, but I couldn't stop the lift fast enough (I would have to open Home assistant app in the phone, find the lift etc.). So, after this disaster I made safety precaution. When I press any light switch in the room, the lift stop moving. It's again simple thanks to Shelly since under all my switches is some Shelly. So each time the switch is pressed, it toggle the light and also stop the lift.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: I Know What Is in Your Head Right Now</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FNF/H6XR/LY4F6GLA/FNFH6XRLY4F6GLA.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='I Know What Is in Your Head Right Now' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>It's my three-year-old son painting. Yes, he is really good, and it is not for sale. Unless I am not winning the contest, then it is for five hundred dollars. :-D</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Step 13: Most Important Part</strong><p><strong>Étapes :</strong></p><ol><li>Say big thank you to your wife for her patience. Bring her flowers and cherish her for all the lost time on this.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

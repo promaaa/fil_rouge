@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Allume Feu 2</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Allume Feu 2</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/b5/Allume_Feu_2_1738765569357.jpg/ia-6d4783f08a7deffd6329f6faabb05e75-px-Allume_Feu_2_1738765569357.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Fabrication d'allumes feu avec des boîtes d'œufs.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les boîtes d'œufs sont souvent jetées ou entreposées sans être utilisées ensuite. Mais on peut réaliser de bons allumes feu avec ce matériau afin d'allumer un feu dans une cheminée, un poêle ou même un barbecue.</p>
+      
+        <p>Méthodes</p>
+      
+        <p>Dans ce tuto nous décrivons trois méthodes pour réaliser ces allumes feu :</p>
+      
+        <p>- La première méthode est très simple, le feu dure longtemps (quelques minutes avec un seul allume feu), mais nécessite de la cire de bougies et du tissu (ou du papier). (cf. Etapes 1 à 4)</p>
+      
+        <p>- La deuxième méthode nécessite uniquement des boîtes d'œufs, mais la difficulté réside dans la façon de faire. En effet, sans entretien, l'allume feu peut s'éteindre rapidement.(cf. Etapes 5 à 7)</p>
+      
+        <p>- La troisième méthode nécessite de l'huile (déjà utilisée, pour ne pas gâcher) et des boîtes d'œufs. Cette méthode permet de faire brûler un allume feu pendant longtemps (quelques minutes). (cf. Etape 8)</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 10 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0-10 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Allume_Feu_2" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Allume_Feu_2</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>- Boîtes d'œufs</li><li>- Cire de bougie, d'abeilles, ...</li><li>- Tissu, papier (ou autres matériaux qui brûle très vite)</li><li>- Huile de cuisson</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- Ciseaux</li><li>- Briquet ou allumettes</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Découper les boîtes d'œufs</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/21/Allume_Feu_2_IMG_20250205_112625.jpg/800px-Allume_Feu_2_IMG_20250205_112625.jpg' alt='Allume Feu 2 IMG 20250205 112625.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper les boîtes d'œufs de façon à obtenir les emplacements d'œufs séparément, sous forme de dômes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Faire fondre la cire</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Allume_Feu_2_IMG_20250205_113324.jpg/800px-Allume_Feu_2_IMG_20250205_113324.jpg' alt='Allume Feu 2 IMG 20250205 113324.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Prendre les restes d'une bougie déjà utilisée ou une bougie qui ne servira pas.</li><li>Allumer la mèche de la bougie (ou placer un morceau de boîte d'œufs enflammé dans la bougie) afin de faire fondre la cire de la bougie.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Assembler</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b3/Allume_Feu_2_IMG_20250205_113346.jpg/800px-Allume_Feu_2_IMG_20250205_113346.jpg' alt='Allume Feu 2 IMG 20250205 113346.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/08/Allume_Feu_2_IMG_20250205_113353.jpg/800px-Allume_Feu_2_IMG_20250205_113353.jpg' alt='Allume Feu 2 IMG 20250205 113353.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/37/Allume_Feu_2_IMG_20250205_113406.jpg/800px-Allume_Feu_2_IMG_20250205_113406.jpg' alt='Allume Feu 2 IMG 20250205 113406.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ensuite, vous pouvez ajouter des petits morceaux de cartons, papier (ou autre) dans un dôme de boîte d'œufs.</li><li>Puis, placer un morceau de tissu qui dépasse du dôme.</li><li>Faire couler de la cire liquide dans le dôme.</li><li>Enfin, placer un autre dôme au-dessus de la cire afin de fermer et de maintenir l'allume feu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Allumer le feu !</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Allume_Feu_2_IMG_20250205_113548.jpg/800px-Allume_Feu_2_IMG_20250205_113548.jpg' alt='Allume Feu 2 IMG 20250205 113548.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9e/Allume_Feu_2_1738753959061.jpg/800px-Allume_Feu_2_1738753959061.jpg' alt='Allume Feu 2 1738753959061.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour finir, il suffit d'allumer la mèche de l'allume feu (le morceau de tissu qui dépasse) à l'aide d'un briquet ou d'une allumette.</li><li>L'allume feu capable de brûler pendant plusieurs minutes !!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Découper les boîtes d'œufs</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Allume_Feu_2_IMG_20250205_112753.jpg/800px-Allume_Feu_2_IMG_20250205_112753.jpg' alt='Allume Feu 2 IMG 20250205 112753.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper les boîtes d'œufs de façon à obtenir les emplacements d'œufs séparément, sous forme de dôme.</li><li>Le dessus d'une boîte d'œufs peut également former des dômes, en effet il suffit de découper autour des quatre coins.</li><li>Les restes d'une boîte d'œufs peuvent être découpés en petits morceaux assez longs, qui serviront à démarrer le feu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Assembler puis allumer</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Allume_Feu_2_IMG_20250205_112837.jpg/800px-Allume_Feu_2_IMG_20250205_112837.jpg' alt='Allume Feu 2 IMG 20250205 112837.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/46/Allume_Feu_2_IMG_20250205_112931.jpg/800px-Allume_Feu_2_IMG_20250205_112931.jpg' alt='Allume Feu 2 IMG 20250205 112931.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant, il faut placer un dôme en boîte d'œufs à l'emplacement souhaité.</li><li>Puis allumer un morceau de boîtes d'œufs en longueur et placer le sous le dôme.</li><li>Des flammes sont censées brûler le dôme. Si, seulement de la fumée en ressort, il faut retirer le morceau qui génère de la fumée, puis réitérer cette étape afin que des flammes brûlent le dôme.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Quand le feu prend rajouter des morceaux</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3f/Allume_Feu_2_IMG_20250205_112945.jpg/800px-Allume_Feu_2_IMG_20250205_112945.jpg' alt='Allume Feu 2 IMG 20250205 112945.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/aa/Allume_Feu_2_IMG_20250205_113040.jpg/800px-Allume_Feu_2_IMG_20250205_113040.jpg' alt='Allume Feu 2 IMG 20250205 113040.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Quand des flammes brûlent une grande partie du dôme, il faut rajouter un dôme ou des morceaux de boîte d'œufs, au-dessus du feu.</li><li>A partir de ce moment vous pouvez alimenter votre feu avec d'autres morceaux de boîte d'œufs (uniquement au début du feu), ou avec du bois, du charbon, ... selon votre utilisation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Avec de l'huile</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f6/Allume_Feu_2_IMG_20250205_113050.jpg/800px-Allume_Feu_2_IMG_20250205_113050.jpg' alt='Allume Feu 2 IMG 20250205 113050.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une troisième méthode pour réaliser un allume feu, est de badigeonner des morceaux de boîtes d'œufs avec de l'huile de cuisson (qui a déjà été utilisée).</li><li>Ensuite il faut les laisser sécher.</li><li>Quand ils sont secs ils peuvent être directement allumés et sont prêts à bruler pendant plusieurs minutes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

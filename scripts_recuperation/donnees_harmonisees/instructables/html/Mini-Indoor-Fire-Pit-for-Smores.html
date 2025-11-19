@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini Indoor Fire Pit for S'mores</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Mini Indoor Fire Pit for S'mores</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FDE/BBHV/L03UV626/FDEBBHVL03UV626.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>This project has been on my mind for a while now and what better time to make it than winter months when bonfires and BBQs are out of question.</p>
+      
+        <p>S'mores were introduced to my European-self via American movies and I never even thought to make them myself. That is until I met my newest friend, who happens to be a s'more obsessed American. Unfortunately, since he lives in an apartment in London, he's unable to make them himself and he's constantly trying to come up with alternatives. Believe me, there is nothing sadder than watching a grown man trying to heat up marshmallows with a lighter or spreading marshmallow fluff over saltine crackers and topping it with nutella. I finally took it upon myself to make him an indoor fire pit to satisfy his cravings.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Mini-Indoor-Fire-Pit-for-Smores/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Mini-Indoor-Fire-Pit-for-Smores/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li># Cement or concrete mix + optional powdered pigments</li><li># Mould - silicone mould, 3D printed mould or DIY homemade mould</li><li>If you don't have a 3D printer, use plastic containers you have laying around the house to create a simple mould.</li><li># Mould release - oil based</li><li>If you are using DIY plastic mould or 3D printed one, you can use any oil based lubricant on hand- cooking oil, baby oil, Vaseline etc. For professional silicone moulds you will need special release agents to prevent damage.</li><li># Sanding paper, at least 120-320 grit</li><li>Optional: Dremel, concrete polishing pads</li><li># Concrete sealer - optional</li><li>Only non-solvent sealer! It can be skipped altogether if you absolutely don't want to use it, but it will look better and cement won't be prone to stains or damage.</li><li>Sealer can usually only be bought in large quantities, but sometimes you can buy samples (1-2 oz.) on eBay and Amazon.</li><li>https://www.amazon.co.uk/s?k=concrete+sealer&crid=...</li><li># Decorative stones or pebbles</li><li># Heat-proof metal container for alcohol burning</li><li># Methanol, ethanol or isopropyl alcohol (rubbing alcohol) - high concentration</li><li>I tested 70% and 99% isopropyl alcohol and both worked, however 99% burned longer and more consistently.</li><li># chafing fuel https://www.amazon.co.uk/Olympia-CE241-Chafing-Fue...</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Moulds</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FF7/PTT1/L03UWZX1/FF7PTT1L03UWZX1.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Moulds' loading='lazy'></figure><figure><img src='https://content.instructables.com/F73/2Y6G/L03UWZYB/F732Y6GL03UWZYB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Moulds' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>You can buy special silicone moulds or make them yourself using household items like plastic and metal containers, melamine boards or even cardboard.You can also 3D print them.</li><li>I've found an interesting bowl design on Thingiverse, I tweaked it a bit and made it into a mould. When I'm no longer using the fire pit I will be able to fill the bowl with decorative pebbles, candles or use it as a succulent planter.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: 3D Printing Moulds Using CURA's 'MOLD' Mode</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FKJ/6F0S/L02FFIXC/FKJ6F0SL02FFIXC.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='3D Printing Moulds Using CURA's 'MOLD' Mode' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLH/8W2D/L02FFIXB/FLH8W2DL02FFIXB.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='3D Printing Moulds Using CURA's 'MOLD' Mode' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWU/WXGX/L02FFIXD/FWUWXGXL02FFIXD.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='3D Printing Moulds Using CURA's 'MOLD' Mode' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cura has this interesting feature that allows you to print any object in a mould (mold) form. I have no idea what the intended purpose of that mode is, but I use it to print moulds and fill them with cement or plaster. Not all objects can be converted and still be usable, some have to be modified, but it works great for simple designs like bowls, vases, planters.</li><li>Once you made or downloaded a design of a bowl or planter, import it into Cura and find 'mold' feature in settings.</li><li>Print your mould upside down.<ul><li>0.2 or 0.3 layer height</li><li>0.4 mm wall thickness</li><li>0.8 mm bottom and top</li><li>2-10% infill (depends on the size of the object)</li><li>use raft as build plate adhesion (at least 2 layers), it will also act as a connector between the outer mould shell and the inner part</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Cement/ Concrete</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FEP/HTIH/L03UWZYD/FEPHTIHL03UWZYD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cement/ Concrete' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBF/QBBC/L03UWZZH/FBFQBBCL03UWZZH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cement/ Concrete' loading='lazy'></figure><figure><img src='https://content.instructables.com/FCO/EUG0/L03UX00Q/FCOEUG0L03UX00Q.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cement/ Concrete' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Use cement or concrete mix, either one will work. While concrete is stronger than just cement, on a small scale project like this the lack of aggregates won't matter as much.</li><li>In fact cement works better than concrete, since there are no gravel pieces and the whole mixture fills small cavities perfectly, so the end result is flawless.</li><li>Cement doesn't usually stick to PLA too much, so mould release is not strictly necessary, but I like to spray some WD-40 on the insde of the mould just in case.</li><li>Mix a batch or cement- white, pale gray or dark gray (whatever is available in your country), add pigments if you want to and pour into the mould.</li><li>Bang the whole mould onto the countertop to release any air bubbles and to spread the mixture evenly. Level the top and leave to set.</li><li>It should be ready to de-mould within 2-3 days.</li><li>Once out of the mould, you should leave it to dry and further cure for 1-3 days.</li><li>To de-mould you might use:<ul><li>thin flat screwdriver to break the mould</li><li>exacto knife</li><li>pliers</li><li>sharp wire trimmers</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Sanding and Sealer</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FP4/4LY5/L02FFIW8/FP44LY5L02FFIW8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Sanding and Sealer' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Use sanding paper to smooth the cement bowl. Start with 120 and go all the way to 320 (or higher) for a polished look.</li><li>You could also skip the sanding process and keep it rough looking if that's what you like. Or go the other way and, if your bowl is relatively simple, use cement polishing pads to give the bowl a nice shine (https://www.amazon.co.uk/Sanding-Polishing-Grindin...).</li><li>Brush one or two thin layers of sealer and let it dry completely.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Create a Care Package for a Friend</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FB1/USP9/L02FFIW9/FB1USP9L02FFIW9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Care Package for a Friend' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVP/J53Z/L02FFIVP/FVPJ53ZL02FFIVP.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Create a Care Package for a Friend' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>It would be a nice gift for a s'more obsessed person.</li><li>Pack the cement bowl in a box with a bottle of rubbing alcohol, skewers, decorative stones, matches, small metal container, marshmallows, chocolate and crackers.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: How to Burn Alcohol Safely</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F90/I4NH/L02FFIWD/F90I4NHL02FFIWD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='How to Burn Alcohol Safely' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDR/ZEGF/L03V3OV5/FDRZEGFL03V3OV5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='How to Burn Alcohol Safely' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1. I know that it's not recommended to burn fire directly in a cement fire pit without any protection. At least that's how it's supposed to be done in large, outdoor fire pits. When exposed to direct, high heat, over time, cement can crack or even explode. Now, in theory, you won't be using this indoor fire pit for hours on end, so the possibility of the cement cracking is low, but... I read about the cement bowls exploding and now I can't put it out of my mind, so for safety, I recommend using a metal container that will fit within the bowl.</li><li>2. Have a metal or glass lid on hand, just in case you have to extinguish the fire. Don't leave the fire unattended and put it out even when walking out of the room for a moment. Especially if there is a possibility of a draft.</li><li>3. 1TBS of rubbing alcohol will burn between 3 and 5 minutes. Start the fire with small amounts of alcohol, just until you get an idea on how much to use and how long it will burn for.</li><li>4. EXTINGUISH THE FLAME BEFORE ADDING MORE ALCOHOL.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Finished</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FKX/3A76/L03UV4FF/FKX3A76L03UV4FF.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finished' loading='lazy'></figure><figure><img src='https://content.instructables.com/FGJ/JLH2/L03UV4H8/FGJJLH2L03UV4H8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finished' loading='lazy'></figure><figure><img src='https://content.instructables.com/FSY/HZA9/L03UV4FG/FSYHZA9L03UV4FG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finished' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

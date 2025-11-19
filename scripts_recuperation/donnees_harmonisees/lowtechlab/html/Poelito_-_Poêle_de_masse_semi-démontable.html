@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Poelito - Poêle de masse semi-démontable</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Poelito - Poêle de masse semi-démontable</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/b8/Poelito_-_Poêle_de_masse_semi-démontable_Poelito.jpg/ia-db454114e4ce9c99559ea5ddbbb27bf4-px-Poelito_-_Poêle_de_masse_semi-démontable_Poelito.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Poêle de masse à inertie semi-démontable. Un poêle de masse ou poêle à accumulation est un appareil de chauffage principal. Sa masse constituée de matériaux lourds (pierre, brique ou béton) stocke l'énergie d'une flambée quotidienne unique et intense (entre 1 et 3 h) et restitue longuement la chaleur une fois le feu éteint (jusqu'à 24h). Sa masse lui confère une inertie thermique propice à atténuer la courbe de températures de l’intérieur d'un bâtiment (ce qui vaut à ces poêles d'être aussi nommé "poêles à inertie"). Toute la quantité de bois nécessaire pour chauffer l'habitat est brûlée en une seule fois, ce qui induit des températures élevées dans le foyer et permet d'obtenir une combustion complète et peu polluante. L'accumulateur est conçu pour absorber une majorité d'énergie issue de la combustion et des fumées. Quand elles quittent le poêle, les fumées sont donc considérablement refroidies. La chaleur accumulée est diffusée principalement par rayonnement et dans un pourcentage moindre par convection. Ce mode de chauffage par rayonnement implique qu'il soit placé au centre de l'habitat. La plupart des poêles de masse actuels sont placés dans la pièce principale ouverte sur le salon, la salle à manger et la cuisine. Avec un rendement pour la plupart supérieur à 80%, ces poêles font partie des appareils de chauffage au bois les plus performants. Retrouvez ici la vidéo tuto [2]</div>
+        
+      </div>
+    
+    
+      
+        <p>Le Poelito est un poêle à bois à inertie destiné aux habitats de petites dimensions et/ou légers (camion, yourte, caravane, mobil home, péniche …). Ces habitats sont caractérisés par : - une petite surface à chauffer, donc une faible puissance de chauffe requise. De ce fait un poêle habituel est souvent surdimensionné car il fait vite trop chaud. L’habitant l’utilise donc au ralenti, ce qui induit encrassement, pollution et performances médiocres. - une faible inertie, c'est-à-dire peu de masse permettant d’absorber la chaleur excédentaire pour la restituer plus tard. Il y fait donc rapidement froid après l’extinction des sources de chaleur. Un poêle à accumulation correspond parfaitement à ces contraintes. Il stocke beaucoup de chaleur, permettant de faire seulement 2h de feu toutes les 12 à 24 heures. Limitant ainsi la durée d’entretien du feu et permettant un chauffage sur de longues périodes.</p>
+      
+        <p>Principe de fonctionnement Le principe de poelito est de combiner « masse » et « mobilité » : une partie de l’inertie est réalisée par du sable, qui est facilement retirable. Le poêle, vidé, est plus simple à déplacer. Dans l’utilisation, le poêle Rocket fonctionne en chargement vertical ce qui permet une auto alimentation en bois par gravité. La combustion (aspiration des flammes) est latérale inférieure, ce qui permet une arrivée d'air par le dessus du combustible. C'est une conception originale qui assure de très bonnes performances mais demande une prise en main à l'utilisation.</p>
+      
+        <p>Ce tutoriel a été réalisé avec David Mercereau. Il est une retranscription du travail de Vital Bies à l'origine de l'idée, de la conception du Poelito et de la rédaction du manuel : https://sites.google.com/site/assodes2mains/poele/le-poelito. Nous les remercions pour leur travail pour les communs. Dans ce tutoriel, seules la fabrication et l’utilisation du Poelito sont détaillées, des options supplémentaires sont disponibles dans le manuel de Vital telles que les trappes de ramonage, l’association à banquette chauffante ou à un chauffe-eau. Nous n’abordons pas non plus les trous d’évacuation du sable, complexifiant la construction. Le sable se retire bien par le dessus du poêle.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 300 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Poelito_-_Poêle_de_masse_semi-démontable" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Poelito_-_Poêle_de_masse_semi-démontable</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Métal<ul><li>Bidon métallique</li><li>Fumisterie (tubes de diamètres différents et T)</li><li>Grille d'égout</li></ul></li><li>Quincaillerie :<ul><li>Vis auto foreuses,</li><li>Boulons + écrous</li></ul></li><li>Béton :<ul><li>Tasseau pour tasser et dresser le béton,</li><li>Fil de fer,</li><li>Vieux tissu à placer dans le bidon lorsqu’on le travaille pour étouffer le bruit.</li></ul></li><li>Coffrage perdu<ul><li>Plastique d'emballage (cellophane) ,</li><li>Scotch de chantier orange</li><li>Scotch de marquage,</li><li>Carton ondulé,</li><li>Tubes de carton de diamètre 80, 100 ou 130 mm,</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li>Sécurité<ul><li>Gants</li><li>Lunettes</li><li>Casques anti-bruit / bouchons d’oreille</li><li>Masques à poussières</li><li>Trousse de premier secours avec sérum physiologique en cas de projection de ciment dans les yeux</li></ul></li><li>Traçage / Mesure<ul><li>Mètre,</li><li>Crayon,</li><li>Marqueur,</li><li>Ficelle (environ 2 mètres)</li><li>Niveau à bulle</li></ul></li><li>Métal<ul><li>Marteau/massette/burin,</li><li>Tenaille,</li><li>Pince multiprise,</li><li>Cisaille à tôle (souvent plus pratique qu’un outil électrique)</li><li>Scie sauteuse + lames métal</li><li>Serre joint</li><li>Perceuse + mèches métal</li><li>Brosse métallique pour perceuse</li><li>Disqueuse + disques de découpe, à ébarber et à lamelles,</li><li>Ponceuse (optionnelle)</li></ul></li><li>Béton :<ul><li>Bâche</li><li>Verre doseur 1Litre</li><li>Truelle</li><li>Seaux de 10 litres x2, gamate , Cuve ou poubelle 50Litres pour le malaxage</li><li>Malaxeur à main,</li><li>Perceuse puissante avec embout malaxeur ou malaxeur manuel ou bétonnière (optionnel)</li></ul></li><li>Coffrage perdu<ul><li>Cutter</li><li>Ciseaux</li><li>Scie égoïne</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Approvisionnement matériel</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b9/Poelito_-_Po_le_de_masse_semi-d_montable_cout_fournitures.png/800px-Poelito_-_Po_le_de_masse_semi-d_montable_cout_fournitures.png' alt='Poelito - Po le de masse semi-d montable cout fournitures.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La construction de ce poêle nécessite de nombreux éléments, qui peuvent être achetés neufs ou récupérés.<ul><li>Les bidons sont faciles à trouver, sauf les 120 litres qui sont rares ... Pour un bidon neuf compter 50€HT.</li><li>Les tuyaux de poêles qui constituent le foyer se récupèrent très facilement. En neuf ils font monter considérablement le prix de l’appareil.</li></ul></li><li>ATTENTION 1 : les 2 tuyaux nécessaires pour le cendrier (fixe) et l’alimentation (amovible) doivent comporter un emboitement mâle à une extrémité afin de permettre l’adaptation d’un bouchon. ATTENTION 2 : La ligne d’évacuation des fumées doit être réalisée dans les règles de l’art, avec des tuyaux compatibles entre eux. Il faut éviter les fuites (de fumées certes, mais aussi de condensats) et le risque d’incendie.<ul><li>Le béton peut être constitué de sable et de ciment fondu, mais il sera moins durable qu’un béton de chamotte/ciment fondu. La chamotte est de la brique réfractaire pilée : elle doit comporter 25 à 40% d’alumine. Se rapprocher des fabricants de briques réfractaires (voir liste en annexe). Une granulométrie de 0 à 10 mm est idéale, 0 à 5 mm est aussi appropriée.</li></ul></li><li>EVITEZ de réaliser un béton de ciment normal ou de ciment noir (dépourvu d’alumine au contraire du fondu).<ul><li>La vermiculite : mélangée au ciment elle permet d’isoler le fond du bidon. On la trouve en magasin de construction ou d’horticulture sous les appellations « vermex » et « effiperl » notamment. Ce dernier contient aussi de la perlite.</li><li>Le verre céramique : c’est un verre spécial qui ne subit aucune dilatation sous l’effet de la chaleur. Il résiste aux chocs thermiques de 800°C ! On le trouve dans le commerce (compter 400 à 600€/m²) mais aussi sur les vieux inserts, sur les plaques de cuisson électriques, sur les portes de four (vitre intérieure seulement, souvent peu résistante). N’utilisez pas du verre normal ! Pour tester votre verre de récup, placez-vous sur une surface plane, posez votre vitre sur un réchaud à gaz de camping. Si elle tient le feu c’est bon signe. Finalisez le crash test en versant dessus un bon verre d’eau froide ! Si c’est du verre ad hoc ça ne bronche pas. Ne vous mettez pas dans l'herbe, au cas où ça casse !</li></ul></li><li>En image vous trouverez le coût moyen des fournitures pour les différents modèles, hors coût du bidon et de l’évacuation des fumées. la fumisterie représentant une part importante du budget.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Constitution de l'appareil</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/d/de/Poelito_-_Po_le_de_masse_semi-d_montable_principe_poelito.png' alt='Poelito - Po le de masse semi-d montable principe poelito.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/95/Poelito_-_Po_le_de_masse_semi-d_montable_PITO_200.PNG/800px-Poelito_-_Po_le_de_masse_semi-d_montable_PITO_200.PNG' alt='Poelito - Po le de masse semi-d montable PITO 200.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/28/Poelito_-_Po_le_de_masse_semi-d_montable_PITO_200_eclatee.PNG/800px-Poelito_-_Po_le_de_masse_semi-d_montable_PITO_200_eclatee.PNG' alt='Poelito - Po le de masse semi-d montable PITO 200 eclatee.PNG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9d/Poelito_-_Po_le_de_masse_semi-d_montable_PITO_200_eclatee_legende.png/800px-Poelito_-_Po_le_de_masse_semi-d_montable_PITO_200_eclatee_legende.png' alt='Poelito - Po le de masse semi-d montable PITO 200 eclatee legende.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le principe du Poelito est de construire un poêle rocket dans un bidon. Le fond du bidon est tapissé de mélange isolant. Cela ne dispense pas de poser son poêle sur un support incombustible. La partie inférieure, où le feu se développe, est coulée en béton réfractaire autour d’un coffrage en tubes de carton. Ces tubes forment des réservations creuses : le circuit du feu et de fumées. La partie inférieure constitue la base du foyer. C’est une masse fixe. La moitié supérieure est constituée de tuyaux métalliques amovibles et remplie de sable que l’on peut laisser sur place ou transporter séparément. Le foyer est fermé soit par une plaque de fonte, soit par une plaque vitro céramique, recouvert par le couvercle du bidon en guise de finition. Le conduit d’évacuation est à l’extérieur du bidon. La connexion se fait par un T de raccordement avec tampon de ramonage. La traversée du plafond et la sortie de toit (ou tout ce qui est à l’extérieur de l’habitat) doit obligatoirement être isolée.</li><li>On voit sur l'image le bas du conduit d’alimentation vertical avec vers le premier plan son cendrier, et vers l’arrière-plan le départ horizontal des flammes : ce premier ensemble constitue le brûleur. A l’arrière-plan on voit les 2 reprises des fumées, une de chaque côté du conduit de départ de flamme. Ces 2 reprises se rejoignent par en dessous via un collecteur, qui envoie les fumées vers l’arrière, en direction de l’évacuation des fumées). Cet ensemble constitue le collecteur. Raccordement au conduit d’évacuation par T avec tampon</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Dimensionnement</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/d/d2/Poelito_-_Po_le_de_masse_semi-d_montable_3_dimensions.png' alt='Poelito - Po le de masse semi-d montable 3 dimensions.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Poelito_-_Po%C3%AAle_de_masse_semi-d%C3%A9montable_47949898893_7d8bd703d3_k.jpg/800px-Poelito_-_Po%C3%AAle_de_masse_semi-d%C3%A9montable_47949898893_7d8bd703d3_k.jpg' alt='Poelito - Poêle de masse semi-démontable 47949898893 7d8bd703d3 k.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9e/Poelito_-_Po_le_de_masse_semi-d_montable_puissances_3_poeles.png/800px-Poelito_-_Po_le_de_masse_semi-d_montable_puissances_3_poeles.png' alt='Poelito - Po le de masse semi-d montable puissances 3 poeles.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est possible de réaliser le Poelito dans trois dimensions différentes, en fonction des types d’habitat, des volumes à chauffer, de la température extérieure et de la qualité de l’isolation de l’habitat :<ul><li>PITO 60 à partir d’un bidon 60 litres (Ø35 cm H 65 cm) : pour un camion ou une petite caravane. Compter 80kg.</li></ul></li><li>Il est d’une faible puissance et faible masse, à réserver aux tout petits habitats, à moins d’avoir une très bonne isolation. A titre d’exemple pour une grande caravane de 7m de long c’est correct jusqu’à 0°C mais quand il fait -5°C il ne faut pas espérer avoir plus de 12°C le matin en ayant fait un feu le soir. L’utilisation très intense s’il est sous dimensionné fait qu’il sera moins durable. La zone de cuisson est assez petite et ne permet d’utiliser que des récipients de petite taille.<ul><li>PITO 120 à partir d’un bidon 120 litres (Ø45 cm H 75 cm): pour une yourte jusqu’à 5m de diamètre à condition qu’elle soit bien isolée, parfait pour une grande caravane ou un mobil home. Compter 160 kg.</li></ul></li><li>Meilleur compromis en termes de rapport masse-puissance/facilité de déplacement. Convient bien pour un studio. Bonne zone de cuisson, possibilité d’option chauffe-eau.<ul><li>PITO 200 à partir d’un bidon 200 litres (Ø60 cm H 90 cm) : pour une yourte de plus de 5 m de diamètre, une petite maisonnette, une petite péniche … Compter 250 kg.</li></ul></li><li>Modèle à privilégier pour un habitat de plus de 20 m² en habitat léger et 35 m² en habitat en dur moyennement isolé. C’est la taille la plus favorable pour un appareil qui bougera peu et qui devra recevoir des options telles que production d’eau chaude et banquette chauffante.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Règles élémentaires de sécurité</strong><p><strong>Étapes :</strong></p><ol><li>Responsabilité de l’usager</li><li>Les rédacteurs de ce guide et l'association qui le met à disposition ne sont pas responsables de l'usage fait du Poelito. Vous êtes le seul et unique responsable de la mise en œuvre de l'appareil proposé. Soyez précautionneux dans l'action, posé et calme, et surtout critique vis à vis des éventuelles fausses bonnes idées que vous pourriez avoir (« ça ira bien comme ça ... »).</li><li>Sécurité pendant la construction</li><li>Portez toujours les équipements de sécurité indispensables à la tâche réalisée. Le métal est un matériau dangereux à travailler et le ciment est toxique à respirer. Munissez-vous d'un plan de travail approprié et fixez les pièces que tu vas usiner par tout moyen fiable à disposition (serre-joint, étau, pince-étau).</li><li>Installation du poêle</li><li>Comme tout poêle, il y a des règles à respecter pour ne pas se mettre soi ou son habitat en danger.</li><li>Poids/fondations : L’appareil présente un poids relativement important. Dans un habitat léger il est indispensable de mettre en place un report de charge sous le plancher afin d’éviter son affaissement. A minima il faudra au moins un plot qui reposera sur le sol dur et soutiendra efficacement le plancher. Au besoin, ajouter une traverse entre les supports existant (solivage) et le plot afin de maximiser son effet. En complément, une plaque de répartition du poids est préconisée car le plancher peut être relativement flexible et se déformer localement sous l’effet de charges ponctuelles (points d’appui intense). Il s’agit de poser par-dessus le plancher tout matériau suffisamment rigide et étendu pour répartir les points d’appui sur un surface plus importante que celle sur laquelle reposerait normalement l’appareil.</li><li>Protection du sol : Il doit être posé sur une plaque métallique épaisse et suffisamment grande pour répartir le poids s’il y a lieu. En cas d’installation sur un matériau inflammable, un plancher bois par exemple, il faut rehausser l’appareil afin d’avoir une circulation d’air en dessous ou de placer une masse supplémentaire ou un isolant épais.</li><li>Distance aux parois : Le poêle doit être placé à 15 cm minimum de toute paroi. S’il y a moins de 45 cm entre le poêle et la paroi la plus proche, elle doit être protégée avec une isolant incombustible, comme de la laine de roche. Il ne doit en aucun cas toucher un matériau combustible.</li><li>Conduits : Le tuyau d’évacuation des fumées doit absolument respecter les normes en vigueur. Ces normes sont simples et évitent de mettre le feu à son habitat. Il s’agit à minima de respecter une distance de sécurité de 30cm entre toute paroi inflammable et un tuyau simple peau et d’utiliser du double-peau en passage de toiture et en extérieur (avec distance de sécurité en traversée de toiture de 10 cm). Tout piège à calorie est à éviter strictement : l’anneau de 10 cm qui entoure le tuyau en traversée de toiture ne doit pas être laissé vide, mais rempli avec un isolant incombustible. Dans un espace vide (surtout s’il est clos) la température peut s’élever jusqu’à s’enflammer !</li><li>Hauteur de la cheminée : La configuration des lieux influera sur le tirage. Il faut éviter les obstacles produisant des vents tourbillonnants. Notamment le tuyau d’évacuation des fumées doit dépasser le sommet du toit de 40cm. Pour un toit plat il doit dépasser de 120 cm (dans ce cas il doit être correctement arrimé). Normativement le tuyau doit aussi dépasser tout obstacle présent à moins de 8m de distance (arbres par ex.)</li><li>Choix de l’emplacement : Ce qui dicte l’emplacement d’un poêle c’est fréquemment les possibilités de passage du conduit de fumées en toiture. Evidemment en corrélation avec l’aménagement de la pièce. Evitez de trop rehausser l’appareil afin de chauffer aussi au niveau du sol. S’il est placé près d’un mur il faut veiller non seulement aux distances de sécurités mais aussi à la facilité d’accès pour l’amorçage du tirage et le ramonage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Bétons, recette et préparation</strong><p><strong>Étapes :</strong></p><ol><li>La réalisation du Poelito passe par la mise en œuvre de béton. Le ciment fondu est corrosif pour la peau et irritant pour les yeux et les voies respiratoires : à manipuler avec des gants, porter des lunettes et un masque anti-poussières.</li><li>Il y a deux mélanges différents à réaliser :<ul><li>un mélange isolant, pour le fond du bidon et la remontée des flammes,</li><li>un mélange dense pour le reste, pour conserver la chaleur</li></ul></li><li>Les recettes et la mise en œuvre sont expliquées ci-dessous. On y fera appel à plusieurs reprises dans le tutoriel</li><li>Recette du béton réfractaire isolant<ul><li>1 volume d’eau</li><li>1 volume de ciment fondu</li><li>1,3 volume de vermiculite</li><li>Calculer le volume nécessaire à couler et le majorer de 20 %.</li><li>Mettre l’eau dans la cuve où vous faites le mélange</li><li>Verser le ciment par-dessus</li><li>Mélanger pour obtenir une pâte lisse</li><li>Verser toute la vermiculite par-dessus et malaxer pour obtenir un mélange homogène. Il faut que tous les grains soient noirs et que le mélange soit suffisamment humide.</li><li>Rajouter de l’eau si besoin.</li></ul></li><li>Recette du béton réfractaire dense<ul><li>1 volume d’eau</li><li>1,3 volume de ciment fondu</li><li>3,3 volume de chamotte réfractaire</li><li>Calculer le volume nécessaire à couler et le majorer de 10 %.</li><li>Mettre la chamotte dans la cuve où vous faites le mélange</li><li>Verser le ciment par-dessus</li><li>Mélanger à sec</li><li>Ajouter les ¾ du volume d’eau nécessaire</li><li>Mélanger</li><li>Compléter progressivement avec le reste de l’eau pour ajuster la consistance</li></ul></li><li>Comme tous les liants à prise hydraulique, une perte d’eau ou un séchage trop rapide empêche les réactions chimiques de prise de se produire.<ul><li>Couvrir l’ouvrage en cours de prise s’il fait très chaud, ne pas mettre en œuvre ces mortiers en plein soleil ni en cas de gel. La prise est assez rapide : de l’ordre d’une ½ heure.</li><li>Ne préparer que la dose que vous pouvez mettre en œuvre dans ce laps de temps.</li><li>Éviter l’eau de pluie qui peut être acide et nuire à la prise du liant.</li><li>Éviter l’eau chaude qui accélère la prise.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Préparation du bidon</strong><p><strong>Étapes :</strong></p><ol><li>Décapage</li><li>Il est préférable de décaper le bidon avant de se lancer dans la construction. Dans tous les cas il faut le faire avant les premiers feux qui feront cloquer la peinture qui n’est pas prévue pour résister aux hautes températures. Le plus simple pour décaper est d’utiliser des disques à décaper sur une meuleuse. Il est également possible d’utiliser une ponceuse ou de mettre une brosse métallique sur une perceuse.</li><li>Découpage</li><li>A moins d’avoir un bidon à couvercle amovible avec cerclage, il faut découper le dessus du bidon. Le dessus du bidon sera le couvercle du poêle une foi finie. Il faut donc éviter de l’abimer, et choisir plutôt le fond du bidon (qui est complet) que le dessus (qui comporte des bondes). C'est-à-dire prendre le bidon à l’envers.</li><li>Muni d’une disqueuse et des équipements de protection pour les yeux, les oreilles, et les mains, découper juste sous le bourrelet, en prenant soin de ne pas couper la deuxième épaisseur de tôle. Ainsi le couvercle pourra être replacé. La scie à métaux fonctionne aussi très bien. Astuce : entamer le métal à la disqueuse (facile) et finir à la scie (précis). Il faut penser à protéger le sol avec une bâche car les restes de liquide présent dans le bidon risquent de s’échapper par la zone découper.</li><li>Nettoyage</li><li>Maintenant que le bidon est ouvert, il faut le nettoyer car il contient surement encore un peu d’huile. Utiliser de la sciure ou du sable pour éliminer le plus gros du résidu de contenu. Traiter ce déchet selon sa composition, probablement comme un déchet toxique à placer en déchetterie.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Réalisation des trous du cendrier et de la sortie fumées</strong><p><strong>Étapes :</strong></p><ol><li>Le bidon doit être percé de deux trous diamétralement opposés permettant d’introduire des tuyaux. À l’avant le tube de diamètre 100/130/150 mm servira d’entrée d’air et d’évacuation des cendres. À l’arrière le tube de 80/100/130 mm servira à connecter le tuyau d’évacuation des fumées (respectivement les diamètres du modèle Pito 60/120/200).</li><li>Les deux tubes doivent être à 6 cm du fond du bidon. C’est l’épaisseur de la couche de béton du socle. Il faut faire attention au rebord extérieur pour prendre la côte (c’est 6 cm depuis le fond, auxquels il faut ajouter l’épaisseur du rebord, soit environ 1,5 cm).<ul><li>À l’aide d’une ficelle, faire le tour du fut, marquer au feutre sur la ficelle l’endroit où elle se rejoint : cela donne le périmètre du fût.</li><li>Plier la ficelle en deux en deux et faire une nouvelle marque à la moitié : le demi périmètre</li><li>Tracer les trous au marqueur, autour des tubes à insérer</li><li>Utiliser la ficelle pour positionner les 2 centre des ouvertures, en face à face.</li><li>Découper les deux cercles en restant bien à l’intérieur du trait.</li><li>Marteler le bord du trou (vers l’extérieur) pour l’ajuster au tube.</li><li>Conserver les cercles découpés pour pouvoir faire les bouchons du cendrier et de l’alimentation</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Mise en place les tubes cendrier et évacuation des fumées</strong><p><strong>Étapes :</strong></p><ol><li>Côté cendrier<ul><li>Enfiler le tube de 100/130/150 dans son trou préparé sur le bidon, côté mâle à l’extérieur, avec le bourrelet contre la paroi extérieure du fût.</li><li>Par l’intérieur, tracer sur le tube la jonction avec la paroi du fût</li><li>Enlever le tube et couper 15 mm plus loin que le trait.</li><li>Découper ensuite les ailettes dans cette bande de 15 mm en arrêtant la coupe sur le trait, à la cisaille, à la scie sauteuse ou à la meuleuse. Elles doivent être larges de 1cm, pour que les ailettes soient faciles à replier.</li><li>Une fois les ailettes découpées remettre le tuyau en place et replier les ailettes.</li><li>Si besoin, placer quelques rivets ou vis auto-foreuses pour le bloquer solidement.</li></ul></li><li>Côté évacuation des fumées</li><li>Côté évacuation des fumées il faut fixer de la même manière une manchette courte avec emboitement femelle. L’emboitement femelle donne à l’extérieur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Fixation des coffrages perdus</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/9/97/Poelito_-_Po_le_de_masse_semi-d_montable_fixation_coffrage.png' alt='Poelito - Po le de masse semi-d montable fixation coffrage.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les coffrages qui seront réalisés prochainement risquent de bouger lors des coulées de béton, il faut donc les arrimer pour maintenir de bonnes épaisseurs.<ul><li>Retourner le fut</li><li>Percer 3 paires de trous au diamètre du fil de fer selon le schéma ci contre. la précision n'est pas très importante</li><li>Passer des boucles de fil de fer d’environ 1 mètre. Elles viendront maintenir les réservations en cartons pendant le coulage du béton.</li></ul></li><li>Les fils de fer doivent pointer à l'intérieur du bidon</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Fabrication du bouchon du cendrier</strong><p><strong>Étapes :</strong></p><ol><li>Ce bouchon permet de fermer le cendrier et de régler l'entrée d'air primaire.<ul><li>Prendre un bout de tube qui s’emboite sur la sortie (mâle) du cendrier.</li><li>Couper en ajoutant 15 mm à la longueur nécessaire.</li><li>Dans cette bande de 15 mm, découper des ailettes tous les centimètres, en essayant d’en avoir un nombre pair, ce sera plus joli.</li><li>Plier une ailette sur deux vers l’intérieur.</li><li>Réutiliser le cercle découpé dans le bidon pour fermer le couvercle.</li><li>Poser le cercle sur les ailettes repliées</li><li>Replier les autres ailettes par-dessus.</li><li>Ajouter une poignée et une petite trappe de réglage de l’entrée d’air.</li></ul></li><li>Le système de réglage de l'air primaire (au cendrier) doit être précis et efficace. Il permet de contrôler la puissance de combustion.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Coulée du fond de protection</strong><p><strong>Étapes :</strong></p><ol><li>Le fond du poêle est composé de 2 couches différentes : 3 cm de mélange isolant puis 3 cm de mélange dense. Elles ont pour rôle d’isoler le fond du fût de la chaleur pour protéger le sol.<ul><li>Marquer à l’intérieur du fût la hauteur à laquelle doivent s’arrêter les deux couches, soit 3 et 6 cm.</li><li>S’assurer que le bidon est sur une surface de niveau quand le béton est coulé.</li></ul></li><li>Mélange isolant<ul><li>Calculer le volume nécessaire de mélange isolant https://drive.google.com/file/d/1vtasWBKad9EEFBpeoNq38jT7SOasalra/view</li><li>Préparer le mélange en se référant à la recette et préparation du mélange isolant en étape X</li><li>Couler le mélange isolant jusqu’à atteindre les 3cm</li><li>Compacter le mélange au moyen d’un tasseau lors de la mise en œuvre.</li></ul></li><li>Attention à bien faire ressortir les fils de maintien du moulage. Attendre deux heures que la première couche soit sèche en surface pour couler le mélange dense.</li><li>Astuce : une fois que le mélange a commencé à prendre, scarifier la surface du béton pour que la seconde couche accroche bien.</li><li>Mélange dense<ul><li>Calculer le volume nécessaire de mélange dense https://drive.google.com/file/d/1vtasWBKad9EEFBpeoNq38jT7SOasalra/view</li><li>Préparer le mélange en se référant à la recette et préparation du mélange dense en étape X</li><li>Couler 3cm de mélange dense jusqu’à atteindre les 6cm</li><li>Compacter le mélange au moyen d’un tasseau lors de la mise en œuvre.</li></ul></li><li>Attention à bien faire ressortir les fils de maintien du moulage. Attendre 24h avant de couler le reste</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Réalisation des coffrages perdus</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/c/c5/Poelito_-_Po_le_de_masse_semi-d_montable_coffrage_bruleur.png' alt='Poelito - Po le de masse semi-d montable coffrage bruleur.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/ba/Poelito_-_Po_le_de_masse_semi-d_montable_coffrage_bruleur_cartons.png/800px-Poelito_-_Po_le_de_masse_semi-d_montable_coffrage_bruleur_cartons.png' alt='Poelito - Po le de masse semi-d montable coffrage bruleur cartons.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2f/Poelito_-_Po_le_de_masse_semi-d_montable_coffrage_collecteur.png/800px-Poelito_-_Po_le_de_masse_semi-d_montable_coffrage_collecteur.png' alt='Poelito - Po le de masse semi-d montable coffrage collecteur.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/47/Poelito_-_Po_le_de_masse_semi-d_montable_coffrage_collecteur_carton.png' alt='Poelito - Po le de masse semi-d montable coffrage collecteur carton.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il va falloir maintenant faire les coffrages perdus pour couler le béton réfractaire. C'est-à-dire créer les conduits pour la circulation du feu et des gaz. Pour cela, à l'aide de cartons il faut réaliser les moules des différents conduits. Une fois le béton coulé, il faudra les retirer. Il faut donc les faire suffisamment solides pour qu’ils résistent à la pression du béton tout en étant le plus simple à retirer une fois l’ensemble sec.</li><li>L'épaisseur minimum de béton entre les différentes pièces et entre les pièces et le fût doit être de 3 cm. En dessous, le béton risque de fissurer et de rendre le poêle peu durable. Il y a aussi le risque d’une mauvaise circulation des fumées, donc un poêle qui marche mal. Il faut donc penser à ça lors de la construction des moules et surtout lorsqu’ils sont placés dans le bidon pour couler le mélange.</li><li>Découpe<ul><li>Pour raccorder deux tuyaux, comme ce sont des cylindres, il faut faire une gueule de loup. Lors des découpes des tubes en carton, ajouter quelques cm aux côtes listées dans les tableaux. Par ex. pour raccorder un tube de 100mm sur du 100mm, la profondeur de la gueule de loup est de 5cm.</li></ul></li><li>La découpe se fait à la scie pour le carton épais (voir à la scie sauteuse, très pratique) et au cutter.<ul><li>Prendre les dimensions sur les tableaux en image.</li></ul></li><li>Assemblage<ul><li>Emballer chaque tube individuellement dans du plastique de protection.</li><li>Positionner les tubes les uns par rapport aux autres en respectant les mesures données dans les plans.</li><li>Maintenir les tubes entre eu avec du scotch orange.</li></ul></li><li>Attention à bien couvrir les jonctions pour que le béton ne pénètre pas dans les tubes.</li><li>ASTUCE : Pour la connexion avec le cendrier ou l’évacuation des fumées, faire une réduction avec un autre morceau de carton assez rigide. Enlever une bande pour le réduire en diamètre pour pouvoir l’enfiler dans le moule en carton. ASTUCE : Prévoir 2 cm de marge en hauteur afin de conserver une prise pour le retrait des coffrage ASTUCE : Une fois le collecteur et le tube horizontal de départ de flamme réalisés (les plus durs à retirer) il est possible de les découper dans le sens de la longueur, en 2 ou 3 morceaux puis de les ré-assembler. Ils seront plus faciles à retirer.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Positionnement des coffrages</strong><p><strong>Étapes :</strong></p><ol><li>Une fois les coffrages perdus en carton finis et enveloppés, il faut les placer dans le fût et les fixer.Commencer par l’évacuation des fumées :<ul><li>Emboiter le tube en carton dans l’ouverture métallique du bidon,</li><li>Le Fixer avec les 2 fils de fer en serrant bien.</li><li>Couper les sur-longueurs de fil de fer inutiles.</li></ul></li><li>Faire de même avec le coffrage du cendrier<ul><li>Accrocher les fils de fer en passant par-dessus la branche horizontale de départ de flammes.</li><li>Caler les différents éléments entre eux avec des morceaux de bois, ils permettront de maintenir les écartements entre les éléments pendant la coulée du béton dense.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Coulée de béton réfractaire</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/42/Poelito_-_Po_le_de_masse_semi-d_montable_Coffrage_coul_.png/800px-Poelito_-_Po_le_de_masse_semi-d_montable_Coffrage_coul_.png' alt='Poelito - Po le de masse semi-d montable Coffrage coul .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Indiquer avec un marqueur ou un scotch la hauteur à laquelle doit s’arrêter le béton dense à l’intérieur du bidon à partir du béton du fond (350/300/260).</li><li>Préparer le mélange en se référant à la recette et préparation du mélange dense en étape X</li><li>Couler le béton par passe de 5 cm maximum.</li><li>Tasser le béton après chaque passe de manière homogène. Si le béton est trop tassé d’un côté, le coffrage en carton va être repoussé.</li><li>S’assurer que les épaisseurs sont régulières et symétriques, les coffrages ne doivent pas bouger. Si besoin, replacer les cales au fur et à mesure du remplissage.</li><li>Répéter jusqu’à arriver à la hauteur indiquée.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Retrait des coffrages perdus</strong><p><strong>Étapes :</strong></p><ol><li>Le retrait des coffrages peut se faire 12h après le coulage. C’est une étape assez fastidieuse.<ul><li>Utiliser des gants pour éviter de s’abîmer les mains contre le béton en les glissant dans les trous.</li><li>Arracher à la main ou avec une pince tout ce qui est accessible par les orifices.</li><li>Une fois le maximum enlevé, faire du feu dans les trous pour brûler ce qui reste et pouvoir l’enlever.</li></ul></li><li>Utiliser de l’alcool à bruler facilite la combustion des éléments à retirer, attention cependant à ne jamais mettre d’alcool sur le feu. Une fois le feu démarré, utiliser des petits bouts de bois secs pour continuer la combustion.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Fabrication du conduit d’alimentation bois</strong><p><strong>Étapes :</strong></p><ol><li>La longueur du conduit d'alimentation bois doit être ajustée pour que son extrémité supérieure traverse le couvercle et puisse recevoir un bouchon. Néanmoins il doit être le plus court possible, car l’effet de tirage qui se produit ici à l’allumage s’oppose à celui de la ligne d’évacuation. Plus il est court, plus c’est facile à allumer.<ul><li>Prendre la longueur entre le niveau du béton et le haut du fût, y ajouter 15mm pour les ailettes et la hauteur du bouchon. Le haut du tube doit être un emboitement mâle pour recevoir le bouchon.</li><li>Découper le tube.</li><li>Réaliser des ailettes de 15mm de haut tous les centimètres sur la partie basse.</li><li>Replier une ailette sur deux vers l’extérieur</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Fabrication du bouchon d'alimentation en bois</strong><p><strong>Étapes :</strong></p><ol><li>Pour le conduit d’alimentation il faut procéder de même manière que pour celui du cendrier sans ajouter d’entrée d’air :<ul><li>Prendre un bout de tube qui s’emboite sur la sortie (mâle) de l'alimentation.</li><li>Couper en ajoutant 15 mm à la longueur nécessaire.</li><li>Dans cette bande de 15 mm, découper des ailettes tous les centimètres, en essayant d’en avoir un nombre pair, ce sera plus joli.</li><li>Plier une ailette sur deux vers l’intérieur.</li><li>Réutiliser le cercle découpé dans le bidon pour fermer le couvercle.</li><li>Poser le cercle sur les ailettes repliées</li><li>Replier les autres ailettes par-dessus.</li><li>Ajouter une poignée</li></ul></li><li>Pour ajuster l'air secondaire il suffit de poser le couvercle entrouvert. En fonctionnement le couvercle ne sera jamais totalement fermé. A l’arrêt il est fermé, il évite que le poêle chaud continue d’aspirer de l’air dans la pièce, de le chauffer, et de l’évacuer dehors.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Réalisation de la grille</strong><p><strong>Étapes :</strong></p><ol><li>Le système marche d'autant mieux que le foyer est équipé d'une grille, avec l'air primaire arrivant dessous (sur le cendrier). Cela permet de réduire les braises au fur et à mesure que tu recharges.<ul><li>Découper la grille d'égout, selon une forme de langue, pour qu'elle se place au milieu de la hauteur du cendrier, elle doit aller jusqu'au fond du foyer pour empêcher les braises de tomber.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - fabrication de la remontée de flammes</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/b/b8/Poelito_-_Po_le_de_masse_semi-d_montable_remont_e_flammes_d_coffrage.png' alt='Poelito - Po le de masse semi-d montable remont e flammes d coffrage.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/ac/Poelito_-_Po_le_de_masse_semi-d_montable_remont_e_flammes_coffrage.png' alt='Poelito - Po le de masse semi-d montable remont e flammes coffrage.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour faire ce tube en béton il faut fabriquer un moule à l'aide de 2 tubes de carton placés l’un dans l’autre. Le diamètre du tube intérieur doit correspondre au coulage (100/100/80). Le tube extérieur doit avoir un diamètre d'environ 6cm de plus que celui de l’intérieur pour permettre d'avoir un tube d'épaisseur 3cm. Il devra être plus court que la cloche de 2 à 3 cm afin de laisser un espace sous la vitre pour la circulation des fumées.<ul><li>Couper le tube en carton extérieur</li><li>Habiller la surface intérieure de plastique.</li><li>Couper le tube en carton intérieur</li><li>Habiller la surface extérieure de plastique</li><li>Découper deux rondelles de carton qui serviront d’écarteurs entre le tube intérieur et le tube extérieur.</li><li>Les recouvrir de plastique.</li><li>Placer les rondelles dans le fond pour fermer le moule</li><li>Remplir avec du mélange isolant (ciment fondu et vermiculite), par petites quantités.</li><li>Répartir le mélange et tasser le fortement avec un tasseau tout fin.</li></ul></li><li>ASTUCE : Si vous n’avez pas de tube en carton du bon diamètre vous pouvez les réaliser en roulant du carton sur lui-même. Roulez-le en ayant les « veines » du carton dans la hauteur.</li><li>ALTERNATIVE : Pour les Pito 60, il est possible de faire un coffrage en mélange isolant ou sinon découper un tube dans du métal épais, par exemple dans un extincteur (pas en aluminium) car l’espace est très étroit.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - Fabrication de la cloche</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/8/85/Poelito_-_Po_le_de_masse_semi-d_montable_alim_et_cloche.png' alt='Poelito - Po le de masse semi-d montable alim et cloche.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La cloche doit faire le tour de l'ensemble du tube de remontée des flammes et des deux tubes d'aspiration des fumées. Il faut essayer de faire la cloche la plus petite possible pour pouvoir mettre un maximum de sable autour.</li><li>Mise en forme<ul><li>Effectuer une pression sur la cloche pour qu’elle se déforme et devienne ovale.</li></ul></li><li>Attention : Éviter de lui donner une forme de haricot car elle risque de se déformer dans le temps. Avec les cycles de chauffe et refroidissement, le sable se compacte et exerce une forte pression sur les éléments métalliques. La cloche peut alors être comprimée et se déformer si sa forme n’est pas simplement ovale.<ul><li>Positionner la cloche autour des trous d’évacuations des fumées et de la remontée des flammes.</li></ul></li><li>Si la cloche est trop grande il faut la rétreindre (découper et visser) pour l’ajuster aux éléments.</li><li>Ajustement en hauteur<ul><li>Prendre la longueur entre le niveau du béton et le haut du fût, y retrancher 2-3 mm de marge et l’épaisseur du verre céramique et ajouter 15mm d’ailettes</li><li>Reporter ces mesures sur la future cloche et poser un scotch sur tout le périmètre, ce sera la marque à suivre lors de la découpe</li><li>Découper la cloche</li><li>Indiquer la hauteur finale de la cloche (distance entre le niveau du béton et le haut du fût, y retrancher 2-3 mm de marge et l’épaisseur)</li><li>Réaliser les ailettes du côté où la découpe est la moins propre.</li><li>Plier toutes les ailettes vers l’extérieur, elles permettront à la cloche de tenir sur le béton.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Découpe de la vitre</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Poelito_-_Po_le_de_masse_semi-d_montable_patron_vitre.png/800px-Poelito_-_Po_le_de_masse_semi-d_montable_patron_vitre.png' alt='Poelito - Po le de masse semi-d montable patron vitre.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La vitre doit recouvrir toute la cloche. Avant de la faire découper, vérifiez les cotes sur votre poelito, il est important de s’assurer que le patron soit de la bonne taille.</li><li>Ce doit être un verre vitrocéramique, qui résiste aux hautes températures. Voir Etape n°1 - Approvisionnement matériel</li><li>Si vous l’achetez dans un magasin de bricolage (400 – 700 €/m²) faites la découper sur place.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>22. Étape 22 - Découpe du couvercle</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/f/f6/Poelito_-_Po_le_de_masse_semi-d_montable_d_coupe_couvercle.png' alt='Poelito - Po le de masse semi-d montable d coupe couvercle.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le couvercle ferme le haut du poelito, il n’a pas de rôle particulier dans le système.<ul><li>Tracer sur le dessous du couvercle le conduit d'alimentation ainsi que la cloche.</li><li>Découper à la scie sauteuse</li><li>Positionner sur le poêle</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>23. Étape 23 - Peinture</strong><p><strong>Étapes :</strong></p><ol><li>La construction du poêle est terminée, avant de l’installer dans son futur habitat, il mérite un coup de peinture.<ul><li>Utiliser des peintures spéciales pour poêles qui résistent aux hautes températures.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>24. Étape 24 - Installation</strong><p><strong>Étapes :</strong></p><ol><li>La construction du Poelito est terminée! il est l'heure de le sortir de l'atelier pour lui trouver une place à long terme pour en profiter durant les longues soirées d'hiver.</li><li>Attention à bien respecter les règles de sécurité rappelée dans l'Etape n°4</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>25. Étape 25 - Remplissage de sable</strong><p><strong>Étapes :</strong></p><ol><li>Une fois l’appareil installé au bon endroit, sur un socle approprié, avec son tuyau installé, il faut commencer par mettre en place la cloche et le conduit d’alimentation.<ul><li>Poser le conduit d’alimentation en bois et la cloche à blanc (sans mortier ni joint) et ajuster les écartements.</li><li>Poser le couvercle par-dessus pour vérifier aussi les alignements.</li><li>Utiliser les ailettes pour ajuster (replie- les pour redresser un conduit un peu penché).</li><li>Lorsque tout est en place, déposer sur la jonction ailettes/maçonnerie des petits paquets de mortier d’argile, en les répartissant progressivement tout autour jusqu’à tout recouvrir. Il s’agit d’éviter que le sable ne fuit par les espaces entre les ailettes.</li></ul></li><li>Mortier d'argile : terre argileuse (qui colle) et du sable en proportions variables. Généralement 1 argile pour 3 à 5 sable, avec ce qu’il faut d’eau pour en faire des boules qui se tienne et qui collent. Si pour un enduit ou de la maçonnerie il vaut mieux s’assurer d’avoir les proportions idéales, ici ça n’a aucune importance.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>26. Étape 26 - Pose de la vitre</strong><p><strong>Étapes :</strong></p><ol><li>Poser la vitre sur la cloche sans joint.<ul><li>Faire quelques feux pendant lesquels le sable va se tasser.</li><li>Ajouter du sable quand c’est nécessaire.</li><li>Mettre du sable de niveau jusqu'au haut de la cloche</li><li>Poser par-dessus de la tresse minérale pour porte de poêle (disponible en magasin de matériaux)</li><li>Replacer la vitre.</li><li>Replacer le couvercle, la mise en place est terminée.</li><li>Profiter du poêle jusqu’au printemps !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>27. Étape 27 - Notice d'utilisation</strong><p><strong>Étapes :</strong></p><ol><li>Il faut du bois très sec sans quoi le poêle chauffera mal et s’encrassera. Il faut 2 types de combustibles :<ul><li>le bois de préchauffage : très fin et court, de l’ordre de 10 à 20 cm de long pour un diamètre maximum de 4 à 5 cm, idéalement du résineux qui est plus facile à allumer.</li><li>le bois de chauffe : de longueur variable (de 30 cm jusqu’à la hauteur sous plafond) plutôt bien droit et assez fin. *</li></ul></li><li>Si les 10 à 15 cm de section du conduit d’alimentation (selon le modèle) sont remplis avec une seule grosse bûche ça ne brûlera pas bien du tout ! Il faut des diamètres variés et complémentaires afin de bien remplir le conduit. Le bois tordu empêche un bon remplissage, il faut donc s’arranger pour recouper les branches là où elles sont tordues, quitte à avoir des longueurs différentes. Sinon toute essence fera l’affaire, à condition que le bois soit bien sec.</li><li>Placer dans le conduit d’alimentation, depuis l’ouverture supérieure, dans cet ordre-là :<ul><li>une poignée d’allume feu bien aéré (carton ou papier déchiqueté, copeaux grossier ...)</li><li>une poignée de cagette bien brisée,</li><li>Une poignée de petit bois de préchauffage fendu très fin (idéalement du résineux),</li><li>une poignée de bois de préchauffage de diamètre plus important (4 à 5 cm maxi)</li><li>Vérifier que le départ horizontal vers la zone de flamme n’est pas obstrué par le bois.</li><li>Vérifier le niveau de cendres et vider s’il y en a trop avant de passer à l’allumage.</li><li>verser 5cl d’alcool à brûler dessus.</li><li>Allumer et replacer rapidement le bouchon.</li><li>Allumer le feu au niveau du cendrier</li><li>replacer les 2 couvercles (dessus de l’alimentation et cendrier) en position entrouverte. Le tirage produit par la combustion de l’alcool assure un allumage rapide et idéal à chaque fois.</li><li>Si de la fumée s’échappe par le haut, refermer totalement le couvercle d’alimentation et réduire l’ouverture du cendrier.</li></ul></li><li>Dès que la charge de préchauffage est bien allumée, ajouter par-dessus, sans tasser, suffisamment de bois pour remplir l’intégralité de la section d’alimentation. C’est une condition importante pour que le bois brûle correctement : la combustion est meilleure si tu remplis toute la section. Le feu se développe d'avantage dans la zone de flamme, et moins dans le conduit d'alimentation.</li><li>Attention à ne pas trop serrer le bois qui doit pouvoir descendre naturellement au fur et à mesure qu’il brûle.</li><li>Vérifier de temps en temps que le bois brûle seulement en partie inférieure et ne se bloque pas. Secoue ton bois pour l’aider à descendre au besoin. Réglage du tirage : il faut conserver une petite ouverture sur le cendrier pour éviter l’accumulation de braises. Si cette ouverture est trop grande le feu peut s’emballer jusqu’à remonter et fumer par en haut. L’essentiel de l’air doit arriver par le haut du conduit d’alimentation : la réduire de moitié au maximum mais jamais d’avantage !</li><li>Si la vitre noircit 3 possibilités : le bois n’est pas sec, le régime de combustion est trop intense (trop d’air au cendrier), l’arrivée d’air par en haut est trop faible.</li><li>ATTENTION : Pendant la flambée, l’appareil demande peu de surveillance et d’entretien. Mais avec du bois très long la combustion peut remonter le conduit d’alimentation et s’emballer, surtout avec du résineux (palette). Si c’est le cas, vaporiser un peu d’eau dans le conduit d’alimentation pour le refroidir.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>28. Étape 28 - Entretien</strong><p><strong>Étapes :</strong></p><ol><li>Le seul entretient à effectuer régulièrement est le vidage des cendres. Si le niveau de cendres est trop important une accumulation de braises va se produire, jusqu’à boucher le départ latéral vers la zone de flammes : c’est l’arrêt d’urgence assuré, après un bon enfumage !</li><li>Entretient annuel La loi oblige tout utilisateur de poêle à bois à ramoner le conduit d’évacuation des fumées 2 fois par an dont une fois en période de chauffe. Pour ramoner le conduit glisse un hérisson nylon de diamètre approprié par le tampon de ramonage. Va jusqu’en haut puis redescend. Si tu fais ça dans un poêle encore chaud le tirage va inciter les poussières à sortir par en haut plutôt qu’à sortir vers l’habitat. Il est aussi important de vider le dépôt de cendres qui va se produire en pied de circuit de flamme et surtout au fond du collecteur de fumées. C'est l’endroit préféré des cendres volantes pour se déposer, d'où l'utilité des trappes de ramonage en face du collecteur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>29. Étape 29 -</strong><p><strong>Étapes :</strong></p><ol><li>Vous avez deux minutes ? Que vous souhaitiez ou non réaliser cette low-tech, votre réponse à ce formulaire nous aiderait à améliorer nos tutos. Merci d'avance pour votre aide !</li><li>Comme tout le travail du Low-tech Lab, ce tutoriel est participatif, n'hésitez pas à ajouter les modifications qui vous semblent importantes, et à partager vos réalisations en commentaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>30. Étape 30 - Contenu pédagogique à télécharger</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/6/68/Poelito_-_Po_le_de_masse_semi-d_montable_poelito.JPG' alt='Poelito - Po le de masse semi-d montable poelito.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger une fiche pédagogique créée par le Low-tech Lab à l'occasion de l'exposition "En Quête d'un Habitat Durable" dans la partie "Fichiers" du tutoriel (onglet au niveau de la section "Outils-Matériaux")</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>31. Étape 31 - Modèle 3D à télécharger</strong><p><strong>Étapes :</strong></p><ol><li>Vous pouvez télécharger un modèle 3D du poêle de masse décrit dans ce tutoriel, version PITO200, au format STEP.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>32. Étape 32 - Vous faire aider / poser vos questions</strong><p><strong>Étapes :</strong></p><ol><li>Si vous avez des questions, un forum d'entraide / de témoiniage dédier aux poêles de masse open source est désormais à votre disposition : https://forum.poeledemasse.org/poelito/</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

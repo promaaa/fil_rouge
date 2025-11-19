@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Insulating Solar/Thermal Window Cover</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Insulating Solar/Thermal Window Cover</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FCC/ZD4F/KZ19YSPZ/FCCZD4FKZ19YSPZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Do you have a room or rooms that are cold in the winter no matter how much the heater runs? Do they stay warm for about 20 minutes and then the temperature drops to around 55F?</p>
+      
+        <p>Other than check for and seal drafts and leaks around windows and doors you could open the blinds and curtains and let the sun shine in and heat the room for you. But the purpose of the curtains is to help keep the heat in and maintain privacy of the room. As well as that some heat just shines right back out of the room through the same window almost as much as it increases the room's temperature.</p>
+      
+        <p>Of course you could run the house or aparment heating system to make up for the cold room but that would eventually be expensive and bad for the environment.</p>
+      
+        <p>Well, I had a problem like this and thought about a solution. One was a outside solar/thermal heat box ported to the window to heat the room due to a sunny window. Second was to use a solar vacuum tube thermal box that would probably be the solution to this problem without any effluent to the atmosphere. Problem was that both were rather difficult to build and setup for a regular person and that they were entirely outside the room in the cold.</p>
+      
+        <p>So I began to study the temperature in the room with a non-contact thermometer to see how cold it was so that I could determine if the heater I was about to install did indeed heat the room for at least a 5 degree increase.</p>
+      
+        <p>This Solar/Thermal Window Cover is so simple a regular person can build it with just a few tools in about twenty minutes. And best off all it stays inside the room between the window shade or blinds and the window glass. And the curtains can stay closed to help insulate the room and keep the heat in.</p>
+      
+        <p>Basically, this Solar/Thermal Window Cover is nothing more that some box cardboard slightly smaller that the window and that has been painted black on one side. This black side faces out towards the sun. The sun shines on the black Solar/Thermal Window Cover and it gets hot. The hot air flows upwards towards the top and exits at the top curtain rod assembly. Then cooler air is drawn from below and the cycle repeats continuously all day and cloudy days too. You will definitely notice a warmer room in no time and if you keep the door closed you may not have to turn on the central heat to heat that room during the day, thus saving money, fuel and the atmosphere. I'll never cease to wonder why I had not learned about this before as some standard knowledge so it is up to me to share it with you.</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Insulating-SolarThermal-Window-Cover/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Insulating-SolarThermal-Window-Cover/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Old or new corrugated cardboard</li><li>Black paint</li><li>White glue or hot-melt glue</li><li>Sharp knife</li><li>Ruler or measuring tape</li><li>The tools you will need are:</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Measure the Window.</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FRH/8B52/KYYF9299/FRH8B52KYYF9299.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measure the Window.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Use the tape measure and measure the width and length of the window. Remove a inch from the top of the length.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Cut the Cardboard to Size</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FFC/TNSG/KZ19YNTA/FFCTNSGKZ19YNTA.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut the Cardboard to Size' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKY/4XUD/KZ19YNT9/FKY4XUDKZ19YNT9.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cut the Cardboard to Size' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Use a ruler or steady freehand to very carefully cut the cardboard to length. Then cut into two inches off each side to proper width.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Adhere Two Strips on Edge</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FZV/R66E/KYZUJ3ED/FZVR66EKYZUJ3ED.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adhere Two Strips on Edge' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Use white paper glue or hot-melt glue gun to affix the two strips to each side lengthwise. This will add sturdiness to the cardboard.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Paint It Black....</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FP5/TZZX/KYVK8GG7/FP5TZZXKYVK8GG7.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Paint It Black....' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJK/Y4NI/KYZUJ3FR/FJKY4NIKYZUJ3FR.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Paint It Black....' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Paint one side of the cover jet black. Preferably with a matte black paint which won't reflect any sunlight back out the glass like glossy or satin paint will. But if you only have those paints then use them.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Finishing Touches.</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FUU/5169/KZ19YNV0/FUU5169KZ19YNV0.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing Touches.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJK/TTFV/KZ19YNUZ/FJKTTFVKZ19YNUZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing Touches.' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHH/M3IQ/KYVK8GGF/FHHM3IQKYVK8GGF.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing Touches.' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Poke a hole in the center of the top of the cover and run a short string through it and then tie it to the bottom of a hook. If you don't have one then just tie the string to the curtain rod.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Hang the Cover</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F2Q/T56Q/KYVK8GFJ/F2QT56QKYVK8GFJ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hang the Cover' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Open you curtains and shades or bllinds and place the thermal cover against the window and set the hook onto the curtain rod. This should raise the Thermal Cover a inch or more above the window ledge so that cool air can enter the space between the black coverside and the window glass.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Expected Results..</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FD8/GDBA/KYVK8GFI/FD8GDBAKYVK8GFI.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Expected Results..' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The Solar Thermal Insulating Window cover will begin to get warm immediately in a sunny window and your room will begin to warm up as well. The narrower Window Cover will allow light to leak through the sides.</li><li>Now you have a warmer room with a free heater warming it up for 12 hours a day. Good Luck!!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

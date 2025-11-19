@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dimensionner et faire un tracker solaire photovolatïque low tech</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dimensionner et faire un tracker solaire photovolatïque low tech</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/f/fc/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240723_184804.jpg/ia-097014b7221f6fa4f624169fbcebf5fb-px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240723_184804.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Construction d'un tracker photovoltaique à partir d'un leve plaque</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment dimensionner et faire un tracker solaire photovolatïque low tech.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 600 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Dimensionner_et_faire_un_tracker_solaire_photovolatïque_low_tech" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Dimensionner_et_faire_un_tracker_solaire_photovolatïque_low_tech</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>tracker:</li><li>Leve plaque BRD : 150€</li><li>verin "Actionneur linéaire 12V DC , 1320LBS(6000N) 20 pouces (500mm) moteur électrique" : 69€ sur aliexpress, disponible sur amazon un peu plus cher</li><li>Hbridge L298n 7a: 11€ livré sur aliexpress ("Moteur d'entrainement PWM 160W 7A 12V 24V, Module de commande L298, Signal de commande logique, optocoupleur, frein")</li><li>2 Pignon chaine 92T: "Pignon arrière 25H JO98/108/138 maillons 55T 65T 68T 70T 80T 92T, pour 47CC 49CC Mini Moto RL facades D343 Pit Pocket Bike" : 40€</li><li>2 Pignons "Pignon pour scooter électrique 8T 9T 11T 13T 25H 410 420, pour moteur à courant continu 25H JOMotor MY1020 BM1109 MY1016Z MY1018"</li><li>10€</li><li>2 Pignons "Pignon de moteur électrique pour Pit-Bike, pignon de moteur à courant continu, pièces RL, D343, 9T, 11T, 13T, 25H, JOMotor 25H"</li><li>4€</li><li>Moteur "Moteur à engrenages CC à vis sans fin autobloquant, couple de bain, moteur de boîte de vitesses turbo en métal, inversé, basse vitesse, DC 12V, 24V, 200kg.cm" 62€</li><li>Module</li><li>Module photovoltaique Voltech 2mx1m 375W: 200€</li><li>Pilotage:</li><li>raspberry: environ 100€</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>metre facom: 20€</li><li>kit de poids soviétique: 60€</li><li>niveau à bulle: 5€</li><li>equerre alu: 6€</li><li>ebarbeuse: 50€</li><li>perceuse: 50€</li><li>poste à souder: 100€</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Dimensionner : mesurer les moments d'inertie</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c1/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie1.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie1.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech momentinertie1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0e/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie3.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie3.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech momentinertie3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f8/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie4.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie4.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech momentinertie4.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cb/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie5.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie5.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech momentinertie5.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/26/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie6.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_momentinertie6.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech momentinertie6.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240530_093819.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240530_093819.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240530 093819.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous posons deux axes pour notre module:</li><li>un axe Oz perpendiculaire au plan du module (vertical lorsque le module est à plat) et un axe Ox paralelle au plan du module (horizontal lorsque le module est à plat)</li><li>Caractéristiques du module:</li><li>poids 21,2kg</li><li>Longueur: 1,8m</li><li>Largeur: 1m</li><li>La théorie de wikipedia nous dit que le moment d'inertie selon l'axe Oz est donc :<ul><li>Jdelta=1/12*m*L (avec m masse du module et L longueur du module)</li><li>Jdelta=1/12*1,8*21,2=3,18Nm</li></ul></li><li>Ndt: on assimile le module à une "barre" car ici l'axe de rotatation est l'axe paralelle au plan du rectangle formé par le module et non l'axe perpendiculaire</li><li>On verifie maintenant experiementalement :</li><li>Centrer le module sur le leve plaque et le mettre horizontalement.</li><li>verifier qu'il n'y a pas de vent</li><li>faire le niveau de la surface sur laquelle le mat du leve plaque est posé</li><li>fixer un repere horizontal au niveau du bas du module</li><li>poser un poids de 500g à l'extremité du module</li><li>mesurer la distance entre la position à l'équilibre et la position avec le poids</li><li>On a:<ul><li>Jdelta=d*F</li></ul></li><li>avec d distance en metre à l'axe de rotation (bras de levier)</li><li>F force appliquée au solide (ici mg avec m masse du solide en kg, et g constance gravitationelle)</li><li>On a donc<ul><li>Jdelta=0,9*0,5*9,8=4,41Nm</li></ul></li><li>On mesure la rotation : dans notre cas, la distance de rotation à l'extrémité du module varie entre 3 et 10 cm. Les variations importantes</li><li>sont dus aux frotements de l'axe qui peut etre en force ou coulisser plus librement.</li><li>L'ordre de grandeur du moment d'inertie est bien vérifié.</li><li>Pour le moment d'inertie selon l'axe Ox, il est plus difficile de vérifier expérimentalement, car l'axe du lève plaque ne permet pas</li><li>d'avoir une position à l'équilibre avec le poids du module (qui viendra caler sur la butée en subissant son poids)</li><li>On se contentera donc de la théorie:</li><li>La theorie nous dit<ul><li>Jdelta=1/12*m(b²+c²) avec m masse du module, b longueur du petit coté, c longueur du grand coté</li><li>Jdelta=1/12*21,2*(1,8²+1²)=7,49NM</li></ul></li><li>Ce resultat theorique étant tres fortement inferieur au poids du module, on dimensionnera à partir de la force necessaire pour soulever le poids du module (l'axe etant soumis au poids):<ul><li>F=mg=21,2*9,8</li></ul></li><li>Soit 200Nm en ordre de grandeur (1m de bras de levier en ordre de grandeur)</li><li>On a donc maintenant les caractéristiques pour dimensionner les moteurs d'entrainement de notre module selon les deux axes de rotation.</li><li>Mais les trackers ont une prise au vent conséquente.</li><li>Si on souhaite prendre en compte la résitance au vent il faut mesurer la force appliqué au module selon la vitesse du vent:<ul><li>Fp​=1/2*ρ*v²*S*Cp</li></ul></li><li>Avec ​ρ densité de l'air egal à 1,2 kg/m3 en ordre de grandeur pour des conditions de temperature et de pressions "standards".</li><li>v vitesse du vent en m/s</li><li>S surface de l'objet en m²</li><li>Cp coefficient de pression sans dimension égal à 2 pour une plaque rectangulaire en métal</li><li>On a donc :<ul><li>Fp=1/2*1,2*1,8*2*v²=2,16*v²</li></ul></li><li>Chatgpt nous donne les abaques des vitesses de vent en km/h et leurs conversions en m/s et le nom generique en météorologie:</li><li>Calme : Moins de 1 km/h (Moins de 0.3 m/s)</li><li>Très légère brise : 1-5 km/h (0.3-1.5 m/s)</li><li>Légère brise : 6-11 km/h (1.6-3.0 m/s)</li><li>Petite brise : 12-19 km/h (3.4-5.4 m/s)</li><li>Jolie brise : 20-28 km/h (5.5-7.9 m/s)</li><li>Bonne brise : 29-38 km/h (8.0-10.7 m/s)</li><li>Vent frais : 39-49 km/h (10.8-13.8 m/s)</li><li>Vent modéré : 50-61 km/h (13.9-16.9 m/s)</li><li>Vent assez fort : 62-74 km/h (17.2-20.6 m/s)</li><li>Fort vent : 75-88 km/h (20.8-24.4 m/s)</li><li>Tempête : 89-102 km/h (24.7-28.3 m/s)</li><li>Violente tempête : 103-117 km/h (28.6-32.5 m/s)</li><li>Ouragan : Au moins 118 km/h (Au moins 32.8 m/s)</li><li>Nous avons donc une Force Fp qui peut varier de</li><li>Un ordre de grandeur de 20N pour une legere brise</li><li>à</li><li>Un ordre de grandeur de 2000N pour une tempete</li><li>(Ndt: la force de gravité d'1 kg est d'environ 10N donc la force de 2000N correspond en ordre de grandeur à la force de gravité de 200kg).</li><li>Les moments d'inertie sur les axes sont du meme ordre de grandeur (20Nm et 2000Nm) puisque les dimensions du modules sont de l'ordre du metre.</li><li>Si vous souhaitez construire un tracker qui resiste donc à des conditions de tempete, il est conseillé de dimensionner le tracker en conséquence</li><li>d'une part avec des attaches au sol suffisante, d'autres part avec une armature adaptée -voir astuce caravane a la fin de cette etape-, et désactiver</li><li>lors des vents de tempetes ou plus important.)</li><li>Le dimensionnement pour la résistance au vent est une des raisons pour lesquelles les trackers sont cher et donc moins répandus que les installations photovoltaïques fixes.</li><li>Les moteurs pas à pas et servomoteurs (step motors en anglais) qui ont un couple suffisant pour résister à des vents importants sont chers, et ca peut se comprendre pour des moteurs conçu pour de la précision dans les pas.</li><li>(par exemple là: https://www.distrelec.fr/fr/automatisation/moteurs-et-entrainements/moteurs-pas-pas-et-servocommandes/c/cat-L3D_525513 )</li><li>Pour les verins (hydraulic cylinder en anglais), la force de poussée est généralement dans des ordres de grandeurs suffisant pour resister aux tempetes.</li><li>Pour notre tutoriel low-tech, on sait que les moteurs de carotteuse ont des couples (torque en anglais) d'un ordre de grandeur suffisant pour résiter à des tempêtes (1W correspond à 1 newton que multiplie 1 mètre par seconde, une carotteuse de 2000W devrait donc avoir un couple d'un ordre de grandeur plus ou moins dans les 2000Nm).</li><li>Après vérification sur les caractéristiques techniques des perceuses, visseuses à choc, et caroteuses, et une vérification manuelle des résistances (frein/embreillage) lorsque le moteur n'est pas alimenté, ce type de moteur ne conviendra pas.</li><li>Pour pouvoir dimensionner une résistance à des vents entre la violente tempête et l'ouragan, on va donc procéder différemment:</li><li>on trouve sur aliexpress à des prix abordables (70€) des moteurs pas à pas ou des moteurs à engrenage/vis sans fin dont le torque (le couple) est d'un ordre de grandeur de 20Nm (200kgcm). On va donc utiliser ce moteur avec deux réducteurs 1:10 pour obtenir un couple résistant à 2000Nm.</li><li>Rappel : le couple exprimé en Nm est une force de rotation produite par le moteur qui se calcule selon le meme principe que le moment d'inertie: la force en newton x la distance à l'axe de rotation en metre</li><li>Les transmissions par couroie ou chaine permettent de réduire ce torque/couple, et cela se calcule très simplement:<ul><li>C1=(R1/R2)*C2</li></ul></li><li>Avec C1 couple sur la poulie 1</li><li>R1 rayon de la poulie 1</li><li>C2 couple sur la poulie2</li><li>R2 rayon de la poulie 2</li><li>Le rayon etant directement proportionnel aux nombre de dents d'une roue dentée (un pignon de vélo ou de moto par exemple), on peut facilement calculer les rapports de transmission en divisant le nombre de dents du grand pignon par le nombre de dents du petit pignon (en vérifiant que cest bien le meme standard de dents).</li><li>Ainsi une transmission 80 dents/10 dents (80T / 10T en anglais avec T pour tooth) produira une réduction de 1:8, comme ici sur amazon pour du vélo électrique ("Keenso Kit Chaîne et Pignon 80T 25H 34mm 3 Trous Pignon 10T H Trou Chaîne Pignon 146 Maillons Chaîne") à 30€.</li><li>On remarquera que les transmission de vélo standard ont des rapport de réduction maximum de 50dents/11dents, soit une réduction de 1:5, ce qui est insuffisant pour des réductions efficaces sans multiplier les poulies.</li><li>Il est difficile de trouver des transmissions avec des réductions de 1:10, mais on en trouve sur aliexpress et on pourra assez facilement adapter un pédalier de vélo sur lequel on va venir souder des pignons, ce qui nous permettra de faire une reduction 1:100 avec un seul axe ajouté en plus de l'axe principal et de l'axe du moteur.</li><li>On va donc à utiliser un moteur pas à pas ou un moteur à engrenage avec vis sans fin (test de résistance non alimenté à réception des pièces) commandé par un raspberry pi (mais le porte plaque etant sur roulette, on prendra la précaution de ranger le tracker en cas de tempete ;))</li><li>Astuce caravane: pour dimensionner l'épaisseur de l'armature en métal, les normes modernes semblent être moins faites sur des bases scientifiques que sur des bases commerciales pour faite vendre. On pourra donc utilement mesurer l'épaisseur de vieux matériel (années 70). Par exemple l'armature de cette vieille caravane homologuée carte grise 750kg a une armature métal de 5mm d'épaisseur. On pourra ensuite faire une règle de 3 pour vérifier que l'épaisseur de notre armature est convenable.</li><li>C'est rustique (les calculs de resistance des matériaux rigoureux sont complexes), mais ca permet d'avoir une première approximation "a visto de nas" comme on dit en gascon</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Test la resistance des moteurs</strong><p><strong>Étapes :</strong></p><ol><li>Voir vidéos</li><li>Le moteur rotatif ("Moteur à engrenages CC à vis sans fin autobloquant, couple de bain, moteur de boîte de vitesses turbo en métal, inversé, basse vitesse, DC 12V, 24V, 200kg.cm" sur aliexpress) tient bien à 20Nmà vide hors tension et en rotation sous tension.<ul><li>Rappel : torque ou couple = moment d'inertie engendré par le moteur</li><li>=force*distance à l'axe du moteur</li><li>ici 4kg à 0,5m=9,8*4*0,5=20Nm (en ordre de grandeur)</li><li>https://wiki.lowtechlab.org/wiki/Fichier:Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_resistance_a_vide_VID_20240529_185214.mp4</li><li>https://wiki.lowtechlab.org/wiki/Fichier:Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_resistance_sous_tension_VID_20240529_185517.mp4</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Dimensionner : mesurer les angles et débattements</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6f/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pythagore1.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pythagore1.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech pythagore1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pythagore2.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pythagore2.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech pythagore2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pythagore3.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pythagore3.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech pythagore3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_butee1.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_butee1.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech butee1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f2/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_butee2.JPG/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_butee2.JPG' alt='Dimensionner et faire un tracker solaire photovolat que low tech butee2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/45/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_debattement.JPG/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_debattement.JPG' alt='Dimensionner et faire un tracker solaire photovolat que low tech debattement.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On va d'abord s'interesser à la trajectoire solaire ou solar trajectory en anglais.</li><li>On mesure typiquement la position du soleil selon deux systemes de coordonnées:</li><li>le systeme equatorial avec des coordonnées exprimées en:</li><li>ascension droite equivalente à la longitude terrestre mesurée en heures minutes secondes</li><li>déclinaison équivalente à la latitude terrestre mesurée en degré minutes secondes</li><li>le systeme horizontal avec des coordonnées exprimées en:</li><li>degré d'azimut</li><li>degré d'altitude ou de hauteur</li><li>Les abaques de trajectoire solaire (par exemple disponibles ici : https://www.astrolabe-science.fr/diagramme-solaire-azimut-hauteur ) nous donnent les trajectoires du soleil dans une journée (généralement plusieurs journées typiques de plusieurs saisons) exprimées en degrés horizontal.</li><li>Pour lire un graphique de ce type:</li><li>si on suit le graphique inséré dans ce tuto et issu du lien ci-dessus, lorsqu'on suit par exemple la courbe rouge pour paris, voici ce qu'on peut lire:</li><li>le 21 décembre, lorsqu'on regarde le sud, le soleil suit une trajectoire qui commence à -50° d'azimut (vers l'Est sur l'axe horizontal) lorsque le soleil se lève, puis lorsque le soleil va vers l'ouest tout au long de la journée (on suit la courbe rouge), il prend de la hauteur jusqu'à atteindre 17° de hauteur (sur l'axe vertical) à midi (position 0° d'azimut sur l'axe horizontal) puis redescend jusqu'à 0° de heuteur lorsqu'il se couche (vers l'Ouest sur l'axe horizontal).</li><li>Pour paris, on a :</li><li>un degré d'azimut qui varie de -130° à +130° selon l'heure et la saison</li><li>un degré d'altitude ou de hauteur qui varie de 0° à 64° selon l'heure et la saison</li><li>Pour notre tracker,</li><li>Pour calculer notre débattement horizontal (selon un axe Oz vertical si le module est posé au sol), on n'a pas vraiment de contrainte sur le lève plaque utilisé puisque l'axe tourne à 360° sans probleme. Donc on pourra suivre le soleil de -130° d'azimut à +130° d'azimut sans probleme.</li><li>Pour calculer notre debattement vertical (selon l'axe Ox horizontal si le module est posé au sol), on a une contrainte sur l'angle maximal.</li><li>N'ayant pas de décimetre sous la main, on va utiliser pythagore (voir photo):</li><li>64cm*150cm*134cm</li><li>socatoa:<ul><li>sinus phi=opposé/hypothenus</li><li>sinus phi=134/150</li><li>sinus phi=0,8933</li><li>phi=1,1046 rad</li><li>phi=1,1046*180/pi=63°</li></ul></li><li>On a donc une contrainte pour notre leve plaque qui accepte des angles selon l'axe Ox de 0° à 63°.<ul><li>Lorsque le tracker est à son angle maximum (63°), on est perpendiculaire au soleil lorsque le soleil est à un angle phi de phi=180-63-90=27°</li></ul></li><li>Lorsque le soleil a un angle plus faible que 27°, le tracker ne pourra pas suivre en étant perpendiculaire au soleil.</li><li>On voit cependant que la butée est assurée par le ressort (sur la photo on voit la marque au niveau de la peinture). On peut donc gagner en amplitude sur la butée en perçant et en faisant une encoche dans la potence.</li><li>La mesure manuelle du débattement entre l'axe du tube sur lequel est fixé la manivelle et le dos du module lorsque le leve plaque est incliné à son angle maximum nous donne 42cm. (voir photo)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Installer le verin sur l'axe horizontal</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/80/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_potence.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_potence.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech potence.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/37/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_tige1.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_tige1.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech tige1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c0/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_tige2.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_tige2.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech tige2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_verin1.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_verin1.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech verin1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/49/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_verin2.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_verin2.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech verin2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_verincourse.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_verincourse.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech verincourse.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On va fixer une potence sur la partie fixe du porte plaque qui tourne avec l'axe vertical, afin d'y fixer une tige sur laquelle on fixera le verin qui pourra tourner avec l'axe vertical afin d'ajuster l'angle sur l'axe horizontal.</li><li>On commence par fixer la potence en metal en la soudant à la partie fixe vis à vis de l'axe vertical. Il faut bien poncer la peinture avant de faire la soudure. (voir photo). On fait ici une soudure à l'arc.</li><li>On perce ensuite une tige en metal qu'on vient boulonner à la potence (voir photo).</li><li>On perce et on fixe également une tige en métal qu'on vient boulonner à la partie mobile qui ajuste l'angle sur l'axe horizontal, cad les "bras" qui permettent de porter la plaque ou le module photovoltaïque (voir photo).</li><li>On fixe ensuite le verin aux deux tiges en métal. Le verin est équipé de fixations avec des chevilles qui permettent de "suivre" l'angle pris par les tiges sur lesquelles il est fixé. (voir photo)</li><li>Remarquez qu'on a pris une tige en métal en angle droit afin d'éviter que cette fixation soit entièrement libre. Elle vient buter sur une partie de la tige, ce qui permet par la suite d'étaloner plus précisément l'amplitude du verin.</li><li>On teste ensuite la course du verin. Il faudra faire attention, car on arrive sur la butée du porte plaque à une avancée du verin d'environ 40cm et ce modèle a une course de 50cm. (voir photos)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Augmenter l'angle maximum du lève plaque</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f6/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_observation_dessus.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_observation_dessus.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech observation dessus.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_observation_dessous.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_observation_dessous.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech observation dessous.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5e/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_demontee1.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_demontee1.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech demontee1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/66/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_demontee2.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_demontee2.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech demontee2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_apres_dessous.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_apres_dessous.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech apres dessous.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_apres_angle_max_90.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_apres_angle_max_90.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech apres angle max 90.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après observation des éléments bloquant, on va modifier la potence pour éviter la butée lorsque le soleil a un degré d'altitude inférieur à 27°.</li><li>Pour cela on va :</li><li>-laisser passer le ressort en évidant la potence (pour éviter que le ressort fasse butée)</li><li>-augmenter l'angle en abaissant la fixation du ressort en perçant la potence</li><li>-augmenter l'angle en coupant les bords de la potence</li><li>Voir photos :</li><li>1/2: observation dessus/dessous</li><li>3/4: demontage potence</li><li>4/5 : observation dessous, angle max à l'equerre</li><li>On arrive ainsi à un angle maximum de quasi 90° et on peut donc suivre le soleil sous tous les angles!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Tester les commandes du verin et du moteur rotatif</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e3/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_apt_install.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_apt_install.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech apt install.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4e/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pinout.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_pinout.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech pinout.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a3/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_cablage_pi.JPG/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_cablage_pi.JPG' alt='Dimensionner et faire un tracker solaire photovolat que low tech cablage pi.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour controller le verin, on va utiliser un raspberry pi, l'ordinateur monocarte le plus répandu. Il est doté de d'une série 40 pins, qu'on peut connecter à divers appareils, appelés "controlleur GPIO".</li><li>Une première lecture des tutos et librairies disponibles pour utiliser le gpio et des un certain temps passer à tester des hypothèses éronnées pour installer correctement en utilisant les bonnes versions m'amène à vous exposer les options possibles:</li><li>-système d'exploitation :<ul><li>dietpi images (debian) disponibles ici: https://dietpi.com/#download (voir mon autre tuto ici pour l'installation et l'activation du wifi : https://wiki.lowtechlab.org/wiki/Serveur_orangepi-raspberry_nextcloud_en_photovolta%C3%AFque_autonome)</li><li>raspberry pi os (systeme d'exploitation par défaut) images disponibles ici: https://www.raspberrypi.com/software/operating-systems/</li></ul></li><li>Archives et versions de systemes d'exploitation utiles pour la rétrocompatibilité (tout lecteur soucieux de l'informatique low tech est incité à télécharger et garder des copies en local de ces archives et les partager en torrent!):</li><li>*dietpi:</li><li>https://dietpi.com/downloads/images/</li><li>*raspberry pi os:</li><li>https://downloads.raspberrypi.org/raspbian/images</li><li>si vous utilisez wheezy,</li><li>attention à bien mettre a jour votre /etc/apt/sources.list en faisant:</li><li>NB: ChatGPT nous donne les dates suivantes de sortie des raspberry:<ul><li>Raspberry Pi Model B : 29 février 2012</li><li>Raspberry Pi Model A : 4 février 2013</li><li>Raspberry Pi Model B+ : 14 juillet 2014</li><li>Raspberry Pi Model A+ : 10 novembre 2014</li><li>Raspberry Pi 2 Model B : 2 février 2015</li><li>Raspberry Pi Zero : 30 novembre 2015</li><li>Raspberry Pi 3 Model B : 29 février 2016</li><li>Raspberry Pi Zero W : 28 février 2017</li><li>Raspberry Pi 3 Model B+ : 14 mars 2018</li><li>Raspberry Pi 3 Model A+ : 15 novembre 2018</li><li>Raspberry Pi 4 Model B : 24 juin 2019</li><li>Raspberry Pi 400 : 2 novembre 2020</li><li>Raspberry Pi Pico : 21 janvier 2021</li><li>Raspberry Pi Zero 2 W : 28 octobre 2021</li></ul></li><li>On espère que c'est vrai (ca vient de chatgpt), mais vous pouvez vérifier sur ce qui est écrit sur le pcb de votre carte.</li><li>Pour vérifier la version de votre raspberry sous raspberry pi os si vous ne savez pas quelle version cest(voir photo):</li><li>Ajustez avec le système d'exploitation qui vous parait le plus pertinent au regard des filtres de pertinence que vous utilisez. Vous avez la liste des anciennes versions d'os de dietpi et de raspberry pi os au cas où les versions les plus récentes ne fonctionneraient plus (et je me repette : tout lecteur soucieux de l'informatique low tech est incité à télécharger et garder des copies en local de ces archives et les partager en torrent!).</li><li>Pour l'install, comme d'habitude, telecharger balenaetcher, flasher une clé usb avec l'image téléchargée, booter. Les login/mdp par défaut pour dietpi sont root/dietpi et pour raspberry pi os pi/raspberry (attention au clavier en qwerty par défaut sous raspberry pi os au démmarage). Pour configurer le clavier, les locales, la timezone et le wifi, faire</li><li>-driver utilisé pour controler le gpio<ul><li>RPi.GPIO(dev independant) ou RPi.GPIO2(dev redhat, repo recent)</li></ul></li><li>Essais infructueux avec pip et le depot pypi (erreur de compilations etc.). Installer en passant en root avec la commande</li><li>le plus simple est alors d'installer une version déjà compilée avec apt:</li><li>faire un test pour voir si ca fonctionne bien (toujours en etant utilisateur root):</li><li>Se reporter à la doc de sourceforge, plus explicite que celle de pypi: http://sourceforge.net/p/raspberry-gpio-python/wiki/Home/<ul><li>gpiozero</li></ul></li><li>installé par défaut sous raspberry pi</li><li>sous dietpi faire</li><li>Le premier point à comprendre est la numérotation des fiches: les pins (fiches) ont chacune un numéro qui va de 1 à 40 en suivant un ordre de bas en haut et de gauche à droite, et chaque pin a également un numéro GPIO qui est différent du numero de pin.</li><li>Pour cela on peut chercher les infos sur internet: https://wiki.lowtechlab.org/wiki/Serveur_orangepi-raspberry_nextcloud_en_photovolta%C3%AFque_autonome ou taper les commande suivantes dans raspberry pi os (voir image)</li><li>Dans ce tuto, que ce soit avec gpiozero ou RPi.GPIO, on utilisera la numerotation GPIO et pas la numérotation pin</li><li>On branche les GPIO 2 et 4 (alim +5V) aux deux fiches +5V du HBrdige On branche les GPIO 6 et 7 (Ground, la terre) aux deux fiches GND du HBrdige On branche les GPIO 23 et 16 à l'interrupteur 3 du HBridge Pour tester le "enable" du HBridge, on branche les GPIO 20 et 21 au ENA du HBridge</li><li>On utilise ensuite les scripts suivants :</li><li>GPIO.BCM permet d'utiliser la numerotation GPIO GPIO.HIGH envoie un signal de +3V dans la fiche concernée GPIO.LOW remet le signal à 0V (GND, la terre) gpiozero fait la meme chose avec les methodes .on() et .off()</li><li>Update 31.05.24 : vous l'attendiez, voilà l'update du jour avec le hbridge made in europe, ca roule, voir vidéo! :) Update de l'étalonnage rapidement à reception d'un truc pour mesurer les angles un peu pratique.</li><li>Remarquez que les fiches 20 et 21 ne sont pas branchées au hbridge. Le "pwm" (pulse width modulation) n'est pas utilisé pour "activer" (enable dans le code) le moteur car des cavaliers placés sur les deux fiches ENA du hbridge suffisent (ici on n'a pas besoin de moduler la vitesse du moteur).</li><li>Update 17.12.24:</li><li>Chez moi, la configuration qui semble passer les interférences est la suivante:</li><li>Raspberry Pi Model B</li><li>Dietpi<ul><li>https://wiki.lowtechlab.org/wiki/Fichier:Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_moteurs_pi.mp4</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Verin hydraulique pour la rotation d'axe vertical</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1d/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_134410.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_134410.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240605 134410.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1c/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_174848.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_174848.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240605 174848.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dd/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_175050.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_175050.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240605 175050.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/71/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_202715.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240605_202715.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240605 202715.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240715_133706.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240715_133706.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240715 133706.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240723_184821.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240723_184821.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240723 184821.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Fixer les poulies et la transmission 1:100 pour le moteur rotatif</li><li>On commence par récupérer deux pédaliers sur des vélos d'occasion à l'ébarbeuse en prenant soin de garder une tige du cadre.</li><li>On va venir y souder les pignons 92T (92 dents).</li><li>On soude ensuite les pignons 8T (8 dents) dessus.</li><li>On soude un pignon 8T sur un pignon avec une clavette qui s'adapte à l'axe du moteur.</li><li>On découpe une tige en fer et on soude un aplat le long de l'axe du lève plaque sur lequel on va venir fixer avec des boulons les tiges découpées dans les cadres de vélo qui prolongent le pédalier ainsi qu'une tige sur laquelle on va fixer le moteur.</li><li>On assemble et on boulonne.</li><li>Update à réceptiond de la 3eme chaine et en attendant de réfléchir à un moyen de régler les tensions de chaine.</li><li>Update du 11.6.24: les contraintes de l'axe du leve plaque font qu'on ne peut y fixer un grand pignon pour bénéficier d'un rapport de réduction favorable sur la derniere chaine de transmission. Malgré les réductions des transmissions des autres poulies, le lève plaque n'est pas entrainé en rotation (voir vidéo).</li><li>update du 16.6.24: réception du verin supplémentaire, date livraison estimée : 28 juin-2juillet</li><li>On va donc entrainer la rotation avec deux verins. Update à réception des verins fin juin (en stage et non dispo pour update ces prochaines semaines)</li><li>La tension de chaine etant mauvaise, on remplace les transmissions par un verrin hydraulique permettant de faire la rotation mais sur un angle réduit (environ 70° faute de verrin telescopique à plusieurs brins)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Etalonner les moteurs</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f7/Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240604_134029.jpg/800px-Dimensionner_et_faire_un_tracker_solaire_photovolat_que_low_tech_IMG_20240604_134029.jpg' alt='Dimensionner et faire un tracker solaire photovolat que low tech IMG 20240604 134029.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le code mis à jour est le suivant: on définit des dictionnaire qui associe chaque angle recherché à un temps d'activation du moteur (à tester à la main et à mesurer)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Coder le tracking en "dur"</strong><p><strong>Étapes :</strong></p><ol><li>Le code mis à jour est le suivant Maj 21.12.24: raspberry model b, 2 vérins, ut datetime, code commenté (utile pour se rappeler de ce qu'on a codé il y a 6 mois!).</li><li>video du re-etalonage du 21.12.24 qui montre que les deux verins fonctionnent (enfin!). Mais ca ne marche pas, le module suit le soleil mais avec des angles corrompus : sun.az et sun.alt ne sont pas bons, possiblement probleme de datetime ou de système de coordonnées pas adaptés à l'exercice.</li><li>Possible fix: faire un dispositif de tracking qui actionne les verins avec 4 celulles photovoltaïques:</li><li>deux celulle alignées horizontalement coté gauche et droit du panneau, deux celulles alignées verticalement coté haut et bas du panneau. Calculer le differentiel de tension entre les deux paires de celulles, relier chaque paire à un hbridge electronique qui active le verin lorsque le differentiel de tension dépasse un "treshold" (hypothese differentiel nul quand le panneau est perpendiculaire au soleil, et positif ou négatif dans le cas contraire), trouver un hbridge dont le treshold est adapté pour pas que ca actionne continuellement les verins autour de la position d'équilibre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Coder le tracking avec une IA</strong><p><strong>Étapes :</strong></p><ol><li>On va maintenant coder une "IA lowtech" pour le côté pédagogique (du ML pour machine learning, comme utilisé massivement depuis une quinzaine d'année dans de nombreux secteurs d'activité, cad pas l'ia au sens chatgptesque du terme en 2024). On pourrait dire que l'ia lowtech est l'ia dont les résultats ne relèvent pas de la pensée magique, dont les data et le code sont open source, non volés, dont les data sont à nous, par nous et pour nous et sur laquelle on a la main (ce dernier point est essentiel mais l'expérience de sortir du rang me pousse au pessimisme à ce sujet car la vérification s'il y a interférence ou pas dans les résultats du machine learning est assez difficile à détecter)</li><li>On branche une webcam, on enregistre les images comme données d'entrée, on traite l'image pour en faire un tableaux de chiffres correspondant à des variables avec lesquelles on va chercher à corréler avec un signal positif ou négatif (tourner le moter dans un sens ou moteur à l'arret).<ul><li>Ici, les données d'entrées sont uniquement les 640*480*3=921600 variables des pixels des images de la vidéo (921600 colonnes/variables par lignes, à partir desquelles on cherche une corrélation avec le signal positif 1 ou 0 de la dernière colonne).</li></ul></li><li>Pour faire fonctionner le tracker, ca ne fonctionnera pas bien, il faudrait faire du "feature engineering" (nom compliqué pour dire rajouter des colones de variables plus proabablement corrélées au signal positif) en rajoutant la luminosité et/ou la date et l'heure, sur des échantillons de vidéos couvrant toutes les saisons sur plusieurs années.</li><li>Si vous voulez apprendre les bases sur lesquelles reposent ce code, je recommande le cours "Applied Data Science with Python" de l'université du michigan dans lequelvous apprendrez des bases de python,pandas, et machine learning "no bullshit".</li><li>Conclusion: Voilà, maintenant que vous savez coder une IA, vous pouvez la critiquer d'autant mieux,et promouvoir les lowtech en connaissance de cause.</li><li>Vous noterez que les algorithmes d'ia sont open sources et assez faciles à utiliser en tant que développeur "simple utilisateur".</li><li>Et aussi que sans data, l'ia ne sert absolument à rien.</li><li>C'est pour cette raison que les géants de la tech veulent toujours plus de données et emploient des gens dans des conditions proches de l'esclavage dans de nombreux pays pour les traiter avant d'entrainer leurs modèles.</li><li>Tout comme pour les "données personnelles", la question clé des ia repose sur les données.</li><li>Voir l'excellente conf de benjamin bayart " Géopolitique de la data (Benjamin BAYART) " sur youtube ou en vidéo ici.</li><li>Vous pouvez aussi faire un tracker lowtech, mais aussi adapter le code pour créer un véhicule autonome lowtech avec 4 datasets/signaux positifs distincts pour entrainer l'activation de "tourner à gauche","accélérer", "tourner à droite", "freiner". C'est ce qu'a fait George Hotz en proclamant qu'il suffisait d'une trentaine d'heures de vidéos de conduite en enregistrant avec des capteurs pour avoir les signaux positifs correspondant aux images enregistrées pour que le machine learning fonctionne.</li><li>Evidemment, on espere qu'il n'y aura pas de hack ou que le système n'a pas de controle commande à distance sur ce type d'algorithme.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

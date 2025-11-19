@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Poêle bouilleur</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Poêle bouilleur</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/e6/Po_le_Bouilleur_image.jpg/ia-d1fcaa46109f15172b85673041d810d1-px-Po_le_Bouilleur_image.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Le poêle bouilleur est un système destiné à des habitations afin de chauffer un ballon d’eau au bois</div>
+        
+      </div>
+    
+    
+      
+        <p>Cette notice est en cours d’élaboration car nous n’avons pas encore pu réaliser de prototype.</p>
+      
+        <p>Nous sommes un groupe d’étudiants à l’Ecole Nationale d’Ingénieurs de Brest (ENIB), dans le cadre de notre module LowTech, nous devons réaliser un projet qui consiste à mettre en place un poêle bouilleur. Le poêle bouilleur est un système destiné à des habitations afin de chauffer une maison dans un premier temps ou bien encore chauffer un ballon d’eau lorsque nous n'avons pas de moyen de le faire quand il y a un mauvais temps ou bien lorsqu’il fait froid. Ce projet est en collaboration avec l’association LowTech With Refugee Briançon afin d’aider à construire une maison pour des personnes dans le besoin. L’objectif de ce poêle à bouilleur est principalement de chauffer un ballon d’eau pour que les réfugiés puissent avoir de l’eau chaude lorsqu’ils se douchent. Après renseignement une personne utilisera 6L d’eau pour une douche et l’habitat que l’équipe de LowTech de Briançon peut loger environ 10 personnes. Le système que nous devons mettre en place doit permettre de chauffer au moins 60L d’eau.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 150 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Poêle_bouilleur" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Poêle_bouilleur</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>2 Barils de 208L</li><li>Chauffe eau (diamètre < 55cm)</li><li>Groupe de sécurité pour chauffe-eau</li><li>1 paire de flexible inox de raccordement alimentation en eau</li><li>Dalles</li><li>Isolant type béton vermiculite</li><li>Tuyau évacuation fumée (un tuyau de poêle à bois)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Meuleuse (ou scie sabre)</li><li>Poste à souder</li><li>Perceuse</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récupération du matériel</strong><p><strong>Étapes :</strong></p><ol><li>La première étape pour réaliser le poêle bouilleur est de récupérer tout le matériel dont nous avons besoin.</li><li>Pour la récupération des barils de 208 L vous pouvez les récupérer dans des entreprises du coin (par exemple chez un garagiste) en ayant de la chance qu’il soit déjà vide.</li><li>Pour le cumulus, vous pouvez le récupérer dans des endroits où ils donnent du matériel comme par exemple dans une recyclerie, où le matériel a déjà été utilisé.</li><li>Pour obtenir un système de sécurité, il va falloir mettre de l’argent. En effet, on veut que notre système soit le plus fiable possible, et pour cela il faudra mettre un peu d’argent. Pour notre réalisation, nous avons décidé de prendre un groupe de sécurité.</li><li>Un tuyau sera nécessaire pour faire évacuer la fumée. On utilisera le même type de tuyau que ceux des poêles à bois pour évacuer la fumée.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Nettoyage des barils</strong><p><strong>Étapes :</strong></p><ol><li>La peinture est sensible à la chaleur et risque de se décoller. Il est conseillé de commencer par poncer la peinture du baril.</li><li>Il va falloir ouvrir les barils pour nettoyer l’intérieur. Pour cela découper le fond du bidon en suivant les bourlés sur les bords.</li><li>Les barils ont de grandes chances d'être souillés. Pour les nettoyer il convient de savoir ce que contenait le baril pour jeter le résidu à la déchetterie. On peut utiliser de la sciure ou du sable pour éliminer les résidus.</li><li>Attention : avant de passer à la suite, vérifiez bien que les deux barils soient propres. Si ce n’est pas le cas, cela pourra être un danger au moment du fonctionnement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Découpe des barils</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/1a/Po_le_Bouilleur_image2.jpg' alt='Po le Bouilleur image2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Sur le premier baril nous allons découper un rectangle pour l’ouverture du foyer. Pour réaliser cette ouverture, vous pouvez utiliser une meuleuse qui sera plus simple pour la réalisation. Cette ouverture sera située sur le bas du baril et consistera à alimenter en bois le baril pour chauffer le cumulus.</li><li>(Voir exemple sur la photo suivante)</li><li>Sur le second baril découpez un cercle du diamètre de votre tuyaux d’évacuation des fumées. Il faudra installer un grand tuyau qu’on utilise pour les poêles à bois pour que la fumée puisse s’évacuer dehors pour éviter tout danger de suffoquement à l’intérieur de l’habitat.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Installation du Foyer</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/b/bf/Po_le_Bouilleur_image3.jpg' alt='Po le Bouilleur image3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/dd/Po_le_Bouilleur_image4.jpg' alt='Po le Bouilleur image4.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/db/Po_le_Bouilleur_image5.jpg' alt='Po le Bouilleur image5.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Sur le premier baril, nous allons installer les dalles pour contenir le foyer.</li><li>Dans un premier temps mettre une première couche de béton de vermiculite d’environ 6 cm pour isoler du sol.</li><li>Ensuite placer les 5 dalles pour créer la chambre qui va accueillir le foyer. Réalisez un trou sur le toit du foyer pour pouvoir laisser passer la fumée.</li><li>Maintenant que nous avons mis en place le foyer, il faut créer notre béton en vermiculite. Pour le préparer avec une pelle, il faut mélanger à sec la vermiculite et le ciment. Ce mélange s’effectue facilement que ce soit sur un sol (propre) ou sur une feuille épaisse en plastique. A l’aide d’une pelle, remuez les deux produits de manière à obtenir une teinte grise uniforme.</li><li>Ajoutez ensuite la quantité d’eau nécessaire ( 2 sacs de vermiculite pour 1 sac de ciment pour 60L d’eau), l’eau doit être ajoutée progressivement tout en remuant à la pelle. Pour éviter les pertes d’eau, on peut le verser au milieu du mélange. Attention, il faut éviter de trop travailler le mélange pour ne pas écraser la vermiculite</li><li>Enfin remplir de béton de vermiculite dans le baril jusqu’en haut de la “chambre”.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Fabrication du socle pour le cumulus</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/a/a4/Po_le_Bouilleur_image6.jpg' alt='Po le Bouilleur image6.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b5/Po_le_Bouilleur_image7.jpg' alt='Po le Bouilleur image7.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de réaliser l’assemblage entre le chauffe-eau et les barils, il faut réaliser un socle pour maintenir le cumulus en hauteur. Le principe est simple, on doit réaliser un socle qui doit le maintenir en hauteur pour pouvoir réaliser un feu dans le foyer et que la fumée puisse bien réchauffer le cumulus et bien le maintenir au-dessus du foyer. Sur ce socle il faudra réaliser des échappement, afin que la fumée du feu puisse monter et réchauffer le cumulus.</li><li>Pour la conception, on va devoir faire un socle comme les images suivantes :</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Assemblage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/3/3b/Po_le_Bouilleur_image8.jpg' alt='Po le Bouilleur image8.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir fini de préparer tout le matériel nécessaire (découper le bidon, préparer le socle pour le cumulus, etc…), il faut maintenant passer à l’assemblage du tout. Pour ce faire, placez le socle dans le bidon sur le foyer, on pourra ensuite placer le chauffe-eau dessus pour qu’il reste en hauteur et que la fumée puisse chauffer le cumulus. Pour bien maintenir le cumulus pour qu’il ne bouge pas, on peut souder le chauffe eau avec la paroie du bidon ce qui lui permettra de ne pas bouger.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Connexion de l’échangeur d’eau</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/5/5f/Po_le_Bouilleur_image9.jpg' alt='Po le Bouilleur image9.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant nous avons besoin de connecter l’eau froide au cumulus et pouvoir faire sortir l’eau chaude. Pour ce faire, il y a deux types d’entrées dans un cumulus, l’entrée bleu qui permet d’insérer de l’eau froide et une sortie rouge qui permet de faire sortir l’eau chaude. Il faut donc brancher un tuyau de raccordement en inox flexible sur l’entrée et la sortie puis le relier au chauffe-eau principal.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Fonctionnement</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/7/7a/Po_le_Bouilleur_image10.jpg' alt='Po le Bouilleur image10.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/ac/Po_le_Bouilleur_273030005_329212489145177_472548466613970492_n.png' alt='Po le Bouilleur 273030005 329212489145177 472548466613970492 n.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans cette partie, nous allons parler du fonctionnement de notre poêle à bouilleur. Pour le faire fonctionner, il faudra alimenter avec du bois le foyer. La fumée provoquée par le feu se dirigera vers le cumulus qui profitera pour le réchauffer. Ensuite la fumée ressortira vers la sortie que nous avions prévue pour s’en débarrasser.</li><li>Pour l’alimentation du feu, nous vous conseillons d’utiliser le bois, car cela est plus pratique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Règle de sécurité</strong><p><strong>Étapes :</strong></p><ol><li>Dans un premier temps, la réalisation de ce poêle bouilleur peut être dangereuse, par exemple l’utilisation d’une meuleuse (si vous utilisez cet outil) pour un enfant. Si un enfant participe à la réalisation, il doit être accompagné.</li><li>Ensuite, dans cette étape nous allons rappeler les règles de sécurité lorsqu’on utilise ce poêle bouilleur. Bien faire attention à l’utilisation de ce poêle bouilleur. En effet, pour chauffer le cumulus, nous allons devoir alimenter un feu, il faut faire attention de ne pas trop mettre de bois afin de vouloir chauffer plus vite le cumulus. Cela ne servira à rien à part chauffer plus le bidon et vous risquez de vous brûler.</li><li>Bien vérifier que la sortie de fumée est située dehors, sinon vous risquez de vous étouffer si la fumée de la cheminée se faisait à l’intérieur de la maison.</li><li>Faire attention à la sortie d’eau du cumulus, l’eau qui est contenu à l’intérieur peut monter à 70°C, on peut risquer de se brûler lorsque l’eau sortira.</li><li>Le groupe de sécurité contenant une soupape de sécurité est obligatoire pour éviter tout risque de surpression du ballon.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

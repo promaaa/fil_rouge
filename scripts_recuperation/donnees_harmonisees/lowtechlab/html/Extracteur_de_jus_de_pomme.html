@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Extracteur de jus de pomme</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Extracteur de jus de pomme</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/a/a5/Extracteur_de_jus_de_pomme_vue_g_n_ral.jpg/800px-Extracteur_de_jus_de_pomme_vue_g_n_ral.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Deux machines low-tech, un Broyeur et pressoir à pomme, produisant du jus de pomme.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment extracteur de jus de pomme.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 7 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Extracteur_de_jus_de_pomme" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Extracteur_de_jus_de_pomme</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Vis 60mm x15 et 40mm x 50</li><li>Boulons x 10</li><li>Tige filetée 200mm</li><li>Caisse en bois (très spécifique de notre machine, pouvant être refait en bois)</li><li>Planches de bois (exemple aggloméré ou autre planche de bois plates et longue)</li><li>Planches de bois (provenant de palettes)</li><li>Cric de voiture (provenant d'une carcasse de voiture)</li><li>Vieux t-shirts</li><li>Bac gastronomique</li><li>Pédale de vélo</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Perceuse / visseuse</li><li>Scie à bois</li><li>Scie à métaux</li><li>Marteau / pied de biche (pour extraction des planches de bois des palettes)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Découpage et récupération des matériaux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/7/7e/Extracteur_de_jus_de_pomme_palette.jpg' alt='Extracteur de jus de pomme palette.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette première étape est commune au deux machines.</li><li>Il faut dans un premier temps disloquer les palettes pour en récupérer les planches de bois.</li><li>Il vous faut aussi récupérer des vis et des boulons . Nos seules dépenses sont là.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Découpe des différentes parties</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9c/Extracteur_de_jus_de_pomme_planches_presseur_.jpg/800px-Extracteur_de_jus_de_pomme_planches_presseur_.jpg' alt='Extracteur de jus de pomme planches presseur .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/55/Extracteur_de_jus_de_pomme_planche_broyeur.jpg/800px-Extracteur_de_jus_de_pomme_planche_broyeur.jpg' alt='Extracteur de jus de pomme planche broyeur.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/95/Extracteur_de_jus_de_pomme_sch_ma_presseur_.png/800px-Extracteur_de_jus_de_pomme_sch_ma_presseur_.png' alt='Extracteur de jus de pomme sch ma presseur .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4d/Extracteur_de_jus_de_pomme_plan_broyeur.png/800px-Extracteur_de_jus_de_pomme_plan_broyeur.png' alt='Extracteur de jus de pomme plan broyeur.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les côtes sont exprimées comme longueur * largeur *hauteur</li><li>Toutes les côte sont spécifiques à nos matériaux, elles sont donc modifiable.</li><li>Pour le pressoir :</li><li>Ayant récupérer des casiers en bois qui forme un cube de 530mm de coté, nous avons décidé de baser nos côtes sur cette base.</li><li>Nous avons plusieurs type de planche qui constitue le cadre du presseur :</li><li>-Les grands pieds x2 : Section : 100mmx50mm, Hauteur : 1200mm (planches de palette)</li><li>-Les planches transversales x4 : Section : 100mmx50mm, Hauteur : 65mm (planches de palette)</li><li>-Les planches pieds x2 :40mmx120mm hauteur : 600mm (planches de palette)</li><li>-Le socle pour le cric : 200mmx200mm hauteur : 30mm</li><li>- Cube préconstruit (bac pressoir) : 530mm de côté</li><li>-planches intérieur pour pression x4 (elle permette de créer des étages pour extraire le jus plus rapidement) : 300mmx300mm, Hauteur 20mm (planches agglomérer)</li><li>Pour Broyeur :</li><li>Pour le grand entonnoir :</li><li>-Suivre les photo pour les planches sur les cotés car géométrie complexe</li><li>- Grandes planches pour le coté x2 :300mmx335mm</li><li>-Petites planches en bas x2 :200mmx300mm</li><li>- Les pieds en planches x4 : planches de palette : Hauteur 500mm (pas sur la photo)</li><li>- le rondin : Diamètre : 160mm, Longueur : 280mm</li><li>Voici toutes vos pièces en bois sont découpées et prête à être assemblées.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Assemblage des différentes parties</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/6/67/Extracteur_de_jus_de_pomme_vue_pressoir3.jpg' alt='Extracteur de jus de pomme vue pressoir3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6c/Extracteur_de_jus_de_pomme_vue_pressoir2.jpg/800px-Extracteur_de_jus_de_pomme_vue_pressoir2.jpg' alt='Extracteur de jus de pomme vue pressoir2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/36/Extracteur_de_jus_de_pomme_vue_pressoir4.jpg' alt='Extracteur de jus de pomme vue pressoir4.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f0/Extracteur_de_jus_de_pomme_vue_broyeur_.jpg' alt='Extracteur de jus de pomme vue broyeur .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b4/Extracteur_de_jus_de_pomme_vue_broyeur_2.jpg' alt='Extracteur de jus de pomme vue broyeur 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/c0/Extracteur_de_jus_de_pomme_vue_broyeur_4.jpg' alt='Extracteur de jus de pomme vue broyeur 4.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour le pressoir :</li><li>Dans un premier temps nous devons fixer le cadre:</li><li>- Reliez deux grands pieds à leurs extrémité avec 2 planches transversales de chaque côté des grands pieds. Cela va être la partie haute de votre cadre.</li><li>- Fixez le socle pour le cric au milieux des planches transversales, orienté vers le bas,</li><li>Attention!! Le positionnement des deux prochaines planches transversales est la plus compliqué car il demandes un petit calcul : la distances entre le socle du cric et les planches transversale du bas doit être égale à la hauteur votre bac pressoir ( ici nos casier) plus la hauteur minimal du cric (on vous conseil d'ajouter 2-3 cm pour une meilleur praticité de la machine.</li><li>Cette distance est précise car elle doit permettre au cric de presser correctement ( si le bac est trop bas le cric n'aura pas la longueur nécessaire pour presser convenablement) et doit permettre aussi d'enlever le bac pressoir ( notre casier) quand le cric est totalement fermer.</li><li>-Le bas de nos planches transversales sont positionné a 270mm du bas de notre cadre avec nos propres côtes.</li><li>-Après vérification de la distance ( placez le bac et le cric, sans fixé le cric, et vérifier que tout rentre dans l'espace ), fixer le cric sur son socle</li><li>-Enfin placez les planches pieds, perpendiculairement au planches transversales, pour que le cadre soit stable</li><li>- Percez le bac presseur dans le fond pour que le jus puisse sortir</li><li>Pour le broyeur :</li><li>Modification du rondin :</li><li>-Vissez des vis dans le rondin</li><li>-Percez des trous sur l'axe central du rondin pour y placer la tige fileté. longueur : 50mm</li><li>Préparation de l'entonnoir :</li><li>-Percez un trou dans les parois de l'entonnoir pour pouvoir y places l'axe de votre rondin</li><li>Attention !! Ce trou dois être assez haut pour que le rondin + les vis qui sont dans le rondin puisse tourner mais assez bas pour que les pommes soit broyées en le rondin et les paroi de l'entonnoir. Ce trou doit aussi être assez gros pour laisser la tige fileté passé mais pas les boulons.</li><li>Voir schémas précédent de la plaque pour les dimension.</li><li>- Fixez les planches avec les vis pour créer l’entonnoir</li><li>- Placez les pieds en bas de l'entonnoir pour le rendre stable</li><li>Attention !! Les pieds ne doivent pas gêner la rotation de la pédale.</li><li>- Placez le rondin en face des trous et insérez de chaque côté la tige filetée couper en deux par les trous.</li><li>- Bloquez la tige et donc le rondin avec des boulons de chaque côté des parois</li><li>- Fixer la pédale sur la tige avec des boulons</li><li>Et Voilà ! Votre broyeur est prêt ! Si vous avez du mal avec nos explications référez vous aux photos et vidéos.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

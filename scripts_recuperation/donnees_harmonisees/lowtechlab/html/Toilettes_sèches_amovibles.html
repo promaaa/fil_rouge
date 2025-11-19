@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Toilettes sèches amovibles</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Toilettes sèches amovibles</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/a/a2/Toilettes_s_ches_amovibles_avantapres.JPG/ia-eb45b77ce34d5e48801597109778f621-px-Toilettes_s_ches_amovibles_avantapres.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Toilettes sèches légères à poser sur des toilettes classiques, à séparation de flux et avec bac à sciure intégré (Neau Box)</div>
+        
+      </div>
+    
+    
+      
+        <p>La ressource en eau potable est à économiser, et l’usage que l’on en fait dans les toilettes classiques est discutable. Pour ceux qui ont la possibilité d’installer un composteur, les toilettes sèches sont une solution efficace, mais qui comporte un certain nombre de contraintes.</p>
+      
+        <p>L’objectif des toilettes Below est de réduire au maximum ces contraintes pour les rendre acceptables dans une vie active et familiale :</p>
+      
+        <p>- Compatibles avec un WC existant, et s’installent par-dessus sans travaux ni démontage</p>
+      
+        <p>- Légères et facilement amovibles lorsque l’on veut revenir aux toilettes standard</p>
+      
+        <p>- A séparation des urines: cela divise par 4 environ la consommation de sciure, le nombre de manutentions pour le vidage, le poids du seau, et le volume du composteur nécessaire.</p>
+      
+        <p>- Le séparateur d’urine est connecté sur un syphon que l’on insère directement dans les toilettes standard, ce qui permet une évacuation par gravité sans eau, sans odeur, et sans aucune intervention. Les matières solides sont collectées ergonomiquement dans le seau, qu'il faut vider dans un composteur.</p>
+      
+        <p>- Le bac à sciure est amovible, pour pouvoir le remplir dehors sans risque de répandre de la sciure dans la maison, et il est de grande contenance pour réduire le nombre de remplissage.</p>
+      
+        <p>- Un marchepied ergonomique permet une assise confortable, tout en laissant la possibilité d’uriner debout.</p>
+      
+        <p>Possibilité de commander la Neau Box prête à l'emploi sur www.below.bzh</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 8 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 300 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Toilettes_sèches_amovibles" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Toilettes_sèches_amovibles</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Matériel spécifique à commander en ligne:</li><li>Seau inox 15L (89€ sur https://www.lecopot.com/seaux-et-accessoires/12-seau-inox-toilettes-seches-auto-constructeur-7392244230033.html par exemple, 30€ sur https://www.beeboxworld.com/seaux/1099-seau-en-inox-15l-21-kgs.html)</li><li>Séparateur Trobolo 79€ https://trobolo.com/fr/produits/separateur-durine-pour-toilettes-seches/</li><li>Matériel à trouver en magasin de bricolage standard:</li><li>Contreplaqué 12mm. Si achat neuf, idéalement pré-peint résistant à l'humidité (une plaque 120*240 environ 100€, il en restera 1/3)</li><li>Lunette et abattant de toilettes classiques (20 à 30€)</li><li>Un tasseau pin 35*45mm*2,5m</li><li>Une planche de 24cm de large, 30mm d'épaisseur et min 100cm de long. Selon le type de bois, sa finition, de 14 à 30€ (penser à l'esthétique!)</li><li>Quincaillerie</li><li>Petits boulons 3*16 3€</li><li>Vis agglo torx 4*40 13,9€</li><li>Patins feutre X100 3,9€</li><li>Charnières invisibles x2 3.5€ (ou charnières simples si pose extérieure)</li><li>Vis inox 4 fois 40 X20 5€</li><li>Vis inox agglo 4 fois 5X60</li><li>Accessoires de plomberie pvc:</li><li>Coude joint 87,30 degres diam 40 5,6€</li><li>Réduction excentrée 40-32 1,12€</li><li>Coude 67,30 degres diam 32 1,1€</li><li>Colliers lyres pvc diam 32 X5 3,5€</li><li>Colliers simples métal diam 40 2€</li><li>Flexible d'évacuation lave linge 1,5m 4,9€</li><li>Colle pvc gel 3,5€</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Scie égoïne, sauteuse ou circulaire</li><li>Rabot électrique ou à main</li><li>Cales à poncer pour les angles</li><li>Visseuse / perceuse</li><li>Forets à bois 3mm</li><li>Equerre, mètre, règle alu</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Structure des toilettes</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ac/Toilettes_s_ches_amovibles_Plans_de_decoupes_Neau_Box.jpg/800px-Toilettes_s_ches_amovibles_Plans_de_decoupes_Neau_Box.jpg' alt='Toilettes s ches amovibles Plans de decoupes Neau Box.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/88/Toilettes_s_ches_amovibles_Tracage_c_t_droit.jpg/800px-Toilettes_s_ches_amovibles_Tracage_c_t_droit.jpg' alt='Toilettes s ches amovibles Tracage c t droit.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/Toilettes_s_ches_amovibles_panneaux_lateraux.jpg/800px-Toilettes_s_ches_amovibles_panneaux_lateraux.jpg' alt='Toilettes s ches amovibles panneaux lateraux.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b8/Toilettes_s_ches_amovibles_Tracage_face_avant.jpg/ia-4bb80204105892fb4a143678245a46ba-px-Toilettes_s_ches_amovibles_Tracage_face_avant.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Commencer par la structure externe principale selon les plans ci-joints, les deux faces latérales et la face avant.</li><li>Pensez à bien optimiser votre panneau pour éviter les chutes.</li><li>Tracez toujours sur la face intérieure, et pensez à noter leur nom, haut, bas etc. Même les meilleurs arrivent à se tromper sur une dernière découpe ou perçage!</li><li>Pré-percez toujours les emplacements des vis (foret 3mm)</li><li>Dans l'ordre:</li><li>1) Découpez les panneaux, les poignées, l'encoche pour les plinthes, les emplacements des taquets pour le bac à sciure.</li><li>2) Découpez les sections de tasseaux, qui seront posés à plat sur le CP.</li><li>3) Fixez les tasseaux selon les empalcements précis. Les verticaux sont à positionner au raz du bord du CP.</li><li>4) Assemblez la face avant de façon à couvrir les champs des faces latérales.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Construction du support de seau</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/3/3c/Toilettes_s_ches_amovibles_tuyau_vacuation.jpg' alt='Toilettes s ches amovibles tuyau vacuation.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/99/Toilettes_s_ches_amovibles_20221115_093256.jpg/800px-Toilettes_s_ches_amovibles_20221115_093256.jpg' alt='Toilettes s ches amovibles 20221115 093256.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Couper une planche de dimensions indiquées sur le plan, et utiliser un compas pour tracer le cercle tronqué, volontairement décentré (l'ouverture évite de buter sur le séparateur). Arrondir franchement l'extrémité pointue, pour éviter la casse. Il se fixera avec 4 vis dans les tasseaux, mais l'idéal est de ne le fixer qu'au dernier moment, après avoir essayé l'ajustement de l'ensemble, et d'ajuster si besoin la position avant/arrière.</li><li>Apporter une attention particulière au support du seau: positionnement, circonférence à ajuster au seau que vous avez acheté, si vous avez acheté un modèle différent.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Construction du capot supérieur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a1/Toilettes_s_ches_amovibles_20221120_141537.jpg/800px-Toilettes_s_ches_amovibles_20221120_141537.jpg' alt='Toilettes s ches amovibles 20221120 141537.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/fc/Toilettes_s_ches_amovibles_Urine-diverting_toilets_insert_grey_toilet_seat_26.jpg' alt='Toilettes s ches amovibles Urine-diverting toilets insert grey toilet seat 26.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voir plan pour dimensions.</li><li>Capot:</li><li>Découper selon dimensions du plan. Utiliser le gabarit fourni par Trobolo pour découper l'ouverture pour le séparateur, à caler à 30mm du bord avant du capot.</li><li>La languette du séparateur doit arriver juste au bord du capot.</li><li>Penser à bien arrondir l'angle supérieur de l'arête avant du capot (c'est là que vont toucher vos cuisses!)</li><li>Support de capot:</li><li>Fixer le tasseau sur son petit côté (le 45mm en vertical, servira à la fixation des charnières)</li><li>L'idéal est de mettre des charnières à ressort invisibles (à l'intérieur, pour faciliter le nettoyage). Pour faciliter la pose, poser le capot et le support de fixation à l'envers, et poser les charnières en position fermée, comme sur la photo. Utiliser les vis agglo pour fixer dans le tasseau, et les boulons/écrous dans le capot (il est trop fin pour utiliser des vis)</li><li>L'intérêt de ces charnières est que le capot reste ouvert quand vous videz le seau</li><li>Si ces charnières vous semblent compliquées à poser, il est tout à fait possible de mettre des charnières classiques sur le dessus (visibles) Fixer le support de capot dans les toilettes par 4 vis latérales (penser à pré-percer)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Marchepied</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/6/61/Toilettes_s_ches_amovibles_toilettes_seches_amovibles_a_separation_1.jpg' alt='Toilettes s ches amovibles toilettes seches amovibles a separation 1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Toilettes_s_ches_amovibles_20221120_181428.jpg/800px-Toilettes_s_ches_amovibles_20221120_181428.jpg' alt='Toilettes s ches amovibles 20221120 181428.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voir plans pour dimensions de coupe.</li><li>Choisir un bois solide et lessivable (peindre ou vernir selon envie) de 30mm d'épaisseur environ.</li><li>Les pieds support doivent être solides et bien ajustés car on doit pouvoir monter dessus en toute sérénité!</li><li>Fixer le marchepied par 3 vis agglo par l'intérieur du toilette.</li><li>Les pieds sont à fixer avec les 4 vis 5X60 par le dessus (penser à pré-percer). Positionner les pieds à 1cm du bord de la marche pour éviter la fissuration. Arrondir légèrement en cas de rencontre avec vos orteils!</li><li>Ajouter des patins en feutrine sous l'ensemble pour ne pas abimer votre sol.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Système d'évacuation des urines</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/3/35/Toilettes_s_ches_amovibles_support_evacuation_reduit.jpg' alt='Toilettes s ches amovibles support evacuation reduit.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/83/Toilettes_s_ches_amovibles_Evacuation_reduit.jpg/800px-Toilettes_s_ches_amovibles_Evacuation_reduit.jpg' alt='Toilettes s ches amovibles Evacuation reduit.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/4d/Toilettes_s_ches_amovibles_interieur.jpg' alt='Toilettes s ches amovibles interieur.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Fabriquer le support bois de 45 d'épaisseur, 100 de large et 45 de hauteur, voir photo, en utilisant le tasseau. Le pré-percer de deux trous pour l'assemblage sur la face avant du toilette, et un trou central pour le support du collier de serrage.</li><li>Assembler les pièces de tuyauterie comme sur la photo en les collant avec la colle spécifique de plomberie PVC.</li><li>Fixer le coude PVC à l'aide du collier de serrage métallique à l'aide d'une vis. Cet assemblage a pour intérêt d'être un peu souple et orientable pour s'ajuster lors de la fermeture du capot. La face supérieure du coude-joint doit être à 49cm du sol.</li><li>L'ouverture/fermeture du capot avec l'embout du séparateur doit se faire sans forcer et sans toucher le PVC, il faut généralement faire quelques ajustements une fois l'ensemble monté.</li></ul></li><li>Le tuyau souple doit être coupé à environ 1m de longueur totale, en gardant le petit embout (il s'emboite parfaitement dans le petit coude).</li><li>Vous pouvez ajouter un joint Sika en plus par sécurité si vous voulez.</li><li>Pour passer le tuyau dans le siphon, le faire tourner sur lui même légèrement dans un sens et dans l'autre.</li><li>En photo, la vue de l'intérieur de l'ensemble (coude principal seul en place)</li><li>Deux colliers lyres pvc permettront de caler le tuyau lors des manipulations. Petit conseil quand vous enlevez vos toilettes sèches: emboitez l'extrémité du tuyau libre dans l'ouverture du coude-joint pour éviter les gouttes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Bac à sciure amovible</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/17/Toilettes_s_ches_amovibles_bac_a_sciure_reduite.jpg/800px-Toilettes_s_ches_amovibles_bac_a_sciure_reduite.jpg' alt='Toilettes s ches amovibles bac a sciure reduite.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/26/Toilettes_s_ches_amovibles_taquet_bac_a_sciure.jpg' alt='Toilettes s ches amovibles taquet bac a sciure.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a9/Toilettes_s_ches_amovibles_poignee_bac_a_sciure.jpg' alt='Toilettes s ches amovibles poignee bac a sciure.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le bac à sciure peut être adapté à votre espace disponible, et mis du côté de votre choix.</li><li>Pour le fixer j'ai réalisé deux petits taquets en bois qui ne coûtent rien, mais prennent un peu de temps (voir plan), il est possible d'adapter d'autres systèmes à votre convenance.</li><li>Il est également possible d'ajouter un morceau de tasseau à l'intérieur du bac, entre les taquets pour servir de poignée lors des manutentions. Bien arrondir les angles pour ne pas se blesser quand on prend de la sciure.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Photos une fois fini</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/5/5e/Toilettes_s_ches_amovibles_toilettes_seches_amovibles_below_vue_separateur_2.jpg' alt='Toilettes s ches amovibles toilettes seches amovibles below vue separateur 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/98/Toilettes_s_ches_amovibles_toilettes_seches_amovibles_below_vue_ensemble.jpg' alt='Toilettes s ches amovibles toilettes seches amovibles below vue ensemble.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/6d/Toilettes_s_ches_amovibles_toilettes_seches_amovibles_below_ouverte.jpg' alt='Toilettes s ches amovibles toilettes seches amovibles below ouverte.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d5/Toilettes_s_ches_amovibles_vu_arriere.jpg' alt='Toilettes s ches amovibles vu arriere.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ee/Toilettes_s_ches_amovibles_logo_below_seul_horizontal_fond_blanc.jpg' alt='Toilettes s ches amovibles logo below seul horizontal fond blanc.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il n'y a plus qu'à vérifier que l'ensemble s'adapte bien sur vos toilettes existantes.</li><li>Attention à l'encombrement pour l'ouverture de la porte et l'accessibilité.</li><li>Une photo illustre l'installation une fois en place, vue de derrière sur un wc démonté.</li><li>Plus d'informations sur www.below.bzh</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Conseils d'utilisation</strong><p><strong>Étapes :</strong></p><ol><li>L'utilisation est la même que pour des toilettes sèches classiques, mis à part pour les hommes: il faudra viser un peu dans le seau, un peu dans le séparateur (eh oui, la sciure a besoin d'être un peu humidifiée pour que le compost marche bien!)</li><li>Pour vider le seau: verser un verre d'eau dans l'évacuation liquide avant d'ouvrir. Vider le seau, le rincer et répandre de la sciure directement sur les parois et le fond du seau. Avec l'humidité, la sciure s'y colle et réduit grandement les salissures par la suite.</li><li>Le mode d'emploi détaillé à télécharger ici</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

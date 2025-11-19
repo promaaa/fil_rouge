@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fab Lab Nomade - Remorque Atelier</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Fab Lab Nomade - Remorque Atelier</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/c/c6/Fab_Lab_Nomade_-_Remorque_Atelier_332498458_515386780540316_3484046315481288242_n.jpg/800px-Fab_Lab_Nomade_-_Remorque_Atelier_332498458_515386780540316_3484046315481288242_n.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Transformation d'une petite remorque de route multifonction en remorque atelier pour réaliser un fab lab mobile et nomade.</div>
+        
+      </div>
+    
+    
+      
+        <p>Nous transformons une vieille remorque de route multi-usages en atelier mobile avec des plusieurs caisses d'outillages que nous chargerons dans la remorque suivant les usages et les chantiers sur lequel elle se déplacera.</p>
+      
+        <p>Caisse à outil de base / tous usages</p>
+      
+        <p>- Marteau</p>
+      
+        <p>- Tournevis : plat et cruciforme</p>
+      
+        <p>- Pinces : multiprise et coupante, tenaille</p>
+      
+        <p>- Jeu de clés plates</p>
+      
+        <p>- Niveau</p>
+      
+        <p>- Règle, réglet, raporteur, pied à coulisse et équerre</p>
+      
+        <p>- Perceuse - visseuse avec jeu de mèches à bois et métal + jeu de têtes de visses</p>
+      
+        <p>- Cutter et paire de ciseau</p>
+      
+        <p>- Scies : à bois et à étau (métal)</p>
+      
+        <p>- Crayons et feutres avec un bloc de papier</p>
+      
+        <p>- Scotchs : grey tape, de peinture et chatterton</p>
+      
+        <p>- Bombe de dégripant WD40</p>
+      
+        <p>- Papier à poncer et cale à poncer</p>
+      
+        <p>- Etaus avec serre joint pour fixer sur le plan de travail</p>
+      
+        <p>- Serres-joints</p>
+      
+        <p>- Caisse de visseries en tous genres : visses plates, visses cruciforme, rondelles, boulons, écrous, etc.</p>
+      
+        <p>- Caisse de clous de toutes tailles</p>
+      
+        <p>- Ralonge électrique avec multiprises 4 prises 220V et 2 ports USB</p>
+      
+        <p>- Lumière</p>
+      
+        <p>- Toile de tente avec armature pour se protéger de la pluie ou du soleil au dessus de la remorque</p>
+      
+        <p>- Bancs pour s'assoir au postes de travail</p>
+      
+        <p>Caisse pédalier multifonction</p>
+      
+        <p>- Embout perceuse</p>
+      
+        <p>- Embout machine à coudre</p>
+      
+        <p>- Embout meuleuse</p>
+      
+        <p>- Embout ponceuse à bandes</p>
+      
+        <p>Caisse spéciale Bois (en plus de la caisse à outil de base)</p>
+      
+        <p>- Rabot à main</p>
+      
+        <p>- Maillet</p>
+      
+        <p>- Ciseaux à bois</p>
+      
+        <p>- Scie circulaire électroportative</p>
+      
+        <p>- Rabot électrique</p>
+      
+        <p>- Ponceuse à main</p>
+      
+        <p>- Scie sauteuse</p>
+      
+        <p>- Tréteaux</p>
+      
+        <p>- Fausse équerre</p>
+      
+        <p>Caisse spéciale Métal (en plus de la caisse à outil de base)</p>
+      
+        <p>- Pointeau</p>
+      
+        <p>- Coupe tube</p>
+      
+        <p>- Riveteuse et rivets</p>
+      
+        <p>- Meuleuse</p>
+      
+        <p>- Discqueuse</p>
+      
+        <p>- Poste à souder à l'arc</p>
+      
+        <p>Caisse spéciale Electricité</p>
+      
+        <p>- Tournevis éléctricien</p>
+      
+        <p>- Pince coupe fils + pince à dénuder</p>
+      
+        <p>- Voltmètre</p>
+      
+        <p>- Fer à souder étain</p>
+      
+        <p>- Pompe à déssouder</p>
+      
+        <p>- Ralonges électriques</p>
+      
+        <p>- Raccord et dominos électriques</p>
+      
+        <p>Caisse spéciale Cuisine</p>
+      
+        <p>- Réchaud à gaz avec bonbonnes de recharge</p>
+      
+        <p>- Gamelle avec couvercle (casserole)</p>
+      
+        <p>- Bouilloire</p>
+      
+        <p>- Glacière</p>
+      
+        <p>- Verres</p>
+      
+        <p>- Couverts et assiettes</p>
+      
+        <p>- Saladiers</p>
+      
+        <p>- Bidon d'eau</p>
+      
+        <p>- Garde manger avec Riz, Pâtes, Lentilles, Légumes et Fruits. Thé et Café.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 350 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Fab_Lab_Nomade_-_Remorque_Atelier" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Fab_Lab_Nomade_-_Remorque_Atelier</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>- Remorque en acier galvanisé</li><li>- Panneau de contreplaqué marine pour le plan de travail : ép. 15 mm en 2500 x 1220 mm</li><li>- Panneau de contreplaqué extérieur pour les caisses à outils : ép. 10mm en 2500 x 1220 mm</li><li>- Plaques de métal en récup' pour les renforts de la remorque</li><li>- Chutes de bois pour réaliser le système de calage des roues</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- Tournevis</li><li>- Perceuse</li><li>- Jeu de mèches et têtes de visses</li><li>- Lime</li><li>- Papier de verre</li><li>- Marteau</li><li>- Meuleuse</li><li>- Serre-joints</li><li>- Scie circulaire</li><li>- Riveteuse</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Remise en état de la remorque (2 jours)</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e7/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5901.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5901.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5901.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2e/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5886.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5886.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5886.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2f/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5906.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5906.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5906.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a4/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5965.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5965.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5965.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b1/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5957.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5957.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5957.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b2/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5964.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5964.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5964.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour ce prototype, nous passons les deux premières journées à remettre en état de route et de fonctionnement la remorque avec les taches suivantes :</li><li>- Remplacer tout le système de feux de route (30€)</li><li>- Tester le bon fonctionnement des feux de route</li><li>- Remise en état des charnières de la porte arrière</li><li>- Arrondir à la meuleuse les pièces métalliques qui risquent de couper</li><li>- Refaire la pièce de jonction métallique entre le timon axe central et la caisse à bascule avec des toles récupérées</li><li>- Installer une roue jockey</li><li>- Récupérer les anciennes visseries pour les réutiliser</li><li>- Renforcer la caisse métalique aux endroits faibles</li><li>- Enlever l'ancien panneau qui couvre la remorque pour le remplacer</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Installer le plan de travail de l'atelier mobile (1 jour)</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5d/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5900.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5900.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5900.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/05/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6006.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6006.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6006.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9f/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6008.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6008.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6008.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/39/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6018.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6018.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6018.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6021.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6021.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6021.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6b/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6023.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6023.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6023.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois la remorque rénovée et fonctionnelle, un nouveau plan de travail en contreplaqué marine est installé.</li><li>- Réflexion sur la disposition des postes de travail autour de la remorque avec les assises adéquate : profondeur de 35 cm sur les côtés et hauteur 85 cm.</li><li>- Installation de 4 équerres pour renforcer la rigidité du plan de travail avec des contreplaques en bois à l'intérieur.</li><li>- Pose des cales sur les équerres pour accroître la surface de contact et être de niveau par rapport au caisson métalique de la remorque.</li><li>- Découpe du panneau de contreplaqué marine à la cote 1220 x 1700 mm</li><li>- Fixation du plan de travail avec 8 visses ( 4 dans les équerres et 4 sur le caisson métalique de la remorque.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Peinture du plan de travail (1 jour cumulé , 3 jours en réel avec les temps de séchage)</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d4/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_20220729_134239.jpg/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_20220729_134239.jpg' alt='Fab Lab Nomade - Remorque Atelier IMG 20220729 134239.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b4/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_20220726_205152.jpg/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_20220726_205152.jpg' alt='Fab Lab Nomade - Remorque Atelier IMG 20220726 205152.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b1/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_20220726_205323.jpg/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_20220726_205323.jpg' alt='Fab Lab Nomade - Remorque Atelier IMG 20220726 205323.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c4/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6961.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6961.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6961.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/26/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6960.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6960.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6960.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Bravo aux Picassos du pinceau ;-)</li><li>Pablo (bien sûr !), Killian, Mélanie et Nicolas</li><li>Chantier participatif durant les Comices du Faire juillet 2022 à Kervic</li><li>- 3 couches de peinture spéciale extérieure (portes et fenêtres).</li><li>- Ponçage entre chaque couche.</li><li>- 12 heures de séchage entre les couches.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fixer les tréteaux sur le timon de la remorque (1/2 jour)</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7541.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7541.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7541.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b2/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7538.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7538.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7538.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7540.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7540.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7540.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/20/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7546.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7546.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7546.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4f/Fab_Lab_Nomade_-_Remorque_Atelier_297422367_2282806681885449_3628736028845906960_n.jpg/800px-Fab_Lab_Nomade_-_Remorque_Atelier_297422367_2282806681885449_3628736028845906960_n.jpg' alt='Fab Lab Nomade - Remorque Atelier 297422367 2282806681885449 3628736028845906960 n.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Fixation solide de 2 tréteaux de charpentiers sur le timon de la remorque :</li><li>- réflexions et essais de plusieurs positions des tréteaux pour trouver la meilleure manière de les tenir solidaires.</li><li>- repère et perçage des trous de vises sur le jambage du tréteau haut pour l'encastrer dans les visses du tréteau bas.</li><li>- réalisation d'une cale de fixation vissée au timon pour tenir le tréteau bas avec un écrou papillon.</li><li>- fixation d'une cadène sur la caisse de la remorque pour sangler les tréteaux</li><li>Solution trouvée : tréteau bas visé sur le timon et angulé pour éviter qu'il descende trop bas sur la route (sécurité) + tréteau haut posé dessus avec les pieds calés sous le renfort de la caisse de remorque et les pieds ancrés dans les visses du tréteau bas. Une sangle pour tenir l'ensemble lors des trajets.</li><li>Les tréteaux sont disposés de telle sorte qu'ils soient suffisamment haut du sol pour des question de sécurité durant le transport et ne dépassant pas le niveau horizontal du plan de travail de la remorque, pour pouvoir l'utiliser comme plateau de chargement de matériaux comme des panneaux de bois.</li><li>Merci aux deux Philippe et à Malo pour leur aide précieuse !</li><li>Réalisé dans le cadre des session open-ateliers participatifs du Konk Ar Lab tous les mercredi après-midi du mois d'août 2022 :-)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Sytème de blocage des roues de la remorque (2 h)</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/33/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7843.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7843.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7843.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/46/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7846.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7846.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7846.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7844.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7844.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7844.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7850.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7850.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7850.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/12/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7852.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7852.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7852.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/70/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7848.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7848.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7848.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Lorsque la remorque est à l'arrêt, les roues ont besoin d'être bloquées pour pouvoir travailler sur un plan de travail stable.</li><li>- réalisation d'un sabot de calage de la roue jockey</li><li>- réalisation de 2 sabots pour bloquer les roues de la remorque : chute de bois coupée sur un angles à 45° et élastique de fixation.</li><li>Réalisé dans le cadre des session open-ateliers participatifs du Konk Ar Lab tous les mercredi après-midi du mois d'août 2022 :-)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Fabriquer des caisses à outils (1 jour)</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b2/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6009.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6009.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6009.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6010.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6010.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6010.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6013.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6013.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6013.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6f/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6017.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6017.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6017.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6027.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_6027.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 6027.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/01/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5994.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_5994.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 5994.JPG' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Organiser la caisse à outils et fixer les outils (2 h)</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2b/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7857.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7857.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7857.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cc/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7858.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7858.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7858.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ed/Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7854.JPG/800px-Fab_Lab_Nomade_-_Remorque_Atelier_IMG_7854.JPG' alt='Fab Lab Nomade - Remorque Atelier IMG 7854.JPG' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Réflexion sur l'autonomie énergétique de la remorque</strong><p><strong>Étapes :</strong></p><ol><li>Quelle énergie pour la remorque ?</li><li>- Pas de stockage d'énergie sur la remorque</li><li>- Eclairer le plan de travail sur la remorque</li><li>- Recharger les batteries des outils électroportatifs + ordinateurs sur le 220V</li><li>- Recharger téléphones et appareils électroniques via les ports USB</li><li>- Batterie de stockage d'énergie 12V dans la remorque qui devra être rechargée (batterie de voiture)</li><li>- Chargeur outils électroportatifs en 12V -> 10V</li><li>- Chargeur ordinateur en 12V -> 9V</li><li>- Chargeur ports USB en 12V -> 5V</li><li>- De nuit en roulant, prise remorque branchée sur la voiture qui charge la batterie en 12V via dérivation éclairage feux de route de la remorque</li><li>- De jour, avec un panneau solaire reliée à la batterie 12V qui la charge</li><li>- Jour et Nuit, en branchant le cable 220V du chantier sur un chargeur de batterie 220V->12V</li><li>- Stockage sur batterie ....</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

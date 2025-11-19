@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>LIVET - jeu de construction</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>LIVET - jeu de construction</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/8/88/LIVET_-_jeu_de_construction_IMG_6250b.jpg/ia-be9f2b6f2a1145c5869f71d3b432b15a-px-LIVET_-_jeu_de_construction_IMG_6250b.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Viltra, anciennement Livet, est un jeu de construction, conceptualisé en vue d'un projet de design. Il est collaboratif et éducatif, inspiré des vitraux de la cathédrale Sainte-Anne à Rennes. Fabriqué à partir de plastique recyclé, il invite petits et grands à composer des motifs colorés à l’image de véritables vitraux. Projet réalisé par Anthony L'Hermitte & Anaïs Grossier.</div>
+        
+      </div>
+    
+    
+      
+        <p>Viltra est un jeu de construction inspiré des vitraux de la cathédrale Sainte-Anne de Rennes. Pensé comme un jeu en plein air, il transforme les assises publiques en espaces d’expression artistique, de rencontre et de convivialité.</p>
+      
+        <p>Ce jeu se compose de pièces en plastique recyclé, découpées dans des plaques fabriquées, puis assemblées par les joueurs pour créer des compositions inspirées du vitrail. Viltra est à la fois un déclencheur de rencontres, et une manière poétique de redonner une place au jeu dans l’espace urbain.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 10 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/LIVET_-_jeu_de_construction" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/LIVET_-_jeu_de_construction</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Plastique, ici:<ul><li>HDPE (type 2)</li><li>PP (type 5)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Disponible en Atelier ou Fablab:</li><li>Broyeur (Precious Plastic)</li><li>Presse à chaud</li><li>Presse hydraulique</li><li>Scie à chantourner /Découpeuse laser</li><li>Bonus: Lime</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Collecter du plastique</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/4/4e/LIVET_-_jeu_de_construction_OIP.jpg' alt='LIVET - jeu de construction OIP.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Commencez par collecter des déchets plastiques, de préférence de type 2 (HDPE) et 5 (PP), facilement identifiables sur les emballages grâce au symbole de recyclage. Privilégiez les rebus, les déchets, la seconde main. Triez, nettoyez et séchez soigneusement les éléments récupérés pour garantir une fusion propre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Broyer la collecte</strong><p><strong>Étapes :</strong></p><ol><li>Concassez les éléments collectés en morceaux de la taille de la paume de la main, puis insérez-les dans un broyeur afin d’obtenir des copeaux de petite taille.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Créer une plaque de plastique</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/c/cf/LIVET_-_jeu_de_construction_IMG_3429.jpg/800px-LIVET_-_jeu_de_construction_IMG_3429.jpg' alt='LIVET - jeu de construction IMG 3429.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/35/LIVET_-_jeu_de_construction_IMG_3432.jpg/800px-LIVET_-_jeu_de_construction_IMG_3432.jpg' alt='LIVET - jeu de construction IMG 3432.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/25/LIVET_-_jeu_de_construction_IMG_3434.jpg/800px-LIVET_-_jeu_de_construction_IMG_3434.jpg' alt='LIVET - jeu de construction IMG 3434.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/21/LIVET_-_jeu_de_construction_IMG_3437.jpg/800px-LIVET_-_jeu_de_construction_IMG_3437.jpg' alt='LIVET - jeu de construction IMG 3437.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/bb/LIVET_-_jeu_de_construction_IMG_3439.jpg/800px-LIVET_-_jeu_de_construction_IMG_3439.jpg' alt='LIVET - jeu de construction IMG 3439.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/34/LIVET_-_jeu_de_construction_IMG_3440.jpg/800px-LIVET_-_jeu_de_construction_IMG_3440.jpg' alt='LIVET - jeu de construction IMG 3440.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Étalez les copeaux obtenus sur une plaque métallique, elle-même placer sur une plaque cartonnée afin de faciliter le déplacement. Glissez l’ensemble dans une presse à chaud, tout en veillant à bien retirer la plaque cartonnée. Placez deux calles de chaque côté, puis recouvrez avec une seconde plaque métallique. Faites chauffer pour un premier cycle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Finir de créer la plaque</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/3/39/LIVET_-_jeu_de_construction_IMG_3441.jpg/800px-LIVET_-_jeu_de_construction_IMG_3441.jpg' alt='LIVET - jeu de construction IMG 3441.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/bd/LIVET_-_jeu_de_construction_IMG_3445.jpg/800px-LIVET_-_jeu_de_construction_IMG_3445.jpg' alt='LIVET - jeu de construction IMG 3445.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/a3/LIVET_-_jeu_de_construction_IMG_3446.jpg/800px-LIVET_-_jeu_de_construction_IMG_3446.jpg' alt='LIVET - jeu de construction IMG 3446.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/72/LIVET_-_jeu_de_construction_IMG_3448.jpg/800px-LIVET_-_jeu_de_construction_IMG_3448.jpg' alt='LIVET - jeu de construction IMG 3448.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/73/LIVET_-_jeu_de_construction_IMG_3449.jpg/800px-LIVET_-_jeu_de_construction_IMG_3449.jpg' alt='LIVET - jeu de construction IMG 3449.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/f/f1/LIVET_-_jeu_de_construction_IMG_3450.jpg/800px-LIVET_-_jeu_de_construction_IMG_3450.jpg' alt='LIVET - jeu de construction IMG 3450.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Au bout des 200 secondes, il faut ouvrir à nouveau la presse, glisser une plaque cartonnée au-dessus et une autre en dessous, afin d'entourer les plaques métalliques. Ensuite, saisissez l'ensemble, à l'aide de vos EPI (gants) afin d'effectuer une rotation à 180 degrés. Retirer la plaque cartonnée du dessus, et faites à nouveau glisser l'ensemble métallique dans la presse (en veillant à ne pas y mettre l'autre plaque cartonnée). Les calles ne sont plus d'utilité. Faites chauffer pour le second cycle, afin d'obtenir une plaque bien homogène et lisse.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Laisser refroidir sous presse</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/8/83/LIVET_-_jeu_de_construction_IMG_3451.jpg/800px-LIVET_-_jeu_de_construction_IMG_3451.jpg' alt='LIVET - jeu de construction IMG 3451.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/a/ac/LIVET_-_jeu_de_construction_IMG_3453.jpg/800px-LIVET_-_jeu_de_construction_IMG_3453.jpg' alt='LIVET - jeu de construction IMG 3453.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/22/LIVET_-_jeu_de_construction_IMG_3456.jpg/800px-LIVET_-_jeu_de_construction_IMG_3456.jpg' alt='LIVET - jeu de construction IMG 3456.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois la plaque fondue, sortez-la avec précaution de la presse à chaud, en vous aidant de plaques cartonnées. Placez-la immédiatement sous une presse hydraulique afin de la refroidir lentement sous pression, pour éviter toute déformation. Attendez le refroidissement complet avant manipulation, soit une quinzaine de minutes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Tracer le patron</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/a/a2/LIVET_-_jeu_de_construction_formes_d_coupeuse.jpg/800px-LIVET_-_jeu_de_construction_formes_d_coupeuse.jpg' alt='LIVET - jeu de construction formes d coupeuse.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>À l’aide de patrons prédéfinis (téléchargeable dans Fichiers), tracez les formes souhaitées directement sur la plaque refroidie à l’aide d’un feutre indélébile ou d’un crayon gras. Chaque forme correspond à un élément de jeu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Découper les formes</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/6/6e/LIVET_-_jeu_de_construction_IMG_3556.jpg/800px-LIVET_-_jeu_de_construction_IMG_3556.jpg' alt='LIVET - jeu de construction IMG 3556.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/23/LIVET_-_jeu_de_construction_IMG_3558.jpg/800px-LIVET_-_jeu_de_construction_IMG_3558.jpg' alt='LIVET - jeu de construction IMG 3558.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/84/LIVET_-_jeu_de_construction_IMG_3559.jpg/800px-LIVET_-_jeu_de_construction_IMG_3559.jpg' alt='LIVET - jeu de construction IMG 3559.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/cb/LIVET_-_jeu_de_construction_IMG_3566.jpg/800px-LIVET_-_jeu_de_construction_IMG_3566.jpg' alt='LIVET - jeu de construction IMG 3566.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découpez les formes à l’aide d’une scie à chantourner, en suivant précisément le traçage réalisé. Prenez soin d’avancer lentement pour ne pas casser la plaque ou fragiliser les détails.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Bonus : Limer les contours</strong><p><strong>Étapes :</strong></p><ol><li>Pour un rendu propre et sécurisant, limez les contours de chaque pièce à l’aide d’une lime manuelle ou d’une ponceuse douce. Cela permet d’éviter les bords tranchants et améliore le confort d’usage du jeu.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

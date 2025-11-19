@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Pasteurisation de fruits et légumes</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Pasteurisation de fruits et légumes</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/1c/Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_Nikon-_2018.04.16_-7.jpg/800px-Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_Nikon-_2018.04.16_-7.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Conserver ses surplus de fruits et légumes grâce à la pasteurisation</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce tutoriel est réalisé en collaboration avec Claire Yobé pratiquant la pasteurisation depuis de nombreuses années et formatrice sur le sujet.</p>
+      
+        <p>L'objectif est de pouvoir conserver facilement sur le long terme des surplus de fruits et légumes issus du jardin (en été par exemple) ou d'un achat trop important par rapport au besoin.</p>
+      
+        <p>Chiffres clés sur le gaspillage alimentaire<ul><li>1/3 des aliments produits dans le monde est perdu ou gaspillé</li><li>En France, 50% du gaspillage se fait à la maison</li><li>Un français gaspille 20kg d'aliments par an</li><li>Les légumes et les fruits sont des plus gaspillés avec respectivement 31% et 19% des pertes</li></ul></p>
+      
+        <p>Qu’est ce que la pasteurisation ?</p>
+      
+        <p>La pasteurisation est un procédé de conservation des aliments. Il consiste à les chauffer à une température de 80°C avant la mise en bocal puis refroidissement.</p>
+      
+        <p>Comment est-il possible de conserver grâce à la pasteurisation ?</p>
+      
+        <p>En chauffant les fruits et légumes à 80°C, une grande partie des micro-organismes pathogènes va être éliminée, la mise en conserve à cette température permet de chasser l’oxygène et d’éviter la prolifération de ceux qui restent.</p>
+      
+        <p>Quels types d’aliments conserver en pasteurisation ?</p>
+      
+        <p>Il est simple de conserver tout type de fruits et légumes en pasteurisation. On ne peut cependant pas appliquer cette méthode pour la viande ou poisson qui nécessitent plutôt la stérilisation, afin d’éliminer 100% des pathogènes.</p>
+      
+        <p>Quelles sont les qualités nutritionnelles d’aliments pasteurisés ?</p>
+      
+        <p>La cuisson diminue forcement la qualité nutritionnelle des aliments par la dégradation des vitamines, protéines, etc.</p>
+      
+        <p>La pasteurisation est l’une des méthodes thermiques de conservation où la détérioration des qualités alimentaires est des plus faibles de part une faible température de chauffe contrairement à la stérilisation qui peut monter à plus de 120°C.</p>
+      
+        <p>Comment consommer les aliments pasteurisés ?</p>
+      
+        <p>On peut consommer des fruits et légumes pasteurisés à volonté sans aucun problème. Une fois la conserve ouverte, elle se stocke au réfrigérateur et se consomme dans la semaine.</p>
+      
+        <p>Y a-t-il des risques avec la pasteurisation ?</p>
+      
+        <p>Comme toutes les méthodes de conservation par traitement thermique, l’étanchéité à l’air de la conserve est primordiale. Si de l’air s’infiltre, le développement de micro-organismes pathogènes peut avoir lieu.</p>
+      
+        <p>Et même si de l'air ne s'infiltre pas, cette technique ne les détruira pas : ils peuvent potentiellement se développer plus tard, même après des années si le PH de la préparation est supérieur à 4.5 (viandes et légumes). Pour éliminer tout risque, il faut respecter un rapport durée/t° de la chauffe à cœur du bocal allant de 5mn à 10h suivant la pression. Vous trouverez ces rapports sur ce TUTO</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Easy Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 10 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Pasteurisation_de_fruits_et_légumes" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Pasteurisation_de_fruits_et_légumes</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Fruits et légumes issus de surplus</li><li>Eau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Bocaux et couvercles à visser ou en verre avec joints</li><li>Casseroles</li><li>Thermomètre de cuisine allant jusqu'à 100°C</li><li>Gants de cuisine</li><li>Entonnoir à large sortie</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparation des fruits et légumes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/07/Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_4.JPG/800px-Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_4.JPG' alt='Conserves de légumes pasteurisés 4.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Éplucher et laver soigneusement les fruits et légumes à pasteuriser</li><li>Mettre sur le feu les fruits et légumes soit dans une recette de son choix (type ratatouille, compote, purée de fruits ou légumes, fruit au sirop etc) ou directement en morceaux dans de l'eau</li><li>Laisser chauffer jusqu'à mijotage</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Preparation du bocal</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/a/a0/Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_1.JPG' alt='Conserves de légumes pasteurisés 1.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ed/Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_2.JPG' alt='Conserves de légumes pasteurisés 2.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Se laver soigneusement les mains ainsi que les bocaux et leur couvercle</li><li>Placer une casserole avec un fond d'eau sur le feu jusqu'à mijotage</li><li>Rouler le bocal dans l'eau chaude puis le positionner debout dans la casserole toujours sur petit feu</li></ul></li><li>Remarque: La mise du bocal dans l'eau chaude permet de chauffer le verre pour assurer que tout le contenu reste à 80°C durant le remplissage</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Mise en conserve</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/a/ae/Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_5.JPG' alt='Conserves de légumes pasteurisés 5.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/14/Conserves_de_l%C3%A9gumes_pasteuris%C3%A9s_6.JPG' alt='Conserves de légumes pasteurisés 6.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>S'assurer d'avoir les mains bien propres</li><li>A l'aide du thermomètre, valider que la préparation culinaire est à 80°C</li><li>Si besoin à l'aide de l'entonnoir, remplir au maximum le bocal chaud</li><li>Fermer le bocal et visser le cas échéant, en forçant au maximum la fermeture</li><li>Déposer le bocal sur une table, couvercle vers le bas et laisser refroidir</li></ul></li><li>Remarques:</li><li>1) La validation de la température à 80°C et la fermeture parfaite des bocaux sont 2 étapes essentielles de la pasteurisation</li><li>2) Le positionnement du bocal, couvercle vers le bas, permet de valider la bonne étanchéité à l'air (si ça fuit, la conserve n'est pas bonne) et permet de laisser le couvercle se rétracter par le refroidissement dans de bonnes conditions pour une fermeture parfaite</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Stockage</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Stocker les conserves dans un endroit frais à l'abris de la lumière</li></ul></li><li>Remarque: Les conserves pasteurisées peuvent se garder ainsi plusieurs mois / années</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Consommation</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Consommer à volonté</li><li>Un fois ouvert, conserver le bocal ouvert au réfrigérateur et consommer le contenu dans la semaine</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

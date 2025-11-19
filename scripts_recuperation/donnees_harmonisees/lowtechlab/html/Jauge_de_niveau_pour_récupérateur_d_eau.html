@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jauge de niveau pour récupérateur d'eau</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Jauge de niveau pour récupérateur d'eau</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/c/ce/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_161316_compress82.jpg/ia-443064f2be37c39b323c1cb32e23500a-px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_161316_compress82.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Jauge de niveau pour récupérateur d'eau. Ni électronique, ni électricité, 100% mécanique, 100% récupération.</div>
+        
+      </div>
+    
+    
+      
+        <p>Dans le récupérateur d'eau un flotteur va rester à la surface.</p>
+      
+        <p>Une ficelle liée à ce flotteur va sortir par le couvercle.</p>
+      
+        <p>Un poids à l'autre extrémité de cette ficelle va monter ou descendre selon le niveau d'eau.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 15 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Jauge_de_niveau_pour_récupérateur_d_eau" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Jauge_de_niveau_pour_récupérateur_d_eau</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>- 1 contenant hermétique (ici un flacon en plastique)</li><li>- une ficelle imputrescible (ici du fil de coupe-bordure)</li><li>- 1 contre-poids (ici des rondelles)</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- De quoi couper la ficelle (ciseau)</li><li>- De quoi percer le couvercle du récupérateur (perceuse)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Objectif</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/e0/Jauge_de_niveau_pour_r_cup_rateur_d_eau_plan_de_coupe.jpg' alt='Jauge de niveau pour r cup rateur d eau plan de coupe.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans le récupérateur d'eau un flotteur va rester à la surface.</li><li>Une ficelle liée à ce flotteur va sortir par le couvercle.</li><li>Un poids à l'autre extrémité de cette ficelle va monter ou descendre selon le niveau d'eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Création du flotteur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bf/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_155119_compress0.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_155119_compress0.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 155119 compress0.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Remplir au 3 quart d'eau votre récipient hermétique (flacon plastique, pot de confiture, petite bouteille de lait, de soda etc...).</li><li>Ce récipient s'enfoncera dans l'eau car en partie remplie d'eau, mais il restera à la surface du fait qu'il contient 1 quart d'air. C'est votre flotteur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Attacher la ficelle</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cf/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_155313_compress66.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_155313_compress66.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 155313 compress66.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Relier fermement votre flotteur à votre ficelle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Plonger le flotteur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d1/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_160149_compress24.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_160149_compress24.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 160149 compress24.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Mettez le flotteur dans votre récupérateur d'eau, et assurez vous qu'il flotte bien.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Percer le couvercle</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/38/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_160515_compress30.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_160515_compress30.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 160515 compress30.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Percer le couvercle du récupérateur d'eau d'un petit trou par lequel vous passerez la ficelle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Passer la ficelle par le trou</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_160553_compress20.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_160553_compress20.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 160553 compress20.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Passez la ficelle par le trou depuis l'intérieur vers l'extérieur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Tirer la ficelle sur un flanc du récupérateur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b5/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_164155_compress72_1_.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_164155_compress72_1_.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 164155 compress72 1 .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tirez la ficelle sur le flanc du récupérateur</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Fixer le poids</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b5/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_161248_compress83.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_161248_compress83.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 161248 compress83.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Fixez le poids à l'extrémité de la ficelle.</li><li>Adaptez la longueur de la ficelle afin que :</li><li>- quand le récupérateur d'eau est vide, le poids soit tout en haut</li><li>- quand le récupérateur d'eau est plein, le poids soit tout en bas</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Déterminer le niveau</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6a/Jauge_de_niveau_pour_r_cup_rateur_d_eau_niveau.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_niveau.jpg' alt='Jauge de niveau pour r cup rateur d eau niveau.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C'est terminé.</li><li>La distance entre l'arrivée d'eau et votre poids indique le niveau d'eau (ici représenté par les traits rouges).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Si nécessaire, faire un poids plus lourd</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/36/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_170216_compress25.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_170216_compress25.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 170216 compress25.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ac/Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_170233_compress88.jpg/800px-Jauge_de_niveau_pour_r_cup_rateur_d_eau_20230714_170233_compress88.jpg' alt='Jauge de niveau pour r cup rateur d eau 20230714 170233 compress88.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si la ficelle n'est pas suffisamment tendu, faites un poids plus lourd (ici un autre flacon rempli de caillou).</li><li>Votre poids doit rester bien plus léger que votre flotteur.</li><li>Le système n'est ni automatique ni instantané, il peut être nécessaire parfois de tirer sur la ficelle pour s'assurer que le flotteur est bien au contact de l'eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

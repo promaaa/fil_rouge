@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Projet - HALTE</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Projet - HALTE</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/9/9c/Projet_-_HALTE_MG_5176_2.JPG/ia-1fbb2a9dd71c1d2650bf41fcb5ca6b9c-px-Projet_-_HALTE_MG_5176_2.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">HALTE est un bâton de pluie. Il peut-être utilisé dans tout types d'espaces publics, et il ne nécessite aucun apport en électricité. Halte est à la disposition de tous, jour et nuit, dans le but de se rafraichir lors d'épisode de chaleur, sans utiliser d'eau. Réalisé dans le cadre d'un sujet de design, autour de la question de Precious Plastic. En partenariat avec l'atelier de la belle déchette à Rennes (35). Le projet a été réalisé par Méline LAHUPPE et Théo FERRÉ.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment projet - halte.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Projet_-_HALTE" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Projet_-_HALTE</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>- Bambous : 1 large (environ 3-4 cm de diamètre) et 1 fin (environ 1 cm de diamètre)</li><li>- Plaques precious plastic</li><li>- Riz</li><li>- Bouchon de liège</li><li>- Vis (plus de 15cm de longueur)</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- Fraiseuse CNC</li><li>- Scie sauteuse</li><li>- Perceuse + foret (taille 6) et mèche plate (taille 20)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparation du bambou</strong><div class='step-images count-6'><figure><img src='https://wikifab.org/images/thumb/9/9e/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_3547a8ec.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_3547a8ec.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 3547a8ec.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3d/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_3bd733d6.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_3bd733d6.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 3bd733d6.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b5/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_c9cba971.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_c9cba971.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 c9cba971.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/d2/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.30_10bc91c5.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.30_10bc91c5.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.30 10bc91c5.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/24/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_263894ea.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_263894ea.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 263894ea.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/d/de/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_f21e88ba.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_f21e88ba.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 f21e88ba.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, vous aurez besoin d'un bambou, d'une scie sauteuse, d'une perceuse et ses accessoires. Les photos suivent l'ordre de la description ci-dessous.</li><li>- Trouver un bambou de 3 à 4 cm de diamètre (couper le si il provient d'un jardin ou acheter le)</li><li>- Couper un morceau de 60 cm dans le bambou</li><li>- Garder de chaque extrémité du bambou 10 cm (symboliser sur la photo par le scotch)</li><li>- Faire une quinzaine de trous de manière aléatoire et homogène entre les deux bouts de scotch</li><li>- Faire un dernier trou traversant au milieu du bambou (environ 30 cm) pour permettre sa fixation</li><li>- Percer les nœuds du bambou avec la mèche plate</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Découpage des plaques Precious Plastic</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/0/0b/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.26.56_ba4da1bf.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.26.56_ba4da1bf.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.26.56 ba4da1bf.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/1b/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.26.56_5c6386ec.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.26.56_5c6386ec.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.26.56 5c6386ec.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, vous aurez besoin de vos plaques Precious Plastic (au préalable réalisé) et d'une fraiseuse CNC</li><li>- Pour découper les plaques precious plastic, vous allez devoir utiliser le fichier pour la fraiseuse CNC</li><li>- Après découpe des pièces, les mettre de côté.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Bouchage du premier côté</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/f/fb/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_d8dff863.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_d8dff863.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 d8dff863.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/4a/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_4aeb6873.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_4aeb6873.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 4aeb6873.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/9/9a/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_1cdda921.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_1cdda921.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 1cdda921.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, vous allez avoir besoin d'un bouchon et du projet avancé jusqu'à l'étape 2.</li><li>- Insérer le bouchon, jusqu'à sa moitié, dans l'une des extrémités du bambou</li><li>- Couper ce qui dépasse à l'aide d'un cutter</li><li>- Mettez de côté, la tête du bouchon (partie coupée)</li><li>- Appuyez légèrement sur la base du bouchon</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Utilisation des éléments plastiques découpés</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/a/a3/Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_a5f1f580.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_14.59.31_a5f1f580.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 14.59.31 a5f1f580.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, vous allez avoir besoin du projet avancé à l'étape 3 et des éléments plastiques découpés.</li><li>- Insérer les différents éléments selon vos choix.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Introduction du riz</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/b/b0/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.07_9c996fee.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.07_9c996fee.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.07 9c996fee.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7f/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.07_d4101fe7.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.07_d4101fe7.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.07 d4101fe7.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, vous allez avoir besoin du projet avancé à l'étape 4 et du riz.</li><li>- Peser environ 50 grammes de riz</li><li>- Insérer le riz dans le bambou</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Bouchage du second côté</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/4/40/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_e084080c.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_e084080c.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.08 e084080c.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/56/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_e607547e.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_e607547e.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.08 e607547e.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/48/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_f4faf1f6.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_f4faf1f6.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.08 f4faf1f6.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, vous allez avoir besoin du projet avancé à l'étape 5 et de la tête du bouchon de l'étape 3.</li><li>- Insérer la tête du bouchon dans l'autre côté du bambou</li><li>- Bien enfoncer</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Fixation du projet</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/2/2b/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_592226c5.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_592226c5.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.08 592226c5.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/07/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_c528ff6a.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_c528ff6a.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.08 c528ff6a.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/e/e0/Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_c3009c15.jpg/800px-Projet_-_HALTE_WhatsApp_Image_2025-05-12_15.21.08_c3009c15.jpg' alt='Projet - HALTE WhatsApp Image 2025-05-12 15.21.08 c3009c15.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape, vous allez avoir besoin du projet avancé à l'étape 6, la vis de 15 cm et du bambou fin.</li><li>- Couper un morceau de 6-7 cm dans le bambou fin</li><li>- Insérer la vis dans le trou traversant</li><li>- Ajouter le morceau de bambou entre le gros bambou et le support final</li><li>- Visser jusqu'à ce que le morceau de bambou soit en contact entre les deux parties (gros bambou et support)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

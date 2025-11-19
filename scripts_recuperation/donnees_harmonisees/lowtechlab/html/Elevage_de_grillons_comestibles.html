@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Elevage de grillons comestibles</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Elevage de grillons comestibles</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/b/bb/Elevage_de_grillons_comestibles_NDM-CricketBreeding-IMG_7176_Sidonie_Frances_-_Low-tech_Lab.jpg/ia-77bc03c282dcce4cb6c6db3a9839cf7b-px-Elevage_de_grillons_comestibles_NDM-CricketBreeding-IMG_7176_Sidonie_Frances_-_Low-tech_Lab.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Description et intérêts d'un élevage de grillons comestibles.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les intérêts d'un élevage d'insectes comestibles pour l'homme :<ul><li>Nutrition :</li></ul></p>
+      
+        <p>Les insectes sont intéressants dans la recherche de nouvelles sources de protéines et offrent des alternatives à notre mode de consommation traditionnelle peu durable . L’apport énergétique du grillon est 120 kcal/100 g poids frais et sa teneur moyenne en protéine est 8-25 g/100 g masse en frais. (source : FAO). Le grillon se révèle être une très bonne source de protéines, d’acides gras oméga 3 et 6, et de minéraux: fer, zinc, magnésium, cuivre,...<ul><li>Ecologie/Economie :</li></ul></p>
+      
+        <p>L’élevage d’insectes demande moins d’eau et d’aliments qu’un élevage de bovins, ovins et porcins : leur capacité de conversion des aliments (capacité d’un animal à convertir un poids donné d’aliments en masse corporelle, représentée en kg d’aliment par kg de gain de poids de l’animal) est supérieur à celles des élevages cités précédemment. A titre d'exemple, il faut 10 kg d'aliments pour produire 1 kg de viande bovine alors qu'il faut 1,7 kg d'aliments pour produire 1 kg de grillons.</p>
+      
+        <p>La quantité de gaz à effets de serres produits par les élevages d’insectes est nettement inférieure à celle du bétail. D'un point de vue logistique, l’élevage de grillons a de nombreux avantages par rapport aux élevages de gros bétails: la surface de terre occupée est moindre, possible en milieu urbain. Le faible besoin d’investissement dans les infrastructures peut permettre aux populations plus démunis de démarrer des micros élevages, ils peuvent être élevés sur des substrats constitué de déchets agricole et alimentés avec des sous-produits organiques.</p>
+      
+        <p>A noter :</p>
+      
+        <p>L'élevage qui est réalisé dans ce tutoriel est actuellement en cours de test dans le cadre de l’expédition Nomade des Mers</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 month(s) mois &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Elevage_de_grillons_comestibles" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Elevage_de_grillons_comestibles</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Boîte étanche</li><li>Cartons : type plateau oeufs</li><li>Un verre en plastique</li><li>2 récipients (coupelle)</li><li>Un plateau</li><li>Grillage fin</li><li>Fibre de coco ou matière sèche broyée</li><li>Aliments pour les grillons ( ici blé concassé finement)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Boite d'élevage étanche aux insectes</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Elevage_de_grillons_comestibles_IMG_0928.JPG/800px-Elevage_de_grillons_comestibles_IMG_0928.JPG' alt='Elevage de grillons comestibles IMG 0928.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Elevage_de_grillons_comestibles_IMG_0929.JPG/800px-Elevage_de_grillons_comestibles_IMG_0929.JPG' alt='Elevage de grillons comestibles IMG 0929.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Acheter ou réaliser un bac d'élevage étanche aux insectes. Dans le cas d'une fabrication, il est possible de s'inspirer de ce tuto.</li></ul></li><li>Remarques:</li><li>1) Dans notre cas, le bac d'élevage fait 1m * 0,5m sur 0,5m de hauteur.</li><li>2) Le bac ne doit pas être étanche à l'air pour que l'oxygène puisse circuler.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Aménagement intérieur de la boîte d'élevage.</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bf/Elevage_de_grillons_comestibles_IMG_0931.JPG/800px-Elevage_de_grillons_comestibles_IMG_0931.JPG' alt='Elevage de grillons comestibles IMG 0931.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e4/Elevage_de_grillons_comestibles_IMG_0936.JPG/800px-Elevage_de_grillons_comestibles_IMG_0936.JPG' alt='Elevage de grillons comestibles IMG 0936.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1c/Elevage_de_grillons_comestibles_IMG_0938.JPG/800px-Elevage_de_grillons_comestibles_IMG_0938.JPG' alt='Elevage de grillons comestibles IMG 0938.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ee/Elevage_de_grillons_comestibles_IMG_0937.JPG/800px-Elevage_de_grillons_comestibles_IMG_0937.JPG' alt='Elevage de grillons comestibles IMG 0937.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/be/Elevage_de_grillons_comestibles_IMG_1025.JPG/800px-Elevage_de_grillons_comestibles_IMG_1025.JPG' alt='Elevage de grillons comestibles IMG 1025.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Disposer les cartons d’œufs dans la boîte de façon à laisser un espace entre chaque cartons.</li><li>Réaliser un abreuvoir, type abreuvoir à poule avec un verre d'eau en plastique dans une coupelle tapissée d'un grillage pour laisser une espace entre la coupelle et le verre ( il ne faut pas qu'il y ait trop d'eau au risque de noyer les grillons).</li><li>Disposer un plateau sur les cartons d’œufs suffisamment grand pour accueillir l'abreuvoir et l'aliments destinés aux grillons.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Le pondoir</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dc/Elevage_de_grillons_comestibles_IMG_0947.JPG/800px-Elevage_de_grillons_comestibles_IMG_0947.JPG' alt='Elevage de grillons comestibles IMG 0947.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Dans une petite boite ouverte placé de la fibre de coco humide. Elle sera mise en service lors de la période de reproduction, les grillons viendront pondre dedans.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fonctionnement de l'élevage de grillons</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Se procurer des grillons d'espèces comestibles, sur internet ou en animalerie. Attendre la deuxième génération avant de les consommer s'ils proviennent d'animalerie.</li><li>Nourrir les grillons avec du blé concassé ou toutes autres céréales réduites en poudre ainsi que des déchets végétaux (épluchures, etc).</li><li>Lorsque les grillons se mettent à chanter (45 jours pour l'espèce de ce tuto), ils sont à maturité et entament la période de reproduction:</li></ul></li><li>Placer le pondoir dans la boîte étanche en humidifiant légèrement la fibre.<ul><li>Laisser le pondoir durant 3 jours avec les adultes, les femelles viendront y pondre tant que la fibre de coco sera humide.</li><li>Retirer les grillons adultes au bout de 3 jours.</li><li>Ébouillanter les grillons avant de les consommer. Cela permet d'éliminer les éventuelles bactéries ou parasites présents dans les grillons, comme pour de la viande classique.</li><li>Il y a différentes façon de consommer les grillons, (la suite à venir)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Transformation / Consommation</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Ébouillanter les grillons avant de les consommer. Cela permet d'éliminer les éventuelles bactéries ou parasites présents dans les grillons, comme pour de la viande classique.</li></ul></li><li>Remarques :</li><li>1) Il est possible de les consommer en l'état.</li><li>2) Un séchage permet une conservation de plusieurs semaines/mois.</li><li>3) Une réduction en poudre, incorporer à de la farine classique permet les blocage lié aux codes culturels.</li><li>4) Bientôt de plus amples informations sur l'élevage et la consommation.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

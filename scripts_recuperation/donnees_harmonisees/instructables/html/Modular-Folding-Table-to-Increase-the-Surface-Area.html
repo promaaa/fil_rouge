@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Modular Folding Table to Increase the Surface Area of a Walker and Provide Improved Storage Options.</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Modular Folding Table to Increase the Surface Area of a Walker and Provide Improved Storage Options.</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FT4/GWMT/KY4EUSHN/FT4GWMTKY4EUSHN.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>A cooperation between Howest, D4E1 and several Belgian care centers tasked the students of Howest to create custom solutions for their appointed clients problems. The solutions should not only be affordable but also DIY-proof so that it could easily be altered and created by all interested parties. To allow all people to use this solution we created a modular design that allows all parts to be changed to the dimensions of the users walker.</p>
+      
+        <p>The client that was appointed to us uses her walker everyday and likes to carry around a lot of items throughout the day using the provided surface area as well as the provided basket in the front. Due to her high energy levels the large storage capabilities have become a danger to herself and even other inhabitants. When our user wants to show something she found that the surface area was to small to be used efficient. This surface also did not allow for storage of small objects due to the fact that they would shake off while walking on uneven surfaces.</p>
+      
+        <p>This led us to a certain set of demands that we were able to incorporate into our design as can be seen in the video above.</p>
+      
+        <p>List of demands:</p>
+      
+        <p>Team members:</p>
+      
+        <p><ul><li>Increase surface area</li><li>Provide storage for papers and pictures</li><li>Provide storage for small objects</li></ul></p>
+      
+        <p><ul><li>Create a minimal of sharp edges.</li><li>Prevent visibility as little as possible.</li><li>Make the product removable (transportation)</li><li>Allow for one handed operation (safety)</li></ul></p>
+      
+        <p><ul><li>Jorunn Gadeyne (Occupational therapist)</li><li>Yarne Roosenbroeck (Product designer)</li><li>Maxime De Rammelaere (Product designer)</li></ul></p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Modular-Folding-Table-to-Increase-the-Surface-Area/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Modular-Folding-Table-to-Increase-the-Surface-Area/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>3D Model of the handle</li><li>3D Model of the table and the drawings</li><li>Decision matrix of materials (pictures)</li><li>Wood and super glue</li><li>Stapler</li><li>Screwdriver</li><li>Knife</li><li>Sandpaper</li><li>Acces to a makerspace.</li><li>To allow you to alter the model to your own specific needs we provide all the drawings and models relating to this project. All these designs can be altered by changing the measurements that you can take from your own walker. By simply adding these in the parameter table the drawings and models will change in one go.</li><li>In the step by step plan we will show how you can use these drawings to create templates, CNC-paths or 3d printer ready files.</li><li>As for necessary hardware the list is very limited:</li><li>The materials that you will need for this project however can be decided using the provided matrixes. The selection of these materials will be shared in a following step.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Measuring</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FT9/PTI2/KY4EUP05/FT9PTI2KY4EUP05.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Measuring' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>First off all we measure the existing walker and write down all the measurements that we need as shown in the picture.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Adaptation</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FCS/9B3T/KY4EUP1F/FCS9B3TKY4EUP1F.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adaptation' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6V/PS8V/KY4EUP1G/F6VPS8VKY4EUP1G.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Adaptation' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>We take these measurements and fill them into the right places in the parameter sheet. This can be done in the design environment of Fusion360. By altering these measurements the models will be changed to suit your personal needs.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Preparation</strong><p><strong>Étapes :</strong></p><ol><li>Print out the different templates or generate the different drawings that are needed for the particular machine that is going to be used in your production.<ul><li>Laser cutting: RGB line drawing can be created by exporting drawings in the modeling environment. The owner or operator of this machine will be able to give you detailed information on what particular requirements the drawing should have for the machine in question.</li><li>CNC milling: Fusion360 provides the possibility to export the required code for milling operations on different machines. The operator of the machine will be able to give you information regarding the creation of this code or will be able to do it for you.</li><li>Manual production: Line drawings can exported from Fusion by using the drawing functionality. Not only can you choose different formats, you can also chose what information to show in these drawings. Seeing as Fusion 360 is a commonly used free program a lot of information, in the form of tutorials, can be found online.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Acquisition</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FH6/LKOJ/KY4EUPD3/FH6LKOJKY4EUPD3.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Acquisition' loading='lazy'></figure><figure><img src='https://content.instructables.com/FRR/SYK3/KY4EUPD2/FRRSYK3KY4EUPD2.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Acquisition' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3G/AUUK/KY4EUPD6/F3GAUUKKY4EUPD6.png?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Acquisition' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJQ/5AKV/KY4EUPDZ/FJQ5AKVKY4EUPDZ.png?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Acquisition' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>After going through the material matrix and writing down all the necessary materials you should go online or the appropriate shops to get all the needed materials.</li><li>A simple hardware store near you should have all the needed materials you are looking for ordering online is also a good option but will take more time.</li><li>The materials we chose are visible in the picture above, they were the best fit for our requirements and budget. You should however choose the materials that suit you best.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Production</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/F0W/L2HZ/KY4EUQ20/F0WL2HZKY4EUQ20.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Production' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2I/C8B2/KY4EUQ1Z/F2IC8B2KY4EUQ1Z.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Production' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYY/1NPD/KY4EUQ1W/FYY1NPDKY4EUQ1W.png?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Production' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>When all the materials are gathered we can cut out the forms we need on the Laser cutting table. However the forms can also be created with a CNC machine or a regular handsaw. Use whatever is at your disposal. The 3D-printed parts are comprised of simple geometry and should be able to be printed on all 3D printers regardless of the settings.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Gluing</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FBH/SVOU/KY4EUQ7K/FBHSVOUKY4EUQ7K.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Gluing' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBY/OW1G/KY4EUQE4/FBYOW1GKY4EUQE4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Gluing' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>After gathering all the sized parts and printing the others, we can start the assembly:</li><li>Start by gluing the 2 parts of the table (Table1 and Table2). When using ABS the strongest connection can be made with acetone and chemically welding the pieces together. When using wood, like in this example regular wood glue is het best option. For other materials different sort of glues should be tested to get the best results.</li><li>After gluing the wooden parts we can use super glue to fix the acryl window to the wooden frame.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Outlining the Holes</strong><div class='step-images count-5'><figure><img src='https://content.instructables.com/F4S/XUCU/KY4EUQMH/F4SXUCUKY4EUQMH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Outlining the Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWF/2NL7/KY4EUQMI/FWF2NL7KY4EUQMI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Outlining the Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/F3X/8TC6/KY4EUQMJ/F3X8TC6KY4EUQMJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Outlining the Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/FS0/V1UE/KY4EUQMK/FS0V1UEKY4EUQMK.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Outlining the Holes' loading='lazy'></figure><figure><img src='https://content.instructables.com/F9S/808Z/KY4EUQML/F9S808ZKY4EUQML.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Outlining the Holes' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>By aligning the 2 table parts next to each other we can align the hinges and mark where we will have to drill the screw holes. (own preference)</li><li>The same process can be done for the bracket holes. (own preference)</li><li>Turn the ground part around and draw out the locations of the rubber feet and the needed screw holes. (own preference)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Step 8: Finishing the Main Body</strong><div class='step-images count-7'><figure><img src='https://content.instructables.com/FT3/VQ42/KY4EUQTB/FT3VQ42KY4EUQTB.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing the Main Body' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1W/C63E/KY4EUQTC/F1WC63EKY4EUQTC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing the Main Body' loading='lazy'></figure><figure><img src='https://content.instructables.com/FY2/2MZY/KY4EUQTD/FY22MZYKY4EUQTD.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing the Main Body' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZE/GGP1/KY4EUQTE/FZEGGP1KY4EUQTE.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing the Main Body' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMA/ZOMD/KY4EUQTG/FMAZOMDKY4EUQTG.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing the Main Body' loading='lazy'></figure><figure><img src='https://content.instructables.com/FYI/8UF3/KY4EUQTH/FYI8UF3KY4EUQTH.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing the Main Body' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLW/AYTH/KY4EUQTI/FLWAYTHKY4EUQTI.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing the Main Body' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>After marking out all the holes and pre-drilling them, making sure not to go through the material, some sanding will make the parts look nicer. After that firstly attach the rubber feet on the bottom, then continue on with the hinges finally install the hinges with the bolts and nuts inserted into them (seen in picture).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Step 9: Creating the Basket</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FI8/8EZ6/KY4EUR5L/FI88EZ6KY4EUR5L.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Creating the Basket' loading='lazy'></figure><figure><img src='https://content.instructables.com/FAP/H5Z9/KY4EUR5J/FAPH5Z9KY4EUR5J.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Creating the Basket' loading='lazy'></figure><figure><img src='https://content.instructables.com/FIN/KGUX/KY4EUR5K/FINKGUXKY4EUR5K.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Creating the Basket' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Now that the main body is done we can get started on the basket.</li><li>Start by drawing out the template on the plastic sheet.</li><li>After cutting it out and scratching in the necessary bending lines the whole table can be stapled or stitched together. The big lip in the front should be folded over and closed off. This will create a tunnel in which the rubber band will glide to close the basket. Make sure the rubber band does not get stuck inside this tunnel as this will greatly diminish the functionality of the product.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Step 10: Attaching Basket</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/F2X/S8Y1/KY4EURE5/F2XS8Y1KY4EURE5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching Basket' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHB/PKIZ/KY4EURE6/FHBPKIZKY4EURE6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching Basket' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMS/HTNX/KY4EURE7/FMSHTNXKY4EURE7.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching Basket' loading='lazy'></figure><figure><img src='https://content.instructables.com/FON/FMJY/KY4EURE8/FONFMJYKY4EURE8.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching Basket' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Once everything is folded and closed-up the basket can be attached to the table. This, in our table, was done by stamping staples into the wood. Due to the softness of the wood this gave a strong connection without too much effort.</li><li>To make this step easier you can remove the hinge and later reattach it.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Step 11: Attaching Grip</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FI7/RY5J/KY4EUS80/FI7RY5JKY4EUS80.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching Grip' loading='lazy'></figure><figure><img src='https://content.instructables.com/F6S/XJVG/KY4EUS81/F6SXJVGKY4EUS81.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Attaching Grip' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>By simply punching some holes through the rubber band we can attach the flexible grip with some screws.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Step 12: Tension Band</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FSU/0EA1/KY4EUSD5/FSU0EA1KY4EUSD5.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Tension Band' loading='lazy'></figure><figure><img src='https://content.instructables.com/F7A/PN1O/KY4EUSD6/F7APN1OKY4EUSD6.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Tension Band' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>The final step is to add a rubber band across the surface of the 2 halves.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

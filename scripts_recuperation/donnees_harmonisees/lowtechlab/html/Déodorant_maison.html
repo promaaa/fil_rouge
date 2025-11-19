@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Déodorant maison</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Déodorant maison</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/0/0d/D%C3%A9odorant_maison_d_odorant-fait-maison-vegan-naturel-1080x720.jpg/800px-D%C3%A9odorant_maison_d_odorant-fait-maison-vegan-naturel-1080x720.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Recettes rapides, économiques et écologiques de déodorant maison.</div>
+        
+      </div>
+    
+    
+      
+        <p>Les déodorants sont des produits que nous sommes nombreux à utiliser au quotidien. Or les déodorants industriels sont de plus en plus controversés. S'ils sont montrés du doigt régulièrement, c'est que la plupart sont composés de substances chimiques, pour certaines potentiellement cancérigènes, allergènes et à l'origine de troubles hormonaux. N'hésitez pas à aller consulter ce site de consommateurs pour savoir comment est évalué le déodorant que vous utilisez actuellement.</p>
+      
+        <p>Dans les composés chimiques à risques, deux familles sont en particulier controversées : les sels d'aluminiums et les parabènes.</p>
+      
+        <p>- Chlorhydrate d’aluminium : c’est sous ce nom que les sels d’aluminium apparaissent dans la formule de votre déodorant. Ces microparticules ont la propriété de fermer les pores par lesquels s’écoule la sueur, et donc de stopper la production de transpiration. Outre le fait que bloquer ce phénomène, et donc empêcher l'autorégulation thermique du corps, est dangereux, les sels d'aluminiums sont suspectés par plusieurs études d'être à l'origine de cancers du sein.</p>
+      
+        <p>- Les parabènes sont les conservateurs que l’on ajoute à la plupart des produits cosmétiques, pharmaceutiques et industriels. Des études sont en cours depuis des années pour vérifier leurs effets nocifs sur la peau et leur implication possible dans l'apparition de cancers du sein, en raison de leurs propriétés œstrogéniques (perturbateurs endocriniens).</p>
+      
+        <p>Si l'odeur des aisselles est parfois désagréable, c'est que ces "plis" constituent un environnement particulièrement propice au développement de bactéries, responsables de ces odeurs. Plutôt que de bloquer la sudation, mieux vaut empêcher le développement de ces bactéries par l'utilisation d'antibactériens naturels.</p>
+      
+        <p>On vous propose dans ce tutoriel 5 recettes saines, pratiques, efficaces, économiques et écologiques pour réaliser votre déodorant maison.</p>
+      
+        <p>Versions solides :</p>
+      
+        <p>Versions liquides (pulvérisateur, roll ou gouttes) :</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 10 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Déodorant_maison" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Déodorant_maison</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Déodorant baume (Hiver- liquide au dessus de 25°C)<ul><li>4 c-à-s / 50g d’huile de coco</li><li>2 c-à-s / 25g de bicarbonate de sodium (le plus fin possible)</li><li>2 c-à-s / 25g de fécule de maïs ou arrow-root</li><li>10 gouttes d’huile essentielle de palmarosa</li></ul></li><li>Déodorant solide (Été)<ul><li>3 c-à-s / 40g d’huile de coco</li><li>10 g de cire d'abeille ou 5g de cire de candelilla)</li><li>2 c-à-s / 25g de bicarbonate de sodium (le plus fin possible)</li><li>2 c-à-s / 25g de fécule de maïs ou arrow-root</li><li>10 gouttes d’huile essentielle de palmarosa</li></ul></li><li>Pour un déodorant solide encore plus hydratant il est possible de remplacer les 3c-à-s d'huile de coco par 2c-à-s d'huile de coco et 1c-à-s de beurre de karité</li><li>Déodorant liquide au bicarbonate<ul><li>Environ 1/8ème du volume du pulvérisateur de bicarbonate</li><li>De l'eau pour compléter</li><li>Optionnel : 4-8 gouttes d'huile essentielle de tea-tree ou palmarosa</li></ul></li><li>Déodorant liquide au vinaigre<ul><li>50% de volume de vinaigre de cidre (ou 25% de vinaigre blanc)</li><li>50% de volume d'eau (et 75% d'eau)</li><li>Optionnel : 4-8 gouttes d'huile essentielle de tea-tree ou palmarosa</li></ul></li><li>Déodorant roll-on<ul><li>1 càc de bicarbonate très fin</li><li>1/2 càc d'argile</li><li>1 pincée de maïzena ou gomme guar (pour l'effet gel)</li><li>50% d'eau de chaux</li><li>50% d'eau</li><li>Optionnel : 4-8 gouttes d'huile essentielle de tea-tree ou palmarosa</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Bocaux en verre pour le stockage des ingrédients</li><li>Saladier pour le mélange</li><li>Cuillère à soupe</li><li>Cuillère à café</li><li>Petit pot en verre conserver le déodorant</li><li>Balance</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Détails sur les ingrédients</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Bicarbonate de sodium de qualité alimentaire : Utilisé ici pour son action désodorisante, il peut-être utilisé pour une multitude d'emplois (produit d'entretien, désodorisant, anti brûlures d'estomac, blanchissement des dents...) . Fabriqué à partir de calcaire et de sel. Peut provoquer des irritations chez certaines personnes. Peut être remplacé dans de l'argile blanche dans ce cas. Compter ~3-4 euros/kg</li><li>Vinaigre de cidre ou vinaigre blanc : utilisés comme désodorisant. Possède la capacité de supprimer les odeurs existantes et de réduire la force des bactéries produisant les mauvaises odeurs.</li><li>Fécule de maïs ou l’arrow-root (= fécule de rhizome de la maranta) : sont deux absorbants naturels. Ils serviront également à lier le produit.</li><li>Huile de coco : Utilisé ici pour ses propriétés hydratantes et antibactériennes.</li><li>Huile essentielle de Tea Tree : utilisées pour ses propriétés antibactériennes et sa forte odeur pour retarder puis masquer les "mauvaises odeurs" de sudation.</li><li>Huile essentielle de Palmarosa : À favoriser pour ses propriétés antibactérienne et antifongique.</li><li>Cire d'abeille : Utilisé à la fois pour ses propriétés hydrophobes et antibactériennes, sa haute température de fusion (63°C) permet au déodorant de rester solide en toute circonstance.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fabrication des déodorants à base d'huile de coco</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6c/D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_33_.JPG/800px-D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_33_.JPG' alt='Déodorant maison 20190622 TUTPS COSMETIQUES 33 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2e/D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_34_.JPG/800px-D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_34_.JPG' alt='Déodorant maison 20190622 TUTPS COSMETIQUES 34 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/99/D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_35_.JPG/800px-D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_35_.JPG' alt='Déodorant maison 20190622 TUTPS COSMETIQUES 35 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ef/D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_36_.JPG/800px-D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_36_.JPG' alt='Déodorant maison 20190622 TUTPS COSMETIQUES 36 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/08/D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_37_.JPG/800px-D%C3%A9odorant_maison_20190622_TUTPS_COSMETIQUES_37_.JPG' alt='Déodorant maison 20190622 TUTPS COSMETIQUES 37 .JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Déodorant baume (hiver) :<ul><li>Ajouter l'huile de coco liquide (préalablement fondue près d'une source de chaleur si besoin) au bicarbonate de sodium et à la fécule. Versez 10 gouttes d'huile essentielle de palmarosa.</li><li>Bien mélanger le tout pour le rendre bien homogène.</li><li>Couler le tout dans un petit pot/contenant en verre.</li><li>Mettre le tout au réfrigérateur pour qu'il se fige.</li></ul></li><li>Conserver à température ambiante. Appliquer avec le doigt sous les aisselles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Fabrication du déodorant à base de bicarbonate et d'eau</strong><p><strong>Étapes :</strong></p><ol><li>Prendre un petit format de vaporisateur permet de garder à portée de main toute la journée le déodorant en cas de besoins.<ul><li>Dissoudre un peu de bicarbonate dans l'eau. Attention à ne pas atteindre la saturation (limite où le bicarbonate ne se dissout plus) car la recristalisation risque de boucher le pulvérisateur. Si jamais vous atteignez ce cap, rajoutez un peu d'eau.</li><li>Compléter le volume du pulvérisateur avec ce liquide</li><li>ajouter en option 4-8 gouttes d'huile essentielle de tea tree ou palmarosa (ou autre suivant vos préférences). Pour une meilleure répartition de l'huile essentielle on peut ajouter un lichette d'alcool (qui servira de liant, les huille essentielles n'étant pas miscibles dans l'eau)</li></ul></li><li>Pour parfumer vous pouvez remplacer l'eau par de l'hydrolat</li><li>Bien secouer avant utilisation.</li><li>Conservation plusieures semaines/mois sans besoin de frigo.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fabrication du déodorant à base de vinaigre et d'eau</strong><p><strong>Étapes :</strong></p><ol><li>Prendre un petit format de vaporisateur permet de garder à portée de main toute la journée le déodorant en cas de besoins.<ul><li>Verser dans un flacon 50% d'eau et 50% de vinaigre de cidre</li><li>OU verser 25% de vinaigre blanc et 75% de volume en eau</li><li>ajouter en option 4-8 gouttes d'huile essentielle de tea tree ou palmarosa (ou autre suivant vos préférences).</li></ul></li><li>Pour parfumer vous pouvez remplacer l'eau par de l'hydrolat.</li><li>Attention, la présence d'acide et d'alcool du vinaigre peut irriter après rasage ou épilation.</li><li>Conservation plusieures semaines/mois sans besoin de frigo.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Fabrication du déodorant roll-on</strong><p><strong>Étapes :</strong></p><ol><li>Dans un petit bol mélanger les ingrédients :<ul><li>1 càc de bicarbonate très fin</li><li>1/2 càc d'argile</li><li>1 pincée de maïzena ou gomme guar</li><li>En option 2 gouttes d'huile essentielle</li><li>après avoir mélangé les ingrédients secs ajouter selon le volume du roll, 50% d'eau et 50% d'eau de chaux.</li></ul></li><li>Bien agiter avant utilisation.</li><li>Conservation plusieures semaines/mois sans besoin de frigo.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

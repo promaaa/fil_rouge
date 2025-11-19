@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Boitier d'apprentissage du BRAILLE</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Boitier d'apprentissage du BRAILLE</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/4/4c/Boitier_d_apprentissage_du_BRAILLE_IMG_8518.JPG/800px-Boitier_d_apprentissage_du_BRAILLE_IMG_8518.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce projet a pour but de faciliter l'apprentissage du braille à travers un boîtier interactif contrôlé par reconnaissance vocale, synthèse vocale . Il utilise des servomoteurs pour afficher les caractères en braille, et propose deux modes d'apprentissage différents. Il a été réalisé dans le cadre du projet de terminale STI2D.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce projet consiste en la réalisation d’un boîtier interactif permettant l’apprentissage du braille, à destination des personnes non-voyantes ou malvoyantes ou toutes personnes voulant apprendre le braille. Conçu dans le cadre d’un projet de Terminale STI2D, ce dispositif utilise des servomoteurs, un Raspberry Pi, et un système de reconnaissance vocale pour traduire des lettres en braille physique.</p>
+      
+        <p>Le boîtier propose deux modes d’apprentissage :</p>
+      
+        <p>-Un mode où l’utilisateur prononce une lettre, et le système la répète à voix haute avant de l’afficher en braille tactile.</p>
+      
+        <p>-Un mode aléatoire où le boîtier choisit une lettre, la prononce, et laisse l’utilisateur deviner.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 72 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 180 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Boitier_d_apprentissage_du_BRAILLE" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Boitier_d_apprentissage_du_BRAILLE</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>-1 raspberry pi 3</li><li>-6 servo moteurs</li><li>-1 shield Grove raspberry pi (Module Grove Base Hat 103030275)</li><li>-6 câbles Groves</li><li>-1 haut parleur (Module haut-parleur SKU00101)</li><li>-2 Câbles femelle femelle</li><li>-1 microphone (Microphone dongle USB ADA3367)</li><li>-1 Cordon Jack CA35M</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Installer le module pour créer un environnement virtuel</strong><p><strong>Étapes :</strong></p><ol><li>Si ce n’est pas déjà fait, installez le package python3-venv qui permet de créer un environnement virtuel Python :</li><li>sudo apt install python3-venv</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Créer et activer un environnement virtuel</strong><p><strong>Étapes :</strong></p><ol><li>Placez-vous dans le dossier où vous souhaitez créer votre projet (par exemple, ~/mon_projet_braille) avec la commande :</li><li>cd ~/mon_projet_braille</li><li>Puis créez un environnement virtuel en remplaçant nom_de_lenvironnement par le nom que vous souhaitez donner à cet environnement :</li><li>python3 -m venv nom_de_lenvironnement</li><li>Activez ensuite cet environnement avec la commande :</li><li>source nom_de_lenvironnement/bin/activate</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Installer les bibliothèques Python nécessaires</strong><p><strong>Étapes :</strong></p><ol><li>Avec l’environnement virtuel activé, installez les bibliothèques suivantes :</li><li>pip install vosk pyaudio numpy</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Installer les dépendances système pour PyAudio</strong><p><strong>Étapes :</strong></p><ol><li>PyAudio nécessite des paquets système spécifiques pour fonctionner avec le microphone. Installez-les avec :</li><li>sudo apt install portaudio19-dev python3-pyaudio</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Installer le modèle Vosk pour la reconnaissance vocale</strong><p><strong>Étapes :</strong></p><ol><li>Pour que Vosk puisse effectuer la reconnaissance vocale en français, il faut télécharger et décompresser un modèle de langue.</li><li>Téléchargez le modèle ici :</li><li>https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip</li><li>Puis décompressez-le avec la commande :</li><li>unzip vosk-model-small-fr-0.22.zip</li><li>Ensuite mettez le modèle dans le même dossier que votre script Python.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Désactiver l’environnement virtuel (optionnel)</strong><p><strong>Étapes :</strong></p><ol><li>Lorsque vous avez fini d’installer les bibliothèques et de travailler dans l’environnement virtuel, vous pouvez le désactiver avec la commande :</li><li>deactivate</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Code</strong><p><strong>Étapes :</strong></p><ol><li>Ce programme Python tourne sur un Raspberry Pi et permet de piloter les 6 servomoteurs qui affichent les lettres en braille, selon les commandes vocales de l'utilisateur.</li><li>Le système fonctionne en deux modes :</li><li>-Un mode d’apprentissage : l’utilisateur dit une lettre, elle est reconnue, prononcée et affichée en braille.</li><li>-Un mode test : le système choisit aléatoirement des lettres à afficher pour entraîner l’utilisateur.</li><li>Le code gère :</li><li>-la configuration des moteurs via les broches GPIO,</li><li>-la reconnaissance vocale (grâce au module Vosk),</li><li>-la synthèse vocale (avec espeak),</li><li>-la gestion des différents modes.</li><li>Ce script permet donc d’assurer à la fois l’interaction avec l’utilisateur, le traitement de la voix, et l’affichage mécanique du braille.</li><li>from vosk import Model, KaldiRecognizer</li><li>import pyaudio</li><li>import json</li><li>import RPi.GPIO as GPIO</li><li>import time</li><li>import subprocess</li><li>import random</li><li>import logging</li><li>import os</li><li>import sys</li><li># Configuration du système de journalisation<ul><li>logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')</li><li>logger = logging.getLogger(__name__)</li></ul></li><li># Chemins de configuration - à ajuster selon votre environnement<ul><li>MODEL_PATH = os.getenv("VOSK_MODEL_PATH", "/home/sin2025/models/vosk-model-small-fr-0.22")</li><li>AUDIO_PATH = os.getenv("AUDIO_PATH", "/home/sin2025/ressources")</li></ul></li><li># Configuration des GPIO pour les servomoteurs<ul><li>servo_pins = [18, 26, 16, 24, 5, 22]</li></ul></li><li># Définition des positions des servos pour représenter les lettres en braille<ul><li>definitions_braille = {</li></ul></li><li>"A": [1, 0, 0, 0, 0, 0], "B": [1, 1, 0, 0, 0, 0],</li><li>"C": [1, 0, 0, 1, 0, 0], "D": [1, 0, 0, 1, 1, 0],</li><li>"E": [1, 0, 0, 0, 1, 0], "F": [1, 1, 0, 1, 0, 0],</li><li>"G": [1, 1, 0, 1, 1, 0], "H": [1, 1, 0, 0, 1, 0],</li><li>"I": [0, 1, 0, 1, 0, 0], "J": [0, 1, 0, 1, 1, 0],</li><li>"K": [1, 0, 1, 0, 0, 0], "L": [1, 1, 1, 0, 0, 0],</li><li>"M": [1, 0, 1, 1, 0, 0], "N": [1, 0, 1, 1, 1, 0],</li><li>"O": [1, 0, 1, 0, 1, 0], "P": [1, 1, 1, 1, 0, 0],</li><li>"Q": [1, 1, 1, 1, 1, 0], "R": [1, 1, 1, 0, 1, 0],</li><li>"S": [0, 1, 1, 1, 0, 0], "T": [0, 1, 1, 1, 1, 0],</li><li>"U": [1, 0, 1, 0, 0, 1], "V": [1, 1, 1, 0, 0, 1],</li><li>"W": [0, 1, 0, 1, 1, 1], "X": [1, 0, 1, 1, 0, 1],</li><li>"Y": [1, 0, 1, 1, 1, 1], "Z": [1, 0, 1, 0, 1, 1]</li><li>}</li><li># Vocabulaire de reconnaissance vocale avec correspondances phonétiques<ul><li>mots_vers_lettres = {</li></ul></li><li>"ah": "A", "a": "A",</li><li>"mais": "B", "b": "B",</li><li>"c'est": "C", "c": "C",</li><li>"des": "D", "d": "D",</li><li>"euh": "E", "eux": "E", "e": "E",</li><li>"f": "F",</li><li>"j'ai": "G", "g": "G",</li><li>"hache": "H", "h": "H",</li><li>"i": "I", "aïe": "I", "hey": "I",</li><li>"j": "J",</li><li>"k": "K", "ca": "K",</li><li>"l": "L", "elle": "L",</li><li>"m": "M",</li><li>"n": "N",</li><li>"o": "O", "oh": "O", "eau": "O",</li><li>"p": "P", "pet": "P", "paix": "P",</li><li>"q": "Q", "cul": "Q",</li><li>"r": "R", "air": "R",</li><li>"s": "S",</li><li>"the": "T", "t": "T",</li><li>"u": "U", "hu": "U",</li><li>"v": "V", "vais": "V",</li><li>"w": "W", "double v": "W",</li><li>"x": "X",</li><li>"y": "Y", "ii grec": "Y", "les grecs": "Y", "grec": "Y", "le grec": "Y",</li><li>"z": "Z",</li><li>"mode un": "Mode 1",</li><li>"mode deux": "Mode 2",</li><li>"mode de": "Mode 2",</li><li>"fin": "Fin"</li><li>}</li><li>class BrailleReader:</li><li>def __init__(self):</li><li># Initialiser les servomoteurs</li><li>self.initialize_servos()</li><li># Initialiser l'audio et la reconnaissance vocale</li><li>self.initialize_audio()<ul><li># Mode actuel de l'application (0 = sélection de mode, 1 = Mode 1, 2 = Mode 2)</li><li>self.current_mode = 0</li></ul></li><li># Indicateur si l'application est en cours d'exécution<ul><li>self.running = True</li></ul></li><li># Indicateur si le système est en train de parler<ul><li>self.is_speaking = False</li></ul></li><li># Heure de fin de la dernière synthèse vocale (pour éviter l'auto-écoute)<ul><li>self.last_speech_time = 0</li></ul></li><li># Délai minimum après synthèse vocale pour éviter l'auto-écoute (en secondes)<ul><li>self.speech_cooldown = 1.0</li></ul></li><li>logger.info("Lecteur Braille initialisé et prêt")</li><li>def initialize_servos(self):</li><li>"""Initialiser les GPIO et les servomoteurs"""</li><li>logger.info("Initialisation des GPIO et servomoteurs")</li><li># Nettoyer toutes les configurations GPIO précédentes</li><li>GPIO.cleanup()</li><li># Configurer le mode GPIO</li><li>GPIO.setmode(GPIO.BCM)</li><li># Initialiser les servomoteurs<ul><li>self.servos = []</li></ul></li><li>for pin in servo_pins:</li><li>GPIO.setup(pin, GPIO.OUT)<ul><li>servo = GPIO.PWM(pin, 50) # Fréquence PWM de 50Hz</li></ul></li><li>servo.start(0)</li><li>self.servos.append(servo)</li><li># Remettre tous les servos en position 0</li><li>self.reset_servos()</li><li>logger.info("Servomoteurs initialisés")</li><li>def initialize_audio(self):</li><li>"""Initialiser l'entrée audio et la reconnaissance vocale"""</li><li>logger.info("Initialisation de l'audio et de la reconnaissance vocale")</li><li>try:</li><li># Initialiser le modèle Vosk<ul><li>self.model = Model(MODEL_PATH)</li></ul></li><li># Créer la chaîne de vocabulaire à partir du dictionnaire mots_vers_lettres<ul><li>vocabulaire = "[ \"" + "\", \"".join(mots_vers_lettres.keys()) + "\" ]"</li></ul></li><li># Initialiser le reconnaisseur avec le vocabulaire<ul><li>self.rec = KaldiRecognizer(self.model, 44100, vocabulaire)</li></ul></li><li># Initialiser PyAudio<ul><li>self.p = pyaudio.PyAudio()</li><li>self.stream = self.p.open(</li><li>format=pyaudio.paInt16,</li><li>channels=1,</li><li>rate=44100,</li><li>input=True,</li><li>frames_per_buffer=8000</li></ul></li><li>)</li><li>self.stream.start_stream()</li><li>logger.info("Audio et reconnaissance vocale initialisés")</li><li>except Exception as e:</li><li>logger.error(f"Erreur lors de l'initialisation audio: {e}")</li><li>sys.exit(1)</li><li>def set_servo_angle(self, servo, angle):</li><li>"""Définir l'angle du servomoteur"""<ul><li>duty_cycle = (angle / 18) + 2</li></ul></li><li>servo.ChangeDutyCycle(duty_cycle)</li><li>time.sleep(0.3)</li><li>servo.ChangeDutyCycle(0)</li><li>def reset_servos(self):</li><li>"""Remettre tous les servos en position 0"""</li><li>for servo in self.servos:</li><li>self.set_servo_angle(servo, 0)</li><li>def afficher_braille(self, lettre):</li><li>"""Afficher une lettre en Braille en utilisant les servomoteurs"""</li><li>if lettre in definitions_braille:</li><li>for i in range(6):</li><li>self.set_servo_angle(</li><li>self.servos[i],</li><li>90 if definitions_braille[lettre][i] else 0</li><li>)</li><li>return True</li><li>return False</li><li>def speak_text(self, text):</li><li>"""Utiliser espeak pour convertir le texte en parole"""</li><li>try:</li><li># Marquer que nous commençons à parler<ul><li>self.is_speaking = True</li></ul></li><li># Mettre en pause la reconnaissance pour éviter l'auto-écoute<ul><li>self.toggle_recognition_stream(pause=True)</li></ul></li><li>subprocess.run(</li><li>["espeak", "-v", "fr", "-s", "200", "-p", "100", "-a", "1000", text],<ul><li>stdout=subprocess.DEVNULL,</li><li>stderr=subprocess.DEVNULL</li></ul></li><li>)</li><li># Enregistrer quand nous avons fini de parler<ul><li>self.last_speech_time = time.time()</li></ul></li><li># Marquer que nous avons fini de parler<ul><li>self.is_speaking = False</li></ul></li><li># Attendre un court délai avant de reprendre la reconnaissance</li><li>time.sleep(0.5) # Courte attente pour s'assurer qu'espeak est complètement terminé</li><li># Reprendre la reconnaissance<ul><li>self.toggle_recognition_stream(pause=False)</li></ul></li><li># Ajouter un délai pour éviter la reconnaissance immédiate (auto-écoute)</li><li>time.sleep(0.5)</li><li>except Exception as e:</li><li>logger.error(f"Erreur avec la synthèse vocale: {e}")<ul><li>self.is_speaking = False</li><li>self.toggle_recognition_stream(pause=False)</li></ul></li><li>def play_audio(self, file_name):</li><li>"""Lire un fichier audio en utilisant ffmpeg"""</li><li>try:</li><li># Marquer que nous commençons à parler<ul><li>self.is_speaking = True</li></ul></li><li># Mettre en pause la reconnaissance pour éviter l'auto-écoute<ul><li>self.toggle_recognition_stream(pause=True)</li><li>file_path = os.path.join(AUDIO_PATH, file_name)</li></ul></li><li>if os.path.exists(file_path):</li><li>subprocess.run(</li><li>["ffmpeg", "-i", file_path, "-f", "alsa", "default"],<ul><li>stdout=subprocess.DEVNULL,</li><li>stderr=subprocess.DEVNULL</li></ul></li><li>)</li><li>else:</li><li>logger.warning(f"Fichier audio introuvable: {file_path}")</li><li># Utiliser espeak comme solution de repli si le fichier n'est pas trouvé</li><li>self.speak_text(file_name.replace(".mp3", ""))</li><li># Enregistrer quand nous avons fini de parler<ul><li>self.last_speech_time = time.time()</li></ul></li><li># Marquer que nous avons fini de parler<ul><li>self.is_speaking = False</li></ul></li><li># Attendre un court délai avant de reprendre la reconnaissance</li><li>time.sleep(0.5)</li><li># Reprendre la reconnaissance<ul><li>self.toggle_recognition_stream(pause=False)</li></ul></li><li>except Exception as e:</li><li>logger.error(f"Erreur lors de la lecture audio: {e}")<ul><li>self.is_speaking = False</li><li>self.toggle_recognition_stream(pause=False)</li><li>def toggle_recognition_stream(self, pause=True):</li></ul></li><li>"""Mettre en pause ou reprendre le flux de reconnaissance audio"""</li><li>if pause:</li><li>self.stream.stop_stream()</li><li>else:</li><li>self.stream.start_stream()<ul><li>def recognize_speech(self, timeout=5):</li></ul></li><li>"""Écouter la parole et retourner le texte reconnu"""</li><li># Si nous sommes en train de parler ou venons de finir, ne pas écouter encore</li><li>if self.is_speaking:</li><li>return None</li><li># Vérifier si nous sommes encore dans la période de délai après avoir parlé</li><li>if time.time() - self.last_speech_time < self.speech_cooldown:</li><li>return None<ul><li>start_time = time.time()</li></ul></li><li>while time.time() - start_time < timeout:<ul><li>data = self.stream.read(4000, exception_on_overflow=False)</li></ul></li><li>if self.rec.AcceptWaveform(data):<ul><li>result = json.loads(self.rec.Result())</li></ul></li><li>if "text" in result and result["text"].strip():<ul><li>recognized_text = result["text"].lower()</li></ul></li><li>logger.debug(f"Recognized: {recognized_text}")</li><li>return recognized_text</li><li>return None</li><li>def mode_selection(self):</li><li>"""Interface de sélection du mode"""</li><li>logger.info("Entrée dans la sélection de mode")</li><li># Remettre les servos à zéro</li><li>self.reset_servos()</li><li># Message de bienvenue</li><li>self.speak_text("Bienvenue au système d'apprentissage de Braille")</li><li>self.speak_text("Dites Mode un ou Mode deux pour commencer")<ul><li>while self.current_mode == 0 and self.running:</li></ul></li><li># Écouter pour la sélection de mode<ul><li>recognized_text = self.recognize_speech()</li></ul></li><li>if recognized_text:</li><li>if recognized_text in mots_vers_lettres:<ul><li>command = mots_vers_lettres[recognized_text]</li></ul></li><li># Gérer la sélection de mode<ul><li>if command == "Mode 1":</li></ul></li><li>self.speak_text("Mode un sélectionné")<ul><li>self.current_mode = 1</li></ul></li><li>logger.info("Mode 1 sélectionné")<ul><li>elif command == "Mode 2":</li></ul></li><li>self.speak_text("Mode deux sélectionné")<ul><li>self.current_mode = 2</li></ul></li><li>logger.info("Mode 2 sélectionné")<ul><li>elif command == "Fin":</li></ul></li><li>self.speak_text("Au revoir")<ul><li>self.running = False</li></ul></li><li>else:</li><li>self.speak_text("Commande non reconnue")</li><li>else:</li><li>self.speak_text("Commande non reconnue")</li><li>def mode_1(self):</li><li>"""Mode 1: L'utilisateur dit une lettre, le système la prononce et l'affiche"""</li><li>logger.info("Démarrage du Mode 1")</li><li># Introduction pour le Mode 1</li><li>self.speak_text("Mode un. Dites une lettre, je vais la prononcer et l'afficher en braille")</li><li>self.speak_text("Dites fin pour revenir au menu principal")<ul><li>while self.current_mode == 1 and self.running:</li></ul></li><li># Attendre l'entrée d'une lettre<ul><li>recognized_text = self.recognize_speech()</li></ul></li><li>if recognized_text and not self.is_speaking:</li><li>if recognized_text in mots_vers_lettres:<ul><li>command = mots_vers_lettres[recognized_text]</li></ul></li><li># Vérifier si l'utilisateur veut sortir<ul><li>if command == "Fin":</li></ul></li><li>self.speak_text("Fin du mode un")<ul><li>self.current_mode = 0</li></ul></li><li>logger.info("Sortie du Mode 1")</li><li>break</li><li># Gérer l'affichage de la lettre<ul><li>if len(command) == 1 and command in definitions_braille:</li></ul></li><li>logger.info(f"Affichage de la lettre: {command}")</li><li># Afficher d'abord la lettre en braille</li><li>self.afficher_braille(command)</li><li># Puis prononcer la lettre avec reconnaissance désactivée pour éviter l'auto-écoute</li><li>self.speak_text(command)</li><li>else:</li><li>self.speak_text("Ce n'est pas une lettre valide")</li><li>else:</li><li>self.speak_text("Commande non reconnue")</li><li>def mode_2(self):</li><li>"""Mode 2: Le système affiche aléatoirement des lettres"""</li><li>logger.info("Démarrage du Mode 2")</li><li># Introduction pour le Mode 2</li><li>self.speak_text("Mode deux. Je vais afficher des lettres aléatoires en braille")</li><li>self.speak_text("Dites fin pour revenir au menu principal")<ul><li>while self.current_mode == 2 and self.running:</li></ul></li><li># Afficher une lettre aléatoire<ul><li>random_letter = random.choice(list(definitions_braille.keys()))</li></ul></li><li>logger.info(f"Affichage de la lettre aléatoire: {random_letter}")</li><li># Prononcer et afficher la lettre</li><li>self.afficher_braille(random_letter)</li><li>self.speak_text(random_letter)</li><li># Attendre un moment pour permettre à l'utilisateur de dire "fin" si nécessaire</li><li>time.sleep(2)</li><li># Vérifier les commandes vocales (même pendant la séquence d'affichage)<ul><li>recognized_text = self.recognize_speech(timeout=1)</li></ul></li><li>if recognized_text and recognized_text in mots_vers_lettres:<ul><li>command = mots_vers_lettres[recognized_text]</li><li>if command == "Fin":</li></ul></li><li>self.speak_text("Fin du mode deux")<ul><li>self.current_mode = 0</li></ul></li><li>logger.info("Sortie du Mode 2")</li><li>return</li><li>def cleanup(self):</li><li>"""Nettoyer les ressources à la sortie"""</li><li>logger.info("Nettoyage des ressources")</li><li># Remettre les servos à zéro</li><li>self.reset_servos()</li><li># Arrêter tous les servos</li><li>for servo in self.servos:</li><li>servo.stop()</li><li># Nettoyer les GPIO</li><li>GPIO.cleanup()</li><li># Arrêter et fermer le flux audio</li><li>if hasattr(self, 'stream'):</li><li>self.stream.stop_stream()</li><li>self.stream.close()</li><li># Terminer PyAudio</li><li>if hasattr(self, 'p'):</li><li>self.p.terminate()</li><li>logger.info("Nettoyage terminé")</li><li>def run(self):</li><li>"""Boucle principale de l'application"""</li><li>logger.info("Démarrage de l'application Lecteur Braille")</li><li>try:</li><li>while self.running:</li><li># Sélection de mode<ul><li>if self.current_mode == 0:</li></ul></li><li>self.mode_selection()</li><li># Mode 1<ul><li>elif self.current_mode == 1:</li></ul></li><li>self.mode_1()</li><li># Mode 2<ul><li>elif self.current_mode == 2:</li></ul></li><li>self.mode_2()</li><li>except KeyboardInterrupt:</li><li>logger.info("Application terminée par l'utilisateur")</li><li>except Exception as e:</li><li>logger.error(f"Erreur inattendue: {e}")</li><li>finally:</li><li>self.cleanup()<ul><li>if __name__ == "__main__":</li><li>reader = BrailleReader()</li></ul></li><li>reader.run()</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Branchement</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/3/33/Boitier_d_apprentissage_du_BRAILLE_branchement_servo.png' alt='Boitier d apprentissage du BRAILLE branchement servo.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/e/e8/Boitier_d_apprentissage_du_BRAILLE_1.png' alt='Boitier d apprentissage du BRAILLE 1.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Branchez les servo-moteurs comme sur la photo à gauche sur les broches D18, D26, D16, D24, D5, D22.</li><li>Branchez le haut parleur sur la prise jack et sur les broches du shield comme sur l'image.</li><li>Branchez le Microphone sur un port USB.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Conception SolidWorks</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/2/28/Boitier_d_apprentissage_du_BRAILLE_boitier_batterie.png' alt='Boitier d apprentissage du BRAILLE boitier batterie.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/5/5b/Boitier_d_apprentissage_du_BRAILLE_piece_millieux.png/800px-Boitier_d_apprentissage_du_BRAILLE_piece_millieux.png' alt='Boitier d apprentissage du BRAILLE piece millieux.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/b/b7/Boitier_d_apprentissage_du_BRAILLE_couvercle_boitier.png/800px-Boitier_d_apprentissage_du_BRAILLE_couvercle_boitier.png' alt='Boitier d apprentissage du BRAILLE couvercle boitier.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Afin d'avoir un support pour les composants assurez vous de crée un boitier dimensionné en fonction de vos composants :</li><li>- Premièrement crée un socle qui accueillera la source d'énergie (batterie externe)</li><li>- Ensuite crée un boite qui servira de pièce intermédiaire et qui accueillera la carte Raspberry pi avec son microphone</li><li>-Enfin crée un couvercle en vous assurant de laisser apparaitre la matrice 3*2 et des sortis de son pour le haut parleur</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Impression</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/a/a3/Boitier_d_apprentissage_du_BRAILLE_vitesse.png' alt='Boitier d apprentissage du BRAILLE vitesse.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/d/d2/Boitier_d_apprentissage_du_BRAILLE_adherence.png' alt='Boitier d apprentissage du BRAILLE adherence.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/4/44/Boitier_d_apprentissage_du_BRAILLE_impresion.png' alt='Boitier d apprentissage du BRAILLE impresion.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour matérialisé notre boitier conçu précédemment sur SolidWorks munissez vous d'une imprimante 3D et du logiciel cura. Configuré les paramètres d'impression des différentes partis du boitier (vitesse de la buse, support) et lancé l'impression.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Assemblage</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/3/3e/Boitier_d_apprentissage_du_BRAILLE_assemblage_boitier.png/800px-Boitier_d_apprentissage_du_BRAILLE_assemblage_boitier.png' alt='Boitier d apprentissage du BRAILLE assemblage boitier.png' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/46/Boitier_d_apprentissage_du_BRAILLE_carte.jpg/800px-Boitier_d_apprentissage_du_BRAILLE_carte.jpg' alt='Boitier d apprentissage du BRAILLE carte.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/3/3b/Boitier_d_apprentissage_du_BRAILLE_moteur.jpg/800px-Boitier_d_apprentissage_du_BRAILLE_moteur.jpg' alt='Boitier d apprentissage du BRAILLE moteur.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois toute les étapes précédente réalisé, placez tout les composant a leur place sans oublier des les fixer a l'aide de vis ou colle liquide, puis fermer le boitier à l'aide des clips précédemment fabriquer pendant l'étape "SOLIDWORKS "et testez votre système d'apprentissage du braille</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Conseils, erreurs à éviter et pistes d'amélioration</strong><p><strong>Étapes :</strong></p><ol><li>Lors de la réalisation du boîtier, il est important de bien tester chaque élément séparément avant de tout assembler. Les servomoteurs, le micro et le haut-parleur doivent être fonctionnels de manière indépendante pour éviter de perdre du temps en cas de problème. Il est aussi conseillé de bien calibrer les servos avant de fixer le couvercle ou les pièces internes, car un mauvais alignement peut fausser l'affichage en braille.</li><li>La reconnaissance vocale fonctionne mieux si le vocabulaire est restreint. Il est donc préférable de limiter les mots utilisés à ceux réellement nécessaires. De même, il faut penser à ajouter un petit délai après chaque message vocal pour éviter que le système ne se déclenche tout seul à cause de sa propre voix (problème de "self-listening").</li><li>Plusieurs erreurs sont à éviter. Par exemple, sous-estimer la puissance nécessaire pour les électroaimants peut mener à un système inefficace ou instable. C’est l’une des raisons pour lesquelles nous avons choisi les servomoteurs, plus simples à gérer. Autre point à surveiller : l’alimentation électrique. Si elle est mal dimensionnée, cela peut provoquer des coupures ou des bugs sur le Raspberry Pi. Il est aussi risqué de vouloir tout tester d’un coup sans passer par des essais progressifs, car cela rend le diagnostic des erreurs plus compliqué.</li><li>Pour améliorer le projet, plusieurs pistes sont possibles. Le site web (Mode 3), qui permet l'envoi de texte depuis un navigateur. On pourrait aussi imaginer un système avec batterie ou alimentation mobile pour rendre le boîtier totalement autonome. Enfin, des ajouts comme un retour sonore d’erreur ou des vibrations pourraient guider davantage l’utilisateur, surtout en cas de mauvaise commande.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Crédits</strong><p><strong>Étapes :</strong></p><ol><li>Le Ray Gabin T15</li><li>Sylvestre Valentin T15</li><li>Mur Damien T13</li><li>2025</li><li>Lycée le Likes Quimper</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

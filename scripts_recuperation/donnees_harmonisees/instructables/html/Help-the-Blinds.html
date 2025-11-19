@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Help Blind People</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Help Blind People</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FTU/KPUA/KZO50CAK/FTUKPUAKZO50CAK.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Hey :)</p>
+      
+        <p>We are two CS students from IDC Herzliya, Israel. As students, with the help of the academia, we want to help with research and learning for populations that are close to us and need help.</p>
+      
+        <p>We interviewed two blind, elderly people. We asked to know what difficulties they are experiencing during their daily routine and what problems they think we should try to solve, within our capabilities.</p>
+      
+        <p>This is how we came up with the idea of our project.</p>
+      
+        <p>Fortunately, we participated in an IoT course, led by Zvika Markfeld from the ForReal Team, and we gained the necessary tools in order to try to help others.</p>
+      
+        <p>As you can see in the video above, the device is set to help with 5 different daily-routine scenarios:</p>
+      
+        <p>Do you know a blind person? Try to build a similar device! We will guide you through the construction of our work.</p>
+      
+        <p>Please notice: We chose to focus on events that were important to our interviewees and ones that we thought we could resolve. Of course, the device is not suitable for everyone and there are those who might think that one should try to handle other events, for whatever reason. if that's how you feel, we urge you to contact us so that we can help you solve any problem, in the above field, with the help of the knowledge and experience we have acquired.</p>
+      
+        <p><ul><li>Dog feces (poop) detection device - When walking in public, it is often difficult for the blind to identify the location of their assistance dog feces.</li><li>Send Email to an expert at a relevant association, with a click of a button - Engaging with a professional, in any field, can be a challenging action for a blind person.</li><li>Post to a Facebook group of volunteers (+optional requests follow), with a click of a button - Communicating with volunteers can be challenging, so it's important to make the social networking capabilities accessible to blind people. If the creator of the device wants, he is able to track the number of requests of each user, using a dedicated Google sheet, and identify requests and exceptional quantities.</li><li>Get "Time to take medicine" notifications from Google calendar - Taking medication can be a challenging action if you do not receive appropriate alerts. With the help of our device, a blind person can be assisted by a volunteer who will enter the medication taking events in a dedicated Google calendar on his smartphone device and our device will alert the blind at the right times.</li><li>Get weather notifications every morning - Most often, the blind are unaware of the sight of the sky so it is important to be updated on the weather, without the need for unnecessary actions.</li></ul></p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Help-the-Blinds/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Help-the-Blinds/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Circuit Playground Express MK1000 board.</li><li>Battery Holder Container With Lead Cables.</li><li>3x AAA Battery.</li><li>Empty bottle.</li><li>Scissors.</li><li>Aluminum paper.</li><li>Masking foil.</li><li>Yarn.</li><li>Wooden stick.</li><li>Disposable foil pan, round one recommended.</li><li>Recommended: Sticker roll for decoration.</li><li>List of tools for hardware:</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Setting the Environment</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F5H/NVLI/KZO4ZKX9/F5HNVLIKZO4ZKX9.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Setting the Environment' loading='lazy'></figure><figure><img src='https://content.instructables.com/FD5/BUPJ/KZO4ZKXA/FD5BUPJKZO4ZKXA.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Setting the Environment' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Please make sure all those softwares and libraries are installed.</li><li>Arduino IDE</li><li>Integromat</li><li>Blynk<ul><li>Install Arduino IDE.</li><li>Install relevant "drivers" for the ESP8266 boards to your Arduino IDE.</li><li>Install Blynk, BlynkESP8266, and Circuit Playground Express libraries.</li><li>Sign up to Integromat.</li><li>Download the Blynk App from Google Play.</li><li>Sign up to Blynk via the App.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Dog Feces (Poop) Detection Device</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FND/H0KG/KZO4ZL00/FNDH0KGKZO4ZL00.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Dog Feces (Poop) Detection Device' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Prepare the hardware of the dog feces (poop) detection device:</li><li>It's ready! We recommend decorating and making the stick that will fit your desired design.</li><li>For testing it and the code, run the code and place the dog feces detection device over a hot glass of water, as we did in the above video:)<ul><li>Take the wooden stick and cover it with the sticker.</li><li>Put it aside for now, and take the bottle.</li><li>Take the scissors and cut the bottle in half,</li><li>Create 2 holes, in the sides of the bottle, that will be used by us later to connect the sensor and the housing of the batteries inside it with 2 pieces of yarn.</li><li>Take the scissors and cut 2 pieces of yarn.</li><li>Insert the batteries into the battery housing and connect it with the cable to the CXP</li><li>Take a piece of glue, and stick the flat side of the CXP to the battery housing.</li><li>Tie the CXP through the bottle holes with the wire to the CXP holes, making sure it is tied well, and nothing came out of the half of the bottle.</li><li>The pieces of wire that come out of the bottle will be glued with glue to ensure that the knot will not open.</li><li>Insert the part of the stick slightly into half of the bottle and stick well with the masking tape.</li><li>Turn the stick so that the bottle is in front of you, and cut 4 cuts along with a depth of an inch and a half.</li><li>Make a hole in the center of the disposable mold, half the length of the bottle. Put the bottle into it at a depth of an inch and a half, and bend the cut part inwards.</li><li>The folded parts will be glued and secured with masking tape.</li><li>Finally, cover the part where the stick was glued to the bottle and the bottle with aluminum foil.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: New Blynk Project</strong><div class='step-images count-5'><figure><img src='https://content.instructables.com/FK5/8TZ8/KZO4ZLJH/FK58TZ8KZO4ZLJH.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='New Blynk Project' loading='lazy'></figure><figure><img src='https://content.instructables.com/F9N/BYLA/KZO4ZLJF/F9NBYLAKZO4ZLJF.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='New Blynk Project' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEK/Z5IB/KZO4ZLJI/FEKZ5IBKZO4ZLJI.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='New Blynk Project' loading='lazy'></figure><figure><img src='https://content.instructables.com/FLH/VDLL/KZO4ZLJG/FLHVDLLKZO4ZLJG.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='New Blynk Project' loading='lazy'></figure><figure><img src='https://content.instructables.com/FVU/NKN6/KZO4ZLJJ/FVUNKN6KZO4ZLJJ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='New Blynk Project' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Create a new Blynk device, from a template.</li><li>New Template:</li><li>New Device:</li><li>Notice: it is recommended to save the device info - Template ID, Device Name, Auth token.<ul><li>Go to blynk dashboard >> templates >> "+ New Template".</li><li>Choose template's name.</li><li>Choose HARDWARE - ESP8266.</li><li>Choose CONNECTION TYPE - WiFi.</li><li>Click Done >> Save.</li><li>Click DataStreams >> Edit >> New Datastream.</li><li>Create 4 pins, exactly as seen in the attached photos.</li><li>Click Save.</li><li>Go to "devices" section.</li><li>Click New Device >> from a template.</li><li>Choose the template you just created.</li><li>Click Create.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Send Email And/or Post to Facebook Group</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/FYZ/8GIM/KZLA55F3/FYZ8GIMKZLA55F3.jpg?auto=webp&fit=bounds&frame=1&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Send Email And/or Post to Facebook Group' loading='lazy'></figure><figure><img src='https://content.instructables.com/FP8/N9FO/KZO4ZMA8/FP8N9FOKZO4ZMA8.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Send Email And/or Post to Facebook Group' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>When the user presses the left button of the CPX, it sends a String value (for example "expert") to Blynk and it activates the webhook we defined on Integromat. Integromat would recognize it and will send an email to an expert at the association for blind people.</li><li>On the other hand, When the user presses the right button of the CPX, it sends a String value (for example: "walk" / "play" / "eat") to Blynk and it activates the webhook we defined on Integromat. Integromat would recognize it and will post a relevant post on Facebook "Volunteers for blind people" group. It will also be documented on the relevant Google Sheet.</li><li>Integromat platform:</li><li>Webhooks:</li><li>Add WebHooks, Use custom webhook.</li><li>Router:</li><li>Add Router from Tools option.</li><li>Gmail:</li><li>Add Gmail, use Send an email option.</li><li>Facebook Groups:</li><li>Add Facebook Groups, use Create a Post.</li><li>Google Sheets</li><li>Add Google Sheets, use Add a row.</li><li>Blynk platform:</li><li>Define a webhook (so it can trigger the integromat webhook).</li><li>Testing:</li><li>To test scenarios click on run once >> paste integromat's webhook module url on a new browser tab >> and send a value you want to test. You can also run the whole code on IDE and trigger it by clicking right/left button.<ul><li>Create a new scenario on Integromat.</li><li>Use Webhooks, Router, Gmail, Facebook Groups, Google Sheets.</li><li>Add connection, change connection name if you want.</li><li>Click on "copy address to clipboard", paste it on a new browser tab.</li><li>Add: "?value=". Don't press enter yet:)</li><li>Go back to integromat, Press Ok.</li><li>Connect the router to the webhook you created.</li><li>Press Ok.</li><li>Connect Gmail module to the router.</li><li>Add connection, your Gmail connection. See guide.</li><li>Add recipient (i.e help.all.blinds@gmail.com).</li><li>Add email subject (i.e "Call me").</li><li>Add content (i.e "Please contact me on +9725345652).</li><li>Press Ok.</li><li>Right click on line (router-gmail) >> Set up a filter >> give label to the the filter >> choose condition: value >> contains / equal the value you expect to get when user wants to send mail to an expert (i.e "value contains expert").</li><li>Click Save.</li><li>Connect the Facebook groups module to the router.</li><li>Add connection >> allow Integromat posting on the relevant Facebook group by adding integral to the group's apps. See guide.</li><li>Choose the group you want the user to post to.</li><li>Choose to post "as a user".</li><li>Write the relevant message you want the user to post. Message related to walking with the user >> click Ok.</li><li>Repeat 1-5 with two different messages: one related to eating with the user, the other related to playing with the user.</li><li>The messages we used:</li><li>"Feels like I want to go for a walk. Would be happy for a company! call me: 054123345"</li><li>"Someone wants to eat Pizza? I know I would? Call me if you want to join:) 054123345"</li><li>"Hey:) Does anyone want to play Chess with me? Call me: 054123345"</li><li>Add filters: Right click on lines (router-facebook groups) >> Set up a filters >> give labels to the the filters >> choose conditions: value >> contains / equal the value you expect to get when user wants to post to volunteers (i.e "walk" / "eat" / "play").</li><li>Connect Google sheets module to Facebook groups module.</li><li>Add a connection >> the same as you used in the Gmail module.</li><li>Choose the desired spreadsheet & sheet.</li><li>Choose the table's headers (i.e time and value)</li><li>Click Ok.</li><li>Go to Blynk dashboard</li><li>Click settings >> webhooks >> create new webook.</li><li>Add webhook name.</li><li>Choose WEBHOOK TRIGGER EVENT - Device sends data to datastream.</li><li>Choose the device you created.</li><li>Choose the DATASTREAM - "message" pin.</li><li>Choose the WEBHOOK URL - paste the integromat's webhook module url.</li><li>click Create Webhook.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Get "medicine" Notifications From Google Calendar</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/F8S/2W7P/KZO4ZNWG/F8S2W7PKZO4ZNWG.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Get "medicine" Notifications From Google Calendar' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Get "Time to take medicine" notifications from Google calendar - Taking medication can be a challenging action if you do not receive appropriate alerts. Use Integromat to get alerts from relevant Google calendar.</li><li>Integromat:</li><li>Google calendar</li><li>HTTP<ul><li>http://188.166.206.43/AUTH TOKEN of your Blynk's project/update/V3?value=0</li></ul></li><li>Notice: V3 is the virtual pin we defined in Blynk Datastreams for Calendar datastream.</li><li>Testing:</li><li>To test scenarios click on run once or run the code on IDE.<ul><li>Create a new scenario on Integromat.</li><li>Choose Google calendar and HTTP services.</li><li>Choose Google calendar >> search events.</li><li>Add Connection, connect your own Gmail by "Add" button (your google account should already be connected because you did it in previous step. If not, go back to see guide.</li><li>Add a connection >> continue >> follow after the instructions.</li><li>Choose the wanted calendar id (the medicine calendar).</li><li>Click on start date text line >> choose "Date and Time" tab >> click on "now".</li><li>Add Http >> Choose "make a request" >> In the URL line enter the following addres:</li><li>Set scheduling switch to on.</li><li>Click on "Schedule setting" >> choose "At regular intervals" under "Run scenario" >> press ok.</li><li>Save!</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Step 6: Get Weather Notifications Every Morning</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FCN/PS4P/KZO4ZO0G/FCNPS4PKZO4ZO0G.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Get Weather Notifications Every Morning' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Updates the user automatically on the weather outside- at an automatically set time with a different melody for each type of weather.</li><li>Integromat:</li><li>HTTP:<ul><li>http://188.166.206.43/AUTH TOKEN of your Blynk's project/update/V2?value= (here we chose from template "1. temperature")</li></ul></li><li>Notice: V2 is the virtual pin we defined in Blynk Datastreams for Weather datastream.</li><li>Testing:</li><li>To test scenarios click on run once or run the code on IDE.<ul><li>Create a new scenario on Integromat.</li><li>Choose "Weather" and choose "get current weather"</li><li>Enter the city and country you live in.</li><li>Now press on the right half circle on the right of the Weather symbol to add a new module.</li><li>As the new module choose "HTTP".</li><li>In the URL line enter the adress:</li><li>Press the clock symbol on the bottom left side of the screen and choose "every day", choose the time you want that the information will be updated.</li><li>Save!</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Step 7: Code for IDE</strong><p><strong>Étapes :</strong></p><ol><li>See attached code for IDE.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

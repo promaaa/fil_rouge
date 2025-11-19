@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Joyeux Bidon Low-tech - Enceinte fabriquée avec des composants de réemploi</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Joyeux Bidon Low-tech - Enceinte fabriquée avec des composants de réemploi</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/ed/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_2-20231016_100154.jpg/ia-44825a47d6be1ec02fa36ec4f7ef638a-px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_2-20231016_100154.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Une enceinte MP3 à l'intérieur d'un bidon, pour petites et grandes oreilles. Elle est pensée pour servir de boite à histoires audio pour les petits ou simplement pour lire de la musique!</div>
+        
+      </div>
+    
+    
+      
+        <p>Le Joyeux Bidon Low-tech est une enceinte amplifiée qui lira les fichiers MP3 de votre clef USB. Elle est munie d'un écran LCD (optionnel), d'un interrupteur ON/OFF, de boutons lecture/stop et suivant, d'une molette de volume et d'une sortie casque (optionnelle). La base de cette enceinte est une carte électronique programmable, une paire d'enceintes amplifiées de PC, et bien sûr, un bidon !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Joyeux_Bidon_Low-tech_-_Enceinte_fabriquée_avec_des_composants_de_réemploi" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Joyeux_Bidon_Low-tech_-_Enceinte_fabriquée_avec_des_composants_de_réemploi</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Base:</li><li>2 Bidons 5L plastique</li><li>1 Paire d'enceintes amplifiées de PC</li><li>Electronique:<ul><li>1 Carte micro-contrôleur programmable stm32F4Discovery</li><li>1 Clef USB</li><li>1 Convertisseur secteur USB 230V/5V</li><li>10 Fils électriques</li><li>2m Fils électrique 0.4mm souple</li><li>1 Câble USB femelle / USB Mini-b (fabricable avec les deux portions)</li><li>1 Câble USB/n'importe quoi</li><li>Etain</li><li>Gaine thermo-rétractable</li><li>1 Convertisseur DC-DC 5V (optionnel)</li></ul></li><li>Interface:<ul><li>1 Ecran LCD compatible STM32 discovery</li><li>1 Interrupteur à bascule</li><li>2 boutons poussoirs</li></ul></li><li>Visserie:<ul><li>15 vis M4 (dont 8 >1cm et 7>3cm)</li><li>4 Vis M2.5</li><li>10 Vis à plastiques 3mm de diamètre (>1cm)</li><li>38 Ecrous (33 M4 , 4 M2.5 et 1 adapté au potentiomètre)</li></ul></li><li>Bois/métal:<ul><li>1 Plaque en aluminium (8cm/14cm épaisseur la plus fine possible) ou 1 Plaque en bois (8cm/14cm/2cm)</li><li>1 Cornière en aluminium (longueur 10cm, bords transversaux >2.5cm) ou 2 Tasseaux de bois (7cm/2cm/2cm)</li><li>3 Plaques en contreplaqué (10cm/10cm/ >0.6cm)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Façonnage bidon:</li><li>Découpeuse LASER (optionnel)</li><li>Outil rotatif (style Dremel ) (optionnel mais conseillé) avec embout papier de verre</li><li>Perceuse à mains</li><li>Ciseaux</li><li>Cutter</li><li>Papier de verre P80 et P240</li><li>Cisaille massicot (optionnel)</li><li>Manipulation électrique:</li><li>Pince coupante</li><li>Multimètre</li><li>Fer à souder</li><li>Pompe à dessouder</li><li>Pince à dénuder</li><li>Décapeur thermique ou briquet</li><li>Fixations</li><li>Perceuse à colonne (recommandée)</li><li>2 Serre-joints</li><li>Pistolet à colle</li><li>Tournevis</li><li>Clefs plates</li><li>Équipement de protection</li><li>Lunettes (outil rotatif, perceuses)</li><li>Gants (ciseaux, cutter, tournevis (forçage))</li><li>Casque anti-bruit (perceuse à colonne)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Trouver les composants</strong><p><strong>Étapes :</strong></p><ol><li>Les cartes stm32F4Discovery, sorties en 2011 étaient plutôt populaires et font partie des plus courantes des anciennes générations de cartes micro-contrôleurs programmables. Elle se trouvent dans les fablab, les laboratoires de recherche, les collèges, lycées, centres de formations et écoles d'ingénieurs, etc... Elles sont parfois accompagnées d'écrans LCD compatibles.</li><li>C'est le cas également des vis, des boutons poussoirs et de l’interrupteur qui peuvent également se récupérer sur des appareils électroniques usagés.</li><li>Les enceintes amplifiées de PC étaient très utilisées avant que tout le monde ne s'équipe de PC portable munis de leur propre enceintes intégrées. On les trouve donc un peu partout, aussi bien dans les entreprises que chez les particuliers, et donc maintenant dans les ressourceries ...</li><li>Enfin, les câbles USB et la clé USB devraient se trouver au fond de vos tiroirs.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Installer le programme pour flasher la carte micro-contrôleur</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b8/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_stide0.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_stide0.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi stide0.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/77/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_1-STM32cubeIDE_new_project.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_1-STM32cubeIDE_new_project.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 1-STM32cubeIDE new project.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f0/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_2-STM32cubeIDE_new_project_STM32F407VGT6.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_2-STM32cubeIDE_new_project_STM32F407VGT6.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 2-STM32cubeIDE new project STM32F407VGT6.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/af/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_3-STM32cubeIDE_STM32F407VGT6_install_e.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_3-STM32cubeIDE_STM32F407VGT6_install_e.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 3-STM32cubeIDE STM32F407VGT6 install e.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il vous faut téléverser le code dans votre carte micro-contrôleur de la manière suivante:</li><li>Installez le logiciel STM32cubeIDE<ul><li>Rendez vous sur le site de ST pour télécharger le logiciel STM32cubeIDE:https://www.st.com/en/development-tools/stm32cubeide.html</li><li>sous "Get software", cliquez sur "Get latest" en face du système d'exploitation de votre ordinateur (Linux, Windows ou Mac, copie d'écran n°0).</li><li>Acceptez le "License Agreement" et créez un compte en cliquant sur "login/Register" puis "create acount".</li><li>Après validation du lien que vous aurez reçu par e-mail, vous pourrez enfin télécharger le logiciel STM32cubeIDE.</li><li>Décompressez l'archive reçue et installez le logiciel sur votre ordinateur.</li></ul></li><li>Créez un nouveau projet<ul><li>Allez dans File-New-STM32 Project (copie d'écran n°1)</li><li>Sélectionnez la carte STM32F407VGT6, "NEXT" (copie d'écran n°2)</li><li>puis Project name : "TESTF4"</li><li>Il vous sera demandé de vous connecter avec votre compte ST créé précédemment, et les librairies complémentaires relatives à la carte Discovery seront téléchargées.</li><li>A ce stade, le projet "TestF4" apparait en haut à gauche du logiciel (copie d'écran n°3)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Téléversement du programme dans la carte micro-contrôleur</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a7/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_4-STM32cubeIDE_chargement_projet.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_4-STM32cubeIDE_chargement_projet.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 4-STM32cubeIDE chargement projet.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_5-STM32cubeIDE_ouverture_main.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_5-STM32cubeIDE_ouverture_main.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 5-STM32cubeIDE ouverture main.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7f/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_6-STM32cubeIDE_update_ST-Link.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_6-STM32cubeIDE_update_ST-Link.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 6-STM32cubeIDE update ST-Link.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/59/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_7-STM32cubeIDE_update_ST-Link_ok.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_7-STM32cubeIDE_update_ST-Link_ok.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 7-STM32cubeIDE update ST-Link ok.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Charger le projet Joyeux_Bidon_Lowtech<ul><li>Télécharger le code Audio_playback_and_record.zip via le lien https://gricad-gitlab.univ-grenoble-alpes.fr/dumonj/joyeux_bidon_lowtech/-/blob/main/Audio_playback_and_record.zip</li><li>Décompressez le fichier sur votre ordinateur</li><li>Importez le projet dans STM32cubeIDE : File-Open project from file system</li><li>Sélectionner dans "import source" avec le bouton "Directory" le répertoire du projet préalablement décompressé "Audio_playback_and_record"</li><li>décochez le projet "Audio_playback_and_record" pour ne conserver que le projet "Audio_playback_and_record\SW4STM32\STM32F4-DISCO" (copie écran n°4)</li><li>Ouvrir à gauche le projet "Audio_playback_and_record" puis "Application", "User", et double cliquer sur "main.c" pour l'ouvrir (copie écran n°5)</li><li>Branchez la carte STM32 en USB sur votre PC (prise USB du haut, USB-Mini et non Micro-B)</li><li>Appuyez sur la flèche verte en haut (encadrée en rouge sur la copie d'écran n°5)</li><li>Le logiciel va demander à mettre à jour le firmware ST-Link, cliquez sur "Yes", et cliquez sur "Open in update mode" (encadré rouge dans la copie d'écran n°6)</li><li>Débrancher la prise USB de la carte puis rebranchez la pour la faire redémarrer.</li><li>Appuyez sur "Refresh device list" (encadré vert dans la copie d'écran n°6) puis à nouveau sur "Open in update mode"</li><li>Appuyez sur le bouton "Upgrade" en bas de la fenêtre qui devrait maintenant être dégrisé.</li><li>Si tout va bien, il devrait indiquer en bas "Upgrade succesfull" (copie d'écran n°7), vous pouvez alors fermer cette fenêtre.</li><li>Cliquez à nouveau sur la flèche verte (encadrée en rouge sur la copie d'écran n°5), et cliquez sur "Proceed" si une erreur est signalée.</li><li>La partie "console" en bas devrait indiquer : Download verified successfully Shutting down... Exit.</li><li>Ouf! voilà une bonne chose de faite!</li></ul></li><li>Description du code:</li><li>La carte lit le contenu de la clé USB, décode les fichiers MP3 et transmet le son vers la carte d'amplification audio. Le bouton "play/stop" lance et arrête la lecture, le bouton "next" passe au morceau suivant. L'écran affiche le nom du fichier en cours de lecture. Le volume sonore est réglé directement avec le bouton de réglage de l'enceinte amplifiée.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Démontage des enceintes amplifiées</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b0/Bidon_enceinte_hp.png/800px-Bidon_enceinte_hp.png' alt='Bidon enceinte hp.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/16/Bidon_enceinte_hp-demont_.jpg' alt='Bidon enceinte hp-demont .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/99/Bidon_enceinte_carte.png' alt='Bidon enceinte carte.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous devez récupérer les membranes et la carte d'amplification de votre enceinte amplifiée.<ul><li>Avant de les démonter, s'assurer que les enceintes fonctionnent en branchant sa prise jack sur une source de musique.</li><li>Débrancher les enceintes</li><li>Retirer les coques à mousse, dévissez les deux coques avant et ouvrez vos haut-parleurs, conservez les vis qui peuvent servir pour l'étape 14.</li><li>Dessouder les fils d'alimentation qui arrivent sur la carte d'amplification</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Dessin du plan de la façade</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Bidon_enceinte_photo_2_2023-08-31_15-53-19.jpg/800px-Bidon_enceinte_photo_2_2023-08-31_15-53-19.jpg' alt='Bidon enceinte photo 2 2023-08-31 15-53-19.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c4/Bidon_enceinte_photo_3_2023-08-31_15-53-19.jpg/800px-Bidon_enceinte_photo_3_2023-08-31_15-53-19.jpg' alt='Bidon enceinte photo 3 2023-08-31 15-53-19.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b9/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_20231017_112148.jpg/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_20231017_112148.jpg' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi 20231017 112148.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Faites vous un plan des bidons et du capot pour que les dimensions collent bien. Placez les éléments et assurez vous bien que tout rentre comme il faut avant de commencer à percer, couper etc...</li><li>Choisissez où vous allez mettre les boutons , l'interrupteur et la molette (ils peuvent aller sur le corps du bidon mais aussi sur le capot). Nous avons placé les boutons sous la poignée pour pouvoir appuyer sur les boutons poussoirs sans avoir à tenir le bison, et pour limiter les éléments qui dépassent, ce qui limite la casse lors du transport notamment.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Découpe des bidons</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Bidon_enceinte_photo_27_2023-08-30_13-58-59.jpg/800px-Bidon_enceinte_photo_27_2023-08-30_13-58-59.jpg' alt='Bidon enceinte photo 27 2023-08-30 13-58-59.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il vous faut découper les deux bidons : dans l'un vous couperez la face latérale du bidon pour accéder à l'intérieur. Dans l'autre bidon, vous récupèrerez une face latérale qui servira de capot à l'enceinte (le reste du bidon n'a pas d'utilité primordiale, entrainez-vous dessus avant d'attaquer le vrai bidon notamment pour l'étape 11 et 13)</li><li>Pour faire une découpe propre des bidons, suivez l'étape 13 "façonnage de la fente pour l'écran LCD" . Vous pouvez couper le capot très droit si vous disposez d'une cisaille massicot.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Préparation des composants électriques</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Bidon_enceinte_pot.jpg/800px-Bidon_enceinte_pot.jpg' alt='Bidon enceinte pot.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0f/Bidon_enceinte_pot2.jpg' alt='Bidon enceinte pot2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Bidon_enceinte_photo_2023-08-31_13-24-08.jpg/800px-Bidon_enceinte_photo_2023-08-31_13-24-08.jpg' alt='Bidon enceinte photo 2023-08-31 13-24-08.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant passons à la partie électronique:</li><li>-Vérifiez la longueur des fils, les rallonger si besoin</li><li>-Fabriquez un fil femelle USB/USB Micro-B (si vous n'en avez pas) qui servira de connecter la clef USB à la carte micro-contrôleur</li><li>-Si besoin transformer les fils des boutons poussoirs, les 4 fils de l'écran LCD, et les fils de l'alimentation pour qu'ils puissent se brancher à la carte micro-contrôleur.</li><li>-Dessouder le potentiomètre et ressoudez-le avec des fils pour pouvoir le mettre où vous voulez. Torsadez les fils ensemble pour éviter qu'il ne ramasse trop de parasites sur son chemin.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Soudure de l'alimentation, de l'interrupteur et de la carte</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c6/Bidon_enceinte_inter.jpg/800px-Bidon_enceinte_inter.jpg' alt='Bidon enceinte inter.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous allez maintenant connecter votre câble d'alimentation à la carte d'amplification en y insérant un interrupteur en série. Il faudra ensuite relier l'alimentation de la carte d'alimentation à la carte micro-contrôleur (ajouter un convertisseur DC/DC si la tension d'alimentation de la carte d'amplification n'est pas compatible avec celle de la carte micro-contrôleur).<ul><li>Coupez le câble d'alimentation, conservez la partie USB mâle (gardez le plus de longueur possible pour pouvoir brancher votre enceinte loin de la source de tension)</li><li>Trouez le derrière du bidon au centre, à hauteur de la plaque, de la taille du câble d'alimentation.</li><li>Insérez le câble dans le trou du bidon.</li><li>Dénudez le câble.</li><li>Condamnez les fils inutiles (D+ et D-) avec de la gaine thermo-rétractable</li><li>Reliez les éléments comme le schéma ci-contre Désormais votre carte d'amplification est unie avec votre bidon, toutes mes félicitations!</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Branchements et test</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fa/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_sch_ma_electrique_jblowtech.png/800px-Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_sch_ma_electrique_jblowtech.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi sch ma electrique jblowtech.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez désormais faire tous les branchements et tester votre enceinte (sans coque) avec une clef USB qui contient des fichiers MP3.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Façonnage du socle</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/c/cd/Bidon_enceinte_socle_sans_carte.png' alt='Bidon enceinte socle sans carte.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fe/Bidon_enceinte_photo_1_2023-08-31_15-53-19.jpg/800px-Bidon_enceinte_photo_1_2023-08-31_15-53-19.jpg' alt='Bidon enceinte photo 1 2023-08-31 15-53-19.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/cf/Bidon_enceinte_pincement.png' alt='Bidon enceinte pincement.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/Bidon_enceinte_systeme_socle.png/800px-Bidon_enceinte_systeme_socle.png' alt='Bidon enceinte systeme socle.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f4/Bidon_enceinte_photo_2023-09-01_11-05-59.jpg/ia-e49bb7fa2e4b142bca53d18b3e10aaaa-px-Bidon_enceinte_photo_2023-09-01_11-05-59.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le système de fixation des cartes au socle consiste à venir pincer le bord des cartes avec deux rondelles que l'on vient plaquer avec deux écrous autour (figure 3). Les vis sont fixées sur une plaque qui est plaquée au fond du bidon (vous pouvez prendre une plaque de bois à la place).</li><li>Pour s'assurer que le bidon soit bien stable lorsqu'on le pose, surélevez les quatre vis aux coins du bidon: comme dans la figure 3, insérez un écrou entre la tête de vis et le plastique.</li><li>Une fois cette fixation faite, vous pouvez ajuster la hauteur des cartes et leur déplacement latéral comme bon vous semble.</li><li>Evaluez la taille du socle dont vous aurez besoin , assurez vous que le tout rentrera dans le bidon.</li><li>Si votre enceinte possède une sortie jack pour des écouteurs, vous pouvez placer cette sortie contre la parois du bidon que vous aurez préalablement percé.<ul><li>Réalisez les trous de la plaque (ou planche) précisément</li><li>Vérifiez que le système de fixation fonctionne bien (si pas la bonne taille, car pas assez précis, percez de nouveau sur la même plaque)</li><li>Percez le dessous du bidon.</li></ul></li><li>Votre support est prêt.<ul><li>Faire le coince câble (figure 5): le coince câble permet de bloquer le câble d'alimentation pour empêcher d'abimer l'intérieur du bidon si un utilisateur venait à tirer ou pousser ce câble par l'extérieur. Vous pouvez simplement plaquer une languette en métal avec deux vis écrous qui la traversent et traversent le socle (pas le bidon).</li><li>Faites les trous dans le bidon pour insérer les deux boutons, l'interrupteur et le potentiomètre.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Installation du récepteur USB</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Bidon_enceinte_Image8.png/800px-Bidon_enceinte_Image8.png' alt='Bidon enceinte Image8.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/95/Bidon_enceinte_photo_5_2023-08-30_13-57-29.jpg/800px-Bidon_enceinte_photo_5_2023-08-30_13-57-29.jpg' alt='Bidon enceinte photo 5 2023-08-30 13-57-29.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c2/Bidon_enceinte_photo_2023-08-30_17-49-38.jpg/800px-Bidon_enceinte_photo_2023-08-30_17-49-38.jpg' alt='Bidon enceinte photo 2023-08-30 17-49-38.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/30/Bidon_enceinte_photo_8_2023-08-30_13-57-29.jpg/800px-Bidon_enceinte_photo_8_2023-08-30_13-57-29.jpg' alt='Bidon enceinte photo 8 2023-08-30 13-57-29.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous allez maintenant réaliser le support de fixation pour la clef USB. La clef USB s'insère par le goulot du bidon.</li><li>Le support de fixation est composé d'un système de serrage avec deux cornières (ou morceaux de bois) qui viennent pincer à l'aide de boulons la prise USB femelle. Tout ce système est collé au pistolet à colle sur la paroi du bidon. Voici comment procéder:<ul><li>Mettre de la colle avec le pistolet à colle autour du récepteur USB (image 1), on viendra ensuite serrer les cornières sur cette colle pour ne pas abimer le composant et ne pas empêcher le branchement/débranchement de la clef USB . Ne mettez de la colle que sur la base du port.</li><li>Préparer les cornières ou le bois de la bonne taille</li><li>Faites 2 trous autour de l'endroit où sera pincé le récepteur , le plus bas possible des cornières (tout en étant sûr d'avoir la longueur de doigts pour pouvoir introduire la clef USB). Si les équerres s'ouvrent ou se ferment trop quand vous serrez, mettez une troisième vis pour empêcher cela</li><li>Assemblez le système pincé</li></ul></li><li>La prochaine manipulation est délicate, si vous la loupez vous devrez retirer la colle et recommencer (c'est très pénible). Ce sera plus facile si vous êtes deux : l'un.e qui tient le système et l'autre le pistolet à colle. Je vous conseille d'essayer sur le bidon test une première fois (la colle n'est pas très dure à enlever du métal).</li><li>Voici la procédure:<ul><li>Placez le bidon à l'envers, bloquez le pour pas qu'il ne bouge, placez le système pincé à l'endroit désiré, marquez les 4 coins des équerres (ou bois) qui touchent le plastique.</li><li>Placez de la colle sur les bords dessinés (plus la surface de collage sera grande mieux le système sera fixé), soyez généreux ,puis avant que la colle n'ait séché, placez le système de pincement au bon endroit, puis remettez une bonne couche de colle sur les bords (soyez généreux). Attendez que tout refroidisse bien pour tester le branchement de la clef USB.</li></ul></li><li>Bravo, cette étape n'était pas la plus facile...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Perçage du capot</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/68/Bidon_enceinte_IMG_9221.jpg/800px-Bidon_enceinte_IMG_9221.jpg' alt='Bidon enceinte IMG 9221.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/3/3f/Bidon_enceinte_rogn_.jpg' alt='Bidon enceinte rogn .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous allez désormais façonner le capot de votre enceinte:</li><li>Pour fixer le capot sur le bidon, des vis à plastiques vont venir prendre pas dans le bidon (derrière le capot), et venir plaquer le capot.<ul><li>Faites les trous de fixation du capot avec une perceuse (diamètre de trous qui permet votre vis à plastique de coulisser librement).</li><li>Placez votre capot sur votre bidon, puis marquez sur le bidon les trous à travers les trous du capot. Percez le bidon avec un diamètre plus petit que le diamètre de vos vis, ce qui leur permettra a d'accrocher solidement dans le bidon.</li><li>Réalisez les trous de fixation pour les membranes</li></ul></li><li>Pour réaliser votre grille, vous pouvez réaliser un guide en bois qui vous servira de guider votre perceuse pour être précis (le contreplaqué 6mm fonctionne bien).<ul><li>Créer votre guide en contreplaqué à la découpeuse LASER (ou CNC) (cf fichier de découpe joint ).</li><li>Placez votre capot sur une plaque de bois (au mieux du bois brut, au pire du contreplaqué minimum 6mm d'épaisseur), puis venez placer votre guide en bois par dessus votre capot. Fixez bien le tout avec des serre-joints à vis sur un support. Puis percez chaque trou à la perceuse à mains en suivant les trous du guidage.</li><li>Percez aux endroits voulus les trous pour les deux boutons , l'interrupteur et le potentiomètre. Essayez autant que possible de positionner un pièce de bois derrière le plastique du bidon pour éviter les bavures.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Façonnage de la fente pour l'écran LCD</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/13/Bidon_enceinte_Image7.png/800px-Bidon_enceinte_Image7.png' alt='Bidon enceinte Image7.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/fd/Bidon_enceinte_Image4.png' alt='Bidon enceinte Image4.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/60/Bidon_enceinte_Image6.png' alt='Bidon enceinte Image6.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f4/Bidon_enceinte_photo_2023-08-30_17-56-32.jpg/800px-Bidon_enceinte_photo_2023-08-30_17-56-32.jpg' alt='Bidon enceinte photo 2023-08-30 17-56-32.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous voici à la dernière étape: réaliser une jolie fente pour voir l'affichage de l'écran LCD. Je vous conseille d'essayer cette étape en 1er sur le bidon test au cas où vous gâchiez tout votre beau capot d'un coup de cutter!<ul><li>D'abord, réalisez les trous pour les vis de l'écran LCD de la taille des trous déjà usinés dans le support de l'écran (soyez précis).</li><li>Vissez l'écran avec des écrous. sur le capot. L'écran est placé, marquez précisément le cadre de l'écran.</li></ul></li><li>La méthode suivante pour faire de jolis trous dans le PEHD s'applique aussi pour réaliser le trou de l'entrée du bidon et les bords du capot (étape 6).<ul><li>Marquez l'endroit voulu à couper.</li><li>Faites une coupe grossière au cutter pour dégrossir la pièce: prenez bien 1.5cm de marge (ou moins en fonction de votre habileté et du tranchant du cutter) autour de la partie mâle à découper (ou à l'intérieur de la partie femelle à découper)</li><li>Rapprochez vous du bord à l'aide d'un outil rotatif associé à du papier de verre à gros grain.</li><li>Rapprochez vous encore du trait avec de bons ciseaux, façonnez les coins bien droits (si vous voulez qu'ils soient droits)</li><li>Passez les bords au papier de verre P80 puis P240 pour finir.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Montage final</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/16/Bidon_enceinte_photo_2023-08-31_09-31-28.jpg/800px-Bidon_enceinte_photo_2023-08-31_09-31-28.jpg' alt='Bidon enceinte photo 2023-08-31 09-31-28.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Votre enceinte est normalement prête à être montée:<ul><li>Montez la plaque sur le bidon, coincez le câble d'alimentation dans le coince câble</li><li>Montez les deux cartes sur le système de fixation</li><li>Fixez les membranes et l'écran LCD au capot</li><li>Fixez les boutons/interrupteur/molette</li><li>Branchez tout</li><li>Vissez le capot sur le bidon</li><li>Branchez votre alimentation</li><li>Tournez le potentiomètre à fond dans le sens horaire</li><li>Allumez l'interrupteur</li><li>Attendez 5 secondes</li><li>Appuyez sur le bouton Play</li><li>Sautez de joie</li><li>Prenez soin de votre nouveau compagnon</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Bonus: découpe LASER du capot</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/4/46/Enceinte_Joyeux_Bidon_Low-tech_grille_trous.jpg' alt='Enceinte Joyeux Bidon Low-tech grille trous.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/41/Enceinte_Joyeux_Bidon_Low-tech_rectangle.jpg' alt='Enceinte Joyeux Bidon Low-tech rectangle.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/8/86/Joyeux_Bidon_Low-tech_-_Enceinte_fabriqu_e_avec_des_composants_de_r_emploi_pehd.png' alt='Joyeux Bidon Low-tech - Enceinte fabriqu e avec des composants de r emploi pehd.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez aussi choisir de découper votre capot à la découpeuse LASER.</li><li>Avantage:<ul><li>Une fois la bonne combinaison Vitesse/puissance trouvée, votre capot se découpera rapidement et précisément.</li></ul></li><li>Inconvénients:<ul><li>Il vous faut trouver la bonne combinaison vitesse/puissance en tâtonnant</li><li>Les bords des endroits touchés par le LASER fondent et se resolidifient, laissant une marque (voir Image 1)</li><li>Le tracé du laser ne sera pas exactement votre rendu sur plastique: Lorsque le LASER touche le plastique, un petit cercle de matière plastique s'enlève (d'environ 1mm de rayon), un trou de 3mm de diamètre sur logiciel rendra donc environ 5mm de diamètre après découpe. Vous ne pouvez donc pas faire de bords pointus (Image 2: découpe LASER d'un rectangle sur le logiciel de dessin de largeur 1cm, rendant le rectangle arrondis et plus grand)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Barriere à déchet</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Barriere à déchet</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/4/43/Barriere_d_chet_IMG_7476.jpg/ia-47e971eaceb52d0fcf2784d23216332d-px-Barriere_d_chet_IMG_7476.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">La barrière Low Tech permet de ramasser les déchets acheminées par le courant de l'eau. Ce projet consiste en la conception et l'expérimentation d'une barrière avec de forts critères concernant : - la facilité de fabrication (Matériaux sourçables facilement, faible impact environnemental, outillage simple, techniques d'assemblage accessibles). - La modularité ( la barrière est polyvalente à différentes morphologies de fleuves ) - La performance ( la grille plonge dans les 50cm où se regroupe le plus de déchets )</div>
+        
+      </div>
+    
+    
+      
+        <p>Cette barrière a été commandé par l'association Wings of the Ocean à un groupe d'étudiant ingénieur de l'école ENSE 3 Grenoble.</p>
+      
+        <p>A l'échelle mondiale, on estime aujourd'hui que la quantité de plastique dans les océans est comprise entre 75 à 200 millions de tonnes 1 (ce qui représente 85% des déchets marins). Comment remédier à ce désastre environnemental ?</p>
+      
+        <p>C’est le défi que s’est lancé l’association Wings of the Ocean. L’association a pour volonté de mener des actions de sensibilisation et de dépollution autour de la problématique des</p>
+      
+        <p>déchets en milieu aquatique. Jusqu’à présent, les dépollutions sont menées sur les plages des mers et océans, sur les berges des fleuves et rivières ou directement dans la mer avec des bateaux. Le postulat est clair, la grande majorité des déchets dans les mers et océans proviennent des fleuves et des rivières en amont.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 30 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Barriere_à_déchet" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Barriere_à_déchet</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Flotteur :<ul><li>2 bidons de 30L - L57cm - Ø30cm. (Type fût de bière en plastique). Peut se récupérer dans les brasseries, le grossiste METRO en produit massivement.</li><li>2 bidons de 20L - L57cm - Ø24cm</li></ul></li><li>Structure en Bambous:<ul><li>Pour la base -3 bambous de 116cm -3 bambous de 130cm Pour le triangle de soutien de la grille -2 bambous de 140cm -2 bambous de 110cm Pour la grille -2 bambous de 100cm -2 bambous de 125cm</li></ul></li><li>Les matériaux d'assemblage :<ul><li>Cordage pour effectuer des brelages et cerclages 8 x 2,50 m de corde entre les bambous de la base 4 x 7,25m de corde entre les bambous et les bidons 4 x 1,5 m de corde pour fixer la grille à son support 2x 1,5m de corde pour réaliser les haubans de fixation des triangles de soutien de la grille</li><li>Collier de serrage : x12 par module de taille différentes en fonction du diamètre des bambous</li><li>Serre flex : x12 pour fixer la grille x4 pour accrocher les bidons</li><li>Gabarit en bois : triangle avec des cotés de longueurs 34cm, 82cm et 100cm.</li></ul></li><li>Grillage : 140cm x 120cm pour 1 module, à multiplier par le nombre de module désiré</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Savoir faire des noeuds et des brelages : Lien d'une video</li><li>Scie radiale ou manuelle</li><li>Pince coupante</li><li>Pince multiprises</li><li>Tournevis</li><li>Mètre</li><li>Crayon ou marqueur</li><li>Perceuse avec cloche du diamètre d’un bouchon de vin (Ø22)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Fabrication du cadre autour des flotteurs</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/9/99/Barriere_d_chet_Screenshot_2023-02-01_17.11.47.png' alt='Barriere d chet Screenshot 2023-02-01 17.11.47.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/e5/Barriere_d_chet_Screenshot_2023-02-01_17.12.08.png' alt='Barriere d chet Screenshot 2023-02-01 17.12.08.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/13/Barriere_d_chet_Screenshot_2023-02-01_17.12.20.png' alt='Barriere d chet Screenshot 2023-02-01 17.12.20.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a2/Barriere_d_chet_Screenshot_2023-02-01_17.12.31.png' alt='Barriere d chet Screenshot 2023-02-01 17.12.31.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/06/Barriere_d_chet_Screenshot_2023-02-01_17.12.41.png' alt='Barriere d chet Screenshot 2023-02-01 17.12.41.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/75/Barriere_d_chet_Screenshot_2023-02-01_17.12.52.png' alt='Barriere d chet Screenshot 2023-02-01 17.12.52.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Scier les bambous à la scie radiale ou manuelle afin d’avoir: 3 bambous de 116 cm pour le cadre 3 bambous de 130 cm pour le cadre 2 bambous de 140 cm pour le triangle de grille 2 bambous de 110 cm pour le triangle de grille</li><li>Couper des longueurs de corde : 8 x 2,50 m de corde pour les brelages entre les bambous et 4 x 7,25m pour les brelages entre la structure et les bidons. Vous pouvez utiliser un metre ou sinon l’écartement de vos bras pour mesurer cette distance.</li><li>Afin de réaliser le cadre flottant la première étape est de fixer les bidons 2 par 2 dans le sens de la longueur. Les bidons que nous avons récupérés en brasserie sont composés d’une plateforme plate qui permet facilement de les assembler les uns aux autres. Fixer les deux bidons de 30L entre eux puis ceux de 20 L avec 4 serre flex pour chaque couple de bidons.</li><li>Positionner les bambous comme indiqué sur le plan . Conseil : Ne pas hesitez à marquer le positionnement des bambous. En effet, lorsque les brelages sont réalisés, les bambous pas encore brelés peuvent bouger.</li><li>Réaliser les 8 brelages entre les différents bambous. Ne pas hésiter à s’entrainer à faire des brelages avant. Il est nécessaire de s’assurer qu’ils sont serré très forts. On obtient la structure en photo.</li><li>Une fois le cadre terminé, le positionner au dessus des deux assemblages de bidon. Attention à bien mettre l’assemblage des gros bidons à l’avant du cadre conçu.</li><li>Réaliser 4 brelages entre la structure et les bidons afin de finir de construire la structure, comme sur la dernière photo.</li></ul></li><li>Le cadre est désormais fixé aux bidons !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fabrication du triangle de soutien de la grille</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/2/2b/Barriere_d_chet_Screenshot_2023-02-01_17.13.02.png' alt='Barriere d chet Screenshot 2023-02-01 17.13.02.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/df/Barriere_d_chet_Screenshot_2023-02-01_17.13.10.png' alt='Barriere d chet Screenshot 2023-02-01 17.13.10.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/56/Barriere_d_chet_Screenshot_2023-02-01_17.13.22.png' alt='Barriere d chet Screenshot 2023-02-01 17.13.22.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a4/Barriere_d_chet_Screenshot_2023-02-01_17.13.32.png' alt='Barriere d chet Screenshot 2023-02-01 17.13.32.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Scier les bambous à la scie radiale ou manuelle afin d’avoir 2 bambous de 140 cm 3 bambous de 110 cm</li><li>Couper le gabarit en bois à l’aide d’une scie, il faut obtenir un triangle de dimension 100 cm - 34 cm - 82 cm.</li><li>Prépaper des coliers de serrage, en emboitant deux collier de serrage de façon à ce qu’ils soient perpendiculaires.</li><li>Les fixer sur les bambous. Attention à la vis du collier de serrage, qui doit rester accessible afin de pouvoir visser le système.</li><li>Positionner le gabarit en bois qui permet de caler l’angle d’inclinaion du bambou plongeant et afin de positionner correctement le triangle de soutien. Attention l’angle d’inclinaison du bambou qui plonge est important à respecter.</li><li>Serrer les 6 colliers de serrage.</li><li>Placer deux haubans (corde), comme sur photo, afin d’éviter tout mouvement du triangle de soutien.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Assemblage de la grille</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/0/0b/Barriere_d_chet_Screenshot_2023-02-01_17.13.48.png' alt='Barriere d chet Screenshot 2023-02-01 17.13.48.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Scier les bambous à la scie radiale ou manuelle afin d’avoir 2 bambous de 100 cm 3 bambous de 125 cm</li><li>Découper la grillage avec une pince coupante afin d’avoir un grille de 140cm x 120cm.</li><li>Faire le cadre de support de la grille en brelant les 4 liasons bambou / bambou</li><li>Fixer la grille au support avec des serre-flex. Couper les serre-flex qui dépassent.</li><li>Fixer l’ensemble support + grille sur la base du module en positionnant la grille à l’exterieur des bambous qui plongent. Réaliser 4 noeuds (expliquer le noeud à réaliser).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Attacher les modules entre eux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/e/e3/Barriere_d_chet_Screenshot_2023-02-01_17.13.58.png' alt='Barriere d chet Screenshot 2023-02-01 17.13.58.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On favorisera cette étape lors de l'installation des modules au bord de l'eau. Dans la cas où on vient juste de terminer l'assemblage de deux modules, on peut tester l'attache en suivant le protocole suivant :<ul><li>Positionner les modules côte à côte.</li><li>Faire passer une corde le long du bambou situé à l’avant du module (bambou de 130cm).</li><li>Placer le manchon entre les deux bambous situés à l’avant du module.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Ajouter un lestage à la barrière</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/6/69/Barriere_d_chet_Screenshot_2023-02-01_17.14.04.png' alt='Barriere d chet Screenshot 2023-02-01 17.14.04.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le lestage permet à la barrière d’accumuler des déchets dans ses grilles sans se retourner. Pour réaliser celui-ci, on va remplir les bidons arrières (les petits de 20L) avec de l’eau. Une fois les bidons remplis (opération à réaliser le jour de l’installation sur rivière), on cherchera à refermer les trous de remplissage.</li><li>On utilise une perceuse pour faire un trou sur le dessus du bidon, on fait un trou légèrement plus petit que le diamètre d’un bouchon de bouteille de vin. Ce trou peut-être réalisé avec une perceuse et un embout en cloche. Pour faire ce trou on utilise une cloche de diamètre 22mm.</li><li>Le bidon va se dépressurisé (attention à la pression qui s’échappe cela peut provoquer un bruit un peu fort).</li><li>On peut alors mettre le bouchon de vin dans le trou. L’étanchéité n’est pas parfaite mais convient à notre besoin de conserver l’eau du bidon et d’éviter le remplissage lors des pluies.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

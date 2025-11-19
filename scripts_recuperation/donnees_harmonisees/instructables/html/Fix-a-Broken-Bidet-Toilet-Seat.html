@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Fix a Broken Bidet Toilet Seat With Potential Design Flaw</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Fix a Broken Bidet Toilet Seat With Potential Design Flaw</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/F1P/SQRQ/LTSO6JFZ/F1PSQRQLTSO6JFZ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>My family has had a bidet toilet seat for a little over 3 years and we love it! Unfortunately, it recently started cracking around the supports at either side of the toilet seat. The left hinge was also broken, as shown. We started to look at each other suspiciously and reflect on who was gaining the most weight in the family... until we found out that this problem happened to many online reviewers of the same product. Maybe it wasn't our weight that was the problem after all!</p>
+      
+        <p>Upon further observation, I noticed that when the toilet seat is put down, it couldn't lay on top of the toilet like it was supposed to. There was a gap between a pair of supports (on both sides) and the toilet bowl's rim. As shown, there are 2 pairs of supports (4 total). The pair of supports closest to the hinge could rest on the toilet with no problem, while the other pair was suspended in the air. When someone sat on the toilet, the latter supports were pushed down to contact the toilet bowl's rim below, which also ended up prying up the hinge like a seesaw. This caused the hinge area and the support area to work against each other and weaken over time until one or both broke.</p>
+      
+        <p>To effectively fix this problem, we can't just patch up the hinge - we need to address the root cause (the supports not contacting the toilet rim) as well. To make things even harder, unlike a regular toilet seat, the bidet toilet seat has some extra internal components that I had to work around.</p>
+      
+        <p><ul><li>Wires & electric components. The toilet seat has wires inside to warm up the seat. The wire goes through the ring part of the toilet seat and the hinge on one side. I had to be very careful with my movements and ended up choosing not to use any conductive tools to fix the section containing the wires.</li><li>Hollow toilet seat. The hollow seat proved to be pretty fragile - the much thinner top and bottom layers made the seat much harder to repair.</li><li>Narrow workspace. The space around the hinges was very narrow and hard to work with. I measured the distance from the back side of the hinge and the toilet seat cover to be less than 2 mm! Such a small space made it very difficult to use most mending materials.</li></ul></p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Fix-a-Broken-Bidet-Toilet-Seat/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Fix-a-Broken-Bidet-Toilet-Seat/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>Sandpaper</li><li>Metal wire</li><li>Zip ties</li><li>Rubber tube</li><li>Super glue</li><li>Foam</li><li>Duct tape (or substitute self-adhesive medical wrap)</li><li>Hot foam cutter, a.k. "hot knife foam cutter" or "hot wire foam cutter"</li><li>Reusable Moldable Plastic & glass jar</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Fix the Hinge</strong><div class='step-images count-7'><figure><img src='https://content.instructables.com/FJ8/KKZS/LTEDSS8X/FJ8KKZSLTEDSS8X.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix the Hinge' loading='lazy'></figure><figure><img src='https://content.instructables.com/F1A/84KG/LTEDSS8Y/F1A84KGLTEDSS8Y.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix the Hinge' loading='lazy'></figure><figure><img src='https://content.instructables.com/FEK/ON18/LTEDSS9H/FEKON18LTEDSS9H.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix the Hinge' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQ5/I1A6/LTEDSSA1/FQ5I1A6LTEDSSA1.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix the Hinge' loading='lazy'></figure><figure><img src='https://content.instructables.com/F9M/EI8U/LTEDSSAM/F9MEI8ULTEDSSAM.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix the Hinge' loading='lazy'></figure><figure><img src='https://content.instructables.com/FXG/S1BG/LTEDSSB8/FXGS1BGLTEDSSB8.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix the Hinge' loading='lazy'></figure><figure><img src='https://content.instructables.com/FJ4/0IQO/LTEDSS8F/FJ40IQOLTEDSS8F.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix the Hinge' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>For regular toilet seat, you can typically just buy a universal toilet hinge or a special replacement hinge, but since our toilet is a bidet, that solution won't work for us.</li><li>Use the foam cutting tool to drill two holes on each side of the broken hinge, as seen in the images. We made an extra hole in the side so to secure the molding plastic later. If you do not plan to use molding plastic to finish, you can skip making this extra hole. Sand smoothly with the sandpaper as needed.</li><li>On the side with two holes next to the toilet seat (see images), thread a zip tie through the holes. On the other side, use metal wire to secure a small section of rubber tubing. Use another zip tie to connect the first zip tie and the rubber tube. Tighten the zip tie, trim the extra and secure the end in the rubber pipe.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Fix Cracks</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FPH/XOLZ/LTEDSSP9/FPHXOLZLTEDSSP9.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure><figure><img src='https://content.instructables.com/FDT/CBOB/LTEDSSKH/FDTCBOBLTEDSSKH.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure><figure><img src='https://content.instructables.com/FBH/M31Y/LTEDSSL8/FBHM31YLTEDSSL8.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure><figure><img src='https://content.instructables.com/FKM/08TS/LTEDSSL5/FKM08TSLTEDSSL5.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure><figure><img src='https://content.instructables.com/FPH/DFEV/LTEDSSLZ/FPHDFEVLTEDSSLZ.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure><figure><img src='https://content.instructables.com/F5L/5X8U/LTEDSSMR/F5L5X8ULTEDSSMR.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure><figure><img src='https://content.instructables.com/F55/NSWG/LTEDSSNK/F55NSWGLTEDSSNK.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure><figure><img src='https://content.instructables.com/F4M/G6D2/LTEDSSOE/F4MG6D2LTEDSSOE.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Fix Cracks' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>A replacement seat costs about $70, and the hinge part is at least $30. Instead of paying $100, we'll fix it ourselves quickly, effectively, and cheaply! The way we fixed the cracks was inspired by a traditional technique here: https://www.youtube.com/watch?v=R3jknFjZJyY&ab_channel=LeeFrank (audio in Chinese)</li></ul></li><li>Carefully remove the cracked section from the bottom of the seat, making sure it stays in one piece, so you can see the layout of the wires.</li><li>Top section (cracks): Drill holes in pairs. Make sure to avoid the wires! Apply super glue to the cracks, then thread zip ties through the holes to secure the toilet seat.</li><li>Apply glue to any other cracks in a similar way as well.</li><li>Bottom section (removed piece):</li><li>I drilled extra holes on the back of the toilet seat to secure some molding plastic later.</li><li>Place a chunk of foam or styrofoam inside the toilet seat as padding before gluing the removed piece back onto the toilet seat.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Add Supports</strong><div class='step-images count-8'><figure><img src='https://content.instructables.com/FMG/1HYG/LTEDST1M/FMG1HYGLTEDST1M.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure><figure><img src='https://content.instructables.com/FQF/V6C2/LTEDST1N/FQFV6C2LTEDST1N.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure><figure><img src='https://content.instructables.com/FF4/1NL6/LTEDST2N/FF41NL6LTEDST2N.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure><figure><img src='https://content.instructables.com/FHR/MXGF/LTEDST3Q/FHRMXGFLTEDST3Q.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure><figure><img src='https://content.instructables.com/FF1/A0GW/LTEDST4S/FF1A0GWLTEDST4S.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure><figure><img src='https://content.instructables.com/F44/FEGD/LTEDST5V/F44FEGDLTEDST5V.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure><figure><img src='https://content.instructables.com/F2F/R74I/LTEDST6Z/F2FR74ILTEDST6Z.jpg?auto=webp&fit=bounds&frame=1auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure><figure><img src='https://content.instructables.com/FFT/AESI/LTEDST99/FFTAESILTEDST99.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Add Supports' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>As mentioned earlier, we will need to add new supports to prevent future cracking.</li><li>Measure the heights of the existing supports and the heights of the gaps between the seat and the rim at various points. Our current supports don't provide the proper support. We noticed that although all 4 supports were of the same height, the support heights required to allow the toilet seat to rest on the rim actually varied at different locations.</li><li>Mark some locations where you will place new supports. Cut out sections of foam, tracing along the seat as shown, and cut them to the correct height. Attach the foam pieces with double sided tape and/or superglue. Most likely, the foam pieces will not support the toilet seat perfectly on the first attempt, so make small adjustments to the height until it does.</li><li>Wrap adhesive wrap or duct tape around the toilet seat to further secure the foam supports. I prefer adhesive wrap, as it is more flexible, leaves no residue, and is more comfortable.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Smooth With Molding Plastic</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FEI/8DH5/LTSO6JER/FEI8DH5LTSO6JER.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Smooth With Molding Plastic' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>With we can cover our repairs with moldable plastic, making the seat more comfortable and better-looking.</li><li>Follow the manufacturer's instructions for heating the moldable plastic beads. Once the plastic softens into one piece, start molding it around the place of the repairs. Be patient - add a small amount at a time, pressing the plastic into the drilled holes and over any cracks that may still be visible.</li><li>Let the plastic harden.</li><li>The seat is now fixed, and finally, we can enjoy our bidet again!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

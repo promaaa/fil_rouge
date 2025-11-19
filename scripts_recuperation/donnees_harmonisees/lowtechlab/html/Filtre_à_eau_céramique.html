@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Filtre à eau céramique</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Filtre à eau céramique</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/d/d7/Filtre_eau_c_ramique_Filtres_eau_GP.jpg/ia-ab56645d5252280784c19401ffbf2b83-px-Filtre_eau_c_ramique_Filtres_eau_GP.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Un filtre à eau céramique est un système permettant de purifier de l'eau insalubre. Ce tutoriel a pour but pour présenter le fonctionnement et les différentes étapes de construction d'un filtre à eau en céramique à échelle semi-industrielle.</div>
+        
+      </div>
+    
+    
+      
+        <p>En 1990, environ 2,3 milliards de personnes n'ont pas accès à de l'eau potable dans le monde (source: UNICEF - ONU). Aujourd'hui en 2020, 750 000 personnes boivent toujours de l'eau insalubre, en faisant la première cause de mortalité non liée à l'âge dans le monde.</p>
+      
+        <p>Les céramiques produites localement sont utilisées pour filtrer l'eau depuis des centaines d'années. L'eau est versée dans un pot filtrant en céramique poreuse et est recueillie dans un autre récipient après être passée à travers le pot en céramique. Ce système permet également un stockage sûr jusqu'à ce que l'eau soit utilisée. Les filtres en céramique sont généralement fabriqués à partir d'argile mélangée à un matériau combustible comme de la sciure ou des balles de riz. De l'argent colloïdal est parfois ajouté au mélange d'argile avant la cuisson ou appliqué sur le pot en céramique cuit. L'argent colloïdal est un antibactérien qui contribue à l'inactivation des agents pathogènes, tout en empêchant la croissance des bactéries dans le filtre lui-même.</p>
+      
+        <p>Les agents pathogènes et les éléments en suspension sont éliminés de l’eau par des procédés physiques tels que le piégeage mécanique et l’adsorption. Le contrôle de qualité sur la taille des matières combustibles utilisées dans le mélange d’argile assure que la taille des pores du filtre est suffisamment petite pour empêcher les contaminants de passer par le filtre. L’argent colloïdal facilite le traitement en brisant la membrane des cellules des agents pathogènes, provoquant ainsi leur mort.</p>
+      
+        <p>Ce filtre a été développée en 1981 par le Dr Fernando Mazariegos de l'Institut de recherche industrielle d'Amérique centrale (ICAITI) au Guatemala. L'objectif était de rendre l'eau contaminée par des bactéries, sûre pour les plus pauvres en développant un filtre peu coûteux qui pourrait être fabriqué au niveau de la communauté. Le professeur décide de léguer librement ce savoir à l'Humanité, et avec l'ONG Potters for Peace, commence à former des potiers dans le monde entier à produire ces filtres localement. Aujourd’hui 61 usines ont ouvert sur ce modèle, dans 39 pays du monde !</p>
+      
+        <p>Ce tutoriel présente le fonctionnement et les grandes étapes de fabrication d'un filtre céramique. Il s'adresse plutôt à des entrepreneurs qu'à des particuliers. Cette technologie n'est pas appropriée pour être répliquée chez soi (besoin d'un four, de faire des tests sur les matériaux, etc). Si vous êtes intéressés par la création d'une petite usine de la sorte, il vous sera nécessaire de vous former plus amplement. L'organisation Potters for Peace en partenariat avec le CAWST ou encore l'entreprise Ecofiltro (que nous avons visité au Guatemala) propose ce genre de formations. Tout ce savoir est disponible librement en open-source.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Filtre_à_eau_céramique" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Filtre_à_eau_céramique</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Sciure de bois</li><li>Argile</li><li>Eau propre : pour le mélange avec l'argile et pour les tests de débit</li><li>Argent colloïdal</li><li>Récipient avec robinet (céramique, plastique, métal)</li><li>Sacs en plastique pour le processus de pressage</li><li>Combustible pour le four</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Balance</li><li>Mélangeuse : Pour mélanger l'argile, la sciure et l'eau</li><li>Extrudeuse : Pour extruder le mélange d'argile en blocs pour le moulage</li><li>Presse hydraulique équipée de moules mâle et femelle</li><li>Étagères de séchage: Pour faire sécher les pots avant cuisson</li><li>Fours : Pour faire cuire les céramiques</li><li>Bassins + Supports : Pour faire les essais de débit</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Fonctionnement - Rôle des différents matériaux</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Filtre_eau_c_ramique_IMG_9507.JPG/800px-Filtre_eau_c_ramique_IMG_9507.JPG' alt='Filtre eau c ramique IMG 9507.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/74/Filtre_eau_c_ramique_D_tails_filtre_et_composant.jpg/800px-Filtre_eau_c_ramique_D_tails_filtre_et_composant.jpg' alt='Filtre eau c ramique D tails filtre et composant.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/54/Filtre_eau_c_ramique_argent-colloidal-20ppm-500ml-catalyons-laboratoire_5422-1.jpg' alt='Filtre eau c ramique argent-colloidal-20ppm-500ml-catalyons-laboratoire 5422-1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>L'argile :</li></ul></li><li>L'argile constitue le matériau de base de l'élément filtrant de l'eau. Un pot d'argile permet un mouvement extrêmement lent de l'eau à travers les pores naturels qui existent entre les plaquettes d'argile cuite. La taille de ces pores a été mesurée (au microscope électronique) entre 0,6 et 3,0 microns (μm).</li><li>Ils sont capables d'éliminer la plupart des bactéries, protozoaires et helminthes (Lantagne, 2001a), ainsi que la saleté ou les sédiments et la matière organique.</li><li>L'argile utilisé pour faire de la poterie classique peut convenir à la production de filtres à eau. Toutefois, la conductivité hydraulique et la taille des pores peuvent varier considérablement selon le type d'argile, potentiellement au point de ne pas convenir en ce qui concerne les débits et/ou l'élimination microbiologique (Oyanedel-Craver et Smith, 2008, in Lantagne et al, 2010, [1]). Une forte teneur en sable ou en limon dans l'argile peut réduire les réticulations de l'argile et affaiblir la structure du filtre . D'autre part, une argile trop raffinée (particules plus petites) a une plus grande capacité de rétention d'eau et est donc plus sujette au rétrécissement et à la fissuration lors de la cuisson.<ul><li>Le matériau combustible :</li></ul></li><li>Des matières organiques " combustibles ", telles que de la sciure de bois ou des balles de riz moulues, sont ajoutées au mélange d'argile. Lorsqu'il est exposé aux températures élevées du four, le "matériau combustible" brûle, laissant derrière lui des cavités dans l'argile cuite. L'eau se déplace plus facilement dans les cavités que dans les pores de l'argile. Par conséquent, la présence des cavités diminue la distance que l'eau doit parcourir à travers le substrat d'argile, et augmente donc le débit global du filtre.<ul><li>L'argent colloïdal :</li></ul></li><li>L'argent colloïdal est une solution de nanoparticules d'argent en suspension et d'ions argent. Il est utilisé comme désinfectant naturel dans la médecine depuis de nombreuses années. Bien que les mécanismes exactes de destruction des bactéries ne soit pas encore tout à fait compris, il semble que l'argent colloïdal cause une rupture des parois cellulaires des bactéries puis se lie à leur protéines troublant ainsi leur fonctionnement [2] [3]. Aujourd'hui il est principalement produit par électrolyse.<ul><li>L'argent appliqué à l'intérieur et à l'extérieur du filtre est absorbé dans les pores de l'argile. Les ions d'argent sont réduits en argent élémentaire et forment des colloïdes à l'intérieur des parois du filtre. L'argent agit comme un biocide contre les bactéries lorsqu'il y a un temps de contact suffisant (=pores pas trop grand).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fonctionnement - Efficacité</strong><p><strong>Étapes :</strong></p><ol><li>Toutes les valeurs d'efficacité en laboratoire et sur le terrain ont été établies par des essais indépendants. détaillés dans les liens dans la partie "Notes et Références"</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Fabrication - Résumé des étapes</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2a/Filtre_eau_c_ramique_Sch_ma_tapes_production_filtre.JPG/800px-Filtre_eau_c_ramique_Sch_ma_tapes_production_filtre.JPG' alt='Filtre eau c ramique Sch ma tapes production filtre.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les principales étapes de fabrication d'un filtre en céramique sont listées dans l'ordre, ci-dessous :<ul><li>Préparation des matières premières : poudre d'argile, sciure de bois/balles de riz moulues, eau</li><li>Mélange des matières premières en une pâte malléable : poudre d'argile, sciure de bois/balles de riz moulues, eau</li><li>Former des cubes d'argiles pour la presse</li><li>Presser les cubes d'argiles pour leur donner la forme du filtre</li><li>Finition de surface et marquage/numérotation de chaque filtre</li><li>Séchage des filtres - pour retirer l'excès d'eau initial</li><li>Cuisson des filtres dans un four - pour terminer la déshydratation et la vitrification</li><li>Tests de débit de chaque filtre - pour validation ou déclassement</li><li>Peinture à l'argent colloïdal sur les surfaces de chaque filtre validé</li><li>Empaquetage des filtres</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fabrication - Préparation des matières premières</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0e/Filtre_eau_c_ramique_91118998_10158820170854411_2797069817700417536_n.jpg/800px-Filtre_eau_c_ramique_91118998_10158820170854411_2797069817700417536_n.jpg' alt='Filtre eau c ramique 91118998 10158820170854411 2797069817700417536 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2c/Filtre_eau_c_ramique_IMG_9403.JPG/ia-c4dc75786f33f183d07eaaf9583bd5fc-px-Filtre_eau_c_ramique_IMG_9403.JPG.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Argile:En fonction de sa provenance, l'argile doit parfois être broyé, tamisé et séché avant de pour être utilisé.</li><li>Matériau combustible : En fonction de sa nature (sciure de bois, balle de riz, etc), le matériau combustible doit être coupé, tamisé, séché et mis en sac.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Fabrication - Mélange des matières prémières</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/da/Filtre_eau_c_ramique_M_langeuse.jpg/800px-Filtre_eau_c_ramique_M_langeuse.jpg' alt='Filtre eau c ramique M langeuse.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/b7/Filtre_eau_c_ramique_Mix.jpg' alt='Filtre eau c ramique Mix.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La poudre d'argile et le matériau combustible (sciure de bois, les balles de riz moulues, etc) sont mélangées à sec, puis de l'eau est ajoutée uniformément et bien mélangée pour former une pâte modulable et homogène.</li><li>Il est prudent d'assurer un gradient de densité constant dans tout le mélange d'argile pour minimiser les défauts potentiels pendant le processus de cuisson de l'argile (élimination des poches d'air, etc.). Un mélange et une machinerie adéquats sont donc cruciaux.</li><li>Proportion utilisée par RDIC:</li><li>30 kg de poudre d'argile + 8,9 -10 kg de balles de riz + 12,5 L d'eau</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Fabrication - Former des cubes d'argiles pour la presse</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/3/30/Filtre_eau_c_ramique_Capture2.JPG' alt='Filtre eau c ramique Capture2.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le mélange d'argile humide peut être formé en cubes manuellement avant d'être pressé. Mais il est fortement conseillé d'utiliser une machine pour comprimer et extruder le mélange d'argile en cubes. L'extrudeuse est similaire à celles utilisées pour extruder des briques d'argile, mais l'ouverture de la sortie est plus grande pour permettre d'obtenir la taille requise du cube d'argile pour le pressage.</li><li>Les cubes d'argiles souhaités doivent peser environ 8kg.</li><li>On découpe un cube de la longueur équivalente et on le transfert vers la presse.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Fabrication - Presser les cubes d'argiles pour leur donner la forme du filtre</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/28/Filtre_eau_c_ramique_Presse_2.jpg/800px-Filtre_eau_c_ramique_Presse_2.jpg' alt='Filtre eau c ramique Presse 2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/Filtre_eau_c_ramique_Presse_1.jpg/800px-Filtre_eau_c_ramique_Presse_1.jpg' alt='Filtre eau c ramique Presse 1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/Filtre_eau_c_ramique_Screenshot_2021-01-06_MEIyNmJobWkxU3BPQk5HSmxOR0ptWWprdE1HRXlZeTAwTUdNMExXSTFNVFV0TmpNM05ESmtNamxqTXpneA_-_2802c0_e3dbc3e_..._.png/800px-Filtre_eau_c_ramique_Screenshot_2021-01-06_MEIyNmJobWkxU3BPQk5HSmxOR0ptWWprdE1HRXlZeTAwTUdNMExXSTFNVFV0TmpNM05ESmtNamxqTXpneA_-_2802c0_e3dbc3e_..._.png' alt='Filtre eau c ramique Screenshot 2021-01-06 MEIyNmJobWkxU3BPQk5HSmxOR0ptWWprdE1HRXlZeTAwTUdNMExXSTFNVFV0TmpNM05ESmtNamxqTXpneA - 2802c0 e3dbc3e ... .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'utilisation d'une presse hydraulique réduit considérablement les besoins en main-d'œuvre du processus et augmente considérablement l'efficacité et la consistance du produit. Les filtres sont pressés entre un moule mâle et un moule femelle qui sont recouverts de sacs en plastique pour éviter qu'ils ne collent. La presse hydraulique comprend une plaque fixe dans le moule inférieur qui pousse le moule pressé vers l'extérieur lorsque le moule s'ouvre.</li><li>Cette presse fut originelement developpée et construit par les équipes de Potters for Peace :<ul><li>Les plans sont disponibles en open-source [19]</li><li>Un document décrit la fabrication artisanale d'une presse hydraulique [17]</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Fabrication - Finition de surface et marquage/numérotation de chaque filtre</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/e/e3/Filtre_eau_c_ramique_Polisage.JPG' alt='Filtre eau c ramique Polisage.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/00/Filtre_eau_c_ramique_Screenshot_2021-01-06_RDIC_Ceramic_Water_Filter_Handbook_-_DRAFT-RDIC-Ceramic-Filter-Manual-1_3-No-Appendices_pdf.png' alt='Filtre eau c ramique Screenshot 2021-01-06 RDIC Ceramic Water Filter Handbook - DRAFT-RDIC-Ceramic-Filter-Manual-1 3-No-Appendices pdf.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/5/51/Filtre_eau_c_ramique_Screenshot_2021-01-06_RDIC_Ceramic_Water_Filter_Handbook_-_DRAFT-RDIC-Ceramic-Filter-Manual-1_3-No-Appendices_pdf_3_.png' alt='Filtre eau c ramique Screenshot 2021-01-06 RDIC Ceramic Water Filter Handbook - DRAFT-RDIC-Ceramic-Filter-Manual-1 3-No-Appendices pdf 3 .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/16/Filtre_eau_c_ramique_Screenshot_2021-01-06_RDIC_Ceramic_Water_Filter_Handbook_-_DRAFT-RDIC-Ceramic-Filter-Manual-1_3-No-Appendices_pdf_1_.png' alt='Filtre eau c ramique Screenshot 2021-01-06 RDIC Ceramic Water Filter Handbook - DRAFT-RDIC-Ceramic-Filter-Manual-1 3-No-Appendices pdf 1 .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/2b/Filtre_eau_c_ramique_Screenshot_2021-01-06_RDIC_Ceramic_Water_Filter_Handbook_-_DRAFT-RDIC-Ceramic-Filter-Manual-1_3-No-Appendices_pdf_2_.png' alt='Filtre eau c ramique Screenshot 2021-01-06 RDIC Ceramic Water Filter Handbook - DRAFT-RDIC-Ceramic-Filter-Manual-1 3-No-Appendices pdf 2 .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une finition de surface minimale est nécessaire après le moulage, mais elle est effectuée pour garantir la solidité du rebord et l'uniformité de la surface. Les filtres sont étiquetés pour indiquer la date de pressage, le lot et le numéro du filtre.<ul><li>Utiliser un grattoir en plastique pour lisser les contours de la bordure.</li><li>Marquez chaque filtre avec une date, un numéro de série et le nom du fabricant en utilisant un "tampon" métallique. Une base de données peut ensuite être utilisée pour le suivi des filtres.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Fabrication - Séchage des filtres</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Filtre_eau_c_ramique_Rang_e_de_filtres.jpg/800px-Filtre_eau_c_ramique_Rang_e_de_filtres.jpg' alt='Filtre eau c ramique Rang e de filtres.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ac/Filtre_eau_c_ramique_Ecofiltro-factory-Charlie-on-Travel.jpg/800px-Filtre_eau_c_ramique_Ecofiltro-factory-Charlie-on-Travel.jpg' alt='Filtre eau c ramique Ecofiltro-factory-Charlie-on-Travel.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le séchage des filtres permet d'éliminer l'excès d'eau en vue de la cuisson dans le four. Si l'eau n'est pas éliminée avant la cuisson, elle se réchauffera, s'évaporera et se dilatera, provoquant la fissuration du filtre. À la fin du processus de cuisson, les éléments filtrants auront perdu plus de 3 kg d'eau par rapport à leur première pression.</li><li>Déshydratation : le séchage initial des filtres se fait sur des étagères de séchage à l'air libre. Idéalement dans un endroit chaud et doté d'une bonne aération. Après cette période de séchage initial, les filtres peuvent conserver leur forme mais ne sont pas solides et restent solubles dans l'eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Fabrication - Cuisson des filtres dans un four</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1b/Filtre_eau_c_ramique_Fours_filtres.jpg/800px-Filtre_eau_c_ramique_Fours_filtres.jpg' alt='Filtre eau c ramique Fours filtres.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/e/ef/Filtre_eau_c_ramique_Capture3.JPG' alt='Filtre eau c ramique Capture3.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/48/Filtre_eau_c_ramique_step07.jpg' alt='Filtre eau c ramique step07.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Le processus de cuisson, se fait au départ à une faible température d'environ 100ºC pendant 2 heures. Cela permet d'éliminer l'excès d'eau restant.</li><li>Enfin, on augmente progressivement la température jusqu'à des températures élevées. A 866 °C, l'argile se vitrifie lorsque les molécules de silice et d'alumine fondent et se lient pour former un nouveau minéral aux structures fibreuses en forme d'aiguilles. L'argile vitrifiée est dure, résistante au stress et ne change pas de forme lorsqu'on y ajoute de l'eau. Après la vitrification, l'argile a une nouvelle structure chimique et ne peut pas être réduite en poudre et réutilisée comme poussière d'argile.</li><li>On laisse cuire à 900°C pendant9h.</li></ul></li><li>On peut utiliser différents type de fours et différents type de combustibles (bois, gaz, etc). Potters for Peace a créé 2 documents pour apprendre à construire un four en terre traditionnel "Mani Kiln"[20] [21]</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Fabrication - Tests de débit de chaque filtre</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Filtre_eau_c_ramique_Remplissagef_filtres_eau.jpg/800px-Filtre_eau_c_ramique_Remplissagef_filtres_eau.jpg' alt='Filtre eau c ramique Remplissagef filtres eau.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d7/Filtre_eau_c_ramique_Filtres_eau_GP.jpg/800px-Filtre_eau_c_ramique_Filtres_eau_GP.jpg' alt='Filtre eau c ramique Filtres eau GP.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Filtre_eau_c_ramique_Ecofiltro-filtering-water-Charlie-on-Travel.jpg/800px-Filtre_eau_c_ramique_Ecofiltro-filtering-water-Charlie-on-Travel.jpg' alt='Filtre eau c ramique Ecofiltro-filtering-water-Charlie-on-Travel.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le contrôle du débit est une étape importante de l'assurance qualité qui indique la vitesse à laquelle l'eau s'écoule à travers le filtre. Une fois que la formule et le processus de production de l'argile ont été établis, le test de débit est effectué sur CHAQUE filtre produit afin de s'assurer de sa viabilité.</li><li>Un filtre passe le contrôle si son débit est compris en 1,5-3L par heure. Sinon, il est déclassé et devra être détruit.<ul><li>Un débit élevé est un indicateur de fissures ou d'imperfections dans le filtre qui pourraient réduire l'efficacité de la filtration et ne pas éliminer les bactéries, parasites et autres impuretés nécessaires. En outre, un débit élevé réduit le temps d'exposition de l'eau filtrée à la solution d'argent, réduisant ainsi la capacité à tuer les bactéries présentes dans l'eau.</li><li>Un débit trop faible peut s'avérer peu pratique pour les ménages qui pourraient choisir de ne plus utiliser le filtre et donc de gaspiller leur investissement et de mettre leur santé en danger.</li><li>On remplit chaque filtre d'eau et l'on mesure le niveau d'eau atteint au bout d'un certain temps.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Fabrication - Peinture à l'argent colloïdal</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8a/Filtre_eau_c_ramique_Badigeonnage_argent_collo_dal.jpg/800px-Filtre_eau_c_ramique_Badigeonnage_argent_collo_dal.jpg' alt='Filtre eau c ramique Badigeonnage argent collo dal.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L'argent est reconnu pour sa capacité à tuer les microorganismes. L'argent colloïdal a été utilisé dans les hôpitaux et les cliniques comme agent antimicrobien pour les coupures, les brûlures et pour prévenir les infections oculaires chez les nouveau-nés (Lantagne, 2001) et pour désinfecter l'eau potable et les piscines (Russell, 1994, dans Lantagne, 2001). L'argent est utilisé par la NASA pour purifier l'eau des vols spatiaux (NASA CASI, 2007).<ul><li>Préparer votre solution d'argent colloïdal en fonction de la concentration et de la forme de votre argent.</li></ul></li><li>Par exemple, le manuel RDIC décrit :<ul><li>Ajouter 100 g de cristaux d'AgNO3 (le RDIC achète de l'AgNO3 cristallin d'une pureté d'environ 99,8%) à 500 ml d'eau déionisée et bien mélanger</li><li>Ajouter 1000 ml d'eau déionisée à la solution et mélanger pendant 1 minute.</li><li>Stocker cette solution concentrée d'argent dans un récipient en plastique résistant à la lumière.</li><li>Pour constituer la solution d'argent, prendre 100 ml de la solution concentrée d'argent et les placer dans un récipient résistant à la lumière. Ajoutez 18 litres d'eau distillée et mélangez. 18,1 L donnent une solution suffisante pour environ 60 filtres. (Note : Les conteneurs doivent être maintenus fermés car l'argent dans la solution s'oxyde lorsqu'il est exposé à l'air.)</li><li>~ 47 mg ou environ 200 ml de solution sont appliqués à l'intérieur du filtre à l'aide d'un pinceau.</li><li>~ 23 mg ou 100 ml de solution sont appliqués à l'extérieur du filtre</li><li>Laisser les filtres sécher pendant quelques heures.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Fabrication - Empaquetage des filtres</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ea/Filtre_eau_c_ramique_IMG_9446.JPG/800px-Filtre_eau_c_ramique_IMG_9446.JPG' alt='Filtre eau c ramique IMG 9446.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/be/Filtre_eau_c_ramique_Ecofiltro-pots-Charlie-on-Travel.jpg/800px-Filtre_eau_c_ramique_Ecofiltro-pots-Charlie-on-Travel.jpg' alt='Filtre eau c ramique Ecofiltro-pots-Charlie-on-Travel.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3b/Filtre_eau_c_ramique_dsc_4894.jpg/800px-Filtre_eau_c_ramique_dsc_4894.jpg' alt='Filtre eau c ramique dsc 4894.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Chaque filtre est associé à un récipient muni d'un robinet. Il peut exister des récipients de différents matériaux (plastique, céramique, verre, inox). L'empaquetage s'effectue de manière a bien protéger le contenu du carton pendant son transport.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Utilisation - Entretien - Remplacement</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f3/Filtre_eau_c_ramique_Poster_24_Ceramic_Pot_Filter_Maintenance_Latin_America_2015-11_en.png/800px-Filtre_eau_c_ramique_Poster_24_Ceramic_Pot_Filter_Maintenance_Latin_America_2015-11_en.png' alt='Filtre eau c ramique Poster 24 Ceramic Pot Filter Maintenance Latin America 2015-11 en.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e6/Filtre_eau_c_ramique_116717189_10159310602384411_5302440470838922473_n.png/800px-Filtre_eau_c_ramique_116717189_10159310602384411_5302440470838922473_n.png' alt='Filtre eau c ramique 116717189 10159310602384411 5302440470838922473 n.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/7a/Filtre_eau_c_ramique_images.jpg' alt='Filtre eau c ramique images.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il est important de distribuer ces filtres avec de bons manuels d'instructions détaillant son utilisation, son entretien et le remplacement des filtres.<ul><li>Fonctionnement et entretien :L'utilisateur verse de l'eau dans le filtre. L'eau se déplace lentement à travers le pot en céramique par gravité; elle est ensuite recueillie dans un réservoir de conservation hygiénique.Les utilisateurs ont accès à l'eau traitée grâce à un robinet.</li><li>Entretien: Le réservoir inférieur, le robinet et le couvercle doivent être nettoyés régulièrement. Le pot en céramique doit être nettoyé tous les 6 mois avec un chiffon ou une brosse douce, en prenant soin de ne pas toucher le fond du pot avec quoi que ce soit qui pourrait être contaminé.</li><li>Remplacement : Les pots en céramique doivent être remplacés tous les 2-3 ans, ou plus tôt si des fissures visibles apparaissent.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Etudes de cas</strong><p><strong>Étapes :</strong></p><ol><li>Si vous êtes intéressés par cette technologie et souhaitez vous renseigner plus en détail sur la mise en place d'une usine localement, nous vous invitons à consulter ces études des cas proposés par le CAWST :</li><li>- Implementation Case Study: Ceramic Pot Filters, Cambodia</li><li>- Implementation Case Study: Ceramic Pot Filters, Myanmar</li><li>- Ceramic Pot Filter Production China: JiaRun</li><li>- Best Practice Recommendations for Local Manufacturing of Ceramic Pot Filters for Household Water Treatment</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

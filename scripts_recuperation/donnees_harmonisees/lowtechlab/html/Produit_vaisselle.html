@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Produit vaisselle</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Produit vaisselle</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/ec/Lessive_en_poudre_bicarbonate-de-soude.jpg/800px-Lessive_en_poudre_bicarbonate-de-soude.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">2 recettes rapides, économiques et écologiques de produit pour lave vaisselle naturel et laver la vaisselle à main</div>
+        
+      </div>
+    
+    
+      
+        <p>Les détergents utilisés dans un produit lave-vaisselle sont nocifs pour l’environnement. Chaque année en France, 10 000 tonnes de détergents sont utilisées pour laver la vaisselle. Les pratiques évoluent peu à peu et des fabricants tentent de supprimer les phosphates de la composition de leurs détergents. Malheureusement, il existe encore de nombreuses poudres ou tablettes qui en contiennent encore beaucoup trop.</p>
+      
+        <p>Composés généralement présents dans les tablettes lave vaisselle:<ul><li>Des phosphonates : des composés faiblement biodégradables qui participent à l’asphyxie des milieux aquatiques.</li><li>Des polycarboxylates : substances d’origine pétrochimique non dégradables.</li><li>Des tensioactifs : substances issues de la pétrochimie, souvent allergènes.</li><li>Des parfums synthétiques : peuvent être allergènes.</li></ul></p>
+      
+        <p>Nous vous proposons ici une recette 100% composée de produits naturels, économiques et écologiques. A vous de jouer!</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 10 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Produit_vaisselle" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Produit_vaisselle</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Produit pour lave-vaisselle<ul><li>1 cuillère à soupe de Percarbonate de sodium</li><li>3 cuillères à soupe de Cristaux de soude = Carbonate de soude (attention: ne pas confondre avec la soude caustique!)</li><li>2 cuillères à soupe d'acide citrique</li><li>1 cuillère à soupe de bicarbonate</li><li>Vinaigre blanc (à ajouter lors du lavage)</li></ul></li><li>Produit pour vaisselle à la main<ul><li>Savon de Marseille</li><li>Savon noir</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>1 cuillère à soupe</li><li>1 bocal hermétique</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Détails sur les ingrédients</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Biocarbonate de sodium : Il agit comme nettoyant, récurant et désodorisant. Il dissout les graisses et les protéines responsables des tâches et renforce l’action de produit vaisselle maison. Il évite la prolifération des bactéries et adoucit l’eau dure. Fabriqué à partir de calcaire et de sel, le bicarbonate est présent naturellement dans l’organisme, il est sans risque pour la santé. Ne dégage aucune émanation, ne s'évapore pas. Compter ~3-4 euros/kg</li><li>Cristaux de soude ou carbonate de sodium : Utilisé pour son action dégraissante et désinfectante. Ils constituent un élément chimique obtenu naturellement à partir de gisements de natron, mais que l’on sait désormais fabriquer à partir de sel et de craie. Compter ~3-4 euros/kg.</li><li>Percarbonate de soude : Détachant efficace, non-toxique et biodégradable, fabriqué à partir d'eau, de sel et de craie. Il se décompose dans l’eau pour donner de l’eau oxygénée (ou peroxyde d’hydrogène) et du carbonate de sodium. Compter ~5-7euros /kg</li><li>Vinaigre blanc : Produit d'entretien aux très nombreuses propriétés, nous l'utilisons ici pour son pouvoir détartrant et désinfectant. Compter ~1euro/</li><li>Savon de Marseille : En bloc C.ompter ~10 euros/kg. Attention à choisir du vrai savon de Marseille, seules 4 entreprises fabriquent l'original "Savon de Marseille".</li><li>Savon noir : en concentré liquide 8.5€/L. Il complète bien le savon de marseille pour son efficacité contre la graisse et le brûlé. Très dégraissant il peut abimer les mains s'il n'est pas dilué.</li><li>Acide citrique: 100% naturel, il est fabriqué à partir de mélasse (fermentation de canne à sucre) et d’un champignon microscopique. Totalement biodégradable, il agit comme un anticalcaire qui détartre, nettoie et dissout les dépôts blancs. C’est aussi un formidable antioxydant.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Fabrication et utilisation du produit lave-vaisselle</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Mélanger les différents ingrédients dans un bocal hermétique. Conserver à l'abri de l'humidité.</li><li>Mettre une cuillère à café bien remplie à chaque lavage dans le compartiment prévu à cet effet.</li><li>Ajouter le vinaigre blanc dans le compartiment de rinçage pour détartrer et désinfecter votre machine. Pas d'odeur sur la vaisselle.</li><li>Ajouter du gros sel dans le compartiment de sel régénérant.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Produit vaisselle à la main</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/f/f6/Lessive_en_poudre_cube-de-savon-de-marseille-a-lhuile-dolive.jpg' alt='Lessive en poudre cube-de-savon-de-marseille-a-lhuile-dolive.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/f/f5/Produit_vaisselle_Savon-liquide-vaiselle-fait-maison-1-Lilycraft-900_2_.jpg' alt='Produit vaisselle Savon-liquide-vaiselle-fait-maison-1-Lilycraft-900 2 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/16/Produit_vaisselle_cake-vaisselle-sans-sci-tensioactif-1536x1023.jpg/800px-Produit_vaisselle_cake-vaisselle-sans-sci-tensioactif-1536x1023.jpg' alt='Produit vaisselle cake-vaisselle-sans-sci-tensioactif-1536x1023.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Version simplissime :<ul><li>Utiliser simplement un bloc de Savon de Marseille.</li><li>Frotter la surface avec une éponge humide classique. Puis frotter votre vaisselle normalement à l'eau chaude de préférence.</li></ul></li><li>Version liquide/gel :<ul><li>Faire fondre 5 càs de Savon de Marseillerapé dans un peu d'eau chaude dans une casserole</li><li>Ajouter 5 càs de savon noir et bien mélanger</li><li>Compléter le volume de la bouteille de liquide vaisselle avec de l'eau chaude et bien mélanger pour homogénéiser</li><li>NE PAS COMPLETER AVEC DU VINAIGRE, même partiellement, sous peine de voir le liquide vaisselle déphaser avec la partie "grasse" de glycérine remonter et "encrasser" votre vaisselle. Testé et regretté!</li></ul></li><li>Penser à légèrement secouer avant usage. Si vous voulez épaissir le liquide vous pouvez utiliser de l'eau de cuisson de riz ou ajouter un peu d'argile au mélange (le liquide épaissit naturellement légèrement en refroidissant).</li><li>En diluant moins ce mélange vous pouvez aussi faire un cake vaisselle, la fameuse pâte d'argile, sans SCI ni autre tensioactifs que ceux des savons!</li><li>Il se peut qu'une légère couche "grasse" reste sur la vaisselle après rinçage. Pour bien éliminer ce reste de savon utilisez de l'eau bien chaude pour rincer votre vaisselle à la main.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

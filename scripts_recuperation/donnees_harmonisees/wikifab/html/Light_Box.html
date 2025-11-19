@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Light Box</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Light Box</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wikifab.org/images/thumb/7/77/Light_Box_Principale.JPEG/ia-b988a1c5304338d42355a4043b82d94b-px-Light_Box_Principale.JPEG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Création d'une lightbox (lampe boîte à ombres)</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment light box.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Medium Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Light_Box" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Light_Box</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>- Papier</li><li>- Bois ou Carton ou Carton Bois (ici carton bois 3mm)</li><li>- Ruban de leds avec télécommande</li><li>- Polystyrène ou Depron</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>- Pistocolle</li><li>- Découpeuse laser ou vinyle</li><li>- Cutter</li><li>- Règles</li><li>- Stylo</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Sélection du design</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/7/76/Light_Box_Capture_d_cran_2024-01-18_174356.png/800px-Light_Box_Capture_d_cran_2024-01-18_174356.png' alt='Light Box Capture d cran 2024-01-18 174356.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour le design de multiples options s'offrent à vous :</li><li>- Trouver un design déjà existant</li><li>- Créer le votre</li><li>N'ayant pas un.e artiste dessinateur.ice je me suis penché sur les designs déjà existants. J'ai pu trouver sur Thingiverse une première fournée en tapant "lightbox" d'un créateur du nom de "Tecnoculebras". Il propose sur Thingiverse un grand nombre de fichier STL (pour l'impression 3D).</li><li>J'ai ensuite fouillé et trouver son Patreon où il propose des designs gratuits avec des plans sous de nombreux formats (stl, svg, ai, png...). En sélectionnant le niveau "Public" ici vous pourrez accéder aux différents plans gratuits.</li><li>J'ai choisi le modèle Sakura qui présente 8 couches de papier.</li><li>Sinon vous pouvez taper "Free lightbox pattern" sur votre moteur de recherche, ou encore acheter un des nombreux modèles présents sur Etsy :)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparation et découpe des fichiers</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/8/82/Light_Box_IMG_4647.JPEG/800px-Light_Box_IMG_4647.JPEG' alt='Light Box IMG 4647.JPEG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir préparer vos fichiers sur votre machine, lancez vous dans l'impression, la découpe à la découpeuse vinyle, à la laser ou encore à la main si vous n'avez pas le choix et beaucoup de dextérité dans vos petits doigts.</li><li>J'ai moi choisis de faire confiance à ma découpeuse laser!</li><li>Ma fidèle XTool M1 avec laquelle j'ai découpé du papier canson pour solidifier mon design.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Couper le depron</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/f/f2/Light_Box_IMG_4650.JPEG/800px-Light_Box_IMG_4650.JPEG' alt='Light Box IMG 4650.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/4/49/Light_Box_IMG_4649.JPEG/800px-Light_Box_IMG_4649.JPEG' alt='Light Box IMG 4649.JPEG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour séparer les différentes couches de papier et j'utilise pour ça du depron. Car comme tout bon Petits Débrouillards, j'ai pris ce qui trainait dans notre local. Mais vous pouvez utiliser n'importe quel matériel qui vous permettra d'espacer les couches de papier!</li><li>J'ai coupé des lamelles un peu moins longues que la hauteur et la largeur de mes feuilles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblage des couches</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/8/80/Light_Box_IMG_4648.JPEG/800px-Light_Box_IMG_4648.JPEG' alt='Light Box IMG 4648.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2f/Light_Box_IMG_4651.JPEG/800px-Light_Box_IMG_4651.JPEG' alt='Light Box IMG 4651.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/c/c3/Light_Box_IMG_4652.JPEG/800px-Light_Box_IMG_4652.JPEG' alt='Light Box IMG 4652.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/1/14/Light_Box_IMG_4962.JPEG/ia-25aa9caa44aacb0acdb491ea116ee7e9-px-Light_Box_IMG_4962.JPEG.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir tout bien découper sans avoir perdu vos doigts, vous allez pouvoir coller votre depron sur les hauteurs et largeurs de vos couches de papier. J'ai choisi d'utiliser un pistocolle.</li><li>Ensuite, j'ai assemblé mes couches une par une. Attention à bien les assembler les unes sur les autres bien en face. Non pas pour l'aspect esthétique mais bien parce que sinon votre assemblage de papier ne rentrera pas dans la boîte que vous allez créer plus tard.</li><li>Sur un deuxième modèle j'ai décidé de partir sur des couches de cartons découpées à la laser pour séparé les couches.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Création de la boîte</strong><div class='step-images count-3'><figure><img src='https://wikifab.org/images/thumb/3/34/Light_Box_Bo_te_bis.JPEG/800px-Light_Box_Bo_te_bis.JPEG' alt='Light Box Bo te bis.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/2/2f/Light_Box_Bo_te.JPEG/800px-Light_Box_Bo_te.JPEG' alt='Light Box Bo te.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/8/8b/Light_Box_arri_re.JPEG/800px-Light_Box_arri_re.JPEG' alt='Light Box arri re.JPEG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>J'ai été sur Boxes.py afin de créer une boîte fermée qui correspondrait à mes besoins. J'ai donc rajouter une ouverture sur la face de devant afin que le design soit visible, mais que le depron soit caché, ainsi qu'une ouverture à l'arrière pour faire passer notre alimentation.</li><li>Les fichiers sont préparés pour du matériau de 3mm d'épaisseur. Sur une autre épaisseur vous aurez du mal à l'assembler.</li><li>Nous avons décidé d'utiliser du carton bois, mais vous pouvez aussi le faire en contre plaqué, juste en carton ou encore juste recycler une vieille boîte à chaussure que vous allez pouvoir customiser et peindre.</li><li>Une fois votre boîte montée, insérez vos couches de papier dans la boîte, sans ajouter l'arrière! J'ai personnellement collé l'avant de la dernière couche de papier à l'avant de ma boîte pour que le papier ne bouge pas.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Installation des LEDs</strong><div class='step-images count-2'><figure><img src='https://wikifab.org/images/thumb/6/69/Light_Box_leds.JPEG/800px-Light_Box_leds.JPEG' alt='Light Box leds.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/6/67/Light_Box_Capture_d_cran_2024-01-31_173249.png/800px-Light_Box_Capture_d_cran_2024-01-31_173249.png' alt='Light Box Capture d cran 2024-01-31 173249.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Afin d'installer les leds, j'ai choisis de coller une bande de leds à l'arrière de la boîte. Elles ont ensuite été connectée à un EPS32 et ensuite programmées sur VittaScience. Une fois le programme sur la carte, plus besoin de le brancher à l'ordinateur, on peut simplement avoir une prise murale ou encore une batterie portable.</li><li>On peut aussi programmer les leds avec WLed. Il faut installer WLed sur sa carte programmable et ensuite elle est contrôlable à distance!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Installation des LEDs bis</strong><div class='step-images count-1'><figure><img src='https://wikifab.org/images/thumb/a/a0/Light_Box_IMG_4963.JPEG/800px-Light_Box_IMG_4963.JPEG' alt='Light Box IMG 4963.JPEG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Sur un second modèle, j'ai acheté un bande de LEDs déjà montée avec une télécommande, sans avoir besoin de programmation et/ou de soudure.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Produit fini et pistes</strong><div class='step-images count-4'><figure><img src='https://wikifab.org/images/thumb/f/f1/Light_Box_IMG_4966.JPEG/800px-Light_Box_IMG_4966.JPEG' alt='Light Box IMG 4966.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7a/Light_Box_vert.JPEG/800px-Light_Box_vert.JPEG' alt='Light Box vert.JPEG' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/0/02/Light_Box_470_IMG_8427.jpg/800px-Light_Box_470_IMG_8427.jpg' alt='Light Box 470 IMG 8427.jpg' loading='lazy'></figure><figure><img src='https://wikifab.org/images/thumb/7/7a/Light_Box_Capture_d_cran_2024-01-17_173609.png/800px-Light_Box_Capture_d_cran_2024-01-17_173609.png' alt='Light Box Capture d cran 2024-01-17 173609.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Et voilà votre boîte finie! Il existe cependant des pistes pour améliorer votre projet :</li><li>- Rajouter une plaque de plexiglass devant</li><li>- Faire une boîte plus petite ou plus grande</li><li>- Dessiner soit même ses dessins sur Inkscape ou Illustrator</li><li>- Ajouter derrière la création (entre la dernière couche de papier et les leds) des fines couches d'impressions 3D de couleur pour avoir des variations de lumière sur le projet (voir la dernière image)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

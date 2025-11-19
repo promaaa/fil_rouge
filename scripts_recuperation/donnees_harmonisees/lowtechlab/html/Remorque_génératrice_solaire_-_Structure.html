@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Remorque génératrice solaire - Structure</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Remorque génératrice solaire - Structure</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/1e/Remorque_g_n_rateur_solaire_DSC_0363.JPG/ia-b1b6b6fd411c87ced78bc89df55b071b-px-Remorque_g_n_rateur_solaire_DSC_0363.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel présente la construction de la structure d'un générateur solaire (1kWc) déplaçable à vélo. Cette structure a été conçue pour s'adapter sur la CHARETTE , une remorque assistée conçue par l'association Véloma et dont les plans sont disponibles librement.</div>
+        
+      </div>
+    
+    
+      
+        <p>Cette remorque est un démonstrateur fonctionnel conçu dans le cadre du projet Scholar Grid.</p>
+      
+        <p>Soutenu et piloté par la Fondation Schneider Electric en partenariat avec les associations Low-tech Lab, Énergies sans Frontières et Atelier 21, ce projet a pour ambition d'investiguer des solutions innovantes pour fournir de l’énergie électrique abordable et propre à des centres de formation qui forment de futurs électriciens. Les systèmes énergétiques imaginés par les experts techniques et les professeurs des centres de formation, seront mises en œuvre par des étudiants et serviront de base pédagogique.</p>
+      
+        <p>Les champs d'investigation de ce projet ont été les suivants :<ul><li>La récupération et la réparation de panneaux photovoltaïques endommagés.</li><li>La récupération et la régénération de batteries au plomb d'occasion.</li><li>Les micro-réseaux en courant continu.</li></ul></p>
+      
+        <p>Pour tester ces techniques en conditions réelles, le Low-tech Lab a construit une remorque génératrice mobile. D’une puissance de 1kWc, elle combine des panneaux solaires de seconde main réparés et des batteries plomb régénérées. Elle a été conçue sur la base de besoins concrets: fournir l'électricité du Festival Low-tech organisé à Concarneau en juillet 2022.</p>
+      
+        <p>Le générateur solaire que nous avons fabriqué est conçu pour s’adapter à la CHARRETTE . Une remorque à assistance électrique conçue et réalisée par Véloma dont les plans sont disponibles librement. Cette association expérimente des vélos-cargos, des remorques et des outils de basse technologie dans l’optique de l’autonomie et de la transition énergétique. Cette remorque peut être attelée à n’importe quel vélo et peut emporter jusqu’à 300kg de charge.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Hard Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 980 EUR (€)
+    </p>
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Remorque_génératrice_solaire_-_Structure" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Remorque_génératrice_solaire_-_Structure</a>
+    </p>
+    
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>14 m de tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm</li><li>16 m de tubes ronds creux inox de ⌀21, 3 mm, d’épaisseur 2 mm</li><li>1 plat inox de 40 x 2 mm, de 1000 mm de longueur</li><li>1 plaque inox de 1500 x 350 mm, d'épaisseur 4 mm</li><li>2 cornières de 50 x 27 mm, d'épaisseur 1 mm, de 990 mm de longueur</li><li>1 tige filetée de ⌀8 mm, de 550 mm de longueur</li><li>1 profil en U de 70 x 35 mm, d’épaisseur 1 mm, de 1000 mm de longueur</li></ul></li><li>Visserie<ul><li>6 vis de ⌀6 mm</li><li>6 écrous de ⌀6 mm</li><li>13 vis de ⌀10 mm</li><li>27 écrous de ⌀10 mm</li><li>4 rondelles de ⌀10 mm</li><li>14 vis de ⌀8 mm</li><li>30 écrous de ⌀8 mm</li><li>6 goupilles de ⌀6 mm</li><li>4 rotules TSF, axe ⌀ 10 mm, visserie ⌀ 10 mm</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Visseuse, perceuse</li><li>Scie à métaux (à main ou à ruban si possible)</li><li>Coupe tube</li><li>Poste à souder</li><li>Taraud ⌀10 mm</li><li>Lime à métal</li><li>Serre joint</li><li>Mètre</li><li>Règle, rapporteur</li><li>Casque et lunettes de protection</li><li>Plans (voir onglet "Fichiers")</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Télécharger les plans CAO</strong><p><strong>Étapes :</strong></p><ol><li>Retrouvez les plans détaillés pour la fabrication de chaque pièce du générateur solaires dans l'onglet "Fichiers" ci-dessus.</li><li>Chaque pièce du tuto est numérotée et fait référence à la numérotation présente sur les plans.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Réalisation de la structure</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/59/Remorque_g_n_rateur_solaire_DSC_0268.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0268.JPG' alt='Remorque g n rateur solaire DSC 0268.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Remorque_g_n_rateur_solaire_DSC_0266.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0266.JPG' alt='Remorque g n rateur solaire DSC 0266.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/23/Remorque_g_n_rateur_solaire_DSC_0276.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0276.JPG' alt='Remorque g n rateur solaire DSC 0276.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Remorque_g_n_rateur_solaire_DSC_0277.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0277.JPG' alt='Remorque g n rateur solaire DSC 0277.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8a/Remorque_g_n_rateur_solaire_DSC_0280.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0280.JPG' alt='Remorque g n rateur solaire DSC 0280.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e5/Remorque_g_n_rateur_solaire_DSC_0296.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0296.JPG' alt='Remorque g n rateur solaire DSC 0296.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retrouvez les plans 1 et 2 dans la section Fichiers.<ul><li>A la scie à ruban, couper 2 tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm, de 1650 mm de longueur (1)</li><li>A la scie à ruban, couper 2 tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm, de 700 mm de longueur (2)</li><li>Positionner le rectangle sur un établi en s’aidant d’étaux d’angle. Vérifier les côtes avant de pointer à l’aide d’un TIG. Souder la première face du cadre puis frotter la soudure avec une brosse métallique. Réitérer l’opération sur l’autre face du cadre.</li><li>Couper 4 tubes ronds creux inox de ⌀21, 3 mm, d’épaisseur 2 mm, de 675 mm de longueur (3). Limer l’intérieur des tubes.</li></ul></li><li>Remarque: Nous avons ici utilisé un coupe tube : positionner le tube autour de la dent, graisser puis réaliser un tour. Resserrer d’un quart de tour puis effectuer un tour. Réitérer l’opération jusqu’à couper le tube.</li><li>Il est aussi possible d’utiliser une scie à ruban pour réaliser cette coupe.<ul><li>Souder 4 écrous de ⌀10 mm à l’une des extrémités des 4 tubes ronds. Si besoin, limer les coins de l’hexagone pour faciliter l’insertion des écrous.</li><li>Reprendre le filetage des écrous à l’aide d’un taraud de ⌀10 mm.</li></ul></li><li>Remarque: Grâce aux écrous, il sera possible de visser des pieds aux extrémités des tubes pour avoir une structure stable et rigide hors remorque.<ul><li>Insérer les 4 tubes ronds aux quatre coins de la remorque. Positionner le cadre par-dessus puis souder l’ensemble.</li><li>Couper un tube rond creux inox de de ⌀21, 3 mm, d’épaisseur 2 mm, de 1000 mm de longueur (4)</li><li>L’insérer dans le tube carré creux arrière du cadre précédent. Laisser dépasser 150 mm de part et d'autre du cadre.</li><li>Couper 2 tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm, de 143 mm de longueur (5)</li><li>Souder ces 2 tubes carrés (5) aux extrémités du tube rond (4) en s’aidant d’une cale.</li><li>Couper un plat en inox de 40 x 2 mm de 940 mm de longueur (6). Percer 7 trous de ⌀11 mm puis souder le plat, de manière centrée, sur les 2 tubes carrés (5)</li></ul></li><li>Remarque: Cet ensemble permettra la rotation des panneaux solaires.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Réalisation du cadre du panneau solaire central</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d7/Remorque_g_n_rateur_solaire_DSC_0321.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0321.JPG' alt='Remorque g n rateur solaire DSC 0321.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/51/Remorque_g_n_rateur_solaire_DSC_0324.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0324.JPG' alt='Remorque g n rateur solaire DSC 0324.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retrouvez les plans 3 et 4 dans la section Fichiers<ul><li>Couper 2 tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm, de 1000 mm de longueur (7).</li><li>Couper 2 profils en U de 70 x 35 mm, d’épaisseur 1 mm, de 500 mm de longueur (8). Percer 5 trous centrés de ⌀11 mm dans les 2 profils en U (cf. plan 4)</li></ul></li><li>Remarque: Ces trous permettront de régler l’inclinaison des panneaux solaires.<ul><li>Positionner l’ensemble sur un établi en plaçant les profils en U à 50mm du bord (cf. plan 3). Vérifier les côtes avant de pointer à l’aide d’un TIG. Souder l’ensemble puis frotter la soudure avec une brosse métallique.</li></ul></li><li>Remarque: Cet écart doit être mesuré pour assurer l’alignement du bras avec l’intérieur du rail (voir photo).<ul><li>Couper 2 plaques inox de 65 x 40 mm, d’épaisseur 4 mm (9). Percer un trou de ⌀7 mm dans chaque plaque (cf. plan 4).</li><li>Couper 2 plaques inox de 150 x 40 mm, d’épaisseur 4 mm (10). Percer 2 trous de ⌀7 mm dans chaque plaque (cf. plan 4).</li><li>Souder les 4 plaques inox sur le cadre précédent (cf. plan 3).</li><li>Fixer le panneau solaire central au cadre à l’aide de 6 vis et écrous de ⌀6 mm.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblage du cadre central avec la structure</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/01/Remorque_g_n_rateur_solaire_DSC_0297.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0297.JPG' alt='Remorque g n rateur solaire DSC 0297.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner le panneau solaire central en butée contre le plat en inox (6) de la structure (voir photo)</li><li>Percer l’ossature du panneau solaire central au niveau des perçages de la plaque inox.</li><li>Fixer le panneau solaire à la plaque inox à l’aide de 7 vis et écrous de ⌀10 mm</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Réalisation des deux renforts 1</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8a/Remorque_g_n_rateur_solaire_DSC_0311.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0311.JPG' alt='Remorque g n rateur solaire DSC 0311.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4e/Remorque_g_n_rateur_solaire_DSC_0316.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0316.JPG' alt='Remorque g n rateur solaire DSC 0316.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7e/Remorque_g_n_rateur_solaire_DSC_0401.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0401.JPG' alt='Remorque g n rateur solaire DSC 0401.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8a/Remorque_g_n_rateur_solaire_DSC_0402.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0402.JPG' alt='Remorque g n rateur solaire DSC 0402.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retrouvez le plan 5 dans la section Fichiers<ul><li>Couper 4 tubes ronds creux inox de ⌀21, 3 mm, d’épaisseur 2 mm, de 1500 mm de longueur (11)</li><li>Souder un écrou de ⌀10 mm à l’une des extrémités des 4 tubes. Souder 4 vis de ⌀10 mm à l’autre extrémité.</li><li>Visser 2 à 2 les tubes (écrous/vis)</li><li>Glisser les 2 barres dans les tubes creux du cadre central. Centrer les barres.</li></ul></li><li>Remarque: Il sera possible de visser des poignées aux extrémités de ces 2 barres afin de les insérer plus facilement dans la structure (voir exemple poignée).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Réalisation des deux renforts 2</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/75/Remorque_g_n_rateur_solaire_DSC_0326.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0326.JPG' alt='Remorque g n rateur solaire DSC 0326.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Remorque_g_n_rateur_solaire_DSC_0327.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0327.JPG' alt='Remorque g n rateur solaire DSC 0327.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/Remorque_g_n_rateur_solaire_DSC_0375.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0375.JPG' alt='Remorque g n rateur solaire DSC 0375.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Remorque_g_n_rateur_solaire_DSC_0376.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0376.JPG' alt='Remorque g n rateur solaire DSC 0376.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Couper 2 tubes ronds creux inox de ⌀21, 3 mm, d’épaisseur 2 mm, de 670 mm de longueur (12)</li><li>Couper l'une des extrémités des 2 tubes ronds avec un angle de 45° (voir plan)</li><li>Souder un écrou de ⌀8 mm à cette extrémité des 2 tubes</li><li>Couper 2 cornières inox de 50 x 27 mm, d’épaisseur 1 mm, de 990 mm de longueur (13)</li><li>Percer 2 trous de ⌀7 mm dans chaque cornière (voir plan)</li><li>Placer les tubes ronds en butée à l’intérieur des tubes carrés de la structure (5).</li><li>Souder les cornières et les tubes ronds en les maintenant avec des serres joints (voir photo).</li><li>Percer 1 trou de ⌀7 mm dans chaque renfort, traversant à la fois le tube rond (12) et le tube carré (5). Fixer la position en insérant une goupille de ⌀6 mm.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Réalisation des 2 cadres pour les panneaux solaires latéraux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/55/Remorque_g_n_rateur_solaire_DSC_0310.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0310.JPG' alt='Remorque g n rateur solaire DSC 0310.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retrouvez les plans 8 et 9 dans la section Fichiers.<ul><li>Couper 4 tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm, de 1000 mm de longueur (14)</li><li>Couper 4 tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm, de 500 mm de longueur (15)</li><li>Positionner 2 tubes (14) avec 2 tubes (15) sur un établi en s’aidant d’étaux d’angle (cf. plan 8). Vérifier les côtes avant de pointer à l’aide d’un TIG. Souder l’ensemble puis frotter la soudure avec une brosse métallique. Effectuer la même opération avec les 4 tubes restants pour obtenir 2 cadres.</li><li>Couper 4 plaques inox de 190 x 40 mm, d’épaisseur 4 mm (16). Percer 2 trous de ⌀9 mm dans chaque plaque (cf. plan 9).</li><li>Souder 2 plaques inox par cadre (cf. plan 8).</li><li>Fixer les panneaux solaires aux cadres. Vous aurez besoin de 4 vis et écrous de ⌀8 mm par cadre.</li><li>Glisser l’ensemble de part et d’autre du panneau solaire central dans les renforts 1.</li><li>Souder un écrou de ⌀10 mm centré sur chacun des cadre avec un angle de 80° (cf. plan 9).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Assemblage des panneaux solaires latéraux et des cadres</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bf/Remorque_g_n_rateur_solaire_DSC_0331.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0331.JPG' alt='Remorque g n rateur solaire DSC 0331.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner les panneaux solaires sur leur cadre, en butée contre le panneau solaire central</li><li>Percer l’ossature des panneaux solaires au niveau des perçages des cornières (13).</li><li>Fixer les panneaux solaires aux cornières à l’aide de 4 goupilles de ⌀6 mm.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Réalisation des deux renforts 3</strong><p><strong>Étapes :</strong></p><ol><li>Retrouvez le plan 10 dans la section Fichiers.<ul><li>Couper 2 tubes ronds creux inox ⌀21, 3 mm, d’épaisseur 2 mm, de 810 mm de longueur (17).</li><li>Souder une rotule TSF, ⌀ axe 10mm, visserie de ⌀10 mm, à l'une des extrémités des tubes.</li><li>Souder un écrou de ⌀8 mm à l’autre extrémité des tubes.</li><li>Couper 2 tiges filetées de ⌀8 mm de 250 mm de longueur (18)</li><li>Insérer chaque tige dans le tube par le biais de l’écrou.</li></ul></li><li>Remarque: Les tiges filetées permettent de régler la longueur du renfort, selon l’inclinaison des panneaux solaires choisie.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Assemblage des deux renforts 3 avec la structure</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6a/Remorque_g_n_rateur_solaire_DSC_0322.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0322.JPG' alt='Remorque g n rateur solaire DSC 0322.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e2/Remorque_g_n_rateur_solaire_DSC_0329-2.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0329-2.JPG' alt='Remorque g n rateur solaire DSC 0329-2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0f/Remorque_g_n_rateur_solaire_DSC_0347.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0347.JPG' alt='Remorque g n rateur solaire DSC 0347.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/Remorque_g_n_rateur_solaire_DSC_0330.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0330.JPG' alt='Remorque g n rateur solaire DSC 0330.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les renforts 3 sont accrochés au niveau des pieds de la remorque par le biais d’équerre et au niveau des écrous des cornières (13).<ul><li>Couper 2 équerres inox de 50 x 50, d’épaisseur 5mm, de 50 mm de longueur (19)</li><li>Percer un trou de ⌀9 mm dans chaque équerre (voir plan)</li><li>A l’aide de serre joint, placer les équerres sur les pieds arrière de la remorque (voir photo) puis percer la remorque au niveau des perçages des équerres.</li><li>Fixer les équerres avec 2 vis et écrous de ⌀8 mm</li><li>Fixer les rotules des renforts 3 sur les écrous soudés aux cornières avec 2 vis et rondelles de ⌀10 mm</li><li>Passer 2 écrous de ⌀8 mm dans chaque tige filetée. Le premier écrou se place en butée du tube.</li><li>Positionner les tiges filetées des renforts 3 au milieu des équerres fixées à la remorque</li><li>Passer un écrou de ⌀10 mm dans les tiges filetées. Maintenir les écrous contre les équerres avant de pointer à l’aide d’un TIG.</li><li>Souder les écrous</li><li>Passer un écrou de ⌀8 mm dans les tiges filetées puis serrer les deux écrous de ⌀8 mm des tiges filetées contre l’écrou de ⌀10 mm soudé aux équerres.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Réalisation des deux bras d’inclinaison des panneaux solaires</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ec/Remorque_g_n_rateur_solaire_DSC_0339.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0339.JPG' alt='Remorque g n rateur solaire DSC 0339.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8f/Remorque_g_n_rateur_solaire_DSC_0334.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0334.JPG' alt='Remorque g n rateur solaire DSC 0334.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/de/Remorque_g_n_rateur_solaire_DSC_0338.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0338.JPG' alt='Remorque g n rateur solaire DSC 0338.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/da/Remorque_g_n_rateur_solaire_DSC_0337.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0337.JPG' alt='Remorque g n rateur solaire DSC 0337.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retrouvez les plans 12 et 13 dans la section Fichiers.<ul><li>Couper 2 tubes carrés creux inox de 25 mm, d’épaisseur 1,5 mm, de 930mm de longueur (20).</li><li>Percer un trou de ⌀11 mm dans chaque tube (cf. plan 13).</li><li>Couper 2 tubes ronds creux inox ⌀21, 3 mm, d’épaisseur 2 mm, de 50mm de longueur (22).</li><li>Réaliser une encoche à l’une des extrémités des 2 tubes carrés (cf. plan 13).</li><li>Souder les tubes ronds au niveau des encoches des tubes carrés.</li><li>Placer les 4 roulements sur les tubes ronds, de part et d’autre des tubes carrés (voir photo). Utiliser une masse pour enfoncer les roulements.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Réalisation du point d’accroche fixe des bras d’inclinaison</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/95/Remorque_g_n_rateur_solaire_DSC_0344.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0344.JPG' alt='Remorque g n rateur solaire DSC 0344.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retrouvez les plans 1 et 2 dans la section Fichiers.</li><li>L’efficacité des panneaux solaires dépend du taux d’ensoleillement et de l’intensité lumineuse. C’est pourquoi il est important de pouvoir jouer sur l’inclinaison des panneaux solaires pour pouvoir s'adapter aux différentes saisons de l’année. Durant l’été, il est recommandé d’opter pour un angle d’inclinaison compris entre 30 et 35 degrés alors qu’en hiver il est conseillé de faire évoluer cette inclinaison pour la porter à un angle compris entre 40 et 45 degrés.</li><li>De ce fait, nous allons déterminer l’emplacement, sur la structure, du point d’accroche fixe du bras d’inclinaison de manière à obtenir un panel d'angles d’inclinaison compris entre 30 à 50 degrés (voir photo).<ul><li>Couper un tube carré creux inox de 25 mm, d’épaisseur 1,5 mm, de 790 mm de longueur (23).</li><li>Souder 2 écrous de ⌀10 mm aux deux extrémités de chaque tube.</li><li>Souder le tube centré sur la structure, à 540mm de l'avant de la remorque (cf. plan 2).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Assemblage des 2 bras d’inclinaison sur la structure</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5d/Remorque_g_n_rateur_solaire_DSC_0340.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0340.JPG' alt='Remorque g n rateur solaire DSC 0340.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Remorque_g_n_rateur_solaire_DSC_0341.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0341.JPG' alt='Remorque g n rateur solaire DSC 0341.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Au niveau de la structure, utiliser 2 rondelles et vis de ⌀10 mm pour fixer les deux bras d’inclinaison.</li><li>Au niveau du profil en U, utiliser 2 vis de ⌀8 mm pour fixer les deux bras d’inclinaison. On peut par exemple choisir de se positionner à une inclinaison de 30° en se plaçant au premier trou du profil en U.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Réalisation des deux renforts 4</strong><p><strong>Étapes :</strong></p><ol><li>Retrouvez le plan 14 dans la section Fichiers.<ul><li>Couper 2 tubes ronds creux inox ⌀21, 3 mm, d’épaisseur 2 mm, de 1510mm de longueur (24).</li><li>Souder 2 rotules TSF, ⌀ axe 10 mm, visserie de ⌀10 mm, à l’une des extrémités des tubes.</li><li>Souder un écrou de ⌀8 mm à l’autre extrémité des tubes.</li><li>Couper 2 tiges filetées de ⌀8 mm de 400mm de longueur (25).</li><li>Insérer chaque tige dans le tube par le biais de l’écrou.</li></ul></li><li>Remarque: Les tiges filetées permettent de régler la longueur du renfort selon l’inclinaison des panneaux solaires choisie.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Assemblage des deux renforts 4 avec la structure</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/15/Remorque_g_n_rateur_solaire_DSC_0350-2.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0350-2.JPG' alt='Remorque g n rateur solaire DSC 0350-2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3e/Remorque_g_n_rateur_solaire_DSC_0355.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0355.JPG' alt='Remorque g n rateur solaire DSC 0355.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/45/Remorque_g_n_rateur_solaire_DSC_0356.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0356.JPG' alt='Remorque g n rateur solaire DSC 0356.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/54/Remorque_g_n_rateur_solaire_DSC_0353.JPG/800px-Remorque_g_n_rateur_solaire_DSC_0353.JPG' alt='Remorque g n rateur solaire DSC 0353.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retrouvez le plan 11 dans la section Fichiers.</li><li>Les renforts 4 sont accrochés au niveau des pieds de la remorque par le biais d’équerre et au niveau des cadres par le biais des écrous soudés (cf. Etape 7)<ul><li>Couper 2 équerres inox de 50 x 50 mm, d’épaisseur 5mm, de 100 mm de longueur (19).</li><li>Percer un trou de ⌀9 mm dans chaque équerre (cf. plan 11).</li><li>A l’aide de serre joint, placer les équerres sur les pieds avant de la remorque (voir photo) puis percer la remorque au niveau des perçages des équerres.</li><li>Fixer les équerres avec 2 vis et écrous de ⌀8 mm.</li><li>Fixer les rotules des renforts 4 sur les écrous des cadres avec 2 vis et rondelles de ⌀10 mm.</li><li>Passer 2 écrous de ⌀8 mm dans les tiges filetées. Le premier écrou se place en butée du tube.</li><li>Positionner les tiges filetées des renforts 4 au milieu des équerres fixées à la remorque.</li><li>Passer un écrou de ⌀10 mm dans les tiges filetées. Maintenir les écrous contre les équerres avant de pointer à l’aide d’un TIG.</li><li>Souder les écrous.</li><li>Passer un écrou de ⌀8 mm dans les tiges filetées puis serrer les deux écrous de ⌀8 mm des tiges filetées contre l’écrou de ⌀10 mm soudé aux équerres.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

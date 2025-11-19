@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Discourage Thieves—Put Eyeballs on Your Garage!</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Discourage Thieves—Put Eyeballs on Your Garage!</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://content.instructables.com/FRZ/ZN09/M446NOWQ/FRZZN09M446NOWQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+      </div>
+    
+    
+      
+        <p>Some of my neighbors park their cars on the street in front of their houses, and, at some point, we started having problems with random people coming through at night and breaking in. They would steal change or whatever they could find. Sometimes they did damage to the cars while they were trying to gain entry into them which just added insult to injury.</p>
+      
+        <p>I created my "Low-Tech, Anti-Theft System" in the hopes of having a chilling effect on these middle-of-the-night ransackings. See, there is a psychological phenomenon known as the “watching-eye effect.” Here's Wikipedia's take on it:</p>
+      
+        <p>Researchers have noted that even just the suggestion of being watched can be enough to get people to behave slightly less egregiously than they normally might. With that in mind, I decided to help my neighborhood out by putting giant eyeballs on the front of my garage which is just across the street from one of the theft-prone areas.</p>
+      
+        <p>And, I figured, even if the eyeballs didn't deter thieves, they just might delight the neighborhood kids (and, yes, fellow creative types like me), because I always thought the garage looked like a face with a big mouth that opens and closes. And these big eyes just really complete the look. . .</p>
+      
+        <p>Ready to give crime in your own neighborhood the hairy eyeball? Let's do this!</p>
+      
+    
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://www.instructables.com/Discourage-ThievesPut-Eyeballs-on-Your-Garage/" target="_blank" rel="noopener" style="color:#066;">https://www.instructables.com/Discourage-ThievesPut-Eyeballs-on-Your-Garage/</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Supplies<ul><li>To start, you'll need some thin plywood sheeting or similar type of scrap wood. Ideally, you should have two pieces that are each about 2 feet tall by 4 feet wide.</li><li>You'll also need a few old magazines, primer or white paint, black acrylic paint and/or a thick, black permanent marker, Mod Podge (or plain, old glue), and some two-part epoxy resin.</li><li>As for tools, you'll need a pencil, a saw, a wood file, and a mix of large and small paintbrushes. A compass is helpful, too, but not essential.</li><li>When it comes time to mix and pour the resin, you'll need a few extra things like old clothes or an apron, latex gloves, a plastic tarp, two clean buckets, paint-stirring sticks, and a plastic squeegee/trowel.</li><li>Finally, you'll need some hardware, so that you can hang up your eyeballs. EYE-ronically, screw eye bolts and heavy-duty picture frame wire work pretty well for this, but you can use whatever you have on hand.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Step 1: Planning & Drawing</strong><div class='step-images count-2'><figure><img src='https://content.instructables.com/F48/ZKAD/M45M3Q28/F48ZKADM45M3Q28.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Planning & Drawing' loading='lazy'></figure><figure><img src='https://content.instructables.com/FMZ/7OSR/M45M3Q2L/FMZ7OSRM45M3Q2L.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Planning & Drawing' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>You don't have to be a great artist to sketch your eyeballs. Simply find the middle point along the top, bottom, right, and left edges of one of your two-by-four plywood sheets. Then connect these points to form a squat diamond shape. (See accompanying images for guidance.)</li><li>Next, use your pencil to lightly round off the diamond's points. If you have a large compass, you can use that to draw the largest circle (the iris of the eyeball) and adjust it to create a second, smaller circle (the pupil of the eyeball), and one more much smaller circle. (This last circle will serve as a white highlight inside the back pupil. It will help make your eyes look sparkly and more lifelike!) Alternatively, you can find something large and circular—like different sized flower pots or the cardboard liner from a frozen pizza—to trace your circles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Step 2: Cutting, Smoothing & Priming</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FGR/O8QC/M45M3Q2Y/FGRO8QCM45M3Q2Y.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cutting, Smoothing & Priming' loading='lazy'></figure><figure><img src='https://content.instructables.com/FW8/CL92/M45M3Q1W/FW8CL92M45M3Q1W.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cutting, Smoothing & Priming' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWE/7I1H/M45M3QMC/FWE7I1HM45M3QMC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Cutting, Smoothing & Priming' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>I used a jigsaw to cut around the outside of each eye. You can use a Japanese pull saw or a small hacksaw—whatever kind of saw you prefer to do the job.</li><li>Pro-tip: If you like, you can use the first eye you cut out as a template for your second eye. If you choose to go this route, simply center the cut-out eye on top of the other two-by-four sheet of plywood and trace the cut-out onto the second piece of wood. This way, both eyes should look very similar in shape.</li><li>I also used a wood file to smooth off the hard edges around both of my eye shapes.</li><li>Finally, paint the front and back of each eye with a couple of coats of exterior white paint or good quality primer. Take care not to completely obscure the circles you drew earlier. You'll need to be able to see these well enough to paint over them in the next step.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Step 3: Eyeliner, Pupils & Decoupage</strong><div class='step-images count-4'><figure><img src='https://content.instructables.com/FH4/3TG9/M45M3QDO/FH43TG9M45M3QDO.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eyeliner, Pupils & Decoupage' loading='lazy'></figure><figure><img src='https://content.instructables.com/FZH/A8LS/M471J74N/FZHA8LSM471J74N.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eyeliner, Pupils & Decoupage' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWZ/V908/M45M3QLW/FWZV908M45M3QLW.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eyeliner, Pupils & Decoupage' loading='lazy'></figure><figure><img src='https://content.instructables.com/F0Y/HDTC/M45M3QDC/F0YHDTCM45M3QDC.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Eyeliner, Pupils & Decoupage' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Once the primer has dried, use black, acrylic paint or your large, permanent black marker to outline the round shapes of the pupils and irises. Also, carefully paint a thin line all the way around the edge of the eye shape—kind of like giant eyeliner. (This will help each eye to "pop" once it is hanging up.)</li><li>While the black paint areas dry, you can turn your attention to the old magazines. Decide what you want your main eye color to be and tear out magazine pages with those dominant colors and interesting textures. If you're going for brown eyes, for instance, choose mostly shades of brown, black, dark purple, etc. Want green eyes? In that case, tear out pages with mostly green images—plants, grass, money, and so on. If you want blue eyes, look for aquatic scenes, blue skies, etc.</li><li>Tear different colored sections into pieces that are about an inch or two large. Don't be afraid to put slightly different colors and textures near one another. Your eyeballs will be hanging up high enough that you won't notice these disparities too much. In fact, mixing different colors that are in the same (or similar) color families will add extra life and dimension to your eyes.</li><li>Paint a small section of iris area with Mod Podge (or plain glue) and begin gluing the small pieces of torn magazine into this area, one piece at a time. Once each piece is in place, cover the top of it with a thin coat of Mod Podge (or glue.) Don't worry, it will dry clear. Continue the process of painting a small section of iris with glue, adding a few pieces, and painting over them until you've completed the irises of both eyes.</li><li>Allow the Mod Podge (or glue) to dry completely before going to the next step.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Step 4: Finishing</strong><div class='step-images count-3'><figure><img src='https://content.instructables.com/FBM/0VOZ/M446NOXQ/FBM0VOZM446NOXQ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing' loading='lazy'></figure><figure><img src='https://content.instructables.com/FWB/9UN1/M446NOYJ/FWB9UN1M446NOYJ.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing' loading='lazy'></figure><figure><img src='https://content.instructables.com/F21/H5ER/M45M3QK4/F21H5ERM45M3QK4.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Finishing' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Once your eyeballs are completely dry, you're ready to finish the job. While you could cover them with a thin layer of polyurethane or even several coats of shellac, I prefer to use two-part epoxy resin. (In my opinion, nothing else seems to provide quite the same thick, crystal clear coverage, and the effect is just really pleasing.)</li><li>Remember, for this resin-pouring step, you're going to need to wear some old clothes or an apron and latex gloves in order to protect your hands and clothing. You will also need a plastic tarp, two clean buckets, paint-stirring sticks, and a plastic squeegee/trowel.</li><li>Your mixing and application instructions may vary a little bit depending on the two-part epoxy product you choose. (I most often use Glaze Coat and, from the time the two parts have been combined, I usually have 10 to 15 minutes to apply and manipulate the product before it begins to set up.)</li><li>Before you begin mixing and pouring the epoxy, place each of your giant eyes on top of the plastic tarp. (Although you should try to be as neat and judicious as possible, you likely won't be able to avoid having some of the resin running off of the edges of your eyes.)</li><li>MIX AND APPLY RESIN</li><li>Repeat these steps for the other eye. If you have a helper you trust, you may be able to mix enough resin to do both eyes at once. Otherwise, plan to mix just enough to cover one eye at a time.</li><li>Once covered with epoxy, leave the eyes in place to dry and cure. How long this will take depends on the product you use, the thickness of the coat you poured, and the ambient temperature in the area. Curing usually takes at least a couple of days. To test the degree to which your epoxy has cured, find an out-of-the-way spot on one of the eyeballs and see if you can make an indentation on its surface with your fingernail. If you can make a mark, your eyeballs need extra curing time.<ul><li>Mix two-part epoxy according to manufacturer's instructions. (Most kits require a couple of clean buckets and paint stirring sticks for this step.)</li><li>Pour a small amount of resin onto the center of one of your eyes such that it slowly creeps across the eye and maybe even drips off of the edges a little bit.</li><li>Use your squeegee to help direct the movement of the epoxy while it is still wet and workable.</li><li>If you see small bubbles on the surface, you can usually blow on these and they will come up to the surface and burst. (Alternatively, you can use a heat gun or hair dryer to remove these bubbles.)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Step 5: Hardware & Hanging</strong><div class='step-images count-1'><figure><img src='https://content.instructables.com/FUA/WQYM/M45M3QI9/FUAWQYMM45M3QI9.jpg?auto=webp&fit=bounds&frame=1&height=1024&width=1024auto=webp&frame=1&height=300&auto=webp&fit=bounds&width=600&height=450&quality=75' alt='Hardware & Hanging' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Once your eyes have finished curing, you can use your wood file to clean up any drips around the edges as needed. Finally, add hardware to the back of each eye, so that you'll be able to hang them up. I used screw eyes and heavy-duty picture frame wire to hang each of mine.</li><li>Now, if you plan to hang your eyeballs high up on your garage or some other tall building, grab a ladder and a friend to help. While hanging the first eye is easy, getting the second eye just right—in terms of height and distance relative to the first eye—can be a little tricky. Having another pair of, well, eyes on the ground to guide you is invaluable.</li><li>;-)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>
