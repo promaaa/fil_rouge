@@ -1557,22 +1557,22 @@ function findBestMatch(input, database) {
 function getTutorialImage(titre) {
   const imageMap = {
     // Création
-    "Lampe de Bureau Design": "images/lampe_design.jpg",
-    "Enceinte Bluetooth DIY": "images/enceinte_bluetooth.jpg",
-    "Chargeur Solaire Portable": "images/chargeur_solaire.jpg",
-    "Station Météo Connectée": "images/station_meteo.png",
-    "Horloge LED Personnalisée": "images/horloge.jpg",
-    "Support de Téléphone Ajustable": "images/support_telephone.jpg",
-    "Mangeoire à Oiseaux Intelligente": "images/mangeoire_oiseaux.jpg",
-    "Pot de Fleurs Auto-Arrosant": "images/pot_fleur.jpg",
-    "Organisateur de Bureau Modulaire": "images/organisateur_bureau.jpg",
+    "Lampe de Bureau Design": "assets/images/lampe_design.jpg",
+    "Enceinte Bluetooth DIY": "assets/images/enceinte_bluetooth.jpg",
+    "Chargeur Solaire Portable": "assets/images/chargeur_solaire.jpg",
+    "Station Météo Connectée": "assets/images/station_meteo.png",
+    "Horloge LED Personnalisée": "assets/images/horloge.jpg",
+    "Support de Téléphone Ajustable": "assets/images/support_telephone.jpg",
+    "Mangeoire à Oiseaux Intelligente": "assets/images/mangeoire_oiseaux.jpg",
+    "Pot de Fleurs Auto-Arrosant": "assets/images/pot_fleur.jpg",
+    "Organisateur de Bureau Modulaire": "assets/images/organisateur_bureau.jpg",
 
     // Recyclage
-    "Recyclage de Smartphone": "images/smartphone.jpg",
-    "Recyclage de Bouteilles Plastique": "images/bouteille_plastique.jpg",
-    "Recyclage d'Ordinateur": "images/ordinateur.jpg",
-    "Recyclage de CD/DVD": "images/cd.jpg",
-    "Recyclage de Pneus Usagés": "images/pneu.jpg",
+    "Recyclage de Smartphone": "assets/images/smartphone.jpg",
+    "Recyclage de Bouteilles Plastique": "assets/images/bouteille_plastique.jpg",
+    "Recyclage d'Ordinateur": "assets/images/ordinateur.jpg",
+    "Recyclage de CD/DVD": "assets/images/cd.jpg",
+    "Recyclage de Pneus Usagés": "assets/images/pneu.jpg",
   };
 
   return (
