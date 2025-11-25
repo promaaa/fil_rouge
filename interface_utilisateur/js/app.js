@@ -1557,22 +1557,22 @@ function findBestMatch(input, database) {
 function getTutorialImage(titre) {
   const imageMap = {
     // Création
-    "Lampe de Bureau Design": "images/lampe_design.jpg",
-    "Enceinte Bluetooth DIY": "images/enceinte_bluetooth.jpg",
-    "Chargeur Solaire Portable": "images/chargeur_solaire.jpg",
-    "Station Météo Connectée": "images/station_meteo.png",
-    "Horloge LED Personnalisée": "images/horloge.jpg",
-    "Support de Téléphone Ajustable": "images/support_telephone.jpg",
-    "Mangeoire à Oiseaux Intelligente": "images/mangeoire_oiseaux.jpg",
-    "Pot de Fleurs Auto-Arrosant": "images/pot_fleur.jpg",
-    "Organisateur de Bureau Modulaire": "images/organisateur_bureau.jpg",
+    "Lampe de Bureau Design": "assets/images/lampe_design.jpg",
+    "Enceinte Bluetooth DIY": "assets/images/enceinte_bluetooth.jpg",
+    "Chargeur Solaire Portable": "assets/images/chargeur_solaire.jpg",
+    "Station Météo Connectée": "assets/images/station_meteo.png",
+    "Horloge LED Personnalisée": "assets/images/horloge.jpg",
+    "Support de Téléphone Ajustable": "assets/images/support_telephone.jpg",
+    "Mangeoire à Oiseaux Intelligente": "assets/images/mangeoire_oiseaux.jpg",
+    "Pot de Fleurs Auto-Arrosant": "assets/images/pot_fleur.jpg",
+    "Organisateur de Bureau Modulaire": "assets/images/organisateur_bureau.jpg",
 
     // Recyclage
-    "Recyclage de Smartphone": "images/smartphone.jpg",
-    "Recyclage de Bouteilles Plastique": "images/bouteille_plastique.jpg",
-    "Recyclage d'Ordinateur": "images/ordinateur.jpg",
-    "Recyclage de CD/DVD": "images/cd.jpg",
-    "Recyclage de Pneus Usagés": "images/pneu.jpg",
+    "Recyclage de Smartphone": "assets/images/smartphone.jpg",
+    "Recyclage de Bouteilles Plastique": "assets/images/bouteille_plastique.jpg",
+    "Recyclage d'Ordinateur": "assets/images/ordinateur.jpg",
+    "Recyclage de CD/DVD": "assets/images/cd.jpg",
+    "Recyclage de Pneus Usagés": "assets/images/pneu.jpg",
   };
 
   return (
@@ -1593,7 +1593,28 @@ function loadCreation(tutorial) {
   $tutorialContent.innerHTML = `
     <div class="tutorial-page">
       <div class="result-header">
-        <h3>${tutorial.titre}</h3>
+        <section>
+          <button class="close-btn">
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+              >
+                  <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 19
+                      L5 5
+                      M5 19
+                      L19 5"
+                  />
+              </svg>
+              Fermer
+          </button>
+          <h3>${tutorial.titre}</h3>
+        </section>
         <div class="badges">
           <span class="badge badge-difficulty">${tutorial.difficulté}</span>
           <span class="badge badge-time">${tutorial.temps}</span>
@@ -1654,6 +1675,7 @@ function loadCreation(tutorial) {
       </div>
     </div>
   `;
+  document.querySelector(".close-btn").addEventListener("click", () => $tutorialPage.classList.remove('active'));
   $tutorialPage.classList.add("active");
 }
 
@@ -1711,25 +1733,29 @@ $btnCreation.addEventListener("click", () => {
             <span>
           </div>
 
-          <div class="section">
-            <span>
-              <strong>Matériaux nécessaires :</strong>
-              ${tutorial.materiaux
-                .toString()
-                .replaceAll(",", ", ")
-                .replace("[", "")
-                .replace("]", "")}
+          <div class="tooltip">
+            <strong>Matériaux nécessaires</strong>
+            <span class="tooltiptext">
+              <ul>
+                ${tutorial.materiaux.map(
+                  (v) => {
+                    return "<li>" + v + "</li>"
+                  }
+                ).toString().replaceAll(",", "")}
+              </ul>
             </span>
           </div>
 
-          <div class="section">
-            <span>
-              <strong>Outils requis :</strong>
-              ${tutorial.outils
-                .toString()
-                .replaceAll(",", ", ")
-                .replace("[", "")
-                .replace("]", "")}
+          <div class="tooltip">
+            <strong>Outils requis</strong>
+            <span class="tooltiptext">
+              <ul>
+                ${tutorial.outils.map(
+                  (v) => {
+                    return "<li>" + v + "</li>"
+                  }
+                ).toString().replaceAll(",", "")}
+              </ul>
             </span>
           </div>
         </div>
@@ -1737,7 +1763,7 @@ $btnCreation.addEventListener("click", () => {
       document
         .getElementById("btnSeeTutorialCreation")
         .addEventListener("click", () => {
-          document.getElementById("creation").classList.remove("active");
+          // document.getElementById("creation").classList.remove("active");
           loadCreation(tutorial);
         }); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
@@ -1776,7 +1802,28 @@ function loadRecyclage(tutorial) {
   $tutorialContent.innerHTML = `
     <div class="tutorial-page">
       <div class="result-header">
-        <h3>${tutorial.titre}</h3>
+        <section>
+          <button class="close-btn">
+              <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+              >
+                  <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 19
+                      L5 5
+                      M5 19
+                      L19 5"
+                  />
+              </svg>
+              Fermer
+          </button>
+          <h3>${tutorial.titre}</h3>
+        </section>
         <div class="badges">
           <span class="badge badge-difficulty">${tutorial.difficulté}</span>
           <span class="badge badge-eco">Économie: ${tutorial.economie}</span>
@@ -1853,6 +1900,7 @@ function loadRecyclage(tutorial) {
       </div>
     </div>
   `;
+  document.querySelector(".close-btn").addEventListener("click", () => $tutorialPage.classList.remove('active'));
   $tutorialPage.classList.add("active");
 }
 
@@ -1936,7 +1984,7 @@ $btnRecyclage.addEventListener("click", () => {
       document
         .getElementById("btnSeeTutorialRecyclage")
         .addEventListener("click", () => {
-          document.getElementById("recyclage").classList.remove("active");
+          // document.getElementById("recyclage").classList.remove("active");
           loadRecyclage(tutorial);
         }); // note to self: this won't work when we start searching for multiple results. fix later.
     } else {
@@ -1981,7 +2029,7 @@ document.querySelectorAll(".btn-tutorial").forEach((btn, index) => {
     const tutorial = tutorialMap[index];
     if (tutorial) {
       // Fermer la page navigate
-      document.getElementById("navigate").classList.remove("active");
+      // document.getElementById("navigate").classList.remove("active");
       // Ouvrir la page de tutoriel
       loadCreation(tutorial);
     }
