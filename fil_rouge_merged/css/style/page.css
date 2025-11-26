@@ -1,0 +1,95 @@
+@import 'animation/anim.css';
+
+/* ===== PAGES PRINCIPALES ===== */
+.page {
+    max-width: 1080px;
+    max-height: 100%;
+    flex: 1;
+    display: none;
+    overflow: auto;
+    flex-direction: column;
+    position: relative;
+    left: 0;
+    top: 0;
+    animation: slideIn 0.4s ease-out;
+    z-index: 0;
+}
+
+.page.active {
+    display: flex;
+}
+
+.back-btn {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.back-btn,
+.close-btn {
+    background: var(--line-color);
+    color: var(--bg-main);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.back-btn svg,
+.close-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.back-btn:hover,
+.close-btn:hover {
+    background: var(--accent-primary);
+    transform: translateX(-4px);
+}
+
+.viewport {
+    flex: 1;
+    overflow: auto;
+    padding: 20px 16px 20px;
+}
+
+/* En-tête de page */
+.page-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.page-header h2 {
+    font-family: var(--font-title);
+    font-size: 24px;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.page-header p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Thèmes par page */
+#creation {
+    --line-color: var(--creation-line-color);
+    --accent-primary: var(--creation-color);
+}
+
+#recyclage {
+    --line-color: var(--recyclage-line-color);
+    --accent-primary: var(--recyclage-color);
+}
+
+#navigate {
+    --line-color: var(--navigate-line-color);
+    --accent-primary: var(--navigate-color);
+}
