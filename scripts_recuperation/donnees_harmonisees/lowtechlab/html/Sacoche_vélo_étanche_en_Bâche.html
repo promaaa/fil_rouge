@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sacoche vélo étanche en Bâche</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sacoche vélo étanche en Bâche</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/0/00/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_151042.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_151042.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Sacoche étanche à la pluie, fabriquée à partir de bâche publicitaire ou de camion, sur plaque en conteplaquée. Facile à mettre et enlever grâce au système de fixation Ortlieb.</div>
+        
+      </div>
+    
+    
+      
+        <p>Une bonne sacoche à vélo, étanche, est très pratique dans les trajets du quotidien ou en voyage à vélo.</p>
+      
+        <p>Les marques fiables sont chèrs, bien que durables. Leur principal atout est souvent leur système de fixation rapide. Je propose d'acheter seulement le système, et de coudre et monter sa sacoche, selon les bâches disponnibles, et en adaptant le volume aux besoins de chacun.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Sacoche_vélo_étanche_en_Bâche" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Sacoche_vélo_étanche_en_Bâche</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Bâche de récupération, solide, publicitaire ou de camion.</li><li>Sufisament solide pour durer dans le temps. Suffisament souple pour être cousue avec une machine à coudre standart.</li><li>Plaque de contreplaqué fine et solide,</li><li>Poignées de fixation, système Ortlieb (accessible sur lecyclo.com) (11 euros)</li><li>Barre en alumunium 1mètre x15mmx2mm</li><li>8 vis Diamètre 4+ 4 écrous standarts + 4 écrous en T aussi appelés écrous à frapper (autobloquants dans le bois)</li><li>Une chambre a air fine pour la sangle</li><li>une fermeture Clip</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Ciseaux, mètre, crayons, machine à coudre, perceuse, scie à métaux, scie sauteuse, lime à métaux, tournevis</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Découpe de la bâche et couture</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f3/Sacoche_v_lo_tanche_en_B_che_IMG_20200503_153049.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200503_153049.jpg' alt='Sacoche v lo tanche en B che IMG 20200503 153049.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e8/Sacoche_v_lo_tanche_en_B_che_IMG_20200503_154626.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200503_154626.jpg' alt='Sacoche v lo tanche en B che IMG 20200503 154626.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/39/Sacoche_v_lo_tanche_en_B_che_IMG_20200503_155506.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200503_155506.jpg' alt='Sacoche v lo tanche en B che IMG 20200503 155506.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Sacoche_v_lo_tanche_en_B_che_IMG_20200503_160147.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200503_160147.jpg' alt='Sacoche v lo tanche en B che IMG 20200503 160147.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/18/Sacoche_v_lo_tanche_en_B_che_IMG_20200503_161005.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200503_161005.jpg' alt='Sacoche v lo tanche en B che IMG 20200503 161005.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Sacoche_v_lo_tanche_en_B_che_IMG_20200503_162727.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200503_162727.jpg' alt='Sacoche v lo tanche en B che IMG 20200503 162727.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper deux rectangles,</li><li>Un de 40cm*75cm (Face)</li><li>Un de 40*70cm (Fond)</li><li>Coudre le bandeau de bâche de 5 cm sur la bâche Face.</li><li>Coudre à l'envers les deux parties. Utiliser des aiguilles solides pour cuir, et du Fil ultra résistant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparation de la plaque arrière</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f3/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_123801.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_123801.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 123801.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_130430.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_130430.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 130430.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e2/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_130954.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_130954.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 130954.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a5/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_141516.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_141516.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 141516.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Couper la plaque aux dimensions 24x40 cm</li><li>Percer selon les indications des photos. Respecter l'écart de 18 cm à l'entraxe des poignées, et le la disatance du crochet de maintien, à 28 cm du haut.</li><li>Vernir la plaqe si besoin</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Préparer les maintiens intérieurs.</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ad/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_124644.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_124644.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 124644.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5a/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_125138.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_125138.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 125138.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ajuster les barres en aluminium à la largeur de la plaque.</li><li>Bien limer les bords pour ne pas qu'ils percent la bâche.</li><li>Préparer la fixation sur la plaque, les perçages de la bare et de la plaque alignés.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fixation poignée et crochet</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3c/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_141739.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_141739.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 141739.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cf/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142116.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142116.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 142116.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/76/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142459.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142459.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 142459.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6d/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142654.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142654.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 142654.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d4/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142831.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_142831.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 142831.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_143954.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_143954.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 143954.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Utiliser les écrous en T pour visser le système de fixation.</li><li>Couper a barre en Alu à 10 cm et la plier avec un étau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Montage Sacoche sur support</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_144222.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_144222.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 144222.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/69/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_144426.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_144426.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 144426.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_144835.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_144835.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 144835.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0a/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_150755.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_150755.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 150755.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/02/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_121739.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_121739.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 121739.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bb/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_150910.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_150910.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 150910.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Perçage de la sacoche en alignement avec les perçages de la plaque</li><li>Fixer avec les barres en Alu</li><li>Plus qu'à passer la sangle et installer la fermeture clip, et c'est finit!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 -</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c9/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_151125.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_151125.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 151125.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/59/Sacoche_v_lo_tanche_en_B_che_IMG_20200504_151055.jpg/800px-Sacoche_v_lo_tanche_en_B_che_IMG_20200504_151055.jpg' alt='Sacoche v lo tanche en B che IMG 20200504 151055.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avec ces dimensions, ça devrait passer sur la plupart des portes bagages, mais pensez à adapter bien au votre!</li><li>Pour fermer, trois tours de roulage et fermer au clip.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

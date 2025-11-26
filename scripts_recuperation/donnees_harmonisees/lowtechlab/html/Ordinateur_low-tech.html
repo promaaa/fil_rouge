@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ordinateur low-tech</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Ordinateur low-tech</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/3/38/Ordinateur_low-tech_IMG_0133.JPG/800px-Ordinateur_low-tech_IMG_0133.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Un modèle d'ordinateur basique mais répondant néanmoins à la plupart de nos besoins quotidiens. Le tout, pour un prix n’excédant pas 30 euros !</div>
+        
+      </div>
+    
+    
+      
+        <p>Aujourd'hui nous nous intéressons à un sujet à la frontière entre high et low tech : l'ordinateur ! Cet outil extrêmement utile, devenu incontournable pour la plupart d'entre nous, est souvent très sur-équipé par rapport à l'utilisation que nous en faisons. Cela a évidemment une incidence sur le prix de ces objets, qui exclut une grande partie du monde. Sans parler de l'impact sur l'environnement, notamment à cause de l'extraction des minerais nécessaires à leur construction qui, le plus souvent, sont très peu recyclés en fin de vie.</p>
+      
+        <p>Nous vous proposons aujourd'hui un modèle d'ordinateur très basique mais répondant néanmoins à la plupart de nos besoins quotidiens :</p>
+      
+        <p>- Traitement bureautique classique (écriture de document, création de diaporamas, etc )</p>
+      
+        <p>- Navigation sur internet (réseaux sociaux, envoi de mails, etc)</p>
+      
+        <p>- Une utilisation multimédia très basique (pas de retouche photo, vidéo, etc)</p>
+      
+        <p>Tout cela pour un prix n’excédant pas 30 euros ! Pour cela, nous utiliserons un mini-ordinateur, le Raspberry Pi, dans sa version la plus simple le Raspberry Pi Zero W. Pour les autres composants de l'ordinateur (écran, clavier, souris) nous utiliserons du matériel de récupération.</p>
+      
+        <p>Qu’il s’agisse d’une école qui souhaite créer une salle informatique, d’un particulier voulant créer une machine pour sa maison, d’un grand parent qui veut découvrir l’informatique ou d’un développeur en herbe qui souhaite se mettre à Linux, les raisons pour créer un PC de bureau avec la Raspberry Pi sont multiples.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 30 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Ordinateur_low-tech" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Ordinateur_low-tech</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Raspberry Pi Zero W ou Pi Zero 2 W</li><li>MicroSD 64GB.</li><li>Clavier USB ou sans fil de récupération</li><li>Souris USB ou sans fil de récupération</li><li>Un écran avec connexion HDMI de récupération</li><li>Câble HDMI</li><li>Adaptateur micro HDMI</li><li>Adaptateur micro USB</li><li>Une source d'alimentation 5V.</li><li>Une autre ordinateur avec une connexion internet pour la configuration.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparer sa carte SD - Installer Raspberry Pi OS</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/71/Ordinateur_low-tech_Screenshot_2023-02-07_at_19-09-17_Raspberry_Pi_OS_Raspberry_Pi.png/800px-Ordinateur_low-tech_Screenshot_2023-02-07_at_19-09-17_Raspberry_Pi_OS_Raspberry_Pi.png' alt='Ordinateur low-tech Screenshot 2023-02-07 at 19-09-17 Raspberry Pi OS Raspberry Pi.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/97/Ordinateur_low-tech_Capture_1.JPG' alt='Ordinateur low-tech Capture 1.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/65/Ordinateur_low-tech_Capture_2.JPG' alt='Ordinateur low-tech Capture 2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/4e/Ordinateur_low-tech_Captured_3.JPG' alt='Ordinateur low-tech Captured 3.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La Raspberry Pi ne possède pas de disque dur. À la place, la Raspberry Pi utilise une carte SD comme disque dur. Nous allons devoir installer un système d’exploitation dessus, nous choisirons ici Raspberry Pi OS (anciennement Raspbian), une distribution robuste, adaptée à la grande majorité des usages et optimisée pour la Raspberry Pi. Nous vous conseillons de vous orienter vers une carte SD rapide et fiable, les performances de la Raspberry Pi risquant d’être fortement influencées par la qualité de la carte SD choisie.<ul><li>Pour cette étape, vous aurez besoin de télécharger la dernière version de la distribution Raspberry Pi OS, c’est elle que nous installerons sur la carte SD de votre Raspberry Pi. Nous vous conseillons d'utiliser le logiciel dédié Raspberry Pi Imager. N'hésitez pas à consulter cette vidéo tutoriel de 45 secondes</li><li>Notez qu’au niveau matériel, vous aurez besoin de pouvoir écrire sur la carte SD, ce qui implique soit un ordinateur avec un port adapté, soit de prendre un lecteur de carte SD externe.</li></ul></li><li>- Installer Raspberry Pi Imager dans la version correspondant à votre système d'exploitation (Windows, Mac, Ubuntu).</li><li>- Insérez votre carte SD dans votre lecteur, et une fois celle-ci reconnue, lancez Raspberry Pi Imager.</li><li>- Choisissez le système d'exploitation souhaité. Dans notre cas, la dernière version de Raspberry Pi OS (32-bit).</li><li>- Choisissez le périphérique de stockage: votre catre SD préalablement formatée au format FAT32.</li><li>- Lancez l'écriture !</li><li>La carte SD est prête, il ne vous reste plus qu’à l’insérer dans votre Raspberry Pi et à brancher cette dernière.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Mise sous tension de votre Raspberry Pi et fin de la configuration</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/10/Ordinateur_low-tech_14298_1.jpg' alt='Ordinateur low-tech 14298 1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Dans un premier temps, branchez votre Raspberry à l’écran et au clavier, sans l’alimenter, et branchez dessus la carte SD.</li><li>Ceci fait, branchez l’alimentation de la Raspberry. (Toujours dans cet ordre !)</li><li>Votre Raspberry Pi est maintenant sous tension ! Il n'y a pas de bouton marche/arrêt ; votre ordinateur Raspberry Pi s'allume simplement lorsqu'il est branché sur le secteur. La première fois qu'il s'allume, l'assistant de configuration du système d'exploitation Raspberry Pi s'affiche. Celui-ci vous aide à terminer la configuration de votre Raspberry Pi : le connecter à votre réseau Wi-Fi, choisir les paramètres de région et de langue corrects, et ainsi de suite (vous pourrez également modifier tous ces paramètres ultérieurement). L'assistant installe également toutes les mises à jour de bogues et de performances qui sont devenues disponibles depuis la version complète de Raspberry Pi OS que Raspberry Pi Imager a installé sur votre carte microSD.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Consulter Wikipedia hors ligne.</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f4/Ordinateur_low-tech_kiwix.png/800px-Ordinateur_low-tech_kiwix.png' alt='Ordinateur low-tech kiwix.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bc/Ordinateur_low-tech_kiwix_logo_transparent.png/800px-Ordinateur_low-tech_kiwix_logo_transparent.png' alt='Ordinateur low-tech kiwix logo transparent.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous proposons d'utiliser l'ordinateur Low-tech afin de pouvoir consulter Wikipédia hors ligne.</li><li>Pour cela, nous utiliserons le logiciel Kiwix. Ce logiciel libre permet d'avoir toute l'encyclopédie Wikipédia (et bien d'autres contenus!) sous la main, où que vous soyez ! Sur un bateau, au milieu de nulle part ou encore en prison, il permet un accès à l'ensemble de la connaissance humaine. Vous n'avez pas besoin d'accès à Internet, tout est stocké sur votre ordinateur, votre clef USB ou DVD !</li><li>Pour cela vous aurez besoin de:<ul><li>Kiwix (le logiciel)</li><li>Le fichier ZIM avec le contenu de la Wikipédia linguistique spécifique que l'utilisateur souhaite (par ex. français).</li></ul></li><li>Nous présenterons deux options d'installation un peu différentes:<ul><li>Option 1 : Utiliser Kiwix comme Lecteur</li></ul></li><li>Le KIWIX Reader vous permet de consulter hors ligne, sans connexion Internet, des packs de contenu (Wikipédia, TEDx, ....) au format ZIM. Il est disponible pour tous les principaux systèmes d'exploitation (Windows, Mac, GNU/Linux, Android) . Il se présente sous la forme d'une application autonome ou d'un plug-in de navigateur. Installer-le et consulter le contenu de Wikipédia directement sur votre ordinateur Low-tech.<ul><li>Option 2: Utiliser Kiwix comme Hotspot</li></ul></li><li>KIWIX Hotspot vous permet de transformer un mini-ordinateur bon marché comme le Raspberry Pi en un relais pour distribuer du contenu gratuit, sans connexion internet, via un réseau local. Cette solution est particulièrement utile pour les écoles, les bibliothèques, les communautés, les organisations humanitaires, etc. Les utilisateurs finaux n'ont besoin que d'un appareil pouvant détecter le réseau avec un navigateur, ils n'ont pas besoin de télécharger et d'installer quoi que ce soit sur leurs appareils. KIWIX Hotspot fonctionne sous Windows, macOS et Linux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Option 1 : Utiliser Kiwix comme Lecteur</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/74/Ordinateur_low-tech_Capture_7.JPG/800px-Ordinateur_low-tech_Capture_7.JPG' alt='Ordinateur low-tech Capture 7.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous détaillerons ici l'installons sous le système d'exploitation Windows PC mais toutes les versions sont disponibles [[1]].<ul><li>Télécharger le logiciel et et double-cliquez sur le fichier pour l'ouvrir.</li><li>La première fois que vous ouvrez Kiwix, une fenêtre devrait apparaître pour vous inviter à visiter la bibliothèque. Si ce n'est pas le cas (ou si vous voulez voir ce qui est disponible à tout moment), allez dans Fichier > Parcourir la bibliothèque. Choisissez la langue de votre choix, puis téléchargez le fichier ZIM correspondant.</li><li>Une fois le fichier ZIM téléchargé, Kiwix devrait vous proposer de l'ouvrir. Si ce n'est pas le cas (ou si vous voulez ouvrir un ancien fichier), cliquez sur "Ma bibliothèque" dans le coin supérieur gauche de la fenêtre de l'application.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Option 2: Utiliser Kiwix comme Hotspot</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e0/Ordinateur_low-tech_Capture.JPG/800px-Ordinateur_low-tech_Capture.JPG' alt='Ordinateur low-tech Capture.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/8/8f/Ordinateur_low-tech_Capture2.JPG' alt='Ordinateur low-tech Capture2.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/23/Ordinateur_low-tech_Capture_3.JPG' alt='Ordinateur low-tech Capture 3.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/cd/Ordinateur_low-tech_Capture_4.JPG' alt='Ordinateur low-tech Capture 4.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/7/76/Ordinateur_low-tech_Capture_5.JPG' alt='Ordinateur low-tech Capture 5.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/d6/Ordinateur_low-tech_Capture6.JPG' alt='Ordinateur low-tech Capture6.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour réaliser cette installation vous aurez besoin de :</li><li>- un ordinateur (fonctionnant sous Windows, macOS ou GNU/Linux) avec un lecteur de carte SD.</li><li>- une carte microSD (ou SD en fonction du modèle de Raspberry Pi que vous utilisez). Choisissez une de bonne qualité et avec une mémoire adaptée à la taille du contenu que vous souhaitez diffuser. 32GB est un bon début. Pour la version lourde de Wikipédia English, vous aurez besoin de 128GB ou plus.<ul><li>Aller sur https://download.kiwix.org/release/kiwix-hotspot/ et ouvrir le sous-dossier contenant la version la plus récente. Télécharger l'installeur correspondant au système d'exploitation de l'ordinateur que vous utilisez pour préparer la carte SD (Windows 32 ou 64 BIT, macOS ou Linux).</li><li>Préparer votre carte SD : Pour éviter tout problème veillez à ce que votre carte SD soit bien vide et formatée.</li><li>Ecran Principal : Après avoir lancer le programme Kiwix Hotspot, vous verrez apparaître l'écran principal (image 1). Les différents paramètres de configuration sont détaillés dans les images 2 et 3.</li><li>Sélectionner du contenu : Le "content selector" vous permet de choisir les pack de contenu qui seront installer sur votre réseau. Il est possible de choisir sa langue préférer pour afficher seulement les contenus dans la langue sélectionnée (voir image 4)</li><li>Installation : Une fois vos choix effectués, cliquez sur "Run Installation" sur l'écran principal. La fenêtre "Installer Status" va apparaître (image 5) .</li></ul></li><li>L'installation peut prendre plusieurs heures. Ne pas l'interrompre même si vous avez l'impression que rien ne se passe. Attendez qu'une boite de dialogue vous indique que l'installation est terminée. Faites attention à ce que votre ordinateur ne se mette pas en mode Veille.<ul><li>Une fois l'installation terminée, retirez la carte SD de votre ordinateur.</li><li>Insérer la carte SD dans votre Raspberry Pi, connecter le à son alimentation et laisser démarrer (cela peut prendre une ou deux minutes)</li><li>Connecter votre ordinateur, tablette ou smartphone au réseau Wifi local avec le nom que vous avez choisi pendant l'installation.</li><li>Ouvrez votre navigateur internet et entrer l'adresse suivante dans la barre d'adresse: http://<name>.hotspot où <name> est le "Project Name" que vous avez utilisé pendant l'installation (le même que le réseau Wifi)</li><li>Vous devriez maintenant voir la page d’accueil de Kiwix Hotspot (voir image 6).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

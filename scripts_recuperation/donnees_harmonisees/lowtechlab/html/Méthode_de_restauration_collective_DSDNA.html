@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Méthode de restauration collective DSDNA</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Méthode de restauration collective DSDNA</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/6/6c/M_thode_de_restauration_collective_DSDNA_20250619_130246.jpg/800px-M_thode_de_restauration_collective_DSDNA_20250619_130246.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Technique de restauration collective élaborée par Du Soleil dans nos Assiettes</div>
+        
+      </div>
+    
+    
+      
+        <p>Cantine pensée pour être déplacée en train, vélo et/ou bus jusqu'à 60 couverts, aux recettes végétales et festives, dont les cuissons sont douces et réalisées avec des granulés de bois, et ne nécessitant pas de groupe de froid. La chauffe est réalisée dans un bain-marie : pas de risque d'accroche au fond du plat et le service peu s'étaler sur plusieurs heures. Les aliments y sont introduits plus ou moins tôt selon leurs besoins de cuisson, ce qui laisse le temps de les découper, de les peser ou de préparer le service. Ceux en réclamant plus sont cuits à la vapeur dans un gastronorme perforé ou stérilisés en amont dans des bocaux. En cas d'incertitude sur le nombre de convives, il est possible de prévoir des bocaux déjà cuisinés pour "rallonger" le plat</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 400 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Méthode_de_restauration_collective_DSDNA" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Méthode_de_restauration_collective_DSDNA</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Des gastronormes, un charriot de course, 2 fûts de 60L, un tuyau de poêle aluminié 153*33 et son bouchon</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Disqueuse, pince à découper la tôle, perceuse</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Le cuiseur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/98/M_thode_de_restauration_collective_DSDNA_20241010_103537.jpg/800px-M_thode_de_restauration_collective_DSDNA_20241010_103537.jpg' alt='M thode de restauration collective DSDNA 20241010 103537.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9e/M_thode_de_restauration_collective_DSDNA_20241011_114402.jpg/800px-M_thode_de_restauration_collective_DSDNA_20241011_114402.jpg' alt='M thode de restauration collective DSDNA 20241011 114402.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>À la différence du cuiseur multi-combustible, celui que nous utilisons s'ouvre par le haut pour ranger le matériel pour prendre moins de place : il faut donc 2 bidons de 60l pour le faire, un pour le corps et un pour le couvercle</li><li>Il est assisté par un ventilateur vis à vis de sa puissance et sa stabilité aux intempéries</li><li>Le cuiseur alimente 60 personnes (ou moins) de portions moyennes. Il est équipé d'une réserve à pellets de 3h (environ 32cm de longueur et 15cm de diamètre)</li><li>Quelques litres d'eau au fond du bidon permettent de le lester, de protéger le sol en cas de problème et d'éteindre les braises rapidement en fin de feu</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Le bain-marie</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ae/M_thode_de_restauration_collective_DSDNA_20240920_094449.jpg/800px-M_thode_de_restauration_collective_DSDNA_20240920_094449.jpg' alt='M thode de restauration collective DSDNA 20240920 094449.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/67/M_thode_de_restauration_collective_DSDNA_20240920_094530.jpg/800px-M_thode_de_restauration_collective_DSDNA_20240920_094530.jpg' alt='M thode de restauration collective DSDNA 20240920 094530.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/90/M_thode_de_restauration_collective_DSDNA_20240920_094802.jpg/800px-M_thode_de_restauration_collective_DSDNA_20240920_094802.jpg' alt='M thode de restauration collective DSDNA 20240920 094802.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le cuiseur supporte un gros bac 2/1 20cm contenant les 5l d'eau nécessaires au bain-marie (nommé bac principal) et 1 à 4 contenants 15cm (bacs secondaires), selon le nombre de préparations prévues et le nombre de convives. Un des contenants secondaires peut-être perforé pour cuire des légumes à plus haute température (indispensable pour les pommes de terre, les carottes, le potimarron ou encore les oignons)</li><li>Voici les gastronormes nécessaires à toutes les configurations de cette technique (soit un coût de 280.63€ TTC au 30/06/2025, de plus grands égouttoirs rarement nécessaires pouvant être ajoutés) :<ul><li>Barrette de combinaison (1)</li><li>Conteneur GN 2/1 en inox - Hauteur : 200 mm (1)</li><li>Conteneur GN 2/1 en inox - Hauteur : 150 mm (1)</li><li>Conteneur GN 2/1 en inox - Hauteur : 40 mm (1)</li><li>Conteneur GN 1/1 en inox - Hauteur : 150 mm (2)</li><li>Couvercle GN 1/1 en acier inoxydable (2)</li><li>Conteneur GN 1/2 en acier inoxydable - Hauteur : 150 mm (4)</li><li>Couvercle GN 1/2 en acier inoxydable (4)</li><li>Conteneur GN 1/2 en inox - perforé - Hauteur : 150 mm (1)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Utilisation</strong><p><strong>Étapes :</strong></p><ol><li>L'allumage se fait 2h avant le service, les aliments réclamant plus de puissance sont mis immédiatement et les autres 30mn avant le service, parfois même plus tard</li><li>Les légumes réclamant beaucoup de cuisson tels que les pommes de terre ou les carottes sont placés dans des égouttoirs et non des bacs pour cuire à la vapeur</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Service</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/93/M_thode_de_restauration_collective_DSDNA_20241011_124456.jpg/800px-M_thode_de_restauration_collective_DSDNA_20241011_124456.jpg' alt='M thode de restauration collective DSDNA 20241011 124456.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous pouvez mettre en place un self-service en laissant les convives se servir directement dans les bacs secondaires, ou transiter par des bacs intermédiaires</li><li>Le maintient au chaud est assuré par le fonctionnement du bain-marie en plus de l'inertie de l'eau et de la préparation</li><li>Il peut y avoir une phase fumante à l'extinction du feu, l'idéal est de la prévenir en versant juste avant les braises des pellets dans un récipient métallique contenant de l'eau</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Recettes</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/80/M_thode_de_restauration_collective_DSDNA_20240924_111615.jpg/800px-M_thode_de_restauration_collective_DSDNA_20240924_111615.jpg' alt='M thode de restauration collective DSDNA 20240924 111615.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/53/M_thode_de_restauration_collective_DSDNA_409C8A0E-D36C-4490-BD01-5249E7B49992-1024x1024.jpeg/800px-M_thode_de_restauration_collective_DSDNA_409C8A0E-D36C-4490-BD01-5249E7B49992-1024x1024.jpeg' alt='M thode de restauration collective DSDNA 409C8A0E-D36C-4490-BD01-5249E7B49992-1024x1024.jpeg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e2/M_thode_de_restauration_collective_DSDNA_Dahl.jpg/800px-M_thode_de_restauration_collective_DSDNA_Dahl.jpg' alt='M thode de restauration collective DSDNA Dahl.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Elles sont uniquement diffusées sur la PAGE de DSDNA pour simplifier les mises à jour car elles évoluent encore</li><li>Le quantitatif est établi pour 60 personnes, capacité d'un module</li><li>À vous ensuite d'assembler ces spécialités, en exemple un de nos grands classiques : pour 60 portions (photo de présentation) : un gastro 1/1 de paëlla, un gastro 1/2 de chili et un gastro 1/4 de vébab</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Méthode de transport en vélo, train et/ou bus</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/50/M_thode_de_restauration_collective_DSDNA_20250620_104249.jpg/800px-M_thode_de_restauration_collective_DSDNA_20250620_104249.jpg' alt='M thode de restauration collective DSDNA 20250620 104249.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/33/M_thode_de_restauration_collective_DSDNA_20250620_105407.jpg/800px-M_thode_de_restauration_collective_DSDNA_20250620_105407.jpg' alt='M thode de restauration collective DSDNA 20250620 105407.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/17/M_thode_de_restauration_collective_DSDNA_Capture_d_cran_2025-07-02_164051.png' alt='M thode de restauration collective DSDNA Capture d cran 2025-07-02 164051.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous modifions un chariot de course en retirant son "talon" et en remplaçant ses roues classiques par des roues à roulement à bille (TUTO)</li><li>Attention à bien choisir un modèle avec un essieu de 10mm, ceux en 7mm, les plus courants, sont trop fragiles !! Ils mesurent généralement une petite cinquantaine de cm de largeur contre 37 pour les autres</li><li>Le bidon fixé dessus peut entre autre contenir les bacs secondaires 1/1 et 1/2 et le bac 2/1 du bain marie est sanglé dessus</li><li>Il est fixé au porte bagage du vélo par une dégaine d'escalade</li><li>Nous équilibrons la moitié du poids entre le charriot et un sac à dos ou des sacoches, il est sinon trop fragile et rend le vélo instable</li><li>- Pour les plus bricoleurs, il est possible de fabriquer ce type de charriot avec un essieu et 2 barres métalliques</li><li>- Et pour les autres, acheter un chassis de charriot Andersen (90€) et remplacer les 2 roues par des modèles à roulement à bille (20€ par roue)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Tarif</strong><p><strong>Étapes :</strong></p><ol><li>Un forfait est établi en prenant en compte les heures et les frais pour 60 couverts :<ul><li>- 16h à 15€ de préparatifs, de présence sur place et de rangement = 240€</li></ul></li><li>- frais alimentaires : 60€</li><li>- frais divers (train, combustible, assiettes compostables, mécanique vélo..) : 30€</li><li>Soit 330€ HT, tarif pouvant être légèrement remisé si le nombre de couverts est nettement moins élevé</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Formation</strong><p><strong>Étapes :</strong></p><ol><li>Des stages de 2 jours sont organisés durant les beaux jours à La Chavanne (en Savoie) pour aborder tout les points essentiels de cette méthode : les recettes mises en pratiques, les barèmes et les techniques pour préparer des bocaux pour un événement public, la construction du brûleur, etc..</li><li>Retrouvez toutes les infos sur cette PAGE</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

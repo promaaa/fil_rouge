@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Système de traduction et d'apprentissage du Braille</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Système de traduction et d'apprentissage du Braille</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/1/15/Boitier.png/ia-744b46738610589d48b21306f0108ff0-px-Boitier.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Présentation d'un tutoriel notre projet de classe de terminale STI2D afin de le reproduire chez soi</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment système de traduction et d'apprentissage du braille.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 72 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 250 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Système_de_traduction_et_d_apprentissage_du_Braille" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Système_de_traduction_et_d_apprentissage_du_Braille</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Matériaux pour le boitier</li><li>-Planche en bois 3mm d'épaisseur / 30cm de large / 60 cm de long</li><li>-Plastique pour découpeuse laser ( ici du PLA) environ (100g)</li><li>Composants électroniques</li><li>-1x Raspberry pi 3</li><li>-6x Servo moteurs linéaires</li><li>-1x Mini Haut parleur (Module haut-parleur SKU00101)</li><li>-1x Cordon Jack CA35M</li><li>- 1x Carte Arduino Uno</li><li>- 5x boutons poussoirs</li><li>- 1x Capteur Ultrason</li><li>- 1x Caméra compatible Raspberry pi disponible chez Kubii</li><li>-40x Fils de connexion électronique</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>-Découpeuse laser</li><li>-Imprimante 3D (ici la Ultimaker 2+)</li><li>-Ordinateur</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Découpe des pièces en bois du boitier</strong><div class='step-images count-2'><figure><img src='/images/thumb/e/e5/D%C3%A9coupe.jpg/800px-D%C3%A9coupe.jpg' alt='Découpe.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e5/D%C3%A9coupe.jpg/800px-D%C3%A9coupe.jpg' alt='Découpe.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Connecter l'ordinateur à la découpeuse laser.</li><li>-Ouvrir le logiciel Trotek ( Nécessaire à la découpe).</li><li>-Ouvrir les pièces à découper en format dxf dans le logiciel.</li><li>-Optimiser l'espace sur la planche afin d'avoir les moins de perte de matière et déplaçant les pièces.</li><li>-Lancer la découpe.</li><li>-Nettoyer les pièces afin d'éviter des tâches dues au bois brûlé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Assemblage des pièces en bois</strong><div class='step-images count-2'><figure><img src='/images/thumb/7/7a/Assemblage.jpg/800px-Assemblage.jpg' alt='Assemblage.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7a/Assemblage.jpg/800px-Assemblage.jpg' alt='Assemblage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Assembler les pièces découpées grâce aux images ci-contre.</li><li>-Les coller via de la colle à bois.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Configuration de la carte électronique Raspberry pi v3</strong><div class='step-images count-2'><figure><img src='/images/thumb/5/50/Raspberry.jpg/800px-Raspberry.jpg' alt='Raspberry.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/50/Raspberry.jpg/800px-Raspberry.jpg' alt='Raspberry.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Configurer votre carte Raspberry pi.</li><li>-Alimenter la carte Raspberry pi via son câble d'alimentation à l'ordinateur et en hdmi à l'écran.</li><li>-Copier le code "Raspberry_code" dans un fichier python au même nom.</li><li>-Avant de lancer ce fichier, vous devez d’abord créer et démarrer un environnement virtuel à l’aide du terminal. Cela permet de préparer un espace propre pour faire fonctionner votre programme.</li><li>-Dans le terminal, tapper "python3 Raspberry_code.py".</li><li>-Le code devrait se lancer.</li><li>-Si c'est le cas, débrancher la carte raspberry pi, sinon regarder un tutoriel sur internet.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Configuration de la carte électronique Arduino Uno</strong><div class='step-images count-9'><figure><img src='/images/thumb/9/9f/Syst_me_de_traduction_et_d_apprentissage_du_Braille_61AvdQOxFzL.jpg/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_61AvdQOxFzL.jpg' alt='Syst me de traduction et d apprentissage du Braille 61AvdQOxFzL.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9a/Arduino_ide_image.jpg/800px-Arduino_ide_image.jpg' alt='Arduino ide image.jpg' loading='lazy'></figure><figure><img src='/images/3/38/Code.png' alt='Code.png' loading='lazy'></figure><figure><img src='/images/thumb/9/9f/Syst_me_de_traduction_et_d_apprentissage_du_Braille_61AvdQOxFzL.jpg/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_61AvdQOxFzL.jpg' alt='Syst me de traduction et d apprentissage du Braille 61AvdQOxFzL.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9a/Arduino_ide_image.jpg/800px-Arduino_ide_image.jpg' alt='Arduino ide image.jpg' loading='lazy'></figure><figure><img src='/images/3/38/Code.png' alt='Code.png' loading='lazy'></figure><figure><img src='/images/thumb/9/9f/Syst_me_de_traduction_et_d_apprentissage_du_Braille_61AvdQOxFzL.jpg/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_61AvdQOxFzL.jpg' alt='Syst me de traduction et d apprentissage du Braille 61AvdQOxFzL.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9a/Arduino_ide_image.jpg/800px-Arduino_ide_image.jpg' alt='Arduino ide image.jpg' loading='lazy'></figure><figure><img src='/images/3/38/Code.png' alt='Code.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Alimenter la carte Arduino Uno via son câble d'alimentation à ordinateur.</li><li>-Ouvrir Le logiciel Arduino IDE.</li><li>-Ouvrir le fichier "Arduino_code.ino".</li><li>-Uploader le code.</li><li>-Si le code parvient à s'uploader, débrancher la carte Arduino, sinon regarder un tutoriel sur internet.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Branchement des composants</strong><div class='step-images count-12'><figure><img src='/images/b/b1/Cam%C3%A9ra.jpg' alt='Caméra.jpg' loading='lazy'></figure><figure><img src='/images/3/3a/Capteur_distance.jpg' alt='Capteur distance.jpg' loading='lazy'></figure><figure><img src='/images/8/82/Syst_me_de_traduction_et_d_apprentissage_du_Braille_5-mini-bouton-poussoir.jpg' alt='Syst me de traduction et d apprentissage du Braille 5-mini-bouton-poussoir.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/01/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Afficher_les_photos_re_centes.jpg/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Afficher_les_photos_re_centes.jpg' alt='Syst me de traduction et d apprentissage du Braille thumbnail Afficher les photos re centes.jpg' loading='lazy'></figure><figure><img src='/images/b/b1/Cam%C3%A9ra.jpg' alt='Caméra.jpg' loading='lazy'></figure><figure><img src='/images/3/3a/Capteur_distance.jpg' alt='Capteur distance.jpg' loading='lazy'></figure><figure><img src='/images/8/82/Syst_me_de_traduction_et_d_apprentissage_du_Braille_5-mini-bouton-poussoir.jpg' alt='Syst me de traduction et d apprentissage du Braille 5-mini-bouton-poussoir.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/01/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Afficher_les_photos_re_centes.jpg/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Afficher_les_photos_re_centes.jpg' alt='Syst me de traduction et d apprentissage du Braille thumbnail Afficher les photos re centes.jpg' loading='lazy'></figure><figure><img src='/images/b/b1/Cam%C3%A9ra.jpg' alt='Caméra.jpg' loading='lazy'></figure><figure><img src='/images/3/3a/Capteur_distance.jpg' alt='Capteur distance.jpg' loading='lazy'></figure><figure><img src='/images/8/82/Syst_me_de_traduction_et_d_apprentissage_du_Braille_5-mini-bouton-poussoir.jpg' alt='Syst me de traduction et d apprentissage du Braille 5-mini-bouton-poussoir.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/01/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Afficher_les_photos_re_centes.jpg/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Afficher_les_photos_re_centes.jpg' alt='Syst me de traduction et d apprentissage du Braille thumbnail Afficher les photos re centes.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Une fois les 2 cartes débranchées, les connecter en I2C via 3 fils de connexion M>F.(SDA; SCL; GND)</li><li>-Bancher la caméra à la carte raspberry pi.</li><li>-Connecter le capteur de distance via 4 fils de connexion F>F à la carte Raspberry pi(VCC; GND; TRIG; ECHO)</li><li>-Connecter les boutons sur les GPIO {17; 22; 23; 24; 27} de la Raspberry pi et les alimenter via la carte Arduino</li><li>-Connecter le haut-parleur via 2 fils de connexion F>F.(VCC; GND) et le câble jack</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Branchement des servo-moteurs</strong><div class='step-images count-2'><figure><img src='/images/thumb/9/99/Servomoteur.jpg/800px-Servomoteur.jpg' alt='Servomoteur.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/99/Servomoteur.jpg/800px-Servomoteur.jpg' alt='Servomoteur.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Connecter en PWM les 6 servo-moteurs linéaires à la carte Arduino en utilisant son alimentation et via les ports {3; 5; 6; 9; 10; 11}.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Test des codes</strong><div class='step-images count-2'><figure><img src='/images/thumb/c/c7/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_6_.png/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_6_.png' alt='Syst me de traduction et d apprentissage du Braille thumbnail Sujet 6 .png' loading='lazy'></figure><figure><img src='/images/thumb/c/c7/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_6_.png/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_6_.png' alt='Syst me de traduction et d apprentissage du Braille thumbnail Sujet 6 .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Alimenter les 2 carte électroniques.</li><li>-Attendre quelques instants que la raspberry se lance.</li><li>-Tester les boutons:<ul><li>Bouton 1: Début du mode leçon ( Lettre dans l'ordre alphabétique)</li><li>Bouton 2: Début du mode exercice ( Lettre dans le désordre)</li><li>Bouton 3: Lancement de la caméra: Positionner le capteur de distance à environ 15cm, +/- 1cm d'un texte Ne plus bouger Attendre quelques secondes que la raspberry pi reconnaisse des lettres</li><li>Positionner le capteur de distance à environ 15cm, +/- 1cm d'un texte</li><li>Ne plus bouger</li><li>Attendre quelques secondes que la raspberry pi reconnaisse des lettres</li><li>Bouton 4: Lettre suivante( Du texte détecté via la caméra)</li><li>Bouton 5: Lettre précédente (Du texte détecté via la caméra)</li><li>Positionner le capteur de distance à environ 15cm, +/- 1cm d'un texte</li><li>Ne plus bouger</li><li>Attendre quelques secondes que la raspberry pi reconnaisse des lettres</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Assemblage</strong><div class='step-images count-6'><figure><img src='/images/thumb/4/49/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_4_.png/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_4_.png' alt='Syst me de traduction et d apprentissage du Braille thumbnail Sujet 4 .png' loading='lazy'></figure><figure><img src='/images/thumb/1/19/Assemblage_2_Braille.png/800px-Assemblage_2_Braille.png' alt='Assemblage 2 Braille.png' loading='lazy'></figure><figure><img src='/images/thumb/4/49/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_4_.png/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_4_.png' alt='Syst me de traduction et d apprentissage du Braille thumbnail Sujet 4 .png' loading='lazy'></figure><figure><img src='/images/thumb/1/19/Assemblage_2_Braille.png/800px-Assemblage_2_Braille.png' alt='Assemblage 2 Braille.png' loading='lazy'></figure><figure><img src='/images/thumb/4/49/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_4_.png/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_4_.png' alt='Syst me de traduction et d apprentissage du Braille thumbnail Sujet 4 .png' loading='lazy'></figure><figure><img src='/images/thumb/1/19/Assemblage_2_Braille.png/800px-Assemblage_2_Braille.png' alt='Assemblage 2 Braille.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Assembler les composants dans le boitier afin de les protéger.</li><li>-Utiliser des vis pour un meilleur maintien des composants si possible.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Test final</strong><div class='step-images count-2'><figure><img src='/images/thumb/e/e3/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_5_.png/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_5_.png' alt='Syst me de traduction et d apprentissage du Braille thumbnail Sujet 5 .png' loading='lazy'></figure><figure><img src='/images/thumb/e/e3/Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_5_.png/800px-Syst_me_de_traduction_et_d_apprentissage_du_Braille_thumbnail_Sujet_5_.png' alt='Syst me de traduction et d apprentissage du Braille thumbnail Sujet 5 .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Tester les boutons et valider les actions engendrées.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

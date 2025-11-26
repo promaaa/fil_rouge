@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Un tour de plus :</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Un tour de plus :</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/c/c6/Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg/ia-b3bb654eec349ae8d64e65225dcabaf3-px-Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Une structure en bois ludique permettant d’animer une course en boucle dans un parc. Chaque joueur pousse un bâton de sa couleur à chaque tour : le premier à pousser ses trois bâtons gagne ! Ce projet est conçu pour être facile à construire, à déplacer et à animer dans un cadre sportif. Structure en trois parties emboîtables.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment un tour de plus :.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3-4 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 80 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Un_tour_de_plus__" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Un_tour_de_plus__</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Panneaux de bois extérieur (contreplaqué ou OSB)<ul><li>2 panneaux de l.470 x H.600 x Ep.5 mm</li><li>1 bande de l.470 x L.70 x Ep.5 mm</li><li>2 panneaux de l.360 x H. 240 x Ep.5 mm</li><li>1 bande l.300 x L.70 x Ep.5 mm</li></ul></li><li>Tasseaux en bois<ul><li>4 tasseaux de l.30 x L.30 x H.1350 mm</li><li>4 tasseaux de l.30 x L.30 x H.410 mm</li><li>2 tasseaux de l.30 x L.30 x H.270 mm</li><li>2 tasseaux de l.30 x L.30 x H.350 mm</li></ul></li><li>Tube de PVC (possibilité de plaque en plastique recyclé Precious Plastic)<ul><li>1 tube diamètre 40 mm, l.3 m</li></ul></li><li>Vis de 40mm de longueur</li><li>Référence réalisation de plaque Precious Plastique : Création de plaques de plastique recyclé</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Scie sauteuse ou scie circulaire</li><li>Possibilité de scie cloche pour les trous</li><li>Perceuse visseuse</li><li>Mètre</li><li>Niveau</li><li>Serre Joint</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Le tréteau - Pied</strong><div class='step-images count-12'><figure><img src='/images/thumb/a/a9/Un_tour_de_plus_-_Photoroom_20250601_003651.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003651.jpg' alt='Un tour de plus - Photoroom 20250601 003651.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/5e/Un_tour_de_plus_-_Photoroom_20250601_003743.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003743.jpg' alt='Un tour de plus - Photoroom 20250601 003743.jpg' loading='lazy'></figure><figure><img src='/images/1/1f/Un_tour_de_plus_-_tr_teau_COTE.jpg' alt='Un tour de plus - tr teau COTE.jpg' loading='lazy'></figure><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a9/Un_tour_de_plus_-_Photoroom_20250601_003651.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003651.jpg' alt='Un tour de plus - Photoroom 20250601 003651.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/5e/Un_tour_de_plus_-_Photoroom_20250601_003743.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003743.jpg' alt='Un tour de plus - Photoroom 20250601 003743.jpg' loading='lazy'></figure><figure><img src='/images/1/1f/Un_tour_de_plus_-_tr_teau_COTE.jpg' alt='Un tour de plus - tr teau COTE.jpg' loading='lazy'></figure><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a9/Un_tour_de_plus_-_Photoroom_20250601_003651.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003651.jpg' alt='Un tour de plus - Photoroom 20250601 003651.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/5e/Un_tour_de_plus_-_Photoroom_20250601_003743.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003743.jpg' alt='Un tour de plus - Photoroom 20250601 003743.jpg' loading='lazy'></figure><figure><img src='/images/1/1f/Un_tour_de_plus_-_tr_teau_COTE.jpg' alt='Un tour de plus - tr teau COTE.jpg' loading='lazy'></figure><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper les tasseaux<ul><li>Couper 4 tasseaux de 1350 mm (pieds).</li><li>Couper 2 tasseaux de 270 mm et 4 tasseaux de 410 mm (jonction entre les pieds).</li></ul></li><li>Assemblage des pieds<ul><li>Prendre 2 tasseaux de 1350 mm</li><li>Les joindre en haut.</li><li>En bas, visser un tasseau de 270 mm à partir de 150 mm de l’extrémité basse.</li><li>Faire pareil avec les 2 autres tasseaux de 1350 mm et de 270 mm</li><li>Joindre les deux pieds avec les tasseaux de 410 mm : 3 tasseaux en bas et 1 en haut</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - La structure - Cylindre</strong><div class='step-images count-15'><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/f/ff/Un_tour_de_plus_-_c_te_trous_des_cylindres.jpg' alt='Un tour de plus - c te trous des cylindres.jpg' loading='lazy'></figure><figure><img src='/images/7/71/Un_tour_de_plus_-_tr_teau_DESSUS.pdf.jpg' alt='Un tour de plus - tr teau DESSUS.pdf.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c3/Un_tour_de_plus_-_Photoroom_20250601_003815.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003815.jpg' alt='Un tour de plus - Photoroom 20250601 003815.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/fd/Un_tour_de_plus_-_Photoroom_20250601_003840.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003840.jpg' alt='Un tour de plus - Photoroom 20250601 003840.jpg' loading='lazy'></figure><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/f/ff/Un_tour_de_plus_-_c_te_trous_des_cylindres.jpg' alt='Un tour de plus - c te trous des cylindres.jpg' loading='lazy'></figure><figure><img src='/images/7/71/Un_tour_de_plus_-_tr_teau_DESSUS.pdf.jpg' alt='Un tour de plus - tr teau DESSUS.pdf.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c3/Un_tour_de_plus_-_Photoroom_20250601_003815.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003815.jpg' alt='Un tour de plus - Photoroom 20250601 003815.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/fd/Un_tour_de_plus_-_Photoroom_20250601_003840.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003840.jpg' alt='Un tour de plus - Photoroom 20250601 003840.jpg' loading='lazy'></figure><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/f/ff/Un_tour_de_plus_-_c_te_trous_des_cylindres.jpg' alt='Un tour de plus - c te trous des cylindres.jpg' loading='lazy'></figure><figure><img src='/images/7/71/Un_tour_de_plus_-_tr_teau_DESSUS.pdf.jpg' alt='Un tour de plus - tr teau DESSUS.pdf.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c3/Un_tour_de_plus_-_Photoroom_20250601_003815.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003815.jpg' alt='Un tour de plus - Photoroom 20250601 003815.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/fd/Un_tour_de_plus_-_Photoroom_20250601_003840.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003840.jpg' alt='Un tour de plus - Photoroom 20250601 003840.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper les plaques de contreplaqué<ul><li>Couper 2 panneaux de l.470 x H.600 mm</li><li>Couper une bande de l.470 x L.70 mm</li></ul></li><li>Réalisation des trous pour insérer les bâtons<ul><li>Attention les trous doivent être alignés sur les deux panneaux !</li><li>Aligner et assembler les deux panneaux grâce aux serres joint.</li><li>Faire des repères pour les trous à percer.</li><li>Percer les 9 trous de diamètre 40 mm à la scie sauteuse ou scie cloche.</li></ul></li><li>Assemblage de la structure<ul><li>Assembler les deux panneaux grâce à la bande</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Le module - Mode d’emploi et plan</strong><div class='step-images count-6'><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/7/71/Un_tour_de_plus_-_tr_teau_DESSUS.pdf.jpg' alt='Un tour de plus - tr teau DESSUS.pdf.jpg' loading='lazy'></figure><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/7/71/Un_tour_de_plus_-_tr_teau_DESSUS.pdf.jpg' alt='Un tour de plus - tr teau DESSUS.pdf.jpg' loading='lazy'></figure><figure><img src='/images/7/78/Un_tour_de_plus_-_tr_teau_FACE.jpg' alt='Un tour de plus - tr teau FACE.jpg' loading='lazy'></figure><figure><img src='/images/7/71/Un_tour_de_plus_-_tr_teau_DESSUS.pdf.jpg' alt='Un tour de plus - tr teau DESSUS.pdf.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper les plaques de contreplaqué<ul><li>Couper 2 panneaux de l.360 x H. 240 mm</li><li>Couper une bande l.300 x L.70 mm</li></ul></li><li>Assemblage du module<ul><li>Assembler les deux panneaux grâce à la bande</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Les cylindres</strong><div class='step-images count-2'><figure><img src='/images/thumb/e/e8/Un_tour_de_plus_-_cylindres_batons.jpg/800px-Un_tour_de_plus_-_cylindres_batons.jpg' alt='Un tour de plus - cylindres batons.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e8/Un_tour_de_plus_-_cylindres_batons.jpg/800px-Un_tour_de_plus_-_cylindres_batons.jpg' alt='Un tour de plus - cylindres batons.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le tube de PVC<ul><li>Couper 9 morceaux de 300 mm de longueur dans le tube</li></ul></li><li>Si vous souhaitez réaliser cette partie à partir de Precious Plastic. Soit il faut chauffer la plaque pour créer un cylindre. Soit il faut créer un tube à partir d’un moule.</li><li>Assemblage<ul><li>Glisser les cylindres dans les trous</li></ul></li><li>Fixer les cylindres<ul><li>Coller des embouts (18 cylindres de diamètre 45 mm minimum) aux extrémités des tubes afin d’éviter que les bâtons tombent de la structure lorsqu’ils sont poussés.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Installation</strong><div class='step-images count-6'><figure><img src='/images/thumb/3/32/Un_tour_de_plus_-_Photoroom_20250601_003914.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003914.jpg' alt='Un tour de plus - Photoroom 20250601 003914.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c6/Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg/800px-Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg' alt='Un tour de plus - photomontage Un tour de Plus A3 final page-0001.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/32/Un_tour_de_plus_-_Photoroom_20250601_003914.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003914.jpg' alt='Un tour de plus - Photoroom 20250601 003914.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c6/Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg/800px-Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg' alt='Un tour de plus - photomontage Un tour de Plus A3 final page-0001.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/32/Un_tour_de_plus_-_Photoroom_20250601_003914.jpg/800px-Un_tour_de_plus_-_Photoroom_20250601_003914.jpg' alt='Un tour de plus - Photoroom 20250601 003914.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c6/Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg/800px-Un_tour_de_plus_-_photomontage_Un_tour_de_Plus_A3_final_page-0001.jpg' alt='Un tour de plus - photomontage Un tour de Plus A3 final page-0001.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Positionner le tréteau où vous le souhaitez</li><li>Emboîter la structure des cylindres par-dessus le tréteau</li><li>Insérer les bâtons</li><li>Fixer les extrémités des bâtons</li><li>Emboîter le module sur un des côtés de la structure</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

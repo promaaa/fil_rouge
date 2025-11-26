@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Biosphère Urbaine : La douche économe en eau et en énergie</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Biosphère Urbaine : La douche économe en eau et en énergie</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/e/e0/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9967.JPG/ia-133a1ecec86923a3a73655474a86a5b8-px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9967.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Prendre une douche chaude est un réel plaisir mais représente un réel impact environnemental. La douche brumisante permet de conserver ce plaisir, avec une consommation réduite tout en apportant une nouvelle expérience de lavage. Ici l’eau ne coule plus à flot sur le corps mais le corps est délicatement brumisé. Le ballon chauffe-eau solaire permet d’assurer la température idéale de l’eau avec peu d’énergie et peu de déperditions. Ce tutoriel reprend les étapes de fabrication du ballon d’eau chaude économe.</div>
+        
+      </div>
+    
+    
+      
+        <p>Projet</p>
+      
+        <p>L’association BIOSPHERE EXPERIENCE expérimente des futurs durables et désirables dans lesquels les humains vivent en symbiose avec les autres espèces vivantes. En 2024, Caroline Pultz & Corentin De Chatelperron ont expérimenté pendant 4 mois ce que pourrait être un mode de vie low-tech en milieu urbain : un mode de vie sans déchets, réduisant de dix fois la consommation d'eau, atteignant les objectifs 2050 de l'ONU pour les émissions de gaz à effet de serre, tout en restant désirable et accessible à tous. Armés d’experts, de bénévoles et de stagiaires, ils ont imaginé et conçu un appartement-écosystème prospectif appelé Biosphère Urbaine, installé en région parisienne à Boulogne-Billancourt. Pour compléter l’écosystème, leur collègue Emma Bousquet-Pasturel a mis en place un vaste réseau d’entraide citoyenne autour de l’appartement. Parallèlement, Emma a été chargée de lancer un programme de sciences participatives réunissant des centaines de citoyens français et internationaux pour tester chez eux les systèmes low-tech de l’appartement-laboratoire.</p>
+      
+        <p>Ce tutoriel est celui d’un module low-tech de l’appartement laboratoire, conçu dans le cadre de l’expérience à Boulogne-Billancourt.</p>
+      
+        <p>Pour accéder au tutoriel du programme de sciences participatives : Sciences Participatives : La douche à brumisation</p>
+      
+        <p>La douche économe en eau et en énergie :</p>
+      
+        <p>L’appartement expérimental créé pour la Biosphère Urbaine reprend toutes les caractéristiques d’un “appartement standard” et dispose ainsi de tout le nécessaire pour pouvoir y vivre au quotidien. Ainsi, Caroline et Corentin ont pu concevoir et tester divers dispositifs aussi bien pour la cuisine, pour les toilettes que pour la douche.</p>
+      
+        <p>Ce tutoriel viendra principalement s’intéresser à la salle de bain et au sujet de la douche économe. Cette thématique prend en compte autant la consommation d’eau que la consommation énergétique pour chauffer l’eau.</p>
+      
+        <p>Le ballon d’eau chaude :</p>
+      
+        <p>Il est montré qu’une douche froide améliore considérablement la qualité du sommeil, elle permet de libérer les hormones du bonheur et, par sa température, de réduire les inflammations des muscles après une séance de sport. Contrairement à ce que l’on peut penser, la douche froide ne déforce pas le système immunitaire, bien au contraire !</p>
+      
+        <p>Mais puisqu’il est toujours confortable de prendre une douche chaude après une dure journée et qu’elle possède également ses bienfaits et usages, nous avons fabriqué un système de chauffe et de stockage économe.</p>
+      
+        <p>Un peu d’histoire du système présenté dans ce tutoriel : Dans un logement, le chauffage représente la plus grande dépense d’énergie et l’eau chaude (donc le chauffe-eau) représente le second point de dépense d’énergie. “L'eau chaude sanitaire représente environ 35 % des besoins d'eau du ménage et plus de 12 % de la consommation d'énergie” selon l’ADEME.</p>
+      
+        <p>Trouver une solution pour pouvoir continuer à profiter d’une douche chaude avec un impact moindre s’est donc imposée. La solution trouvée et expérimentée dans l’appartement Biosphère est double: dans un premier temps, réduire le volume d’eau à chauffer puis, dans un second temps, fabriquer un ballon d’eau chaude qui utilise de l’énergie solaire et qui a une faible perte de chaleur.</p>
+      
+        <p>Le ballon d’eau chaude a été fabriqué par Corentin, Smat et Frédéric spécialement pour l’expérience. Ce dernier fait 2L, il est super bien isolé, chauffé par une résistance de 150W et alimenté par les panneaux solaires de la Biosphère.</p>
+      
+        <p>Les améliorations à prévoir : un second thermostat et un interrupteur 3 positions serait bien pour avoir le choix entre 2 températures. En hiver on a besoin que ce soit plus chaud (thermostat à 85 degrés), en mi saison elle pourrait être intermédiaire (par exemple 65 degrés), sachant qu’en été il n’est pas nécessaire de la chauffer.</p>
+      
+        <p>Améliorer le système pour que le ballon chauffe au moment où les batteries sont pleines, afin que le surplus produit par les panneaux solaires, au lieu d’être perdu, puisse être stocké sous forme de chaleur.</p>
+      
+        <p>Retour d’expérience d’utilisation : Très agréable une fois qu’on a pris l’habitude avec le réglage des buses.</p>
+      
+        <p>Intérêt de la machine :</p>
+      
+        <p>Le chauffe eau économe dispose de nombreux avantages :<ul><li>Utilise de l’énergie électrique verte produite par les panneaux solaires. Ici, l’objectif est de maximiser l’autonomie de l’appartement, et donc d’optimiser la captation d’énergie dans les batteries afin d’avoir un système peu consommateur;</li><li>Réduire les pertes énergétiques et transformer la plus grande partie de l’énergie électrique en chaleur pour chauffer l’eau;</li><li>Réduire la consommation d’eau du foyer, et par conséquent réduire l’impact environnemental, mais aussi la facture d’eau et d’électricité.</li></ul></p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50-150 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___La_douche_économe_en_eau_et_en_énergie" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___La_douche_économe_en_eau_et_en_énergie</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Ceci est une liste de matériaux exhaustive. Si vous avez déjà certains éléments, nous vous conseillons de favoriser la seconde main et d’adapter leurs diamètres et tailles au long du tuto.<ul><li>Ballon : 1 bonbonne volume 2L (dans notre cas : une boite consignée inox Chocapic) 1 joint (type bocal Le Parfait) Planche de bois Feuille de PLA Isolant thermique à bulles couche aluminium Isolant en fibre végétale Scotch aluminium haute température Tige filetée Ecrous Rondelles</li><li>1 bonbonne volume 2L (dans notre cas : une boite consignée inox Chocapic)</li><li>1 joint (type bocal Le Parfait)</li><li>Planche de bois</li><li>Feuille de PLA</li><li>Isolant thermique à bulles couche aluminium</li><li>Isolant en fibre végétale</li><li>Scotch aluminium haute température</li><li>Tige filetée</li><li>Ecrous</li><li>Rondelles</li><li>Résistance chauffante 3 patchs transparents 12V 50W</li><li>3 patchs transparents 12V 50W</li><li>Electricité / capteurs : Thermostat 85 degrés Domino à 2 entrées Fils électriques</li><li>Thermostat 85 degrés</li><li>Domino à 2 entrées</li><li>Fils électriques</li><li>Connecteurs eau : Embouts classiques type plomberie Joint alimentaire de plomberie Tuyau de plomberie Vanne</li><li>Embouts classiques type plomberie</li><li>Joint alimentaire de plomberie</li><li>Tuyau de plomberie</li><li>Vanne</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Ceci est une liste d’outils exhaustive à adapter en fonction de ce que vous possédez déjà.</li><li>Cutter</li><li>Scie sauteuse</li><li>Défonceuse</li><li>Perceuse</li><li>Ciseaux</li><li>Mètre</li><li>Scie à métaux ou meuleuse</li><li>Gants de bricolage</li><li>Lunettes de protection</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récupération et achat du matériel</strong><p><strong>Étapes :</strong></p><ol><li>Suivant le niveau de finition apporté, l’adaptation du modèle et l’utilisation du réemploi, nous estimons entre 50 et 150 euros le coût du chauffe-eau économe.</li><li>Avant de faire vos achats, nous vous conseillons fortement de lire en entier le tutoriel, car la liste de matériel peut être adaptée en fonction de ce dont vous disposez chez vous.</li><li>Pour les outils et le matériel, nous vous invitons à chercher s’il n’existe pas de lieux tels des recycleries ou des bibliothèques d’objets avant d’en acheter. Vous pourrez y trouver ce dont vous avez besoin ainsi que des conseils de passionnés.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Conseils et précautions</strong><p><strong>Étapes :</strong></p><ol><li>Avant de débuter la fabrication, veillez à sécuriser votre espace de travail et à optimiser le rangement de vos outils.<ul><li>Munissez-vous d’outils en bon état et adaptés aux travaux à réaliser;</li><li>Lisez attentivement le mode d’emploi des outils et faites attention aux pictogrammes sur les emballages;</li><li>Installez-vous dans un endroit dégagé, aéré et bien éclairé;</li><li>Equipez-vous des protections nécessaires : gants, chaussures, lunettes, vêtements, casque, masque protecteur, tampons d’oreille (casque/boules-quies), etc.;</li><li>Débranchez les outils électriques et refermez les produits lorsque vous ne les utilisez pas;</li><li>Demandez de l’aide à votre entourage si vous êtes amené.e.s à manier des charges lourdes (outils, matériaux…).</li></ul></li><li>Concernant les précautions spécifiques au ballon d’eau chaude, voici la réglementation en France :</li><li>Cet article dit que l’eau doit être conservée à une température supérieure à 50°C dans le système de distribution dans les 24 heures précédant l’utilisation afin de réduire le risque de prolifération de bactéries. Cependant à la sortie, l’eau de la douche qui va sur le corps doit être inférieure à une température de 50°C pour éviter les brûlures.</li><li>Cela n’est pas possible pour la douche brumisante, car la brume doit sortir à une température plus élevée. C’est pourquoi il est important d’avoir 30cm entre le brumisateur et la peau. De plus, au fur et à mesure de la douche, l’eau refroidit graduellement et de manière douce.</li><li>Ceci est une liste non exhaustive de conseils et précautions.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Dimensionner selon vos besoins</strong><p><strong>Étapes :</strong></p><ol><li>Le dimensionnement du ballon d’eau chaude est une étape importante qui permettra de garantir un volume d’eau chaude suffisant selon l’usage, le nombre de personnes dans le foyer et le type de lavage souhaité.</li><li>Dans le cadre de ce tuto, nous partons sur un besoin de 5L et un ballon d’eau chaude de 2L.</li><li>Voici comment dimensionner :<ul><li>Etape 1 : Définir la quantité d’eau maximale pour un lavage</li></ul></li><li>Voici un tableau qui reprend la quantité d’eau suggérée selon la longueur des cheveux (pour un lavage avec brumisateur) :</li><li>(Valeurs qui peuvent être mises à jour selon votre propre expérience.)<ul><li>Etape 2 : Définir le volume du ballon</li></ul></li><li>Ici la température de sortie souhaitée va fortement influencer le volume du ballon. En effet, dans le cas de ce ballon, l’objectif est de chauffer un petit volume d’eau à une température de 85°C et de mélanger ce volume avec une quantité d’eau froide pour obtenir la température souhaitée. Pour avoir les valeurs exactes il faudrait faire des calculs de thermodynamiques incluant divers facteurs qui seront propres à chaque fabrication.</li><li>Note : l’eau froide du réseau se mélange progressivement à l’eau chaude du ballon au fur et à mesure de la douche. Elle est d’abord très chaude, puis se refroidit petit à petit jusqu’à température ambiante.</li><li>Pour résumer : la température idéale pour une douche agréable et relaxante se situe entre 37°C et 40°C. Au-delà de 42°C : l'eau devient trop chaude, ce qui peut irriter la peau, provoquer des rougeurs, ou même augmenter la pression artérielle. Dans le cas particulier de la brumisation, il faut légèrement augmenter cette température car lorsque l'eau est brumisée, elle perd de la chaleur principalement à cause des échanges thermiques avec l'air : si l'air ambiant est plus froid que l'eau brumisée, il absorbe de la chaleur.</li><li>Par exemple : si l'air ambiant est autour de 20°C avec une humidité modérée, l'eau brumisée peut perdre rapidement 5 à 10°C. Si l'air est très sec ou beaucoup plus froid, la perte peut être encore plus importante. Pour une évaluation plus précise, il faudrait connaître la température ambiante, l'humidité relative et les caractéristiques de la brumisation.</li><li>D’après les tests pour un volume d’eau à 100°C et pour obtenir une T° de sortie autour de 45°C, voici le calcul :<ul><li>Volume eau froide = Volume eau chaude x 3/2</li><li>Volume total = Volume eau froide + Volume eau chaude</li><li>Volume eau chaude = Volume total x 2/5</li></ul></li><li>Ici le volume d’eau chaude correspond à la taille du ballon.</li><li>Dans le cas de la Biosphère :<ul><li>Volume total = Volume eau froide + Volume eau chaude = 5L</li><li>Taille ballon = Volume total x 2/5 = 5 x 2/5 = 2L</li></ul></li><li>Par exemple pour un ballon d’eau chaude pour une personne aux cheveux longs il faut :<ul><li>Volume total = Volume eau froide + Volume eau chaude = 8L</li><li>Taille ballon = Volume total x 2/5 = 8 x 2/5 = 3,2L</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Préparation du cœur de chauffe</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0e/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_20241030_085644.jpg/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_20241030_085644.jpg' alt='Biosphere Urbaine La douche econome en eau et en energie 20241030 085644.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e8/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_20241030_085714.jpg/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_20241030_085714.jpg' alt='Biosphere Urbaine La douche econome en eau et en energie 20241030 085714.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_20241030_085751.jpg/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_20241030_085751.jpg' alt='Biosphere Urbaine La douche econome en eau et en energie 20241030 085751.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dd/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Sch_ma_Ballon_Chauffe-eau.png/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Sch_ma_Ballon_Chauffe-eau.png' alt='Biosphere Urbaine La douche econome en eau et en energie Sch ma Ballon Chauffe-eau.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le cœur de chauffe de ce chauffe-eau économe en énergie est la zone qui concentre toute la technologie de ce système. Il s’agit de la partie qui doit être faite avec le plus de soin afin de garantir à la fois l’étanchéité, mais également la sécurité de l’ensemble.</li><li>Pour pouvoir réaliser le ballon qui contiendra l’eau qui sera chauffée, il faut utiliser un contenant étanche (ou à étanchéifier) et faire des perçages pour l’entrée et la sortie d’eau.</li><li>Utiliser ensuite des raccords de plomberie standard pour connecter les tuyaux et les raccords au ballon.</li><li>L’entrée et la sortie d’eau doivent être bien positionnées en prenant en compte les principes physiques de thermodynamique : les fluides et l’air chaud ont tendance à monter (cf. principe thermosiphon). Il faudra donc mettre une entrée de l’eau froide (issue du réseau) en bas et une sortie d’eau chauffée en haut.</li><li>Pour assurer un bon maintien de l’ensemble (notamment lors de la montée en pression liée à l’augmentation de la température) et une bonne étanchéité il est recommandé de réaliser une fixation rigide, ici le corps du ballon est pris en sandwich entre deux pièces de bois et maintenue par des tiges filetées et des écrous.</li><li>Positionner ensuite les résistances chauffantes tout autour du ballon, collées directement sur la paroi afin d’avoir une diffusion de la chaleur la moins perturbée possible. Fixer le thermostat en partie haute avec du scotch alu, ou coller avec du silicone résistant à la chaleur.</li><li>Pour finir, et afin de réduire au maximum les dissipations thermiques, il faudra recouvrir l’ensemble d’un film isolant double couche : aluminium / papier bulle, qui sert de réflecteur infrarouge côté intérieur, comme une couverture de survie. Recouvrir le plus possible et penser à laisser une zone ouverte pour le passage des tuyaux.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Préparation de la structure du ballon</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fe/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_fabrication_tube_1.png/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_fabrication_tube_1.png' alt='Biosphere Urbaine La douche econome en eau et en energie Copie de fabrication tube 1.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/17/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_fabrication_tube_6.png/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_fabrication_tube_6.png' alt='Biosphere Urbaine La douche econome en eau et en energie Copie de fabrication tube 6.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fd/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_fabrication_tube_7.png/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_fabrication_tube_7.png' alt='Biosphere Urbaine La douche econome en eau et en energie Copie de fabrication tube 7.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La structure du ballon servira de cellule calorifugée pour la conservation de la température et l’amélioration des performances de chauffe.</li><li>Ici un tube de PLA et deux couvercles de bois sur mesure (avec une rainure pour positionner le tube) serviront à isoler le ballon et serviront de base pour positionner les éléments de fixation qui doivent être adaptés en fonction du lieu où sera installé le ballon.</li><li>Positionner le cœur de chauffe à l’intérieur de cette structure, bien au milieu, et remplir avec un matériau isolant comme de la laine, du chanvre ou autre.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Branchement électrique</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/55/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Branchement_lectrique.png/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Branchement_lectrique.png' alt='Biosphere Urbaine La douche econome en eau et en energie Branchement lectrique.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour le branchement électrique, rien de plus simple ! Il suffit de brancher la résistance chauffante directement sur la source d’énergie (le + avec le + et le - avec le -). Pour faciliter le nettoyage et la maintenance de l’installation, il est conseillé de mettre des connecteurs rapides.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Plomberie et raccordement à l’eau</strong><p><strong>Étapes :</strong></p><ol><li>La connexion aux autres éléments du réseau et la plomberie reprennent les éléments décrits dans le tuto : Sciences Participatives : La douche à brumisation. Tous les détails et les variantes possibles sont détaillées dans ce tuto.</li><li>Ici, pour le chauffe eau de la Biosphère, les éléments suivants ont été utilisés :<ul><li>Un tuyau de plomberie avec vanne;</li><li>3 brumisateurs puissance jet réglable (position en fonction de votre usage : 1 au-dessus de la tête jet moyen, 1 au niveau du haut du corps jet moyen, 1 jet puissant pour la douchette);</li><li>Tuyaux plastiques de raccordement et robinets rouges plastiques.</li><li>Le choix des raccords du cœur de chauffe et des autres éléments du réseau permettra un branchement facile à la fois au réseau d’eau et aux brumisateurs.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Installation</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_IMG_0115.JPG/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_IMG_0115.JPG' alt='Biosphere Urbaine La douche econome en eau et en energie IMG 0115.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b3/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Capture_d_cran_2024-10-23_07.34.01.png/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Capture_d_cran_2024-10-23_07.34.01.png' alt='Biosphere Urbaine La douche econome en eau et en energie Capture d cran 2024-10-23 07.34.01.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9968.JPG/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9968.JPG' alt='Biosphere Urbaine La douche econome en eau et en energie Copy of IMG 9968.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/eb/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9978.JPG/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9978.JPG' alt='Biosphere Urbaine La douche econome en eau et en energie Copy of IMG 9978.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_20250211_135601.jpg/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copie_de_20250211_135601.jpg' alt='Biosphere Urbaine La douche econome en eau et en energie Copie de 20250211 135601.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>L’installation au plus proche de la douche permettra de conserver l’eau chaude en minimisant les pertes. Il est donc possible de l’installer sur une structure sur mesure ou directement au mur comme cela a été fait pour la Biosphère. Ici deux “équerres” en bois ont été positionnées en dessous, et la partie haute est maintenue par une sangle fixée au mur.</li><li>La structure et la fixation doivent être assez solides pour résister et ne pas risquer de tomber et de blesser quelqu’un.</li><li>Voici une image qui présente une installation complète réalisée dans le cadre d’une expérimentation (non menée par la Biosphère Urbaine).<ul><li>Ballon</li><li>Brumisateur au-dessus de la tête</li><li>Brumisateur au niveau du corps</li><li>Douchette de rinçage (avec jet plus puissant)</li><li>Rivière dans laquelle l’eau savonneuse est filtrée par des bactéries via un biofiltre pour repartir de plus belle dans un circuit d’eau fermé, la bioponie.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Tests</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ee/Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9983.JPG/800px-Biosphere_Urbaine_La_douche_econome_en_eau_et_en_energie_Copy_of_IMG_9983.JPG' alt='Biosphere Urbaine La douche econome en eau et en energie Copy of IMG 9983.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avant de profiter de l’eau chaude et de vivre cette nouvelle expérience de lavage, il est recommandé de tester le système et de vérifier son étanchéité et le bon fonctionnement du système de chauffe. Ces tests peuvent être faits au fur et à mesure de la réalisation des étapes mais une vérification finale est à faire.<ul><li>Test eau :</li></ul></li><li>Pour cela, une fois l’ensemble branché et connecté à l’eau, ouvrir la vanne d’arrivée d’eau, laisser couler l’eau dans l’ensemble des tuyaux. Vérifier ensuite qu’il n’y a pas de fuite ou d’écoulement d’eau.<ul><li>Test électricité</li></ul></li><li>Si l’installation est étanche et que vous vous êtes assurés qu’il n’y ait pas de risque de fuites, vous pouvez brancher le système et tester le fonctionnement des organes électriques.</li><li>Vérifier la montée en température de l’eau et s’assurer qu’il n’y ait pas de surchauffe pouvant entraîner des complications (feu, fonte de composant, …).</li><li>Une fois le volume d’eau chaude à température, prendre un récipient et faire couler l’eau dedans. Il sera ainsi possible grâce à un thermomètre de vérifier la température de l’eau en sortie. Il est également possible d’oser tenter l’aventure et de mouiller directement votre corps avec le jet d’eau.<ul><li>-Entretien :</li></ul></li><li>Pour l’entretien, pensez à bien nettoyer le chauffe-eau et à vérifier régulièrement la qualité de l’étanchéité. En cas de doute, couper l’électricité.</li><li>Si tout est bon, profitez bien de votre nouvelle douche et faites vous plaisir en voyant vos factures d’eau et d’électricité baisser. Votre porte-monnaie et dame nature vous remercieront.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Utilisation</strong><p><strong>Étapes :</strong></p><ol><li>Pour l’utilisation, notamment dans une solution combinée avec le brumisateur, nous vous invitons à regarder le mode d’emploi détaillé sur le tutoriel.</li><li>Pour résumer :<ul><li>Allumer les 2 brumisateurs à jet moyen pour brumiser le corps (attention les 3 premières secondes sont froides);</li><li>Une fois le corps humidifié, couper les robinets (ou les garder) et se savonner;</li><li>Rinçage avec la douchette jet puissant.</li></ul></li><li>Dans la Biosphère le savon utilisé est un savon neutre, sans produit chimique, sans parfum, c’est l’idéal pour réduire la contamination de l’eau et par la suite de l’environnement.</li><li>Nous avons installé un biofiltre pour filtrer les eaux grises. Après analyse du laboratoire RITTMO, l’eau de la douche passée par le biofiltre est bonne pour arroser nos plantes. C’est pourquoi l’eau est pompée automatiquement dans le système de bioponie de l’appartement.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

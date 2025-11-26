@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Wicking Bed</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Wicking Bed</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/6/69/Wicking_Bed_0_Wicking_Bed.jpg/ia-3ef1a0f347eac54d74fb89dac130c620-px-Wicking_Bed_0_Wicking_Bed.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Un wicking Bed est un bac de culture hors sol muni d’un système de drainage. « Wicking » veut dire mèche ou drain et « Bed » fait référence au Lit d’eau qui repose au fond du bac et qui remonte par capillarité grâce au drain. Grâce à ce système économiseur d’eau: • Moins d’évaporation (l’eau n’est plus en surface) ; • La terre ne se tasse pas ; • L’humidité est mieux répartie ; • Le système racinaire est plus profond.</div>
+        
+      </div>
+    
+    
+      
+        <p>Un WICKING BED peut être installé n’importe où :</p>
+      
+        <p>· En milieu urbain (terrasses, trottoirs, cours pavées ou goudronnées…) ;</p>
+      
+        <p>· Sur une friche industrielle ou des parcelles de terre où le sol est trop pollué (Ex.: Récup'R à Cambaie, La Raffinerie à Savannah Saint-Paul...).</p>
+      
+        <p>On peut y faire pousser n’importe quoi : aromates, maraichage, arbres (bananiers, papayers, agrumes...).</p>
+      
+        <p>Plusieurs modèles sont possibles selon les moyens de récupération dans son environnement proche: coffrage bois recyclé (palette) ; cuve plastique ; container métal.</p>
+      
+        <p>Le modèle présenté ici est celui mis en place à La Raffinerie de Saint-Paul.</p>
+      
+        <p>Quelques variantes sont présentées en photo et en complément d'info au fil des étapes.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Wicking_Bed" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Wicking_Bed</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>1 cuve plastique type Cubitainer 1000L</li><li>2 tuyaux PVC plomberie + 1 coude + 1 bouchon PVC: diamètre 40mm</li><li>8 tasseaux: 110cms x 4cms</li><li>40 planches de bois environ: H: 30cm / L: 10cm</li><li>32 vis perforantes métal</li><li>80 vis à bois</li><li>2 colliers de fixation</li><li>Un bout de tuyau d'arrosage: longueur 10 cms, diamètre 10 à 20mm</li><li>4 parpaings</li><li>30 à 40 litres de scories</li><li>1 carré géotextile de la dimension du fond du bac + rebord 10cms: 130cm x 130cm</li><li>100 litres de terre environ.</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>1 disqueuse</li><li>1 scie</li><li>1 perceuse / visseuse</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Le CONTENANT</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/5/5e/Wicking_Bed_1a_Cuve_eau.png' alt='Wicking Bed 1a Cuve eau.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6f/Wicking_Bed_1b_Cuve_d_coup_e_n_ttoy_e.jpg/800px-Wicking_Bed_1b_Cuve_d_coup_e_n_ttoy_e.jpg' alt='Wicking Bed 1b Cuve d coup e n ttoy e.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/87/Wicking_Bed_1d_Coffrage.jpg/800px-Wicking_Bed_1d_Coffrage.jpg' alt='Wicking Bed 1d Coffrage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/be/Wicking_Bed_1c_Coffrage.jpg/800px-Wicking_Bed_1c_Coffrage.jpg' alt='Wicking Bed 1c Coffrage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/Wicking_Bed_7b_Exemple.jpg/800px-Wicking_Bed_7b_Exemple.jpg' alt='Wicking Bed 7b Exemple.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/97/Wicking_Bed_7c_Exemple.jpg/800px-Wicking_Bed_7c_Exemple.jpg' alt='Wicking Bed 7c Exemple.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Trouver (acheter) une cuve plastique type MAUVILAC ou cuve agricole de réserve d'eau (photo 1);</li><li>La couper en 2 pour ne garder que le fond [avantage de ce choix est de s'épargner l''étape ETANCHEITE qui suppose l'ajout d'une bâche EPDM ou PVC (bâche noire)];</li><li>Nettoyer au karcher pour enlever résidus peinture, etc. (photo 2);</li><li>Fixer un coffrage bois (pour l'esthétique et limiter exposition solaire):</li><li>= découper tasseaux et fixer sur structure métallique: ATTENTION NE PAS PERCER LE PLASTIQUE ! (photo 3).</li><li>= découper planches de bois et fixer sur tasseaux (1 vis en haut + 1 vis en bas): ATTENTION de placer la planche à 10cm du sol environ (éviter contact terre)! (photo 4).</li></ul></li><li>VARIANTES (photos 5 et 6): bac de container découpé : davantage de boulot avec découpe métal + soudures…</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - L'ETANCHEITE</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/01/Wicking_Bed_2._ETANCHEITE_EPDM.jpg/800px-Wicking_Bed_2._ETANCHEITE_EPDM.jpg' alt='Wicking Bed 2. ETANCHEITE EPDM.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/66/Wicking_Bed_7a_Exemple_ARBRE.jpg/800px-Wicking_Bed_7a_Exemple_ARBRE.jpg' alt='Wicking Bed 7a Exemple ARBRE.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Avec ce modèle, pas besoin d'ajouter une couche d'étanchéité.</li><li>VARIANTE (photos 1 et 2): bac en bois ou en métal: bâche EPDM, le caoutchouc utilisé pour les mares ou alors une bâche PVC.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Le DRAIN</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/be/Wicking_Bed_3a_DRAIN.jpg/800px-Wicking_Bed_3a_DRAIN.jpg' alt='Wicking Bed 3a DRAIN.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4f/Wicking_Bed_3b_DRAIN.jpg/800px-Wicking_Bed_3b_DRAIN.jpg' alt='Wicking Bed 3b DRAIN.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/72/Wicking_Bed_3c_DRAIN.jpg/800px-Wicking_Bed_3c_DRAIN.jpg' alt='Wicking Bed 3c DRAIN.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3c/Wicking_Bed_3d_DRAIN.jpg/800px-Wicking_Bed_3d_DRAIN.jpg' alt='Wicking Bed 3d DRAIN.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/aa/Wicking_Bed_3a_DRAIN_Autre.jpg' alt='Wicking Bed 3a DRAIN Autre.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/09/Wicking_Bed_3c_Syst_me_drainage.jpg' alt='Wicking Bed 3c Syst me drainage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Découper 2 tuyaux A et B: A = hauteur de la cuve + 20 cms / B = longueur de la cuve ;</li><li>Assembler les 2 tuyaux avec le coude à 90° (photo 1);</li><li>Entailler la surface du tuyau B tous les 10cms environ et le boucher à l'extrémité (photo 2);</li><li>Placer le tuyau au centre de la cuve (photo 3);</li><li>Fixer le tuyau A avec 2 colliers (photo 4);</li></ul></li><li>VARIANTE (photos 5 et 6): assembler des tuyaux PVC de gros diamètre (100 à 140mm) de telle sorte que le fond de la cuve en soi comblé. Ajouter 2 gros tronçons PVC au centre servant de réceptacle. Faire des trous à la scie cloche pour permettre à l'eau de circuler d'un tuyau à l'autre et reproduire entailles pour remontée capillaire de l'eau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - La COUCHE DRAINANTE</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/26/Wicking_Bed_3e_TROP_PLEIN.jpg/800px-Wicking_Bed_3e_TROP_PLEIN.jpg' alt='Wicking Bed 3e TROP PLEIN.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/37/Wicking_Bed_4f_Couche_drainage.jpg/800px-Wicking_Bed_4f_Couche_drainage.jpg' alt='Wicking Bed 4f Couche drainage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/57/Wicking_Bed_4b_Couche_drainage.jpg/800px-Wicking_Bed_4b_Couche_drainage.jpg' alt='Wicking Bed 4b Couche drainage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/45/Wicking_Bed_4e_Couche_drainage.jpg/800px-Wicking_Bed_4e_Couche_drainage.jpg' alt='Wicking Bed 4e Couche drainage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Wicking_Bed_4d_Couche_drainage.jpg/800px-Wicking_Bed_4d_Couche_drainage.jpg' alt='Wicking Bed 4d Couche drainage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Faire un trou du diamètre du tuyau d'arrosage à 20cms environ du fond de la cuve (photo 1);</li><li>Insérer le bout de tuyau d'arrosage (qui servira de trop-plein) en forçant et en tournant (photo 2): ASTUCE: un diamètre de trou légèrement plus petit que le diamètre du tuyau permet d'assurer l'étanchéité de l'ensemble...</li><li>Combler le fond du bac avec gravats gros diamètre (pour éviter de boucher les fentes du tuyaux (galets, graviers, briques, parpaings...) (photo 3);</li><li>Ajouter du scorie (abondant à La Réunion...) jusqu'au trop-plein (photos 4 et 5).</li></ul></li><li>VARIANTE: avec le réseau de drainage décrit à l'étape 3, le comblement de la cuve est assuré par les tuyaux PVC déjà décrits, PAS D'AJOUT DE COUCHE DRAINANTE à cette étape.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Le GEOTEXTILE</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6e/Wicking_Bed_5a_GEOTEXTILE.jpg/800px-Wicking_Bed_5a_GEOTEXTILE.jpg' alt='Wicking Bed 5a GEOTEXTILE.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ee/Wicking_Bed_5b_GEOTEXTILE.jpg/800px-Wicking_Bed_5b_GEOTEXTILE.jpg' alt='Wicking Bed 5b GEOTEXTILE.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/ba/Wicking_Bed_5a_G_otextile_ET_Drainage.jpg' alt='Wicking Bed 5a G otextile ET Drainage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Découper le carré de géotextile aux dimensions du fond + une 20aine de cms pour remonter sur les bords: le géotextile évite que la terre et le racines des plantes viennent boucher le drain (photo 1);</li><li>Recouvrir la couche drainante avec le morceau de géotextile qui remonte légèrement sur les bords (photo 2).</li></ul></li><li>VARIANTE (photo 3): le géotextile recouvre le DRAIN installé à l'étape 3.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - La couche de TERRE !</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/96/Wicking_Bed_6a_Bac_FINI.jpg/800px-Wicking_Bed_6a_Bac_FINI.jpg' alt='Wicking Bed 6a Bac FINI.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/90/Wicking_Bed_6a_remplissage.jpg/800px-Wicking_Bed_6a_remplissage.jpg' alt='Wicking Bed 6a remplissage.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/98/Wicking_Bed_6b_Exemple_WB_cultiv_.jpg/800px-Wicking_Bed_6b_Exemple_WB_cultiv_.jpg' alt='Wicking Bed 6b Exemple WB cultiv .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b5/Wicking_Bed_6c_Bac_CULTIVE.jpg/800px-Wicking_Bed_6c_Bac_CULTIVE.jpg' alt='Wicking Bed 6c Bac CULTIVE.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Combler le reste du bac avec de la terre, pourquoi pas mélangée à du terreau et pailler la surface (photo 1);</li><li>Alimenter le réseau en eau par la bouche d'entrée du DRAIN: lorsque le trop-plein verse, stopper le remplissage (photo 2);</li><li>Semer, planter, récolter ! (photos 3, 4 et 5).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

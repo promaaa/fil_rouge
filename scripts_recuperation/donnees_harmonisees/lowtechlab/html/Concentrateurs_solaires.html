@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Concentrateurs solaires</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Concentrateurs solaires</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/0/0f/Concentrateurs_solaires_parabole_platre.jpg/ia-e3e41de1ea63ae6827cb24187ad9771f-px-Concentrateurs_solaires_parabole_platre.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Fabrication de concentrateurs solaire (reflecteur+platre ouparabole de recup)</div>
+        
+      </div>
+    
+    
+      
+        <p>Initialement, j'ai fabriqué des concentrateurs solaires pour essayer d'entraîner un moteur stirling miniature ("jouet scientifique") qu'on appercoit sur quelques photos et vidéos et pour lequel j'ai fait un autre tutoriel ici: Moteur Stirling.</p>
+      
+        <p>L'exercice n'étant pas si simple, j'ai décidé d'en faire un tutoriel dédié.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 6 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 80 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Concentrateurs_solaires" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Concentrateurs_solaires</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>fabrication à partir de récupération d'une antenne parabolique</li><li>- antenne parabolique (40cm à plusieurs metres) en recyclerie ou sur internet : 10€</li><li>fabrication à partir de platre</li><li>- ballon de yoga d'un diametre 2x le diametre voulu pour le concentrateur</li><li>- platre : 15kg pour reflecteur 80cm : 20€</li><li>- sable : 4 truelles pour un seau</li><li>- colle à carreau : 4 truelles pour un seau 10€</li><li>- réflecteur adhésif: 20€/m2</li><li>https://www.solarbrother.com/categorie-produit/reflecteur-solaire</li><li>- super glue (20g) 5€</li><li>- scotch peinture 10€</li><li>- pied de micro 5€</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - fabrication bout de sphere en platre</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9c/Concentrateurs_solaires_IMG_20240825_140116.jpg/800px-Concentrateurs_solaires_IMG_20240825_140116.jpg' alt='Concentrateurs solaires IMG 20240825 140116.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/07/Concentrateurs_solaires_IMG_20241115_155751.jpg/800px-Concentrateurs_solaires_IMG_20241115_155751.jpg' alt='Concentrateurs solaires IMG 20241115 155751.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/33/Concentrateurs_solaires_IMG_20240825_140915.jpg/800px-Concentrateurs_solaires_IMG_20240825_140915.jpg' alt='Concentrateurs solaires IMG 20240825 140915.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a3/Concentrateurs_solaires_IMG_20241115_192504.jpg/800px-Concentrateurs_solaires_IMG_20241115_192504.jpg' alt='Concentrateurs solaires IMG 20241115 192504.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si vous optez pour la premiere option de récupération d'antenne parabolique, passez directement à l'étape 2.</li><li>Le choix du bout de sphere platre ou de l'antenne parabolique peut poser question sur la focale du concentrateur (cf vidéos dans etape 3).</li><li>La focale est la distance au centre du concentrateur à laquelle convergent les rayons du soleil reflétés par le concentrateur.</li><li>La focale des bouts de sphere est nettement réduite par rapport aux antennes paraboliques.</li><li>Initialement, j'ai fait des tests en bout de sphere platre pour essayer d'obtenir un plus haut degré de concentration solaire, mais les résultats montrent des taches solaires d'à peu près la même surface.</li><li>0. Mélange de platre</li><li>On trouve des platres dédiés pour des moulures fines. Dans le doute, prenez plusieurs variétés et mélangez.</li><li>De toute façons, on ajoute un peu de sable et de colle à carreau pour solidifier le platre et éviter qu'il soit friable ou fragile une fois sec.</li><li>Melangez dans les proportions 4 truelles de colles et de sable pour un seau de platre.</li><li>Mélangez à de l'eau, puis étalez sur votre ballon de yoga gonflé et stabilisé.</li><li>Pour pouvoir manipuler et orienter le reflecteur, on peut utiliser un pied de micro. Malheureusement, le bout du pied de micro est difficile à coller sur du platre, donc pensez à prendre le pied de micro dans la moulure de platre pendant le sechage si vous optez pour cette solution pour orienter le concentrateur.</li><li>NB: pour un concentrateur de 80cm de diametre, cest un peu trop lourd pour un pied de micro standard, pensez à verifier le dimensionnement pour que ca tienne.</li><li>Le ballon gris fait 75cm de diametre et le ballon orange 150cm de diametre</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - collage du reflecteur</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a6/Concentrateurs_solaires_IMG_20240827_141431.jpg/800px-Concentrateurs_solaires_IMG_20240827_141431.jpg' alt='Concentrateurs solaires IMG 20240827 141431.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/21/Concentrateurs_solaires_IMG_20241127_151307.jpg/800px-Concentrateurs_solaires_IMG_20241127_151307.jpg' alt='Concentrateurs solaires IMG 20241127 151307.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/98/Concentrateurs_solaires_IMG_20241127_153118.jpg/800px-Concentrateurs_solaires_IMG_20241127_153118.jpg' alt='Concentrateurs solaires IMG 20241127 153118.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Initialement, j'ai fait un essai sur un petit concentrateur de 10cm de coller des bouts de mirroirs pour réfléchir les rayons du soleil mais c'était assez peu concluant donc j'ai laissé tomber cette idée.</li><li>On trouve du reflecteur souple adhésif chez solar brother (voir lien dans materiel) qui est assez efficace et coute 20€/m2.</li><li>Il y a deux points sur lesquels etre attentifs pour coller le reflecteur:</li><li>-Il faut éviter que le reflecteur souple gondole</li><li>-Si vous avez une moulure platre, l'adhésif colle mal</li><li>On va donc procéder en découpant des triangles avec une base assez fine pour que ca ne gondole pas en collant. Sur mes essais, pour le concentrateur de 80cm de diametre, la base du triangle fait 7cm et pour le concentrateur de 40cm de diametre 10cm.</li><li>Pour que ca colle sur le platre, on aplique d'abbord du scotch peinture sur toute la surface du concentrateur.</li><li>Dans tous les cas, ajouter de la super glue à la surface adhésive car ca se décolle assez rapidement sinon.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - mesure de puissance</strong><p><strong>Étapes :</strong></p><ol><li>Pour l'instant je n'ai pas fait de mesure d'évaporation d'eau. J'essaierai d'en faire quand j'aurai le temps.</li><li>En attendant voici des vidéos où on peut estimer la focale des concentrateurs et voir des planches commencer un processus de combustion (version parabole pour la vidéo avec le moteur stirling miniature au mois de juillet et version bout de sphere platre 80cm pour la video où le reflecteur est posé au sol au mois de novembre)<ul><li>https://wiki.lowtechlab.org/wiki/Fichier:Moteur_Stirling_reflecteur80.mp4</li><li>https://wiki.lowtechlab.org/wiki/Fichier:Moteur_Stirling_reflecteur1.mp4</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

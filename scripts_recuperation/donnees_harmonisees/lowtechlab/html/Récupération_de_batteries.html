@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Récupération de batteries</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Récupération de batteries</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/7/76/R_cup_ration_de_batteries_Couverture_-_paysage.jpg/800px-R_cup_ration_de_batteries_Couverture_-_paysage.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Recycler des cellules des batteries d’ordinateur pour créer une lampe photovoltaïque.</div>
+        
+      </div>
+    
+    
+      
+        <p>LIEN VERS LA VIDEO TUTORIELLE : https://youtu.be/ANxmLCtGPGs</p>
+      
+        <p>CONTEXTE :</p>
+      
+        <p>Le lithium est une ressource naturelle dont les stocks sont de plus en plus utilisés pour les voitures électriques, les téléphones, et les ordinateurs. Cette ressource s’épuise progressivement au fil du temps. Son utilisation accrue dans la fabrication de batteries est due principalement à sa capacité à stocker plus d’énergie que le nickel et le cadmium. Le remplacement des équipements électriques et électronique s’accélère et ils deviennent une source de déchets (DEEE : Déchets d'équipements électriques et électroniques) de plus en plus importante. La France produit aujourd'hui 14kg à 24kg de déchets électroniques par habitant et par an. Ce taux augmente de 4% environ par an. En 2009, seuls 32% des jeunes Français de 18 à 34 ans ont recyclés leur déchets électroniques. Cette même année 2009, selon Eco-systèmes, de janvier à septembre 2009, ce sont 113000 tonnes de CO2 qui auraient été évitées via le recyclage de 193000 tonnes de DEEE, l'un des quatre éco-organismes de la filière DEEE.</p>
+      
+        <p>Or, ces déchets présentent un fort potentiel de recyclage. On peut notamment retrouver et réutiliser le lithium présent dans les cellules des batteries d'ordinateur. Lorsqu’une batterie d’ordinateur ne fonctionne plus, c’est qu’une ou plusieurs cellules sont défectueuses, certaines restent cependant en bon état et sont réutilisables.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Récupération_de_batteries" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Récupération_de_batteries</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>1 - Batterie d’ordinateur</li><li>2 - Panneau solaire (ex : mini Panneau solaire 5V-6V)</li><li>3 - Régulateur de charge et de décharge (ex : 4-8V 1A Module de Chargeur Charge Batterie Mini Li-ion USB Arduino)</li><li>4 - Régulateur de tension : DC/DC booster MT3608 (composant électrique qui va transformer le 3,7 V des batteries en 12 V)</li><li>5 - Lampe LED (ex : 2 bandeaux de 5 LED SMD 5050)</li><li>6 - Interrupteur (pour couper le circuit et éteindre la lampe)</li><li>7 - Boitier (en carton, en bois, imprimé en 3D…) à deux ouvertures pour accueillir le panneau solaire et le diffuseur de lumière (prévoir également d’y intégrer un interrupteur et une sortie USB)</li><li>8 - Un diffuseur (pour diffuser la lumière émise par les LED)</li><li>9 - Scotch</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Pour l’extraction des cellules :</li><li>a - Gants (pour ne pas se couper avec le plastique de la batterie d’ordinateur ou avec les rubans en nickel qui relient les cellules)</li><li>b - Marteau</li><li>c - Burin</li><li>d - Power Bank (Power Bank Battery Case Box Charger Flashlight)</li><li>e - Chargeur imax B6</li><li>f - 2 aimants au néodyme</li><li>g - Pince coupante</li><li>Pour la fabrication de la lampe :</li><li>h - Fer à souder</li><li>i - Etain</li><li>j - Pistolet à colle (et bâtons de colle)</li><li>g - Pince coupante</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Fonctionnement</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/R_cup_ration_de_batteries_Re_cuperation_batteries_-_fonctionnement.jpg/800px-R_cup_ration_de_batteries_Re_cuperation_batteries_-_fonctionnement.jpg' alt='R cup ration de batteries Re cuperation batteries - fonctionnement.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce tutoriel montre comment récupérer des cellules d’ordinateur pour refabriquer une nouvelle batterie. Alimentée par un panneau solaire, ou par un port USB, elle permettra d'allumer une lampe à LED.</li><li>Le système fonctionne autour de trois modules :<ul><li>le module de réception de l'énergie : le panneau solaire et son régulateur de charge</li><li>le module de stockage de l'énergie : la batterie</li><li>le module qui rend l'énergie : la lampe LED et son régulateur de tension</li></ul></li><li>Module de réception de l'énergie : panneau photovoltaïque & régulateur de charge</li><li>Le panneau photovoltaïque concentre l'énergie du soleil. Il permet de récupérer son énergie afin de la stocker ensuite dans la batterie. Mais attention, la quantité d'énergie reçue par le panneau étant irrégulière en fonction de l'heure qu'il est, du temps qu'il fait... il est important d’installer un régulateur de charge/décharge entre le panneau et la batterie. Celle-ci sera protégée entre autre contre la surcharge.</li><li>Module de stockage de l'énergie : la batterie</li><li>Elle est composée de deux cellules en lithium récupérées dans un ordinateur. Pour schématiser à l'extrême, une batterie, c'est un peu comme un boîtier qui contiendrait plusieurs piles : chacune d'entre elles est une cellule, une unité qui fournit du courant à l'appareil par réaction électrochimique.</li><li>Les cellules qu’on trouve dans les ordinateurs sont des cellules au lithium. Elle ont toutes la même capacité à stocker l’énergie, par contre, leur capacité à la rendre est différente pour chacune. Pour former une batterie à partir de cellules il est important que ces dernières aient toutes la même capacité à rendre de l’énergie. Il faut donc mesurer la capacité de chacune des cellules pour composer des batteries homogènes.</li><li>Module qui rend l'énergie : la lampe LED et son régulateur de tension</li><li>Notre batterie nous délivre du courant en 3,7V et les lampes LED que nous avons fonctionnent en 12V. Nous avons donc besoin de transformer l'énergie de la cellule de 3,7V à 12V : à l'aide d'un régulateur de tension appelé DC/DC booster.</li><li>Une petite vis sur ce module permet de réguler la tension. Vous pouvez ainsi la régler sur 12V ou une autre grandeur si votre LED présente une autre tension.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Etapes de fabrication :</strong><p><strong>Étapes :</strong></p><ol><li>1) Extraction des cellules de la batterie d’ordinateur</li><li>2) Mesure de la capacité des cellules</li><li>3) Réalisation des 3 modules :<ul><li>panneau solaire + régulateur de charge</li><li>batterie</li><li>régulateur de tension + lampe à LED</li></ul></li><li>4) Liaison des 3 modules :<ul><li>le panneau solaire et son régulateur</li><li>la batterie</li><li>la lampe et son régulateur de tension</li></ul></li><li>5) Construction du boîtier</li><li>6) Mise en place des modules dans le boîtier</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Extraction des cellules de la batterie d’ordinateur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/81/R_cup_ration_de_batteries_1_-_Ouverture_batterie.jpg/800px-R_cup_ration_de_batteries_1_-_Ouverture_batterie.jpg' alt='R cup ration de batteries 1 - Ouverture batterie.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6c/R_cup_ration_de_batteries_2_-_De_cortiquer_cellules.jpg/800px-R_cup_ration_de_batteries_2_-_De_cortiquer_cellules.jpg' alt='R cup ration de batteries 2 - De cortiquer cellules.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Enfiler des gants pour protéger les mains.</li><li>2) Fixer la batterie sur un étau afin qu’elle ne bouge plus, et avec l’aide d’un marteau et d'un burin l'ouvrir. (image 1)</li><li>3) Isoler chaque cellule : décortiquer les cellules à l’aide d’une pince coupante, afin d'enlever tous les autres composants. (image 2)</li><li>4) A l’aide d’un voltmètre (voir réglages sur le schéma ci-contre), mesurer la tension des cellules pour repérer celles qui sont réutilisables.</li><li>Remarque : Toutes celles inférieures à 1 volt ne sont pas récupérables.</li><li>Attention : Si des cellules ont coulé (visible à l’extérieur de la batterie d’ordinateur), ne pas les démonter, à forte dose le lithium est dangereux pour la santé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Mesure de la capacité des cellules</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/R_cup_ration_de_batteries_3_-_Charge_batteries.jpg/800px-R_cup_ration_de_batteries_3_-_Charge_batteries.jpg' alt='R cup ration de batteries 3 - Charge batteries.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/80/R_cup_ration_de_batteries_4_-_De_charger_cellules_IMax_.jpg/800px-R_cup_ration_de_batteries_4_-_De_charger_cellules_IMax_.jpg' alt='R cup ration de batteries 4 - De charger cellules IMax .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour mesurer la capacité d'une cellule il faut la charger au maximum puis la décharger. Nos cellules sont constituées de lithium, or le lithium a besoin d’être chargé et déchargé correctement, la charge maximale étant de 4,2 V et la charge minimale de 3 V. Dépasser ces seuils endommagerait les cellules.</li><li>1) Se munir d’une Power Bank : un dispositif qui permet de charger plusieurs cellules en même temps via un port USB.</li><li>2) Charger les cellules et attendre que la charge soit complète (tous les voyants seront allumés), compter environ 24h. (image 3)</li><li>Les cellules sont toutes chargées au maximum (4,2 V), il faut désormais les décharger.</li><li>3) Se munir d'un Imax B6 : un dispositif permettant de décharger les cellules une par une et de calculer la capacité qu'elle à rendre l'énergie.</li><li>4) Régler le dispositif :</li><li>• le voltage : il vous est demandé quel type de piles vous voulez charger, choisir des cellules lithium. Le voltage va alors être réglé automatiquement à 3V (la décharge n’ira pas en dessous de 3V).</li><li>• l’ampérage : régler à 1A pour que la décharge soit assez rapide et sécurisée. Dans ces conditions comptez à peu près 1h à 1h30 pour la décharge.</li><li>5) Connecter les aimants au néodyme aux pinces crocodiles, puis les connecter aux cellules, les aimants servent à faire passer le courant entre l'Imax B6 et les cellules. (image 4)</li><li>7) Décharger la cellule jusqu’à ce que la décharge soit complète.</li><li>8) Noter la capacité sur la cellule. Plus la capacité de la cellule à rendre de l’énergie est importante mieux c’est.</li><li>9) Trier vos cellules: <1000 mA, entre 1000 et 1300, 1300 et 1500 et >1800 mA.</li><li>Remarque : Il est important de réaliser des batteries homogènes avec des cellules ayant à peu près la même capacité.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Réalisation des chacun des 3 modules</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/R_cup_ration_de_batteries_5_-_Souder_panneau_solaire_-_regulateur_de_charge.jpg/800px-R_cup_ration_de_batteries_5_-_Souder_panneau_solaire_-_regulateur_de_charge.jpg' alt='R cup ration de batteries 5 - Souder panneau solaire - regulateur de charge.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/51/R_cup_ration_de_batteries_6_-_Souder_batterie_en_se_rie.jpg/800px-R_cup_ration_de_batteries_6_-_Souder_batterie_en_se_rie.jpg' alt='R cup ration de batteries 6 - Souder batterie en se rie.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/R_cup_ration_de_batteries_7_-_Souder_LED_-_regulateur_de_tension.jpg/800px-R_cup_ration_de_batteries_7_-_Souder_LED_-_regulateur_de_tension.jpg' alt='R cup ration de batteries 7 - Souder LED - regulateur de tension.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Module 1 : Panneau solaire et régulateur de charge</li><li>1) Se munir de deux fils, un rouge et un noir, les dénuder à l'aide d'une pince coupante.</li><li>2) Souder le fil rouge sur le pôle positif du panneau solaire et le fil noir sur son pôle négatif.</li><li>Le régulateur de charge possède 2 entrées : IN - et IN + (qui sont indiquées sur le composant)</li><li>3) Souder le fil rouge (positif) au pôle IN + du régulateur de charge et le fil noir (négatif) au pôle IN -. (image 5)</li><li>Module 2 : Batterie</li><li>1) Scotcher les deux cellules ensemble pour faciliter la soudure.</li><li>2) Se munir de 2 fils un rouge et un noir, dénuder les bout sur quelques centimètres.</li><li>3) Souder en parallèle les deux cellules : le fil noir aux pôles négatif de chaque cellules et le fil rouge sur le pôle positif de chaque cellule. (image 6)</li><li>Attention : Isoler les soudures pour éviter les courts circuits, avec du ruban adhésif par exemple.</li><li>Module 3 : Régulateur de tension et LED</li><li>Le régulateur de tension possède deux entrées et deux sorties :</li><li>Entrées : VIN + et VIN - / Sorties : OUT + et OUT -</li><li>1) Se munir de deux fils (rouge et noir).</li><li>2) Souder le fil rouge avec l'entrée VIN + du régulateur de tension et le fil noir avec l'entrée VIN -.</li><li>La LED possède deux fils d'entrée, un fil positif et un fil négatif.</li><li>Attention : La polarité des fils n'est pas indiquée sur la LED. Afin de la connaître munissez vous d'un ohmmètre. Lorsqu'il indique une valeur nulle c'est que le fil est positif. Lorsqu'il indique une valeur élevée c'est qu'il s'agit du fil négatif.</li><li>3) Souder le fil positif de la LED à la sortie OUT + du régulateur de tension et le fil négatif à la sortie OUT -. (image 7)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Liaison des 3 modules</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8f/R_cup_ration_de_batteries_8_-_Relier_modules.jpg/800px-R_cup_ration_de_batteries_8_-_Relier_modules.jpg' alt='R cup ration de batteries 8 - Relier modules.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Relier les câbles négatifs de la batterie et du convertisseur ensemble, en torsadant les fils.</li><li>2) Souder l’ensemble sur le pôle négatif du régulateur.</li><li>3) Faire la même chose avec les câbles positifs du convertisseur et de la batterie, puis souder l’ensemble sur le pôle positif du régulateur de charge. (image 8)</li><li>Remarque :' Le circuit est alors fermé et la lumière s’allume.</li><li>4) Couper le fil positif qui relie le régulateur au convertisseur pour ouvrir le circuit, on y ajoutera plus tard l’interrupteur qui permettra d’ouvrir et de fermer le circuit.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Construction du boîtier</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1b/R_cup_ration_de_batteries_9_-_Construire_boi_tier.jpg/800px-R_cup_ration_de_batteries_9_-_Construire_boi_tier.jpg' alt='R cup ration de batteries 9 - Construire boi tier.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Se munir d'une boîte de la taille de votre panneau solaire et d'une profondeur d'environ 5 cm.</li><li>2) Ne garder que les côtés de la boîte, enlever le fond et le couvercle.</li><li>3) Faire un trou sur un des côtés de la boîte afin d'y insérer un interrupteur. (image 9)</li><li>4) Faire un second trou légèrement au dessus de l'emplacement du panneau solaire afin d'y insérer la sortie USB du régulateur de charge.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Mise en place des modules dans le boîtier</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/5/56/R_cup_ration_de_batteries_10_-Installation_interrupteur.jpg' alt='R cup ration de batteries 10 -Installation interrupteur.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/1/1e/R_cup_ration_de_batteries_11_-_Remplir_boi_tier.jpg' alt='R cup ration de batteries 11 - Remplir boi tier.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>1) Mettre le panneau solaire dans la boîte en premier (la face photovoltaïque en extérieur).</li><li>2) Ajouter l’interrupteur dans l’endroit prévu à cet effet.</li><li>3) Souder les deux bouts de câbles positifs du condensateur que vous avez coupé sur l’interrupteur. (image 10)</li><li>4) Coller le régulateur de charge au boitier avec un pistolet à colle, la face USB dirigée vers l'ouverture prévu à cet effet.</li><li>5) Coller la batterie sur le panneau solaire, coller la LED sur la batterie, puis le condensateur sur une des faces intérieure du boitier.</li><li>6) Rentrer tous les fils et ajouter le diffuseur de lumière en dernier.</li><li>Tous les éléments sont installés dans le boitier. (image 11)</li><li>7) Allumer l'interrupteur pour voir si tout fonctionne.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Utilisation</strong><p><strong>Étapes :</strong></p><ol><li>Rechargez votre batterie en journée en mettant le dispositif au soleil. Allumer la lampe en soirée.</li><li>Contexte d'utilisation</li><li>Exemple : Au Sénégal, pour faire ses devoir le soir, au Maroc pour laisser son magasin allumé aussi longtemps que celui du voisin qui, lui, a de l'électricité, dans le désert, en transhumance...</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Conseils/Remarques</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Vous pouvez raccourcir les câbles si besoin (afin de faire rentrer le module électrique dans sa boîte) en les coupant avec une pince coupante.</li><li>Il n’est pas nécessaire d’avoir un panneau solaire, le régulateur de charge USB permet de recharger les cellules. Il faut alors conserver le fond de votre boîte.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

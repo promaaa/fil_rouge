@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Savon à l'huile de coco</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Savon à l'huile de coco</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/0/0d/Savon_100_coco_IMG_6802.JPG/800px-Savon_100_coco_IMG_6802.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Dans les régions où pousse le cocotier, Cocos nucifera, il est possible de produire un savon à partir d'ingrédients issus de cet arbre.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le savon est à la base de l'hygiène. Se laver les mains régulièrement et à fortiori le corps permet de limiter le transport de matières et bactéries nocives. Pour répondre à ce besoin, il est possible de réaliser soi-même du savon avec des produits simples. La réaction chimique permettant de produire le savon s'appelle la saponification et nécessite deux réactifs: un corps gras et une base forte. Ici le corps gras sera l'huile de coco, issu de la noix mûre, marron, et la base forte sera de la soude.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 1 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Savon_à_l_huile_de_coco" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Savon_à_l_huile_de_coco</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Noix de coco</li><li>Eau de pluie</li><li>Soude caustique (hydroxyde de sodium).</li><li>Papier pH</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Une marmite/casserole</li><li>Une poêle</li><li>Un bocal en verre</li><li>Quelques torchons propres</li><li>Une balance de cuisine</li><li>Un réchaud</li><li>Un mixeur</li><li>Des gants</li><li>Des lunettes</li><li>Un vêtement à manches longues</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Produire l'huile de coco</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6e/Savon_100%25_coco_RIMG2004.JPG/800px-Savon_100%25_coco_RIMG2004.JPG' alt='Savon 100% coco RIMG2004.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8e/Savon_100%25_coco_IMG_6462.JPG/800px-Savon_100%25_coco_IMG_6462.JPG' alt='Savon 100% coco IMG 6462.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e6/Savon_100%25_coco_IMG_6532.JPG/800px-Savon_100%25_coco_IMG_6532.JPG' alt='Savon 100% coco IMG 6532.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La première étape consiste à extraire l'huile de coco à partir de noix de coco mûre (les noix de couleur marron). Voici le déroulé:<ul><li>Ouvrir la/les noix de coco</li><li>Gratter la pulpe à l'aide d'un grattoir si vous n'avez pas de mixeur-blender. Si vous possédez un blender vous pouvez détacher la pulpe de la coque grossièrement et mixer le tout.</li><li>Mettre les miettes de coco ainsi obtenues dans un récipient, recouvrir d'eau chaude et bien malaxer. Si vous utilisez un blender vous pouvez directement recouvrir d'eau chaude puis de mixer.</li><li>Poser un torchon propre au dessus d'un second récipient et filtrer le lait de coco obtenu. bien presser le torchon afin d'obtenir le plus de filtrat possible.</li><li>Placer le lait de coco obtenu dans une bouteille plastique et laisser décanter jusqu'à obtenir deux phases bien distinctes. On trouve la crème de coco au dessus et l'eau en dessous. Percer un petit trou en bas de la bouteille pour laisser l'eau s'échapper et boucher le trou pour garder la crème.</li><li>Verser la crème dans une poêle et faire cuire à feu moyen en remuant. La crème bruni et l'huile translucide est extraite. Cette étape peut prendre plusieurs dizaines de minutes.</li><li>Filtrer l'huile de coco ainsi extraite.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Doser les produits</strong><p><strong>Étapes :</strong></p><ol><li>Une fois l'huile de coco extraite on peut mesurer la masse obtenue.</li><li>Cette masse d'huile va déterminer la quantité de soude à ajouter à l'huile et ainsi permettre la saponification, c'est-à-dire la transformation en savon.</li><li>La soude utilisée sera diluée dans un volume d'eau donné.</li><li>Pour cette étape le plus simple est d'utiliser un calculateur en ligne. Il suffit de préciser la nature de l'huile utilisée et sa masse afin d'obtenir la quantité de soude et d'eau à utiliser.</li><li>Calculateur de saponification en ligne</li><li>Note: Afin d'obtenir un savon le plus doux possible pour la peau, il est nécessaire de produire un savon surgras. Le calculateur propose directement les quantités de soude pour obtenir un savon surgras à 5%, 10%, etc.</li><li>Le surgraissage consiste en fait à réduire la quantité de soude afin que la réaction chimique ne soit pas totale. L'huile n'ayant pas réagi enrichie alors le savon en acide gras et diminue son pH.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Préparer la solution de soude</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>La soude caustique est un produit pouvant causer des brûlures. Il convient donc de porter un équipement minimum de sécurité.</li><li>Assurez-vous de porter les vêtements long, des gants (nitrile ou latex, de laboratoire) et des lunettes de sécurité, bien couvrantes.</li><li>En cas de projection, rincez avec du vinaigre blanc, ne mettez pas sous l'eau. Ayez donc toujours une bouteille de vinaigre à portée quand vous manipulez de la soude.</li><li>Pour mélanger deux liquides, toujours verser le plus concentré dans le moins concentré afin de réduire les risque en cas de projection.</li></ul></li><li>Une fois l'équipement enfilé, vous pouvez commencer:<ul><li>Verser l'eau dans un récipient à la quantité/masse indiquée par le calculateur. L'eau ayant une densité de 1, vous pouvez utiliser la balance afin d'être précis dans les mesures.</li><li>Peser la soude dans un autre récipient à la masse indiquée par le calculateur. Cette mesure doit être la plus précise possible. Mieux vaut ajouter moins de soude que trop, afin de faire un savon trop gras plutôt que trop basique. Si vous ajoutez la soude directement dans l'eau vous ne pourrez retirer de matière et corriger un trop gros ajout.</li><li>Ajouter délicatement la soude pesée au volume d'eau et remuer doucement en évitant toute projection. La solution chauffe, c'est normal.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Lancer la fabrication: saponification et moulage</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3e/Savon_100%25_coco_IMG_6693.JPG/800px-Savon_100%25_coco_IMG_6693.JPG' alt='Savon 100% coco IMG 6693.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Savon_100%25_coco_IMG_6802.JPG/800px-Savon_100%25_coco_IMG_6802.JPG' alt='Savon 100% coco IMG 6802.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour cette étape il existe deux méthodes: La saponification à froid et la saponification à chaud. La méthode du tuto vidéo se fait à froid, celle des photos ci-contre à chaud. Les deux méthodes sont détaillées ici.<ul><li>Verser l'huile puis la solution de soude dans le blender.</li><li>Mixer jusqu'à obtention de la trace, c'est-à-dire le moment où le mélange épaissit et la lame du mixeur laisse une trace après arrêt du mixage.</li><li>Placer le mélange dans un moule. Une coque de noix de coco tapissée d'un chiffon propre fait bien l'affaire. Laisser reposer au moins 24h. La réaction de saponification continue pendant plusieurs jours après le moulage.</li><li>Démouler le savon, le couper à la taille souhaitée et le stocker au sec durant au moins 4 semaines.</li><li>Tester le pH du savon. Pour ce faire prélever un petit morceau de savon et le dissoudre dans de l'eau douce tiède. Tremper un petit morceau de papier pH dans la solution. Le pH du savon doit être le plus bas possible. Un pH inférieur à 10 est acceptable mais il sera préférable de tester le savon sur une petite surface de peau afin de s'assurer qu'on le supporte. Si le pH est supérieur à 10, laisser le savon au sec 2 semaines de plus et renouveler la mesure de pH. Si le savon est toujours trop basique (pH>10) il est possible de l'utiliser pour laver le linge mais à éviter pour la peau.</li><li>Verser l'huile puis la solution de soude dans un bocal en verre.</li><li>Placer le bocal au bain-marie à feu moyen et remuer de temps en temps.</li></ul></li><li>Cette étape peut prendre plus de deux heures. Les deux phases (huile et solution de soude) vont se mêler puis probablement déphaser après avoir donné un épais mélange. C'est normal. Continuer de chauffer et mélanger jusquà ce que les deux phases se mêlent à nouveau.<ul><li>Une fois la réaction terminée le passage de l'ustensile utilisé pour remuer (cuillère en bois par exemple) laisse une trace. Il est alors possible de mouler le savon.Une coque de noix de coco tapissée d'un chiffon propre fait bien l'affaire. Laisser refroidir et reposer au moins 24h.</li><li>Démouler et couper le savon à la taille souhaitée.</li><li>Contrairement à la saponification à froid, le savon obtenu ici peut être utilisé après refroidissement. Il est tout de même nécessaire de tester son pH.</li><li>Tester le pH du savon. Pour ce faire prélever un petit morceau de savon et le dissoudre dans de l'eau douce tiède. Tremper un petit morceau de papier pH dans la solution. Le pH du savon doit être le plus bas possible. Un pH inférieur à 10 est acceptable mais il sera préférable de tester le savon sur une petite surface de peau afin de s'assurer qu'on le supporte. Si le pH est supérieur à 10 il est possible d'utiliser le savon pour laver le linge mais est à éviter pour la peau.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

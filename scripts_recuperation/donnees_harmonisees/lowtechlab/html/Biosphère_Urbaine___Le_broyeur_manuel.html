@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Biosphère Urbaine : Le broyeur manuel</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Biosphère Urbaine : Le broyeur manuel</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/7/73/Biosph_re_Urbaine_-_Le_broyeur_manuel_Nouveau_projet_2_.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Cette machine a été spécialement conçue pour broyer manuellement les déchets organiques de cuisine et produire ainsi une purée facilement assimilable par les larves de mouches soldats noires. En seulement quelques heures, ces larves transforment cette matière en un engrais organique riche et naturel.</div>
+        
+      </div>
+    
+    
+      
+        <p>L’association BIOSPHERE EXPERIENCE expérimente des futurs durables et désirables dans lesquels les humains vivent en symbiose avec les autres espèces vivantes. En 2024, Caroline Pultz & Corentin De Chatelperron ont expérimenté pendant 4 mois ce que pourrait être un mode de vie low-tech en milieu urbain : un mode de vie sans déchets, réduisant de dix fois la consommation d'eau, atteignant les objectifs 2050 de l'ONU pour les émissions de gaz à effet de serre, tout en restant désirable et accessible à tous. Armés d’experts, de bénévoles et de stagiaires, ils ont imaginé et conçu un appartement-écosystème prospectif appelé Biosphère Urbaine, installé en région parisienne à Boulogne-Billancourt. Pour compléter l’écosystème, leur collègue Emma Bousquet-Pasturel a mis en place un vaste réseau d’entraide citoyenne autour de l’appartement. Parallèlement, Emma a été chargée de coordonner un programme de sciences participatives réunissant des centaines de citoyens français et d’ailleurs pour tester chez eux une version simplifiée de certains systèmes low-tech de l’appartement-laboratoire.</p>
+      
+        <p>Ce tutoriel présente un module low-tech spécialement conçu pour l’expérience de 4 mois menée par Caroline et Corentin dans un appartement témoin à Boulogne-Billancourt.</p>
+      
+        <p>L'appartement low-tech a été conçu pour valoriser chaque déchet produit. Dans ce tutoriel, nous nous concentrerons sur la valorisation des déchets organiques. En moyenne, une personne génère environ 700 g de déchets organiques par jour (épluchures, coquilles d'œufs, etc.). Au lieu de les jeter à la poubelle, ces déchets peuvent être valorisés. Dans l’appartement-écosystème, ces déchets ont été directement utilisés pour nourrir les larves de mouches soldats noires présentes dans les toilettes vivantes de l'appartement-écosystème. Ces larves jouent un rôle essentiel en transformant les bio-déchets en engrais très nutritif pour les plantes. Pour faciliter leur transformation et permettre leur utilisation rapide, nous avons prototypé et construit un broyeur manuel avec l'aide de Zoé et Paul de l'Avant d'Après. Le broyeur manuel permet de réduire les déchets organiques en une purée fine, plus facilement assimilable par les larves. Grâce à ce processus, elles peuvent transformer les déchets en engrais organique en seulement une journée.</p>
+      
+        <p>Les améliorations à prévoir : Cette première version du broyeur présente encore quelques points à perfectionner. Après plusieurs utilisations, nous avons constaté que la matière organique a tendance à sécher à l'intérieur du broyeur et au niveau de la bouche de sortie, ce qui ralentit l’écoulement et peut même bloquer complètement le système. De plus, pour cette version, le pédalier a été monté à l’envers, obligeant à pédaler dans le sens inverse pour faire fonctionner le broyeur. Pour éviter cette erreur à l'avenir, il est recommandé d'identifier clairement les côtés droit et gauche du pédalier avec un marquage avant la découpe dans le cadre du vélo.</p>
+      
+        <p>Retour d’expérience d’utilisation : Lorsque le système fonctionne correctement, il offre une expérience ergonomique et agréable. Les doubles manivelles permettent de faire du "sport utile" directement dans sa cuisine, et même de se réchauffer lorsqu'il fait froid ! La purée obtenue est parfaite : les larves l'adorent et la dévorent en un rien de temps. C’est vraiment bluffant !</p>
+      
+        <p>Ce tutoriel décrit la fabrication du broyeur manuel en trois grandes étapes. Le modèle proposé dans le tutoriel peut être adapté-modifié-amélioré selon vos envies, votre matériel et vos compétences. Le prix varie en fonction de la part de matériaux récupérés (ici les pièces du vélo sont de récupération). Le prix de 60 € correspond à l’achat du hachoir à viande à manivelle (environ 35 €), du bois et des morceaux d’acier.</p>
+      
+        <p>Sur l'image ci-dessus :</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very hard Très difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 60 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Le_broyeur_manuel" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Biosphère_Urbaine___Le_broyeur_manuel</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Voici une liste exhaustive des matériaux nécessaires. Si vous disposez déjà de certains éléments, nous vous conseillons de privilégier la seconde main et d'adapter leurs diamètres et dimensions au fil du tutoriel.<ul><li>Démontage du vélo et récupération des pièces Pièces de vélos à récupérer (voir schéma): Pignons Maillons de chaîne En 1 bloc: Plateaux Pédalier 2 Pédales 2 Manivelles morceau du cadre de vélo qui servira de pied</li><li>Pièces de vélos à récupérer (voir schéma): Pignons Maillons de chaîne</li><li>Pignons</li><li>Maillons de chaîne</li><li>En 1 bloc: Plateaux Pédalier 2 Pédales 2 Manivelles morceau du cadre de vélo qui servira de pied</li><li>Plateaux</li><li>Pédalier</li><li>2 Pédales</li><li>2 Manivelles</li><li>morceau du cadre de vélo qui servira de pied</li><li>Partie A: Manivelle Ergonomique 2 pédales Cylindre en bois avec des dimensions adaptés au support de pédale cf photo, ici des pieds de fauteuils de récupération ont été utilisés 4 Vis de dimension 3.00 x 20 mm Support en bois Bois à usiner Chevilles en bois Dominos en bois Colle Feuilles abrasives / papier de verre pour poncer 3- Assemblage Bloc Manivelles+ Pédales sur support en bois</li><li>Manivelle Ergonomique 2 pédales Cylindre en bois avec des dimensions adaptés au support de pédale cf photo, ici des pieds de fauteuils de récupération ont été utilisés 4 Vis de dimension 3.00 x 20 mm</li><li>2 pédales</li><li>Cylindre en bois avec des dimensions adaptés au support de pédale cf photo, ici des pieds de fauteuils de récupération ont été utilisés</li><li>4 Vis de dimension 3.00 x 20 mm</li><li>Support en bois Bois à usiner Chevilles en bois Dominos en bois Colle Feuilles abrasives / papier de verre pour poncer</li><li>Bois à usiner</li><li>Chevilles en bois</li><li>Dominos en bois</li><li>Colle</li><li>Feuilles abrasives / papier de verre pour poncer</li><li>3- Assemblage Bloc Manivelles+ Pédales sur support en bois</li><li>Partie B: Soudage pièce extérieur pignon Cassette de vélo (ensemble des pignons) Pièces métalliques ( 2 rondelles métalliques et petite pièce d’acier) Soudage pièce intérieur du pignon Assemblage pignons sur broyeur Hachoir à viande n°2 ( ici récupéré chez un boucher) Vis du broyeur</li><li>Soudage pièce extérieur pignon Cassette de vélo (ensemble des pignons) Pièces métalliques ( 2 rondelles métalliques et petite pièce d’acier)</li><li>Cassette de vélo (ensemble des pignons)</li><li>Pièces métalliques ( 2 rondelles métalliques et petite pièce d’acier)</li><li>Soudage pièce intérieur du pignon</li><li>Assemblage pignons sur broyeur Hachoir à viande n°2 ( ici récupéré chez un boucher) Vis du broyeur</li><li>Hachoir à viande n°2 ( ici récupéré chez un boucher)</li><li>Vis du broyeur</li><li>Montage final: Chaîne de vélo TUBE T Récipient pour récupérer le broyat</li><li>Chaîne de vélo</li><li>TUBE T</li><li>Récipient pour récupérer le broyat</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Ceci est une liste d’outils exhaustive à adapter en fonction de ce que vous possédez déjà.</li><li>Soudeuse</li><li>Tournevis / Perceuse / Visseuse</li><li>Ciseaux</li><li>Fer à souder ( pas obligatoire)</li><li>Scie manuelle ou scie sauteuse</li><li>Scie cloche</li><li>Mètre ou règle</li><li>Pied à coulisse</li><li>Foret de diamètres différents</li><li>Serre joint ou pince à colle (optionnel)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récupération et achat du matériel</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/11/Biosph_re_Urbaine_-_Le_broyeur_manuel_Plan_de_travail_1_copie_3_4x_1_.png/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_Plan_de_travail_1_copie_3_4x_1_.png' alt='Biosph re Urbaine - Le broyeur manuel Plan de travail 1 copie 3 4x 1 .png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/2/29/Biosph_re_Urbaine_-_Le_broyeur_manuel_pedallier_assemble.png' alt='Biosph re Urbaine - Le broyeur manuel pedallier assemble.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/9/9c/Biosph_re_Urbaine_-_Le_broyeur_manuel_PEDALE.png' alt='Biosph re Urbaine - Le broyeur manuel PEDALE.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/cf/Biosph_re_Urbaine_-_Le_broyeur_manuel_partieb.png' alt='Biosph re Urbaine - Le broyeur manuel partieb.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/24/Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_160711.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_160711.jpg' alt='Biosph re Urbaine - Le broyeur manuel 20240409 160711.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f4/Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_155813.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_155813.jpg' alt='Biosph re Urbaine - Le broyeur manuel 20240409 155813.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Si possible, récupérez les pièces sur un vieux vélo, ou achetez les pièces détachées.</li><li>Tout d’abord il faut bien comprendre que le broyeur manuel est composé de 2 parties. La partie A est un ensemble de pièces comprenant une manivelle liée à un plateau de vélo reposant sur un support en bois, cette partie est ensuite reliée par une chaîne à la partie B composée de pignons soudés sur un broyeur. Vous pouvez les identifier sur la première image, sur laquelle il manque en transparence la vis-sans-fin à l'intérieur du broyeur, reliée au pignon de vélo, et la bouche à trou</li><li>Si vous récupérez les pièces sur un vélo : scier le cadre au niveau du pédalier pour obtenir en un bloc le pédalier, les plateaux, la manivelle et un bout du cadre. Puis récupérez la partie centrale de la pédale, en rouge sur la photo.</li><li>Procurez vous ou démontez la cassette d'un vélo (ensemble des pignons).</li><li>Mesurez le diamètre de la partie centrale de la pédale avec un pied à coulisses.</li><li>A partir de ce diamètre, choisissez un cylindre de bois creux ( cf illustration), ici nous avons utilisé des pieds de fauteuils de récupération adaptés aux dimensions.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Assemblage des pédales (Partie A)</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/8/89/Biosph_re_Urbaine_-_Le_broyeur_manuel_trou_pedale.png' alt='Biosph re Urbaine - Le broyeur manuel trou pedale.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/a8/Biosph_re_Urbaine_-_Le_broyeur_manuel_serre_join.png' alt='Biosph re Urbaine - Le broyeur manuel serre join.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/dc/Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_161851.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_161851.jpg' alt='Biosph re Urbaine - Le broyeur manuel 20240409 161851.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans chacun des cylindres en bois, percer à l’aide d’un foret deux trous au diamètre adapté à votre vis (ici vis de 3 mm de diamètre) et correspondant aux encoches du support de pédale.</li><li>Assembler le support de pédale avec le cylindre en bois en vissant à l’aide de deux vis de dimension 3.00 x 20 mm.</li><li>Renouveler l’opération pour fabriquer la deuxième manivelle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Construction du support en bois (Partie A)</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/c/c6/Biosph_re_Urbaine_-_Le_broyeur_manuel_piece_support.png' alt='Biosph re Urbaine - Le broyeur manuel piece support.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5e/Biosph_re_Urbaine_-_Le_broyeur_manuel_B.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_B.jpg' alt='Biosph re Urbaine - Le broyeur manuel B.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/4/41/Biosph_re_Urbaine_-_Le_broyeur_manuel_oulong.png' alt='Biosph re Urbaine - Le broyeur manuel oulong.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/c/cd/Biosph_re_Urbaine_-_Le_broyeur_manuel_colle.jpg' alt='Biosph re Urbaine - Le broyeur manuel colle.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Façonner le bois en différentes pièces (numérotées sur l'image) pour créer un support :<ul><li>Pièce 1 x2</li><li>Pièce 2 x1</li><li>Pièce 3 x1</li><li>Pièce 4 x1</li><li>Pièces 5: Récupérer des chevilles en bois pour fixer les bouts de bois ensemble.</li></ul></li><li>Assembler les pièces entre elles grâce aux chevilles en bois.</li><li>Cette étape est optionnelle si on souhaite que le broyeur soit démontable. Finaliser l’assemblage en collant les dernières parties du socle avec de la colle à bois et laisser sécher en appuyant dessus à l’aide d’un serre joints ou d'une pince à colle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assemblage Manivelle et support en bois (Partie A)</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/9/97/Biosph_re_Urbaine_-_Le_broyeur_manuel_fixation_support_pedalier.png' alt='Biosph re Urbaine - Le broyeur manuel fixation support pedalier.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ec/Biosph_re_Urbaine_-_Le_broyeur_manuel_A_1_.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_A_1_.jpg' alt='Biosph re Urbaine - Le broyeur manuel A 1 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/0/0d/Biosph_re_Urbaine_-_Le_broyeur_manuel_ass.jpg' alt='Biosph re Urbaine - Le broyeur manuel ass.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Repérer l’endroit où il faudra percer sur le support pour faire passer la manivelle (repère en rouge).</li><li>Percer le support en bois à l’aide d’une scie cloche pour pouvoir faire passer la première manivelle.</li><li>Refermer le support en bois qui englobe désormais tout le cadre de vélo.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Usinage de la cassette (Partie B)</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/41/Biosph_re_Urbaine_-_Le_broyeur_manuel_pieceA.png/ia-e3fea4896c89751834da8bfb5cd6d971-px-Biosph_re_Urbaine_-_Le_broyeur_manuel_pieceA.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d0/Biosph_re_Urbaine_-_Le_broyeur_manuel_P_1_.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_P_1_.jpg' alt='Biosph re Urbaine - Le broyeur manuel P 1 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3a/Biosph_re_Urbaine_-_Le_broyeur_manuel_P.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_P.jpg' alt='Biosph re Urbaine - Le broyeur manuel P.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0e/Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_172746.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_172746.jpg' alt='Biosph re Urbaine - Le broyeur manuel 20240409 172746.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/d/dd/Biosph_re_Urbaine_-_Le_broyeur_manuel_tige_soude.png' alt='Biosph re Urbaine - Le broyeur manuel tige soude.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Pièce métallique A de diamètre égale au diamètre du plus petit pignon</li><li>Cassette de vélo</li><li>Tige métallique</li><li>Vis du broyeur</li></ul></li><li>Souder la pièce métallique A à la cassette du côté du plus grand pignon, en veillant à centrer la pièce.</li><li>Commencez par repérer le centre de la pièce métallique A en vous aidant des dents du grand pignon : tracer un segments entre une dent et sa symétrique par rapport au centre puis réitérez l'opération pour une plus grande précision.</li><li>Une fois le centre marqué, percer progressivement avec différents diamètre de foret, de plus en plus large pour faire un trou propre, jusqu’à ce que la tige métallique B rentre.</li><li>Réitérer les étapes 3 et 4 du côté du petit pignon.</li><li>Insérer la tige métallique au milieu du pignon et donc entre les deux pièces métalliques A et C.</li><li>Souder un bout de métal (D) sur la pièce A afin de fixer cette tige métallique dans l’axe du pignon.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Assemblage de la cassette au broyeur</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/f/f4/Biosph_re_Urbaine_-_Le_broyeur_manuel_bro.jpg' alt='Biosph re Urbaine - Le broyeur manuel bro.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/ff/Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_175951.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_20240409_175951.jpg' alt='Biosph re Urbaine - Le broyeur manuel 20240409 175951.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Assembler maintenant le pignon sur le broyeur à l’aide de la vis du broyeur. Visser ainsi le pignon sur le broyeur.</li><li>Attention au sens du montage, le pignon avec le plus petit diamètre doit être en contact avec le broyeur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Installation du montage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/90/Biosph_re_Urbaine_-_Le_broyeur_manuel_IMG_5659_1_.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_IMG_5659_1_.jpg' alt='Biosph re Urbaine - Le broyeur manuel IMG 5659 1 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/67/Biosph_re_Urbaine_-_Le_broyeur_manuel_IMG_5657_1_.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_IMG_5657_1_.jpg' alt='Biosph re Urbaine - Le broyeur manuel IMG 5657 1 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/76/Biosph_re_Urbaine_-_Le_broyeur_manuel_IMG_5661_1_.jpg/800px-Biosph_re_Urbaine_-_Le_broyeur_manuel_IMG_5661_1_.jpg' alt='Biosph re Urbaine - Le broyeur manuel IMG 5661 1 .jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/6/67/Broyat.png' alt='Broyat.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans l’appartement low-tech, nous avons installé les manivelles à hauteur de bras sur le plan de travail pour l’ergonomie, puis ajusté la chaîne pour la connecter au broyeur sous le plan de travail. La purée tombe à travers un tuyau galvanisé dans le bac à larves avec tiroir (ici, il s’agit du même bac à larve que celui de nos toilettes). Le tiroir (ouverture vers nous) nous permet de surveiller la transformation des déchets organiques, vue sur larves.</li><li>Sur la première image :<ul><li>Le pédalier à double manivelle installé sur le plan de travail</li><li>Le broyeur (hachoir à viande) installé sous le plan de travail</li><li>La purée tombe à travers un tuyau galvanisé dans le bac à larves avec tiroir (ici, il s’agit du même bac à larve que celui de nos toilettes)</li></ul></li><li>2 - Installer le montage</li><li>Prévoir un trou sur le plan de travail pour insérer les déchets organiques, et un autre pour faire passer la chaîne de vélo.</li><li>Installer le montage dans sa globalité comprenant la partie A reliée à la partie B à l’aide d’une chaîne de vélo, en encastrant la partie A dans le plan de travail grâce à un tube en acier en forme de T (voir photo dans la liste de matériel).</li><li>Prévoir un récipient afin de récupérer le broyat.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Graver des surfaces avec Inkscape et une CNC</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Graver des surfaces avec Inkscape et une CNC</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/5/54/Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png/ia-ed484d380dc05167d70dfa77401621e9-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Utilisation de l'extension Gcode de Inkscape pour graver des surfaces avec une CNC</div>
+        
+      </div>
+    
+    
+      
+        <p>Graver des lignes avec la mêche d'un CNC est assez simple.</p>
+      
+        <p>Cela se complique lorsqu'il faut graver toute une surface, voire en relief.</p>
+      
+        <p>L'extension GcodeTools de Inkscape permet de faire cela, mais elle nécessite quelques explications.</p>
+      
+        <p>On va essayer de faire le plus claire possible. Cette page va expliquer comment graver une surface plane en plusieurs couches.</p>
+      
+        <p>L'extension vient de club-cnc.ru mais elle n'est guère documentée. Ce tuto est issu de tests empiriques. Il peut contenir des erreurs d'interprétation.</p>
+      
+        <p>Il y a juste un forum:</p>
+      
+        <p>https://www.cnc-club.ru/forum/viewtopic.php?t=35</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Graver_des_surfaces_avec_Inkscape_et_une_CNC" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Graver_des_surfaces_avec_Inkscape_et_une_CNC</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - L'extension GCodeTools</strong><div class='step-images count-2'><figure><img src='/images/thumb/9/98/Graver_des_surfaces_avec_Inkscape_et_une_CNC_menu-gcodetools.png/ia-58b5e86c0fe7c55afb4d9d4a18ad9cfc-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_menu-gcodetools.png.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/9/98/Graver_des_surfaces_avec_Inkscape_et_une_CNC_menu-gcodetools.png/ia-58b5e86c0fe7c55afb4d9d4a18ad9cfc-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_menu-gcodetools.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Elle est installée dans Inkscape</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Orientation Points (OP)</strong><div class='step-images count-2'><figure><img src='/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/ia-5a7b52a6261b63bd82a5eedf96cf6f5d-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/ia-5a7b52a6261b63bd82a5eedf96cf6f5d-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Défini le XY 0,0 et la profondeur Z<ul><li>Z depth: profondeur total de la gravure, toutes passes confondues</li></ul></li><li>Attention: "Scale along Z axis" dans Option est un facteur qui sera aussi appliqué. Voir EXEMPLE plus bas</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Outil / Tool Library</strong><div class='step-images count-2'><figure><img src='/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/ia-110ffe565a0a04154a8d98f0dbead263-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/ia-110ffe565a0a04154a8d98f0dbead263-px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Set tool shape. Ajoute un encart éditable (diametre...)</li><li>Déplacer le nouveau cadre. Editer dedans:<ul><li>diameter, la taille de l'outil</li><li>feed: la vitesse XY, par exemple 50 pour une vitesse lente de test</li><li>depth step: le nombre de mm entre 2 passes</li><li>EXEMPLE: OP "Z depth" = 1.1mm, "depth step" = 0.3. Il y aura 3 passes de 0.3mm + 1 passe de 0.2mm pour faire 1.1 mm</li></ul></li><li>Mais, si "Scale along Z axis" de Zone/Options est à 3, il y aura 3 passes de 0.9mm + 1 passe de 0.6mm pour faire 3.3 mm</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Zone / Area</strong><div class='step-images count-12'><figure><img src='/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png' alt='Graver des surfaces avec Inkscape et une CNC 02-A-NoApply.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e5/Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png' alt='Graver des surfaces avec Inkscape et une CNC 03-FA-Apply.png' loading='lazy'></figure><figure><img src='/images/thumb/8/82/Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png' alt='Graver des surfaces avec Inkscape et une CNC 04-Options-Zep.png' loading='lazy'></figure><figure><img src='/images/thumb/8/82/Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png' alt='Graver des surfaces avec Inkscape et une CNC 04-Options-Zep.png' loading='lazy'></figure><figure><img src='/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png' alt='Graver des surfaces avec Inkscape et une CNC 02-A-NoApply.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e5/Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png' alt='Graver des surfaces avec Inkscape et une CNC 03-FA-Apply.png' loading='lazy'></figure><figure><img src='/images/thumb/8/82/Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png' alt='Graver des surfaces avec Inkscape et une CNC 04-Options-Zep.png' loading='lazy'></figure><figure><img src='/images/thumb/8/82/Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png' alt='Graver des surfaces avec Inkscape et une CNC 04-Options-Zep.png' loading='lazy'></figure><figure><img src='/images/thumb/0/06/Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_02-A-NoApply.png' alt='Graver des surfaces avec Inkscape et une CNC 02-A-NoApply.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e5/Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_03-FA-Apply.png' alt='Graver des surfaces avec Inkscape et une CNC 03-FA-Apply.png' loading='lazy'></figure><figure><img src='/images/thumb/8/82/Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png' alt='Graver des surfaces avec Inkscape et une CNC 04-Options-Zep.png' loading='lazy'></figure><figure><img src='/images/thumb/8/82/Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_04-Options-Zep.png' alt='Graver des surfaces avec Inkscape et une CNC 04-Options-Zep.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Onglets:</li><li>Area: Peu utile. Toujours désactiver Live Preview</li><li>Maximum area cutting curves: n/a</li><li>Area width: si négatif grave autour, si positif grave dans la surface</li><li>Area Tool Overlap: avec la diametre de l'outil, défini le nombre de lignes</li><li>Fill area: Très utile pour ajouter les chemins<ul><li>Activer le Preview -> Montre le résultat, il doit y avoir des lignes sur toute la surface</li><li>Area fill shift: 0 à 1, sans effet</li><li>APPLY: Ajoute les chemins</li><li>=> Les chemins sont ajoutés en bleu. Les selectionner. Il faut voir chaque extrémité délimitée par un losange.</li></ul></li><li>Option:<ul><li>Scale along Z axis: Facteur appliqué au Z</li></ul></li><li>Voir EXEMPLE après "Tools Library"<ul><li>Offset along Z axis: juste un décalage vers le haut, c'est tout</li></ul></li><li>Select all paths is nothing selected: peu aider pour ne pas avoir à sélectionner</li><li>Préférence :<ul><li>chemin du fichier gcode</li><li>Z safe height: hauteur pour les déplacements sans gravure. Le facteur "Scale along Z axis" s'applique aussi.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Zone / Area onglet Path to Gcode</strong><div class='step-images count-2'><figure><img src='/images/thumb/c/ca/Graver_des_surfaces_avec_Inkscape_et_une_CNC_06-P2G-APPLY.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_06-P2G-APPLY.png' alt='Graver des surfaces avec Inkscape et une CNC 06-P2G-APPLY.png' loading='lazy'></figure><figure><img src='/images/thumb/c/ca/Graver_des_surfaces_avec_Inkscape_et_une_CNC_06-P2G-APPLY.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_06-P2G-APPLY.png' alt='Graver des surfaces avec Inkscape et une CNC 06-P2G-APPLY.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C'est là que le fichier GCODE est généré.</li><li>Il faut avoir sélectionner les chemins avec "Node Tool"<ul><li>Live Preview: (après sélection, il faut parfois changer une valeur) les lignes passent en rose, sinon sélectionner les chemins.</li><li>APPLY: crée les chemins en plus, affichés en rose, et sauve le gcode</li></ul></li><li>On peut faire glisser les chemins créés avec "Selector Tool" pour les supprimer.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Ouverture dans Candle</strong><div class='step-images count-12'><figure><img src='/images/thumb/5/54/Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png' alt='Graver des surfaces avec Inkscape et une CNC star-all.png' loading='lazy'></figure><figure><img src='/images/4/4a/Graver_des_surfaces_avec_Inkscape_et_une_CNC_candle-star.png' alt='Graver des surfaces avec Inkscape et une CNC candle-star.png' loading='lazy'></figure><figure><img src='/images/thumb/3/37/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png' alt='Graver des surfaces avec Inkscape et une CNC 10-candle-3passes.png' loading='lazy'></figure><figure><img src='/images/thumb/2/20/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png' alt='Graver des surfaces avec Inkscape et une CNC 10-Candle-5passes-02mm.png' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png' alt='Graver des surfaces avec Inkscape et une CNC star-all.png' loading='lazy'></figure><figure><img src='/images/4/4a/Graver_des_surfaces_avec_Inkscape_et_une_CNC_candle-star.png' alt='Graver des surfaces avec Inkscape et une CNC candle-star.png' loading='lazy'></figure><figure><img src='/images/thumb/3/37/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png' alt='Graver des surfaces avec Inkscape et une CNC 10-candle-3passes.png' loading='lazy'></figure><figure><img src='/images/thumb/2/20/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png' alt='Graver des surfaces avec Inkscape et une CNC 10-Candle-5passes-02mm.png' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_star-all.png' alt='Graver des surfaces avec Inkscape et une CNC star-all.png' loading='lazy'></figure><figure><img src='/images/4/4a/Graver_des_surfaces_avec_Inkscape_et_une_CNC_candle-star.png' alt='Graver des surfaces avec Inkscape et une CNC candle-star.png' loading='lazy'></figure><figure><img src='/images/thumb/3/37/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-candle-3passes.png' alt='Graver des surfaces avec Inkscape et une CNC 10-candle-3passes.png' loading='lazy'></figure><figure><img src='/images/thumb/2/20/Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png/800px-Graver_des_surfaces_avec_Inkscape_et_une_CNC_10-Candle-5passes-02mm.png' alt='Graver des surfaces avec Inkscape et une CNC 10-Candle-5passes-02mm.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On voit le Z min et max qui doivent correspondre à la profondeur et à la hauteur de sécurité, pondéré du facteur "Scale along Z axis" de "Zone/Options".</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Plus de tutos CNC:</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>https://wikifab.hatlab.fr/Graver_un_PCB_avec_une_CNC_3018</li><li>https://wikifab.hatlab.fr/Graver_au_laser_avec_une_CNC_3018</li><li>https://wikifab.hatlab.fr/R%C3%A9aliser_un_circuit_avec_Kicad_pour_ensuite_le_graver</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>
