@@ -6,9 +6,15 @@ from jinja2 import Environment, FileSystemLoader
 #  CONFIG : A ADAPTER ICI
 # =========================
 
-# Mets ici le chemin vers TON fichier JSON d'entrée
-# Exemple : "../json/lowtechlab/velo_generateur.json"
-INPUT_JSON = "../json/lowtechlab/velo_generateur.json"
+# Dossier où se trouvent les JSON source (ceux produits par html_to_json)
+# Exemple : "../donnees_brutes/lowtechlab"
+INPUT_DIR = "../donnees_brutes/lowtechlab"
+
+# Dossier racine pour les sorties harmonisées
+OUTPUT_BASE_DIR = "../donnees_harmonisees"
+
+# Nom de la source (lowtechlab, instructables, wikifab)
+SOURCE_NAME = "lowtechlab"
 
 # Dossier où se trouve le template Jinja2
 TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "templates")
@@ -75,9 +81,9 @@ class TutorialHarmonizer:
 
         # Champs principaux
         titre = (project_data.get("titre", ["Projet maker"])[0] or "").strip()
-        difficulte = (project_data.get("difficulté", [""])[0] or "").strip()
-        duree = (project_data.get("durée", [""])[0] or "").strip()
-        cout = (project_data.get("coût", [""])[0] or "").strip()
+        difficulte = (project_data.get("difficulté", [""])[0] or "").strip() if project_data.get("difficulté") else ""
+        duree = (project_data.get("durée", [""])[0] or "").strip() if project_data.get("durée") else ""
+        cout = (project_data.get("coût", [""])[0] or "").strip() if project_data.get("coût") else ""
         image = project_data.get("image", [{}])[0] if project_data.get("image") else {}
         main_image_url = (image.get("url") or "").strip()
         main_image_caption = (image.get("description") or "").strip()
@@ -109,6 +115,8 @@ class TutorialHarmonizer:
 
         # Étapes (liste de dicts {"html":..., "fichiers":[...]})
         etapes = []
+        step_number = 1  # Initialisation du numéro des étapes
+
         for e in project_data.get("étapes", []):
             if isinstance(e, dict):
                 titre_etape = (e.get('titre') or "").strip()
@@ -116,7 +124,7 @@ class TutorialHarmonizer:
 
                 if solutions:
                     for sol in solutions:
-                        num = e.get('numero', None)
+                        num = step_number
                         num_str = f"{num}. " if (num is not None and str(num).strip() != "") else ""
                         formatted = f"<strong>{num_str}{titre_etape}</strong>"
 
@@ -249,11 +257,12 @@ class TutorialHarmonizer:
                         # Fichiers
                         fichiers = sol.get("fichiers", []) if isinstance(sol, dict) else []
                         etapes.append({"html": formatted, "fichiers": fichiers})
+
+                        # Incrémentation du numéro d'étape après chaque solution
+                        step_number += 1
                 else:
                     # Fallback si pas de solutions
                     etapes.append({"html": f"<strong>{titre_etape}</strong>", "fichiers": []})
-            else:
-                etapes.append({"html": str(e).strip(), "fichiers": []})
 
         # Enlever doublons
         seen = set()
@@ -264,70 +273,6 @@ class TutorialHarmonizer:
                 seen.add(key)
                 unique_etapes.append(item)
         etapes = unique_etapes
-
-        # Annexes -> remarques
-        annexes = project_data.get("annexes", [])
-        remarques_list = []
-        for a in annexes:
-            if isinstance(a, dict):
-                titre_annexe = a.get("titre", "")
-                solutions = a.get("solutions", [])
-                if solutions:
-                    for sol in solutions:
-                        annexe_text = ""
-                        if titre_annexe:
-                            annexe_text += f"<strong>{titre_annexe}</strong><br>"
-                        objectif = (sol.get("objectif") or "").strip()
-                        if objectif:
-                            annexe_text += f"{objectif}<br>"
-
-                        materiaux_outils = sol.get("materiaux_outils", [])
-                        if materiaux_outils:
-                            annexe_text += "<strong>Matériaux et outils :</strong> " + ", ".join(
-                                [m.strip() for m in materiaux_outils if isinstance(m, str) and m.strip()]
-                            ) + "<br>"
-
-                        etapes_annexe = sol.get("etapes", [])
-                        if etapes_annexe:
-                            annexe_text += "<strong>Étapes :</strong><br>"
-                            for i, step in enumerate(etapes_annexe, 1):
-                                if isinstance(step, dict):
-                                    titre_step = (step.get('titre') or "").strip()
-                                    sous_etapes = step.get('sous_etapes', [])
-                                    if titre_step:
-                                        annexe_text += f"{titre_step}<br>"
-                                        if sous_etapes:
-                                            for sub in sous_etapes:
-                                                if isinstance(sub, str) and sub.strip():
-                                                    annexe_text += f"  - {sub.strip()}<br>"
-                                elif isinstance(step, str) and step.strip():
-                                    annexe_text += f"{i}. {step.strip()}<br>"
-
-                        remarques_annexe = sol.get("remarques", [])
-                        if remarques_annexe:
-                            for rem in remarques_annexe:
-                                if isinstance(rem, str) and rem.strip():
-                                    annexe_text += f"{rem.strip()}<br>"
-
-                        if annexe_text:
-                            remarques_list.append(annexe_text)
-                else:
-                    desc = a.get("description", "")
-                    if isinstance(desc, list):
-                        desc = " ".join([str(d).strip() for d in desc if d])
-                    if titre_annexe:
-                        remarques_list.append(f"<strong>{titre_annexe}</strong><br>{desc}")
-                    else:
-                        remarques_list.append(desc)
-            else:
-                remarques_list.append(str(a))
-        remarques = "<br>".join([r for r in remarques_list if r]).strip()
-
-        # Mentions légales
-        mentions_raw = []
-        if isinstance(project_data, dict):
-            mentions_raw = project_data.get("mentions légales", project_data.get("mentions_legales", []))
-        mentions_legales = unique_preserve_order(self.format_hierarchical_list(mentions_raw))
 
         # Structure harmonisée
         return {
@@ -343,9 +288,10 @@ class TutorialHarmonizer:
             "materiaux": materiaux,
             "outils": outils,
             "etapes": etapes,
-            "remarques": remarques,
-            "mentions_legales": mentions_legales,
+            "remarques": "",
+            "mentions_legales": [],
         }
+
 
     # ========== SORTIE HTML ==========
     def harmonize(self, data: dict):
@@ -354,47 +300,91 @@ class TutorialHarmonizer:
         html_output = template.render(**fields)
         return html_output
 
+    def _safe_path(self, filepath: str, max_filename_length: int = 100) -> str:
+        """Tronque le nom de fichier pour éviter les chemins trop longs sous Windows (260 chars max)."""
+        dir_path = os.path.dirname(filepath)
+        filename = os.path.basename(filepath)
+        name, ext = os.path.splitext(filename)
+        
+        # Si le nom de fichier est trop long, le tronquer et ajouter un hash
+        if len(name) > max_filename_length:
+            import hashlib
+            name_hash = hashlib.md5(name.encode()).hexdigest()[:8]
+            name = name[:max_filename_length] + "_" + name_hash
+        
+        return os.path.join(dir_path, name + ext)
+
     def save_html(self, html_output: str, output_html: str):
+        # S'assurer que le répertoire existe d'abord
+        output_dir = os.path.dirname(output_html)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Puis tronquer le chemin si nécessaire
+        output_html = self._safe_path(output_html)
+        
         with open(output_html, "w", encoding="utf-8") as f:
             f.write(html_output)
-        print(f"✅ HTML généré : {output_html}")
+        print(f"✅ HTML généré : {os.path.basename(output_html)}")
 
     # ========== SORTIE JSON HARMONISÉ ==========
     def harmonize_to_json(self, data: dict):
         return self._compute_common_fields(data)
 
     def save_json(self, json_data: dict, output_json: str):
+        # S'assurer que le répertoire existe d'abord
+        output_dir = os.path.dirname(output_json)
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Puis tronquer le chemin si nécessaire
+        output_json = self._safe_path(output_json)
+        
         with open(output_json, "w", encoding="utf-8") as f:
             json.dump(json_data, f, ensure_ascii=False, indent=4)
-        print(f"✅ JSON harmonisé généré : {output_json}")
+        print(f"✅ JSON harmonisé généré : {os.path.basename(output_json)}")
 
 
 # =========================
 #      POINT D'ENTRÉE
 # =========================
 if __name__ == "__main__":
-    print(f"🔍 Recherche du fichier : {INPUT_JSON}")
-    if not os.path.isfile(INPUT_JSON):
-        raise FileNotFoundError(f"Fichier JSON introuvable : {INPUT_JSON}")
-    
-    print(f"✅ Fichier trouvé, chargement...")
-    # Lecture du JSON d'entrée
-    with open(INPUT_JSON, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    
-    print(f"✅ JSON chargé avec succès")
+    print(f"🔍 Dossier d'entrée : {INPUT_DIR}")
+    if not os.path.isdir(INPUT_DIR):
+        raise NotADirectoryError(f"Dossier introuvable : {INPUT_DIR}")
+
+    # Créer les sous-dossiers de sortie avec la structure source
+    output_html_dir = os.path.join(OUTPUT_BASE_DIR, SOURCE_NAME, "html")
+    output_json_dir = os.path.join(OUTPUT_BASE_DIR, SOURCE_NAME, "json")
+    os.makedirs(output_html_dir, exist_ok=True)
+    os.makedirs(output_json_dir, exist_ok=True)
+
     harmonizer = TutorialHarmonizer()
-    print(f"✅ Harmonizer initialisé")
+    print("✅ Harmonizer initialisé")
 
-    # Génération HTML
-    html_code = harmonizer.harmonize(data)
+    # Parcours de tous les JSON du dossier (sauf ceux déjà harmonisés)
+    for filename in os.listdir(INPUT_DIR):
+        if not filename.lower().endswith(".json"):
+            continue
+        if filename.endswith("_harmonized.json"):
+            continue
 
-    base, _ = os.path.splitext(INPUT_JSON)
-    output_html = base + ".html"              # même nom que le JSON, extension .html
-    output_json_harmonized = base + "_harmonized.json"
+        input_path = os.path.join(INPUT_DIR, filename)
+        if not os.path.isfile(input_path):
+            continue
 
-    harmonizer.save_html(html_code, output_html)
+        print(f"\n📄 Traitement du fichier : {filename}")
+        with open(input_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
 
-    # Génération JSON harmonisé
-    json_struct = harmonizer.harmonize_to_json(data)
-    harmonizer.save_json(json_struct, output_json_harmonized)
+        # Génération HTML
+        html_code = harmonizer.harmonize(data)
+        base_name, _ = os.path.splitext(filename)
+        output_html = os.path.join(output_html_dir, base_name + ".html")
+        harmonized_json_path = os.path.join(output_json_dir, base_name + "_harmonized.json")
+
+        harmonizer.save_html(html_code, output_html)
+
+        # Génération JSON harmonisé
+        json_struct = harmonizer.harmonize_to_json(data)
+        harmonizer.save_json(json_struct, harmonized_json_path)
+
+    print("\n✅ Traitement terminé pour tous les JSON du dossier.")
