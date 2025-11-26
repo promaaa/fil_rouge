@@ -16,7 +16,7 @@
     --recyclage-line-color: #00a218;
     --navigate-color: #f07800;
     --navigate-line-color: #6b3600;
-    
+
     --text-primary: #ffffff;
     --text-secondary: #ffffff;
     --card: #502800;
@@ -35,9 +35,10 @@ html,
 body {
     height: 100%;
     margin: 0px;
-    
+
     background-color: var(--bg-main);
-    background-image: /* Grid background */
+    background-image:
+        /* Grid background */
         linear-gradient(var(--line-color) 1px, transparent 1px),
         linear-gradient(to right, var(--line-color) 1px, var(--bg-main) 1px);
 
@@ -66,34 +67,31 @@ div.backdrop-cover {
 
 .app {
     max-width: 100vw;
-    max-height: 95vh;
+    height: 95vh;
     margin: auto;
     display: flex;
     flex-direction: unset;
     position: relative;
-    overflow-x: hidden;
-    overflow-y: visible;
+    overflow: hidden;
     border-radius: 24px;
     background: var(--bg-main);
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
-    padding-bottom: 0;
 }
 
 .app::before {
     content: "";
-    position: absolute;
-    inset: -180px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background:
-        radial-gradient(
-            ellipse at top,
+        radial-gradient(ellipse at top,
             rgba(0, 219, 33, 0.12),
-            transparent 55%
-        ),
-        radial-gradient(
-            ellipse at bottom,
+            transparent 55%),
+        radial-gradient(ellipse at bottom,
             rgba(0, 219, 33, 0.14),
-            transparent 60%
-        );
+            transparent 60%);
     mix-blend-mode: screen;
     opacity: 0.85;
     animation: glowPulse 18s ease-in-out infinite;
@@ -482,11 +480,9 @@ div.backdrop-cover {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        var(--accent-primary),
-        var(--accent-secondary)
-    );
+    background: linear-gradient(90deg,
+            var(--accent-primary),
+            var(--accent-secondary));
     border-radius: 10px;
     transition: width 0.3s ease;
 }
