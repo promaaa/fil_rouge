@@ -2,7 +2,8 @@ import json
 import os
 from pathlib import Path
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin, quote
+from bs4 import BeautifulSoup
 
 # ========== CONFIG ==========
 # Ce script est placé dans : maker_lens/scripts_recuperation/donnees_harmonisees
@@ -57,25 +58,17 @@ def normalize_tutorial(t):
         out["titre"] = t.get("titre", [])
 
     # ---- IMAGE PRINCIPALE ----
-    if t.get("main_image_url"):
+    main_img = t.get("main_image_url")
+    if main_img:
+        img_url = absolutize_url(main_img, t.get("source_link") or t.get("url"))
         out["image"] = [{
-            "url": t["main_image_url"],
+            "url": img_url,
             "alt": t.get("titre", ""),
             "description": t.get("main_image_caption", "")
         }]
 
     # ---- INTRODUCTION ----
-    intro_block = []
-
-    if t.get("intro"):
-        intro_block.append({"titre": t["intro"], "sous_items": []})
-
-    if t.get("intro_items"):
-        intro_block.append({
-            "titre": "",
-            "sous_items": t["intro_items"]
-        })
-
+    intro_block = build_introduction_block(t)
     if intro_block:
         out["introduction"] = intro_block
 
@@ -84,7 +77,7 @@ def normalize_tutorial(t):
         out["difficulté"] = [t["difficulte"]]
 
     if t.get("duree"):
-        out["durée"] = [t["duree"]]
+        out["durée"] = [clean_duration(t["duree"])]
 
     if t.get("cout"):
         out["coût"] = [t["cout"]]
@@ -93,25 +86,21 @@ def normalize_tutorial(t):
         out["liens"] = [t["source_link"]]
 
     # ---- MATERIAUX ----
-    if t.get("materiaux"):
-        out["matériaux"] = [{
-            "titre": "Liste",
-            "sous_items": t["materiaux"]
-        }]
+    mat_block = build_list_block(t.get("materiaux"))
+    if mat_block:
+        out["matériaux"] = mat_block
 
     # ---- OUTILS ----
-    if t.get("outils"):
-        out["outils"] = [{
-            "titre": "Liste",
-            "sous_items": t["outils"]
-        }]
+    outils_block = build_list_block(t.get("outils"))
+    if outils_block:
+        out["outils"] = outils_block
 
     # ---- ETAPES ----
     etapes = t.get("etapes", [])
     converted_steps = []
 
     for i, e in enumerate(etapes, start=1):
-        html = e.get("html", "")
+        html = e.get("html", "") if isinstance(e, dict) else ""
 
         converted_steps.append({
             "numero": i,
@@ -119,6 +108,7 @@ def normalize_tutorial(t):
             "solutions": [
                 {
                     "objectif": "",
+                    # on conserve le HTML brut dans description pour le rendre côté JS
                     "description": html,
                     "images": []
                 }
@@ -129,6 +119,7 @@ def normalize_tutorial(t):
         out["étapes"] = converted_steps
 
     return out
+
 
 def preprocess_tutorial_html(tuto):
     """Corrige les URLs relatives dans les champs HTML du tuto."""
@@ -145,6 +136,179 @@ def preprocess_tutorial_html(tuto):
                 etape["html"] = fix_relative_image_urls_in_html(etape["html"], source_url)
 
     return tuto
+
+def clean_duration(raw):
+    """
+    Nettoie toutes les durées provenant du scraping.
+    Supporte :
+    - hour(s), heure(s)
+    - day(s), jour(s)
+    - minute(s), minute(s)
+    - second(s), seconde(s)
+    - week(s), semaine(s)
+    - month(s), mois
+    - doublons anglais+français : '2 day(s) jour(s)' -> '2 jours'
+    - versions abrégées : h, min, sec
+    """
+
+    if not raw:
+        return ""
+
+    s = str(raw).strip().lower()
+
+    # -------------------------------------------------------
+    # 1. Remplacement des doublons anglais + français
+    # ex : "day(s) jour(s)" -> "jours"
+    # -------------------------------------------------------
+    # mapping -> unité française
+    dual_patterns = {
+        r"hour\(s\)\s*heure\(s\)": "heures",
+        r"day\(s\)\s*jour\(s\)": "jours",
+        r"minute\(s\)\s*minute\(s\)": "minutes",
+        r"second\(s\)\s*seconde\(s\)": "secondes",
+        r"week\(s\)\s*semaine\(s\)": "semaines",
+        r"month\(s\)\s*mois": "mois"
+    }
+
+    for pat, repl in dual_patterns.items():
+        s = re.sub(pat, repl, s)
+
+    # -------------------------------------------------------
+    # 2. Anglais -> français (unités simples)
+    # -------------------------------------------------------
+    replacements = {
+        r"hour\(s\)|hours?|h\b": "heures",
+        r"day\(s\)|days?": "jours",
+        r"minute\(s\)|minutes?|mn|min\b": "minutes",
+        r"second\(s\)|seconds?|sec\b": "secondes",
+        r"week\(s\)|weeks?": "semaines",
+        r"month\(s\)|months?": "mois"
+    }
+
+    for pat, repl in replacements.items():
+        s = re.sub(pat, repl, s)
+
+    # -------------------------------------------------------
+    # 3. Nettoyage des espaces multiples
+    # -------------------------------------------------------
+    s = re.sub(r"\s+", " ", s).strip()
+
+    # -------------------------------------------------------
+    # 4. Normalisation du singulier
+    # -------------------------------------------------------
+    s = s.replace("1 heures", "1 heure")
+    s = s.replace("1 jours", "1 jour")
+    s = s.replace("1 minutes", "1 minute")
+    s = s.replace("1 secondes", "1 seconde")
+    s = s.replace("1 semaines", "1 semaine")
+
+    return s
+
+def normalize_html_list(html_str):
+    """
+    Transforme '<ul><li>A</li><li>B</li></ul>' en ['A', 'B'].
+    Si pas de <li>, renvoie le texte brut.
+    """
+    items = []
+    soup = BeautifulSoup(html_str, "html.parser")
+    for li in soup.find_all("li"):
+        text = li.get_text(strip=True)
+        if text:
+            items.append(text)
+    if not items:
+        text = soup.get_text(" ", strip=True)
+        if text:
+            items.append(text)
+    return items
+
+
+def build_list_block(raw_list):
+    """
+    Convertit une liste de strings ou html en bloc attendu par l'interface :
+    [{ "titre": "item1", "sous_items": [] }, ...]
+    -> ainsi, on évite le 'Liste' et les listes imbriquées moches.
+    """
+    if not raw_list:
+        return []
+
+    sous_items = []
+    for item in raw_list:
+        if not item:
+            continue
+        if isinstance(item, str) and "<li" in item:
+            sous_items.extend(normalize_html_list(item))
+        elif isinstance(item, str):
+            sous_items.append(item.strip())
+        elif isinstance(item, dict):
+            # si jamais tu as déjà un format structuré
+            titre = item.get("titre")
+            if titre:
+                sous_items.append(titre.strip())
+
+    if not sous_items:
+        return []
+
+    # On crée un objet par sous-élément, sans "Liste"
+    return [
+        {"titre": s, "sous_items": []}
+        for s in sous_items
+    ]
+
+
+
+def build_introduction_block(t):
+    """
+    Logique optimale pour l'introduction :
+    - Si intro_items existe -> on utilise uniquement intro_items (rendu plus propre)
+    - Sinon si intro existe -> on utilise intro
+    - Sinon -> aucune introduction
+    """
+
+    # 1) intro_items prioritaire
+    items = t.get("intro_items")
+    if items and isinstance(items, list) and any(x.strip() for x in items if isinstance(x, str)):
+        blocks = []
+        for it in items:
+            if not it:
+                continue
+            it_clean = (it or "").strip()
+            if it_clean:
+                blocks.append({"titre": it_clean, "sous_items": []})
+        if blocks:
+            return blocks
+
+    # 2) sinon fallback sur intro brut
+    intro = (t.get("intro") or "").strip()
+    if intro:
+        return [{"titre": intro, "sous_items": []}]
+
+    # 3) sinon aucune introduction
+    return []
+
+
+
+def absolutize_url(url, source_url):
+    """
+    Rend une URL absolue si possible (pour main_image_url, etc.).
+    """
+    if not url or not isinstance(url, str):
+        return url
+
+    if url.startswith("http://") or url.startswith("https://"):
+        return url
+
+    if not source_url:
+        return url
+
+    parsed = urlparse(source_url)
+    origin = f"{parsed.scheme}://{parsed.netloc}"
+
+    # /images/... -> https://site.org/images/...
+    if url.startswith("/"):
+        return urljoin(origin, url)
+
+    # Sinon, on tente un join simple
+    return urljoin(origin, url)
 
 
 def load_all_tutorials():
@@ -179,8 +343,8 @@ def load_all_tutorials():
                 for key, tuto in content.items():
                     if key in tutorial_data:
                         print(f"[WARN] Clé '{key}' déjà présente, écrasée par {path}")
-                    tuto = normalize_tutorial(tuto)
                     tuto = preprocess_tutorial_html(tuto)
+                    tuto = normalize_tutorial(tuto)
                     tutorial_data[key] = tuto
 
             else:
@@ -212,8 +376,8 @@ def load_all_tutorials():
                         new_key = f"{key_norm}_{suffix}"
                     key_norm = new_key
 
-                tuto = normalize_tutorial(tuto)
                 tuto = preprocess_tutorial_html(tuto)
+                tuto = normalize_tutorial(tuto)
                 tutorial_data[key_norm] = tuto
 
     print(f"📊 Nombre total de fichiers JSON trouvés : {json_files_found}")
