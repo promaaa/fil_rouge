@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Plaque de plastique . Precious PLlastic.</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Plaque de plastique . Precious PLlastic.</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/2/2c/Plaque_de_plastique_._Precious_PLlastic._20250429_114021.jpg/ia-7b162adba568ecf4b52d3ecbab645ea7-px-Plaque_de_plastique_._Precious_PLlastic._20250429_114021.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Tutoriel pour créer une plaque de plastique recyclé à l'aide de machines Precious Plastic.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment plaque de plastique . precious pllastic..</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Plaque_de_plastique_._Precious_PLlastic." target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Plaque_de_plastique_._Precious_PLlastic.</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Plastique recyclable (PP).</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Hache, broyeuse, presse à chaleur, presse manuelle, feuilles métalliques, plaques de carton. Des gants et lunettes de sécurité sont nécessaires à chaque étape.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - I- Broyer le plastique.</strong><div class='step-images count-15'><figure><img src='/images/thumb/e/ee/Plaque_de_plastique_._Precious_PLlastic._20250401_093121.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_093121.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 093121.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/Plaque_de_plastique_._Precious_PLlastic._20250304_105708.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_105708.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 105708.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6d/Plaque_de_plastique_._Precious_PLlastic._20250304_110025.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110025.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110025.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/db/Plaque_de_plastique_._Precious_PLlastic._20250401_103225.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_103225.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 103225.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/08/Plaque_de_plastique_._Precious_PLlastic._20250401_105450.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_105450.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 105450.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/ee/Plaque_de_plastique_._Precious_PLlastic._20250401_093121.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_093121.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 093121.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/Plaque_de_plastique_._Precious_PLlastic._20250304_105708.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_105708.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 105708.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6d/Plaque_de_plastique_._Precious_PLlastic._20250304_110025.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110025.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110025.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/db/Plaque_de_plastique_._Precious_PLlastic._20250401_103225.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_103225.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 103225.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/08/Plaque_de_plastique_._Precious_PLlastic._20250401_105450.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_105450.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 105450.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/ee/Plaque_de_plastique_._Precious_PLlastic._20250401_093121.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_093121.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 093121.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/Plaque_de_plastique_._Precious_PLlastic._20250304_105708.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_105708.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 105708.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6d/Plaque_de_plastique_._Precious_PLlastic._20250304_110025.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110025.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110025.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/db/Plaque_de_plastique_._Precious_PLlastic._20250401_103225.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_103225.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 103225.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/08/Plaque_de_plastique_._Precious_PLlastic._20250401_105450.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250401_105450.jpg' alt='Plaque de plastique . Precious PLlastic. 20250401 105450.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Briser du plastique (ici du PP) en morceau de la taille de la paume de la main. Ne pas mélanger les types de plastique.</li><li>-Faire passer le plastique dans une broyeuse Precious Plastic (voir tutoriel de construction sur le site Precious Plastic).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - II- Faire fondre la plaque.</strong><div class='step-images count-18'><figure><img src='/images/thumb/9/9f/Plaque_de_plastique_._Precious_PLlastic._20250304_110608.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110608.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110608.jpg' loading='lazy'></figure><figure><img src='/images/thumb/1/18/Plaque_de_plastique_._Precious_PLlastic._20250304_110650.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110650.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110650.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/d2/Plaque_de_plastique_._Precious_PLlastic._20250304_110802.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110802.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110802.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/80/Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110808.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e7/Plaque_de_plastique_._Precious_PLlastic._20250304_111404.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_111404.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 111404.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/80/Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110808.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9f/Plaque_de_plastique_._Precious_PLlastic._20250304_110608.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110608.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110608.jpg' loading='lazy'></figure><figure><img src='/images/thumb/1/18/Plaque_de_plastique_._Precious_PLlastic._20250304_110650.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110650.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110650.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/d2/Plaque_de_plastique_._Precious_PLlastic._20250304_110802.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110802.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110802.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/80/Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110808.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e7/Plaque_de_plastique_._Precious_PLlastic._20250304_111404.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_111404.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 111404.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/80/Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110808.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9f/Plaque_de_plastique_._Precious_PLlastic._20250304_110608.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110608.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110608.jpg' loading='lazy'></figure><figure><img src='/images/thumb/1/18/Plaque_de_plastique_._Precious_PLlastic._20250304_110650.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110650.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110650.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/d2/Plaque_de_plastique_._Precious_PLlastic._20250304_110802.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110802.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110802.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/80/Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110808.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e7/Plaque_de_plastique_._Precious_PLlastic._20250304_111404.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_111404.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 111404.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/80/Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_110808.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 110808.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Mettre environ 200 grammes de paillettes de plastique dans une presse à chaleur, ici originellement destinée au flocage. Il faut les placer entre deux plaques de métal pour ne pas que ça colle à la presse et utiliser des calles en métal aux extrémités pour créer l’épaisseur de plaque de plastique souhaitée.</li><li>-Retourner les plaques au bout de 200 secondes à l’aide de planches en carton puis refermer et attendre de nouveau 200 secondes.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - III- Laisser refroidir la plaque.</strong><div class='step-images count-2'><figure><img src='/images/thumb/6/6f/Plaque_de_plastique_._Precious_PLlastic._20250304_111833.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_111833.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 111833.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6f/Plaque_de_plastique_._Precious_PLlastic._20250304_111833.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250304_111833.jpg' alt='Plaque de plastique . Precious PLlastic. 20250304 111833.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>-Placer le plastique fondu et les feuilles de métal dans une presse manuelle pendant 10 à 15 minutes afin que la plaque ne gondole pas en séchant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Produit fini.</strong><div class='step-images count-2'><figure><img src='/images/thumb/2/2c/Plaque_de_plastique_._Precious_PLlastic._20250429_114021.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250429_114021.jpg' alt='Plaque de plastique . Precious PLlastic. 20250429 114021.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2c/Plaque_de_plastique_._Precious_PLlastic._20250429_114021.jpg/800px-Plaque_de_plastique_._Precious_PLlastic._20250429_114021.jpg' alt='Plaque de plastique . Precious PLlastic. 20250429 114021.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Exemple de plaque réalisée avec des PP opaques et transparents.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

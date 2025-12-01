@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jupe isolante de casserole ou bouilloire</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Jupe isolante de casserole ou bouilloire</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/10/Jupe_isolante_de_casserole_ou_bouilloire_20250627_162728_bis.jpg/ia-ebd7540479c949d59ed9f1ee86a2be0d-px-Jupe_isolante_de_casserole_ou_bouilloire_20250627_162728_bis.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">La jupe isolante en couture permet d'économiser de l'énergie et de maintenir au chaud plus longtemps.</div>
+        
+      </div>
+    
+    
+      
+        <p>Ce modèle de jupe isolante a été créé dans le cadre du projet "Ecosolutions pour toutes et tous !" porté par l'association Vent d'Ouest à Caen.</p>
+      
+        <p>Nous l'avons conçu avec l'aide de Zeste de couture, magasin et atelier de couture à Caen.</p>
+      
+        <p>Le modèle s'inspire de la conception de la marmite norvégienne d'Ecocotte, nous avons d'ailleurs utilisé de la laine de mouton d'Ecocotte pour l'isolation.</p>
+      
+        <p>Le principe est simple : isoler sa casserole ou sa bouilloire pour économiser de l'énergie et limiter les pertes de chaleur dans l'habitat (notamment apprécié l'été).</p>
+      
+        <p>Lors du projet Ecosolutions, 14 personnes ont participé à 5 ateliers de fabrication de systèmes Low-tech, et la jupe isolante est ressortie comme étant la plus utilisée au quotidien par la majorité du groupe !</p>
+      
+        <p>De mon côté, j'ai fait le test et j'arrive à ébullition en 2min50 avec la jupe pour 1L d'eau, soit 10secondes de moins que d'habitude (3min sans la jupe).</p>
+      
+        <p>Le maintien au chaud est aussi largement amélioré, que ce soit sur une casserole ou une bouilloire !</p>
+      
+        <p>Avec des feux électriques, il est recommandé de faire attention à la remonter de quelques centimètres pour qu'elle ne soit pas en contact avec les parties brulantes. Dans notre groupe de 14 personnes les utilisant au quotidien, quelques jupes ont noirci au contact des plaques, mais sans prendre feu.</p>
+      
+        <p>Matériel nécessaire :</p>
+      
+        <p>- Du tissu non synthétique (les polyéthylène et compagnie ne supportent pas la chaleur, prendre un tissu naturel type coton)</p>
+      
+        <p>- De l'élastique (20cm suffisent)</p>
+      
+        <p>- 2 boutons</p>
+      
+        <p>- De la laine ou autre matériau isolant (moins de 500g)</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 5 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Jupe_isolante_de_casserole_ou_bouilloire" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Jupe_isolante_de_casserole_ou_bouilloire</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Mesure de la bouilloire ou casserole</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/49/Jupe_isolante_de_casserole_ou_bouilloire_3.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_3.jpg' alt='Jupe isolante de casserole ou bouilloire 3.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Jupe_isolante_de_casserole_ou_bouilloire_2.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_2.jpg' alt='Jupe isolante de casserole ou bouilloire 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous aurons besoin de deux mesures pour confectionner une jupe isolante de bouilloire ou de casserole : la hauteur et la circonférence.</li><li>Pour mesurer la circonférence, on utilise un mètre souple de couture pour faire le tour de l’appareil.</li><li>Sans mètre souple, il est possible de mesurer le diamètre, à multiplier ensuite par 3,14 pour obtenir la circonférence.</li><li>Dans mon cas, les mesures sont :</li><li>· Hauteur : 17 cm</li><li>· Circonférence : 50 cm</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Découpe du tissu</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b9/Jupe_isolante_de_casserole_ou_bouilloire_4.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_4.jpg' alt='Jupe isolante de casserole ou bouilloire 4.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A partir des mesures de la bouilloire, j'ai ajouté 25 cm en circonférence et 1 cm en hauteur.</li><li>Les mesures de découpe du tissu sont donc :</li><li>· Hauteur : 18 cm</li><li>· Circonférence : 75 cm</li><li>Il nous faut 2 tissus de 18 x 75 cm.</li><li>Sur la photo, j'ai découpé un seul tissu de 36 x 75 cm, que je plierai en 2 dans le sens de la largeur.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Pose des élastiques et épinglage endroit contre endroit</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/73/Jupe_isolante_de_casserole_ou_bouilloire_5.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_5.jpg' alt='Jupe isolante de casserole ou bouilloire 5.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4e/Jupe_isolante_de_casserole_ou_bouilloire_20250627_142848.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_20250627_142848.jpg' alt='Jupe isolante de casserole ou bouilloire 20250627 142848.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2e/Jupe_isolante_de_casserole_ou_bouilloire_20250627_143353.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_20250627_143353.jpg' alt='Jupe isolante de casserole ou bouilloire 20250627 143353.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois découpés, épingler les tissus endroit contre endroit (c'est-à-dire que la face de tissu que l'on veut voir est pour l'instant à l'intérieur et invisible).</li><li>Epingler seulement 3 bords du rectangle (les 2 bords courts et un bord long).</li><li>C'est aussi le moment de poser et d'épingler les élastiques.</li><li>Pour cela, j'ai utilisé 2 morceaux de 10cm, que j'ai pliés en 2 et épinglés à l'intérieur du tissu. L'emplacement des élastiques n'a pas vraiment d'importance.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Coudre et retourner l'ouvrage</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d7/Jupe_isolante_de_casserole_ou_bouilloire_20250627_115935.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_20250627_115935.jpg' alt='Jupe isolante de casserole ou bouilloire 20250627 115935.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Jupe_isolante_de_casserole_ou_bouilloire_20250627_120647.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_20250627_120647.jpg' alt='Jupe isolante de casserole ou bouilloire 20250627 120647.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/70/Jupe_isolante_de_casserole_ou_bouilloire_20250627_120739.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_20250627_120739.jpg' alt='Jupe isolante de casserole ou bouilloire 20250627 120739.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Jupe_isolante_de_casserole_ou_bouilloire_11.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_11.jpg' alt='Jupe isolante de casserole ou bouilloire 11.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Coudre les 3 bords du rectangle (les 2 bords courts et un bord long).</li><li>Attention à laisser un bord long ouvert pour la suite.</li><li>Une fois cousu, retourner l'ouvrage.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Couture des boudins</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/Jupe_isolante_de_casserole_ou_bouilloire_13.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_13.jpg' alt='Jupe isolante de casserole ou bouilloire 13.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3b/Jupe_isolante_de_casserole_ou_bouilloire_14.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_14.jpg' alt='Jupe isolante de casserole ou bouilloire 14.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ef/Jupe_isolante_de_casserole_ou_bouilloire_15.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_15.jpg' alt='Jupe isolante de casserole ou bouilloire 15.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il va être maintenant temps de garnir de laine, mais pour cela, il faut d'abord coudre les délimitations des boudins.</li><li>J'ai choisi de faire des boudins de 9 cm de large, ce qui tombait assez juste pour un total de 8 boudins sur la jupe.</li><li>J'ai d'abord épinglé tous les 9 cm pour avoir un repère, puis j'ai cousu chaque boudin.</li><li>Une fois les boudins cousus, passer au garnissage.</li><li>Ici j'utilise la laine d'Ecocotte, mais d'autres isolants sont imaginables, comme des chutes de tissus (attention, pas de synthétique), du kapok etc.</li><li>Pour garnir, la texture doit être équivalente à celle d'un coussin.</li><li>Ne pas garnir jusqu'en haut, pour laisser de la place lors de la fermeture des boudins.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Refermer les boudins</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/67/Jupe_isolante_de_casserole_ou_bouilloire_16.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_16.jpg' alt='Jupe isolante de casserole ou bouilloire 16.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8a/Jupe_isolante_de_casserole_ou_bouilloire_17.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_17.jpg' alt='Jupe isolante de casserole ou bouilloire 17.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1a/Jupe_isolante_de_casserole_ou_bouilloire_18.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_18.jpg' alt='Jupe isolante de casserole ou bouilloire 18.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C'est la partie la plus délicate. L'épinglage est technique, il faut bien prendre les 2 tissus et faire un petit ourlet.</li><li>J'ai utilisé une astuce : couper les tissus sur 2 cm au ciseau (photo 1), ce qui permet de fermer un boudin indépendamment de son voisin. L'épinglage est donc plus facile.</li><li>Coudre ensuite le long du bord. Attention, le garnissage à tendance à décaler la jupe isolante avec l'épaisseur.</li><li>Il faut donc bien la tenir pour que la machine pique dans le tissu.</li><li>Si le tissu s'échappe du pied de la machine, enlever un peu de laine, ou la tasser.</li><li>Une fois que tout est fermé, masser la laine pour la répartir sur l'ensemble des boudins.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Pose des boutons</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7f/Jupe_isolante_de_casserole_ou_bouilloire_19.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_19.jpg' alt='Jupe isolante de casserole ou bouilloire 19.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fc/Jupe_isolante_de_casserole_ou_bouilloire_20.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_20.jpg' alt='Jupe isolante de casserole ou bouilloire 20.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/24/Jupe_isolante_de_casserole_ou_bouilloire_23.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_23.jpg' alt='Jupe isolante de casserole ou bouilloire 23.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/a/ad/Jupe_isolante_de_casserole_ou_bouilloire_coudre-bouton.jpg' alt='Jupe isolante de casserole ou bouilloire coudre-bouton.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Maintenant que la jupe a sa forme finale, l'essayer sur la bouilloire ou la casserole pour vérifier qu'elle fasse bien le tour.</li><li>En tendant les élastiques, repérer un emplacement propice pour poser les boutons.</li><li>Poser les 2 boutons à la main, si possible en face des élastiques.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Résultat</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0b/Jupe_isolante_de_casserole_ou_bouilloire_24.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_24.jpg' alt='Jupe isolante de casserole ou bouilloire 24.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/60/Jupe_isolante_de_casserole_ou_bouilloire_25.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_25.jpg' alt='Jupe isolante de casserole ou bouilloire 25.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3c/Jupe_isolante_de_casserole_ou_bouilloire_signal-2025-01-18-17-21-44-377-1.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_signal-2025-01-18-17-21-44-377-1.jpg' alt='Jupe isolante de casserole ou bouilloire signal-2025-01-18-17-21-44-377-1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/44/Jupe_isolante_de_casserole_ou_bouilloire_signal-2025-01-18-19-23-10-055-2.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_signal-2025-01-18-19-23-10-055-2.jpg' alt='Jupe isolante de casserole ou bouilloire signal-2025-01-18-19-23-10-055-2.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/71/Jupe_isolante_de_casserole_ou_bouilloire_signal-2025-01-21-17-24-46-555-1.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_signal-2025-01-21-17-24-46-555-1.jpg' alt='Jupe isolante de casserole ou bouilloire signal-2025-01-21-17-24-46-555-1.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/90/Jupe_isolante_de_casserole_ou_bouilloire_20250621_111836.jpg/800px-Jupe_isolante_de_casserole_ou_bouilloire_20250621_111836.jpg' alt='Jupe isolante de casserole ou bouilloire 20250621 111836.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voilà des photos de ma bouilloire et d'autres casseroles du groupe Ecosolutions !</li><li>Petite amélioration possible : j'ai coupé un triangle de tissu puis recousu des ourlets pour passer autour du bec verseur et éviter de mouiller la jupe lorsque je verse.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

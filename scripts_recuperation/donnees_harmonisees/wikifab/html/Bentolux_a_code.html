@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bentolux a code</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Bentolux a code</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/e/ec/Bentolux_a_code_IMG.jpg/ia-dfe402d342c53d57b77c888d790b9d46-px-Bentolux_a_code_IMG.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">En s'appuyant sur la base de la bentolux, on a réalisé un troisième étage avec une ouverture codée par un mot de passe</div>
+        
+      </div>
+    
+    
+      
+        <p>Dans le cadre de la formation FabNumAURA, j'ai profité de la formation pour développer le code du troisième étage autour de capteurs et d'actionneurs sur lesquels je n'avais jamais travaillé. Cela faisait quelques temps également que je souhaitais réaliser un projet qui permet l'ouverture et la fermeture d'une box (qui pourrait aussi bien servir à crèer des box pour géo camp que des box pour des jeux de piste ou escape game). Cela se traduit par :</p>
+      
+        <p>- Utiliser un keypad</p>
+      
+        <p>- Piloter un moteur solénoïde</p>
+      
+        <p>- Utiliser 2 alimentations avec des tensions différentes (une pour l'arduino l'autre pour le moteur)</p>
+      
+        <p>- Gérer un mot de passe</p>
+      
+        <p>- Connecter plusieurs éléments sur le bus I2C</p>
+      
+        <p>Pour la partie découpe et marquage de la boîte, la aussi j'ai souhaité profité de la formation pour aller sur de nouvelles pratiques que je n'avais pas encore eu le temps d'explorer ou de tester :</p>
+      
+        <p>- Boîte avec des charnière sur le coté</p>
+      
+        <p>- Préparation et gravure d'une map</p>
+      
+        <p>- Gravure de vonoroi</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 30 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Bentolux_a_code" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Bentolux_a_code</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Outils et Matériaux</strong><p><strong>Étapes :</strong></p><ol><li>Matériaux :<ul><li>contreplaqué de peuplier 3mm 800*500mm (pour 2 boîtes)</li><li>colle à bois</li><li>serre-joint</li><li>Filament PLA pour les supports écran OLED et LCD (cf fichier joint)</li><li>tapis de découpe (pour garder un plan de travail propre)</li></ul></li><li>Electronique :<ul><li>Une carte Arduino Uno</li><li>4 borniers wago</li><li>Un moteur solenoide 6 volts</li><li>Un keypad 4x3</li><li>Un écran LCD</li><li>Un connecteur de pile 9V</li><li>Une diode 1N4004</li><li>Une résistance de 2,2k (ou 1k)</li><li>Un transistor TIP102</li><li>Un anneau 12 LED neopixel</li></ul></li><li>Machines :<ul><li>Découpeuse laser Perez Camp 13/90</li><li>Imprimante 3D Creality ender3</li></ul></li><li>Logiciels :<ul><li>Tinkercad</li><li>Arduino IDE</li><li>Ultimaker Cura</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparer les fichiers des étages 2 et 3 de la bentolux (une demi-journée)</strong><div class='step-images count-15'><figure><img src='/images/thumb/4/40/Bentolux_a_code_plan_etage_2_et_3.jpg/800px-Bentolux_a_code_plan_etage_2_et_3.jpg' alt='Bentolux a code plan etage 2 et 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c4/Bentolux_a_code_boxes_py.jpg/800px-Bentolux_a_code_boxes_py.jpg' alt='Bentolux a code boxes py.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e4/Bentolux_a_code_snazzymap.jpg/800px-Bentolux_a_code_snazzymap.jpg' alt='Bentolux a code snazzymap.jpg' loading='lazy'></figure><figure><img src='/images/thumb/1/1e/Bentolux_a_code_vonori.jpg/800px-Bentolux_a_code_vonori.jpg' alt='Bentolux a code vonori.jpg' loading='lazy'></figure><figure><img src='/images/2/2a/Bentolux_a_code_map.png' alt='Bentolux a code map.png' loading='lazy'></figure><figure><img src='/images/thumb/4/40/Bentolux_a_code_plan_etage_2_et_3.jpg/800px-Bentolux_a_code_plan_etage_2_et_3.jpg' alt='Bentolux a code plan etage 2 et 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c4/Bentolux_a_code_boxes_py.jpg/800px-Bentolux_a_code_boxes_py.jpg' alt='Bentolux a code boxes py.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e4/Bentolux_a_code_snazzymap.jpg/800px-Bentolux_a_code_snazzymap.jpg' alt='Bentolux a code snazzymap.jpg' loading='lazy'></figure><figure><img src='/images/thumb/1/1e/Bentolux_a_code_vonori.jpg/800px-Bentolux_a_code_vonori.jpg' alt='Bentolux a code vonori.jpg' loading='lazy'></figure><figure><img src='/images/2/2a/Bentolux_a_code_map.png' alt='Bentolux a code map.png' loading='lazy'></figure><figure><img src='/images/thumb/4/40/Bentolux_a_code_plan_etage_2_et_3.jpg/800px-Bentolux_a_code_plan_etage_2_et_3.jpg' alt='Bentolux a code plan etage 2 et 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c4/Bentolux_a_code_boxes_py.jpg/800px-Bentolux_a_code_boxes_py.jpg' alt='Bentolux a code boxes py.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e4/Bentolux_a_code_snazzymap.jpg/800px-Bentolux_a_code_snazzymap.jpg' alt='Bentolux a code snazzymap.jpg' loading='lazy'></figure><figure><img src='/images/thumb/1/1e/Bentolux_a_code_vonori.jpg/800px-Bentolux_a_code_vonori.jpg' alt='Bentolux a code vonori.jpg' loading='lazy'></figure><figure><img src='/images/2/2a/Bentolux_a_code_map.png' alt='Bentolux a code map.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette étape a consisté à dessiner les plans sous Inkscape en adaptant la boite de notre étage 3 à celle de l'étage 2.</li><li>On a mesurer les dimensions de l'étage 2 pour pouvoir générer notre étage 3.</li><li>On a utilisé l'outil Boxes.pi pour générer un fichier de boîte à charnières intégrées. Une fois le fichier généré aux bonnes dimensions, on l'a intégré aux plans de découpe de l'étage 2.</li><li>Les pièces de l'étage 2 sont en rouge et les pièces de l'étage 3 sont en noires. Les couleurs ne sont pas essentielles et non reconnues comme de la découpe, de la gravure ou du marquage en utilisant SmartCarve le logiciel qui pilote la découpeuse laser. De cette façon cela me permet de retrouver plus rapidement les pièces de chacun des étages.</li><li>On a ensuite réparties nos différentes pièces sur le fichier pour assurer la gravure et la découpe des pièces de nos deux boîtes pour qu'elles tiennent sur un seul panneau de contreplaqué de peuplier de 3mm.</li><li>Après cela on a intégré les gravures de nos fichiers :</li><li>- On a mis un vonoroi sur les 4 petits coté de notre couvercle</li><li>- Et sur le haut du couvercle de la boîte, on a réalisé une gravure à partir d'un plan personnalisé, en s'inspirant de ce tutoriel d'epiloglaser.</li><li>Pour réaliser cet export de map on a utilisé l'outil en ligne snazzymaps</li><li>Enfin on a fait une découpe dans une face de la boîte pour intégrer notre écran LCD.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Assembler et coller l'étage 2 (une demi-journée)</strong><div class='step-images count-9'><figure><img src='/images/3/3d/Bentolux_a_code_Etage2DecoupePiece.jpg' alt='Bentolux a code Etage2DecoupePiece.jpg' loading='lazy'></figure><figure><img src='/images/4/4e/Bentolux_a_code_positionnement_etage2.jpg' alt='Bentolux a code positionnement etage2.jpg' loading='lazy'></figure><figure><img src='/images/c/ce/Bentolux_a_code_collage_etage_2jpg.jpg' alt='Bentolux a code collage etage 2jpg.jpg' loading='lazy'></figure><figure><img src='/images/3/3d/Bentolux_a_code_Etage2DecoupePiece.jpg' alt='Bentolux a code Etage2DecoupePiece.jpg' loading='lazy'></figure><figure><img src='/images/4/4e/Bentolux_a_code_positionnement_etage2.jpg' alt='Bentolux a code positionnement etage2.jpg' loading='lazy'></figure><figure><img src='/images/c/ce/Bentolux_a_code_collage_etage_2jpg.jpg' alt='Bentolux a code collage etage 2jpg.jpg' loading='lazy'></figure><figure><img src='/images/3/3d/Bentolux_a_code_Etage2DecoupePiece.jpg' alt='Bentolux a code Etage2DecoupePiece.jpg' loading='lazy'></figure><figure><img src='/images/4/4e/Bentolux_a_code_positionnement_etage2.jpg' alt='Bentolux a code positionnement etage2.jpg' loading='lazy'></figure><figure><img src='/images/c/ce/Bentolux_a_code_collage_etage_2jpg.jpg' alt='Bentolux a code collage etage 2jpg.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On a commencé par repérer les pièces découpées de chacun des étages en se servant des couleurs indiqué dans le fichiers svg pour chacun des étages.</li><li>Ensuite on a disposé nos pièces à plat prête à être encollées (ça me permet de vérifier la bonne disposition des pièces et de les encoller au bon endroit).</li><li>Enfin pour assurer une bonne prise de la colle on a utilisé des serres joints pour fixer la boite.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Assembler et coller l'étage 3 (une demi-journée)</strong><div class='step-images count-18'><figure><img src='/images/6/6a/Bentolux_a_code_piece_decoupee_etage3.jpg' alt='Bentolux a code piece decoupee etage3.jpg' loading='lazy'></figure><figure><img src='/images/8/81/Bentolux_a_code_montage_charniere_couvercle.jpg' alt='Bentolux a code montage charniere couvercle.jpg' loading='lazy'></figure><figure><img src='/images/1/19/Bentolux_a_code_collage_etage_3_couvercle.jpg' alt='Bentolux a code collage etage 3 couvercle.jpg' loading='lazy'></figure><figure><img src='/images/5/5e/Bentolux_a_code_collage_etage_3_boite_et_couvercle.jpg' alt='Bentolux a code collage etage 3 boite et couvercle.jpg' loading='lazy'></figure><figure><img src='/images/0/0c/Bentolux_a_code_positionnement_boite_etage_3.jpg' alt='Bentolux a code positionnement boite etage 3.jpg' loading='lazy'></figure><figure><img src='/images/2/2e/Bentolux_a_code_assemblage_des_etages_2_et_3.jpg' alt='Bentolux a code assemblage des etages 2 et 3.jpg' loading='lazy'></figure><figure><img src='/images/6/6a/Bentolux_a_code_piece_decoupee_etage3.jpg' alt='Bentolux a code piece decoupee etage3.jpg' loading='lazy'></figure><figure><img src='/images/8/81/Bentolux_a_code_montage_charniere_couvercle.jpg' alt='Bentolux a code montage charniere couvercle.jpg' loading='lazy'></figure><figure><img src='/images/1/19/Bentolux_a_code_collage_etage_3_couvercle.jpg' alt='Bentolux a code collage etage 3 couvercle.jpg' loading='lazy'></figure><figure><img src='/images/5/5e/Bentolux_a_code_collage_etage_3_boite_et_couvercle.jpg' alt='Bentolux a code collage etage 3 boite et couvercle.jpg' loading='lazy'></figure><figure><img src='/images/0/0c/Bentolux_a_code_positionnement_boite_etage_3.jpg' alt='Bentolux a code positionnement boite etage 3.jpg' loading='lazy'></figure><figure><img src='/images/2/2e/Bentolux_a_code_assemblage_des_etages_2_et_3.jpg' alt='Bentolux a code assemblage des etages 2 et 3.jpg' loading='lazy'></figure><figure><img src='/images/6/6a/Bentolux_a_code_piece_decoupee_etage3.jpg' alt='Bentolux a code piece decoupee etage3.jpg' loading='lazy'></figure><figure><img src='/images/8/81/Bentolux_a_code_montage_charniere_couvercle.jpg' alt='Bentolux a code montage charniere couvercle.jpg' loading='lazy'></figure><figure><img src='/images/1/19/Bentolux_a_code_collage_etage_3_couvercle.jpg' alt='Bentolux a code collage etage 3 couvercle.jpg' loading='lazy'></figure><figure><img src='/images/5/5e/Bentolux_a_code_collage_etage_3_boite_et_couvercle.jpg' alt='Bentolux a code collage etage 3 boite et couvercle.jpg' loading='lazy'></figure><figure><img src='/images/0/0c/Bentolux_a_code_positionnement_boite_etage_3.jpg' alt='Bentolux a code positionnement boite etage 3.jpg' loading='lazy'></figure><figure><img src='/images/2/2e/Bentolux_a_code_assemblage_des_etages_2_et_3.jpg' alt='Bentolux a code assemblage des etages 2 et 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La procédure est identique à celle de l'étage 2 avec quelques spécificités liées qu système de charnière de la boite qui nécessite de respecter l'ordre suivant pour l'ordre d'encollage des pièces :<ul><li>Coller les pièces rondes sur les parois du couvercle</li><li>Coller les pièces composants le couvercle</li><li>Coller les pièces composant le boitier de notre boîte à charnière</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Modéliser les pièces à imprimer en 3D</strong><div class='step-images count-9'><figure><img src='/images/thumb/b/b7/Bentolux_a_code_ecranOledTinkercad.jpg/800px-Bentolux_a_code_ecranOledTinkercad.jpg' alt='Bentolux a code ecranOledTinkercad.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Bentolux_a_code_ecran_LCD_16x02.jpg/800px-Bentolux_a_code_ecran_LCD_16x02.jpg' alt='Bentolux a code ecran LCD 16x02.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6a/Bentolux_a_code_bouton_potentiometre.jpg/800px-Bentolux_a_code_bouton_potentiometre.jpg' alt='Bentolux a code bouton potentiometre.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b7/Bentolux_a_code_ecranOledTinkercad.jpg/800px-Bentolux_a_code_ecranOledTinkercad.jpg' alt='Bentolux a code ecranOledTinkercad.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Bentolux_a_code_ecran_LCD_16x02.jpg/800px-Bentolux_a_code_ecran_LCD_16x02.jpg' alt='Bentolux a code ecran LCD 16x02.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6a/Bentolux_a_code_bouton_potentiometre.jpg/800px-Bentolux_a_code_bouton_potentiometre.jpg' alt='Bentolux a code bouton potentiometre.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b7/Bentolux_a_code_ecranOledTinkercad.jpg/800px-Bentolux_a_code_ecranOledTinkercad.jpg' alt='Bentolux a code ecranOledTinkercad.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Bentolux_a_code_ecran_LCD_16x02.jpg/800px-Bentolux_a_code_ecran_LCD_16x02.jpg' alt='Bentolux a code ecran LCD 16x02.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6a/Bentolux_a_code_bouton_potentiometre.jpg/800px-Bentolux_a_code_bouton_potentiometre.jpg' alt='Bentolux a code bouton potentiometre.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On a ensuite préparer les fichiers 3D ci-dessous :<ul><li>support écran OLED (réalisé par Hubert qu'on a hacké à l'image d'OpenFactory en utilisant TinkerCAD)</li><li>support écran LCD (ressource trouvé sur thingiverse et réalisé by ksamuelsen)</li><li>bouton potentiomètre (réalisé par Mayak qu'on a imprimé pour le reste du groupe car on était tous à la bourre ;) )</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Intégrer l'électronique (1 journée)</strong><div class='step-images count-18'><figure><img src='/images/thumb/8/8d/Bentolux_a_code_IMG_20220614_153104.jpg/800px-Bentolux_a_code_IMG_20220614_153104.jpg' alt='Bentolux a code IMG 20220614 153104.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2d/Bentolux_a_code_IMG_20220614_153105.jpg/800px-Bentolux_a_code_IMG_20220614_153105.jpg' alt='Bentolux a code IMG 20220614 153105.jpg' loading='lazy'></figure><figure><img src='/images/thumb/4/4c/Bentolux_a_code_IMG_20220614_153109.jpg/800px-Bentolux_a_code_IMG_20220614_153109.jpg' alt='Bentolux a code IMG 20220614 153109.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/31/Bentolux_a_code_IMG_20220614_153838.jpg/800px-Bentolux_a_code_IMG_20220614_153838.jpg' alt='Bentolux a code IMG 20220614 153838.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/95/Bentolux_a_code_IMG_20220614_171103.jpg/800px-Bentolux_a_code_IMG_20220614_171103.jpg' alt='Bentolux a code IMG 20220614 171103.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/bb/Bentolux_a_code_IMG_20220614_153840.jpg/800px-Bentolux_a_code_IMG_20220614_153840.jpg' alt='Bentolux a code IMG 20220614 153840.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/Bentolux_a_code_IMG_20220614_153104.jpg/800px-Bentolux_a_code_IMG_20220614_153104.jpg' alt='Bentolux a code IMG 20220614 153104.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2d/Bentolux_a_code_IMG_20220614_153105.jpg/800px-Bentolux_a_code_IMG_20220614_153105.jpg' alt='Bentolux a code IMG 20220614 153105.jpg' loading='lazy'></figure><figure><img src='/images/thumb/4/4c/Bentolux_a_code_IMG_20220614_153109.jpg/800px-Bentolux_a_code_IMG_20220614_153109.jpg' alt='Bentolux a code IMG 20220614 153109.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/31/Bentolux_a_code_IMG_20220614_153838.jpg/800px-Bentolux_a_code_IMG_20220614_153838.jpg' alt='Bentolux a code IMG 20220614 153838.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/95/Bentolux_a_code_IMG_20220614_171103.jpg/800px-Bentolux_a_code_IMG_20220614_171103.jpg' alt='Bentolux a code IMG 20220614 171103.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/bb/Bentolux_a_code_IMG_20220614_153840.jpg/800px-Bentolux_a_code_IMG_20220614_153840.jpg' alt='Bentolux a code IMG 20220614 153840.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/Bentolux_a_code_IMG_20220614_153104.jpg/800px-Bentolux_a_code_IMG_20220614_153104.jpg' alt='Bentolux a code IMG 20220614 153104.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2d/Bentolux_a_code_IMG_20220614_153105.jpg/800px-Bentolux_a_code_IMG_20220614_153105.jpg' alt='Bentolux a code IMG 20220614 153105.jpg' loading='lazy'></figure><figure><img src='/images/thumb/4/4c/Bentolux_a_code_IMG_20220614_153109.jpg/800px-Bentolux_a_code_IMG_20220614_153109.jpg' alt='Bentolux a code IMG 20220614 153109.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/31/Bentolux_a_code_IMG_20220614_153838.jpg/800px-Bentolux_a_code_IMG_20220614_153838.jpg' alt='Bentolux a code IMG 20220614 153838.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/95/Bentolux_a_code_IMG_20220614_171103.jpg/800px-Bentolux_a_code_IMG_20220614_171103.jpg' alt='Bentolux a code IMG 20220614 171103.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/bb/Bentolux_a_code_IMG_20220614_153840.jpg/800px-Bentolux_a_code_IMG_20220614_153840.jpg' alt='Bentolux a code IMG 20220614 153840.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette dernière étape doit permettre d'intégrer les différents éléments dans chacun des étages.<ul><li>Etage 1 : Carte arduino Uno Potentiomètre Ecran OLED Interrupteur (non présent sur notre version)</li><li>Carte arduino Uno</li><li>Potentiomètre</li><li>Ecran OLED</li><li>Interrupteur (non présent sur notre version)</li><li>Etage 2 : les borniers wago Anneau OLED Capteur de température BMP280</li><li>les borniers wago</li><li>Anneau OLED</li><li>Capteur de température BMP280</li><li>Etage 3 : Carte électronique Pile 9 Volts Keypad 4*3 Ecran LCD I2C 16x02 Moteur solénoïde 6 Volts</li><li>Carte électronique</li><li>Pile 9 Volts</li><li>Keypad 4*3</li><li>Ecran LCD I2C 16x02</li><li>Moteur solénoïde 6 Volts</li><li>Carte arduino Uno</li><li>Potentiomètre</li><li>Ecran OLED</li><li>Interrupteur (non présent sur notre version)</li><li>les borniers wago</li><li>Anneau OLED</li><li>Capteur de température BMP280</li><li>Carte électronique</li><li>Pile 9 Volts</li><li>Keypad 4*3</li><li>Ecran LCD I2C 16x02</li><li>Moteur solénoïde 6 Volts</li></ul></li><li>C'est un sacré casse tête d'arriver à tout intégrer (avec des fils un peu court... mais je n'avais pas le temps de câbler ça proprement).</li><li>En tout cas pour cette étape, il vaut mieux avoir un bon photographe car sinon il y aurait pas beaucoup de visuel ! Merci à Mayak de la team BentoGhooost</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Ressources</strong><p><strong>Étapes :</strong></p><ol><li>Quelques sites qui m'ont aidé dans la réalisation de ce projet :<ul><li>Pour le branchement du solenoide, le wiki de mchobby</li><li>Pour utiliser et brancher un keypad, le site aranacorp</li><li>Pour arriver a gérer un mot de passe , le tutoriel alarme diy de captainarduino</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Aller plus loin</strong><p><strong>Étapes :</strong></p><ol><li>Ceci est un peu le démarrage d'un projet et pour aller plus loin j'aimerais me pencher sur les questionnements suivants :<ul><li>Améliorer la gestion de mon mot de passe (voir faire une procédure d'administration pour modifier le mot de passe)</li><li>Prévoir une fonctionnalité pour la fermeture du couvercle (Ex: en affichant les consignes suivantes à l'écran " fermer la boîte => appuyer sur la touche étoile => boîte fermée" et ca verrouille la serrure en changeant la position du solenoïde)</li><li>Intégrer un compteur d'essai (3 essais maximum et une tempo de blocage avec un compte a rebours avant une nouvelle tentative)</li><li>Pour des jeux en extérieurs modifier l'alimentation avec une batterie rechargeable et un panneau solaire</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

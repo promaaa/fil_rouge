@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TOLOU SENFABLAB</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>TOLOU SENFABLAB</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/5/53/TOLOU_SENFABLAB_DSCN7752.JPG/800px-TOLOU_SENFABLAB_DSCN7752.JPG" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">"Tolou Senfablab" Le Champs de Senfablab, est un projet qui consiste à installer un champ autonome contrôlé par un système d'arrosage automatique.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment tolou senfablab.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 06 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 35 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/TOLOU_SENFABLAB" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/TOLOU_SENFABLAB</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Les outils nécésaires pour la fabrication</strong><div class='step-images count-15'><figure><img src='/images/thumb/8/84/TOLOU_SENFABLAB_Fer_souder.jpg/800px-TOLOU_SENFABLAB_Fer_souder.jpg' alt='TOLOU SENFABLAB Fer souder.jpg' loading='lazy'></figure><figure><img src='/images/f/f0/TOLOU_SENFABLAB_Pistolet_colle.jpg' alt='TOLOU SENFABLAB Pistolet colle.jpg' loading='lazy'></figure><figure><img src='/images/1/12/TOLOU_SENFABLAB_Multimetre.jpg' alt='TOLOU SENFABLAB Multimetre.jpg' loading='lazy'></figure><figure><img src='/images/7/7b/TOLOU_SENFABLAB_Pince_coupante.jpg' alt='TOLOU SENFABLAB Pince coupante.jpg' loading='lazy'></figure><figure><img src='/images/5/59/TOLOU_SENFABLAB_Imprimante-3D.jpg' alt='TOLOU SENFABLAB Imprimante-3D.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/84/TOLOU_SENFABLAB_Fer_souder.jpg/800px-TOLOU_SENFABLAB_Fer_souder.jpg' alt='TOLOU SENFABLAB Fer souder.jpg' loading='lazy'></figure><figure><img src='/images/f/f0/TOLOU_SENFABLAB_Pistolet_colle.jpg' alt='TOLOU SENFABLAB Pistolet colle.jpg' loading='lazy'></figure><figure><img src='/images/1/12/TOLOU_SENFABLAB_Multimetre.jpg' alt='TOLOU SENFABLAB Multimetre.jpg' loading='lazy'></figure><figure><img src='/images/7/7b/TOLOU_SENFABLAB_Pince_coupante.jpg' alt='TOLOU SENFABLAB Pince coupante.jpg' loading='lazy'></figure><figure><img src='/images/5/59/TOLOU_SENFABLAB_Imprimante-3D.jpg' alt='TOLOU SENFABLAB Imprimante-3D.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/84/TOLOU_SENFABLAB_Fer_souder.jpg/800px-TOLOU_SENFABLAB_Fer_souder.jpg' alt='TOLOU SENFABLAB Fer souder.jpg' loading='lazy'></figure><figure><img src='/images/f/f0/TOLOU_SENFABLAB_Pistolet_colle.jpg' alt='TOLOU SENFABLAB Pistolet colle.jpg' loading='lazy'></figure><figure><img src='/images/1/12/TOLOU_SENFABLAB_Multimetre.jpg' alt='TOLOU SENFABLAB Multimetre.jpg' loading='lazy'></figure><figure><img src='/images/7/7b/TOLOU_SENFABLAB_Pince_coupante.jpg' alt='TOLOU SENFABLAB Pince coupante.jpg' loading='lazy'></figure><figure><img src='/images/5/59/TOLOU_SENFABLAB_Imprimante-3D.jpg' alt='TOLOU SENFABLAB Imprimante-3D.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Fer à souder + étain</li><li>Pistolet à colle</li><li>Multimètre</li><li>Pince coupante</li><li>Imprimante 3D</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Matériaux</strong><div class='step-images count-18'><figure><img src='/images/a/ab/TOLOU_SENFABLAB_Pompe.jpg' alt='TOLOU SENFABLAB Pompe.jpg' loading='lazy'></figure><figure><img src='/images/9/9c/TOLOU_SENFABLAB_Arduino_uno.jpg' alt='TOLOU SENFABLAB Arduino uno.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/75/TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg' alt='TOLOU SENFABLAB IMG 20230106 164731 684.jpg' loading='lazy'></figure><figure><img src='/images/4/4c/TOLOU_SENFABLAB_Cap_D_humidit_.jpg' alt='TOLOU SENFABLAB Cap D humidit .jpg' loading='lazy'></figure><figure><img src='/images/9/99/TOLOU_SENFABLAB_C_ble.jpg' alt='TOLOU SENFABLAB C ble.jpg' loading='lazy'></figure><figure><img src='/images/4/40/TOLOU_SENFABLAB_Pin.jpg' alt='TOLOU SENFABLAB Pin.jpg' loading='lazy'></figure><figure><img src='/images/a/ab/TOLOU_SENFABLAB_Pompe.jpg' alt='TOLOU SENFABLAB Pompe.jpg' loading='lazy'></figure><figure><img src='/images/9/9c/TOLOU_SENFABLAB_Arduino_uno.jpg' alt='TOLOU SENFABLAB Arduino uno.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/75/TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg' alt='TOLOU SENFABLAB IMG 20230106 164731 684.jpg' loading='lazy'></figure><figure><img src='/images/4/4c/TOLOU_SENFABLAB_Cap_D_humidit_.jpg' alt='TOLOU SENFABLAB Cap D humidit .jpg' loading='lazy'></figure><figure><img src='/images/9/99/TOLOU_SENFABLAB_C_ble.jpg' alt='TOLOU SENFABLAB C ble.jpg' loading='lazy'></figure><figure><img src='/images/4/40/TOLOU_SENFABLAB_Pin.jpg' alt='TOLOU SENFABLAB Pin.jpg' loading='lazy'></figure><figure><img src='/images/a/ab/TOLOU_SENFABLAB_Pompe.jpg' alt='TOLOU SENFABLAB Pompe.jpg' loading='lazy'></figure><figure><img src='/images/9/9c/TOLOU_SENFABLAB_Arduino_uno.jpg' alt='TOLOU SENFABLAB Arduino uno.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/75/TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg' alt='TOLOU SENFABLAB IMG 20230106 164731 684.jpg' loading='lazy'></figure><figure><img src='/images/4/4c/TOLOU_SENFABLAB_Cap_D_humidit_.jpg' alt='TOLOU SENFABLAB Cap D humidit .jpg' loading='lazy'></figure><figure><img src='/images/9/99/TOLOU_SENFABLAB_C_ble.jpg' alt='TOLOU SENFABLAB C ble.jpg' loading='lazy'></figure><figure><img src='/images/4/40/TOLOU_SENFABLAB_Pin.jpg' alt='TOLOU SENFABLAB Pin.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>01 pompe à eau</li><li>01 carte Arduino</li><li>01 relais 05V</li><li>01 capteur d’humidité du sol</li><li>01 câble USB</li><li>Des connecteurs</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 4 - Modélisation de la pompe et paramétrage de l'imprimante 3D</strong><div class='step-images count-9'><figure><img src='/images/thumb/f/fe/TOLOU_SENFABLAB_IMG_20230106_161045_657.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_161045_657.jpg' alt='TOLOU SENFABLAB IMG 20230106 161045 657.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a0/TOLOU_SENFABLAB_IMG_20230106_172927_869.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_172927_869.jpg' alt='TOLOU SENFABLAB IMG 20230106 172927 869.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/TOLOU_SENFABLAB_IMG_20230106_174421_485.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_174421_485.jpg' alt='TOLOU SENFABLAB IMG 20230106 174421 485.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/TOLOU_SENFABLAB_IMG_20230106_161045_657.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_161045_657.jpg' alt='TOLOU SENFABLAB IMG 20230106 161045 657.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a0/TOLOU_SENFABLAB_IMG_20230106_172927_869.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_172927_869.jpg' alt='TOLOU SENFABLAB IMG 20230106 172927 869.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/TOLOU_SENFABLAB_IMG_20230106_174421_485.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_174421_485.jpg' alt='TOLOU SENFABLAB IMG 20230106 174421 485.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/TOLOU_SENFABLAB_IMG_20230106_161045_657.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_161045_657.jpg' alt='TOLOU SENFABLAB IMG 20230106 161045 657.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a0/TOLOU_SENFABLAB_IMG_20230106_172927_869.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_172927_869.jpg' alt='TOLOU SENFABLAB IMG 20230106 172927 869.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/TOLOU_SENFABLAB_IMG_20230106_174421_485.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_174421_485.jpg' alt='TOLOU SENFABLAB IMG 20230106 174421 485.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>https://www.thingiverse.com/thing:3843284</li><li>Paramétrage de l’impression</li><li>Buse: 0.4 mm</li><li>Type de plastique : PLA</li><li>Profile tranchage : Standard</li><li>Hauteur couche: 0.18</li><li>Densité remplissage: 30%</li><li>Vitesse d’impression: 60 mm/S</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 5 - 2.1. Etape 2 : Assemblage électronique</strong><p><strong>Étapes :</strong></p><ol><li>Cette partie consiste à faire le branchement electronique pour cela nous aurons besoins :<ul><li>d’une carte arduino :qui sert de microcontrolleur</li><li>une Mini Pompe :pour l’arrosage</li></ul></li><li>Pompe à eau du marché<ul><li>une alimentation 12V pour la pompe et la carte arduino</li><li>Un transistor PNP :Vu que les broches de la carte Arduino ne sont pas capables de délivrer plus de 40 mA. La pompe, selon la charge, a besoin de plus de milliampères. C’est pourquoi il est nécessaire de contrôler le circuit électrique avec un transistor.</li><li>Nous avons utilisé un transistor de type C945</li><li>Un relais : Le module relais SRD-05VDC-SL-C vous permet de contrôler des circuits électriques.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 6 - Pompe à eau du marché</strong><div class='step-images count-2'><figure><img src='/images/a/ab/TOLOU_SENFABLAB_Pompe.jpg' alt='TOLOU SENFABLAB Pompe.jpg' loading='lazy'></figure><figure><img src='/images/a/ab/TOLOU_SENFABLAB_Pompe.jpg' alt='TOLOU SENFABLAB Pompe.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 7 - Allimentation 12V</strong><div class='step-images count-2'><figure><img src='/images/b/b0/TOLOU_SENFABLAB_Allimentation.png' alt='TOLOU SENFABLAB Allimentation.png' loading='lazy'></figure><figure><img src='/images/b/b0/TOLOU_SENFABLAB_Allimentation.png' alt='TOLOU SENFABLAB Allimentation.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 8 - Transistor NPN</strong><div class='step-images count-6'><figure><img src='/images/d/db/TOLOU_SENFABLAB_Capture_d_cran_2023-01-06_162644.png' alt='TOLOU SENFABLAB Capture d cran 2023-01-06 162644.png' loading='lazy'></figure><figure><img src='/images/d/d6/TOLOU_SENFABLAB_Capture_d_cran_2023-01-06_162809.png' alt='TOLOU SENFABLAB Capture d cran 2023-01-06 162809.png' loading='lazy'></figure><figure><img src='/images/d/db/TOLOU_SENFABLAB_Capture_d_cran_2023-01-06_162644.png' alt='TOLOU SENFABLAB Capture d cran 2023-01-06 162644.png' loading='lazy'></figure><figure><img src='/images/d/d6/TOLOU_SENFABLAB_Capture_d_cran_2023-01-06_162809.png' alt='TOLOU SENFABLAB Capture d cran 2023-01-06 162809.png' loading='lazy'></figure><figure><img src='/images/d/db/TOLOU_SENFABLAB_Capture_d_cran_2023-01-06_162644.png' alt='TOLOU SENFABLAB Capture d cran 2023-01-06 162644.png' loading='lazy'></figure><figure><img src='/images/d/d6/TOLOU_SENFABLAB_Capture_d_cran_2023-01-06_162809.png' alt='TOLOU SENFABLAB Capture d cran 2023-01-06 162809.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Un transistor PNP :Vu que les broches de la carte Arduino ne sont pas capables de délivrer plus de 40 mA. La pompe, selon la charge, a besoin de plus de milliampères. C’est pourquoi il est nécessaire de contrôler le circuit électrique avec un transistor.</li><li>Nous avons utilisé un transistor de type C945</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 9 - Relais</strong><div class='step-images count-9'><figure><img src='/images/thumb/3/38/TOLOU_SENFABLAB_DSCN7775.JPG/800px-TOLOU_SENFABLAB_DSCN7775.JPG' alt='TOLOU SENFABLAB DSCN7775.JPG' loading='lazy'></figure><figure><img src='/images/thumb/1/14/TOLOU_SENFABLAB_DSCN7781.JPG/800px-TOLOU_SENFABLAB_DSCN7781.JPG' alt='TOLOU SENFABLAB DSCN7781.JPG' loading='lazy'></figure><figure><img src='/images/thumb/7/75/TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg' alt='TOLOU SENFABLAB IMG 20230106 164731 684.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/38/TOLOU_SENFABLAB_DSCN7775.JPG/800px-TOLOU_SENFABLAB_DSCN7775.JPG' alt='TOLOU SENFABLAB DSCN7775.JPG' loading='lazy'></figure><figure><img src='/images/thumb/1/14/TOLOU_SENFABLAB_DSCN7781.JPG/800px-TOLOU_SENFABLAB_DSCN7781.JPG' alt='TOLOU SENFABLAB DSCN7781.JPG' loading='lazy'></figure><figure><img src='/images/thumb/7/75/TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg' alt='TOLOU SENFABLAB IMG 20230106 164731 684.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/38/TOLOU_SENFABLAB_DSCN7775.JPG/800px-TOLOU_SENFABLAB_DSCN7775.JPG' alt='TOLOU SENFABLAB DSCN7775.JPG' loading='lazy'></figure><figure><img src='/images/thumb/1/14/TOLOU_SENFABLAB_DSCN7781.JPG/800px-TOLOU_SENFABLAB_DSCN7781.JPG' alt='TOLOU SENFABLAB DSCN7781.JPG' loading='lazy'></figure><figure><img src='/images/thumb/7/75/TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg/800px-TOLOU_SENFABLAB_IMG_20230106_164731_684.jpg' alt='TOLOU SENFABLAB IMG 20230106 164731 684.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Un relais : Le module relais SRD-05VDC-SL-C vous permet de contrôler des circuits électriques.</li></ul></li><li>Un schémas électrique du relais à gauche dessiné par élèves en classe seconde S. Comme vous le voyez sur le schémas, une diode est branchée entre les deux bornes du relais;</li><li>Le collecteur du transistor est branché sur la diode et le relais;</li><li>l'Émetteur du transistor est connecté au GND la masse commune;</li><li>La base du transistor est l’entrée du signal il est branché sur Pin 9 de la carte Arduino;</li><li>l’autre borne du relais est branché sur le vcc 5V</li><li>Réalisation du relais pour déclencher la pompe après avoir reçu un signal venant de la carte Arduino</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 10 - Capteur Humidité du Sol</strong><div class='step-images count-6'><figure><img src='/images/thumb/9/98/TOLOU_SENFABLAB_DSCN7757.JPG/800px-TOLOU_SENFABLAB_DSCN7757.JPG' alt='TOLOU SENFABLAB DSCN7757.JPG' loading='lazy'></figure><figure><img src='/images/4/4c/TOLOU_SENFABLAB_Cap_D_humidit_.jpg' alt='TOLOU SENFABLAB Cap D humidit .jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/98/TOLOU_SENFABLAB_DSCN7757.JPG/800px-TOLOU_SENFABLAB_DSCN7757.JPG' alt='TOLOU SENFABLAB DSCN7757.JPG' loading='lazy'></figure><figure><img src='/images/4/4c/TOLOU_SENFABLAB_Cap_D_humidit_.jpg' alt='TOLOU SENFABLAB Cap D humidit .jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/98/TOLOU_SENFABLAB_DSCN7757.JPG/800px-TOLOU_SENFABLAB_DSCN7757.JPG' alt='TOLOU SENFABLAB DSCN7757.JPG' loading='lazy'></figure><figure><img src='/images/4/4c/TOLOU_SENFABLAB_Cap_D_humidit_.jpg' alt='TOLOU SENFABLAB Cap D humidit .jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le capteur se plante verticalement dans la terre On mesure la résistance électrique entre les deux électrodes. Un comparateur à seuil active une sortie digitale quand un seuil réglable est dépassé.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 11 - 2.2. Étape 3 :Le code source :</strong><div class='step-images count-2'><figure><img src='/images/thumb/f/f7/TOLOU_SENFABLAB_DSCN7747.JPG/800px-TOLOU_SENFABLAB_DSCN7747.JPG' alt='TOLOU SENFABLAB DSCN7747.JPG' loading='lazy'></figure><figure><img src='/images/thumb/f/f7/TOLOU_SENFABLAB_DSCN7747.JPG/800px-TOLOU_SENFABLAB_DSCN7747.JPG' alt='TOLOU SENFABLAB DSCN7747.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>int digitalPin = 9; // pour le relais</li><li>int analogPin = A0; // pour le capteur de l'humidité du sol</li></ul></li><li>int digitalVal; // digital readings</li><li>int analogVal; //analog readings</li><li>void setup() {</li><li>pinMode(digitalPin, OUTPUT);</li><li>pinMode(12, OUTPUT); //led de témoins</li><li>pinMode(9,OUTPUT); // Réglez la broche 9 comme broche de sortie, pour envoyer le signal au relay.</li><li>digitalWrite(digitalPin, LOW);</li><li>Serial.begin(9600);</li><li>}</li><li>void loop() {<ul><li>analogVal = analogRead(analogPin);//lire la valeur retournée par le capteur de l'humidité</li></ul></li><li>Serial.println(analogVal);</li><li>if (analogVal<400){//si la capteur de l'humidité retourne une valeur<500</li><li>Serial.println("pas arrosage");</li><li>digitalWrite(digitalPin, HIGH);//La pompe à eau arroge la plante</li><li>digitalWrite(12, HIGH);</li><li>} else { // sinon</li><li>Serial.println("arrosage");</li><li>digitalWrite(digitalPin, HIGH);//La //La pompe à eau arrete l'arrosage pour notre cas</li><li>digitalWrite(12, HIGH);</li><li>}</li><li>delay(3000);</li><li>}</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 12 - quelques explications :</strong><div class='step-images count-2'><figure><img src='/images/thumb/9/92/TOLOU_SENFABLAB_DSCN7758.JPG/800px-TOLOU_SENFABLAB_DSCN7758.JPG' alt='TOLOU SENFABLAB DSCN7758.JPG' loading='lazy'></figure><figure><img src='/images/thumb/9/92/TOLOU_SENFABLAB_DSCN7758.JPG/800px-TOLOU_SENFABLAB_DSCN7758.JPG' alt='TOLOU SENFABLAB DSCN7758.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous avons pris des mesures sur deux sol<ul><li>Un sol sec</li><li>Un sol humide</li></ul></li><li>afin de pouvoir utiliser notre capteur d’humidité et l’adapter à notre système d’arrosage.</li><li>Il y avait des discussions entre participant à savoir :<ul><li>Pour certains nous devons pas se baser sur du sol complètement sec il faut au au moins que le sol soit un peu humide afin de ne pas se tromper à quand arroser.</li><li>Pour d’autre vue que c’est une nouvelle expérience ils voulait qu’on parte sur du sol totalement sec afin qu’il puisse avoir des mesure concrète.</li></ul></li><li>Finalement nous avons choisi de prendre des mesures sur du sol un peu humide vu qu’on ne plante pas des arbres ou bien du moins sur du sol totalement sec.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 14 - 2.4 :Quelques Images prises lors de l’atelier</strong><div class='step-images count-6'><figure><img src='/images/thumb/2/27/TOLOU_SENFABLAB_DSCN7731.JPG/800px-TOLOU_SENFABLAB_DSCN7731.JPG' alt='TOLOU SENFABLAB DSCN7731.JPG' loading='lazy'></figure><figure><img src='/images/thumb/1/1e/TOLOU_SENFABLAB_WhatsApp_Image_2023-01-06_at_18.48.42.jpeg/800px-TOLOU_SENFABLAB_WhatsApp_Image_2023-01-06_at_18.48.42.jpeg' alt='TOLOU SENFABLAB WhatsApp Image 2023-01-06 at 18.48.42.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/2/27/TOLOU_SENFABLAB_DSCN7731.JPG/800px-TOLOU_SENFABLAB_DSCN7731.JPG' alt='TOLOU SENFABLAB DSCN7731.JPG' loading='lazy'></figure><figure><img src='/images/thumb/1/1e/TOLOU_SENFABLAB_WhatsApp_Image_2023-01-06_at_18.48.42.jpeg/800px-TOLOU_SENFABLAB_WhatsApp_Image_2023-01-06_at_18.48.42.jpeg' alt='TOLOU SENFABLAB WhatsApp Image 2023-01-06 at 18.48.42.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/2/27/TOLOU_SENFABLAB_DSCN7731.JPG/800px-TOLOU_SENFABLAB_DSCN7731.JPG' alt='TOLOU SENFABLAB DSCN7731.JPG' loading='lazy'></figure><figure><img src='/images/thumb/1/1e/TOLOU_SENFABLAB_WhatsApp_Image_2023-01-06_at_18.48.42.jpeg/800px-TOLOU_SENFABLAB_WhatsApp_Image_2023-01-06_at_18.48.42.jpeg' alt='TOLOU SENFABLAB WhatsApp Image 2023-01-06 at 18.48.42.jpeg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 15 - Prix des composants</strong><p><strong>Étapes :</strong></p><ol><li>Pompe à eau 5€</li><li>Alimentation 12V /2A 5€</li><li>Moteur DC 12V/4.2W 2€</li><li>Capteur d’humidité du sol 1€</li><li>Arduino Uno + câble 3€</li><li>Breadboard 3€</li><li>Pistolet à colle chaude 5€50</li><li>Tous les composants peuvent être achetés sur Aliexpresse mais aussi sur les sites de vente des composants électroniques.</li><li>Transistor PNP 0.80</li><li>Relais 05V 1€</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 16 - Commentaire</strong><p><strong>Étapes :</strong></p><ol><li>Cette version est facile à utiliser, mais on peut aller plus loin en ajoutant un afficheur LCD ou un contrôleur à distance.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 17 - CC by SA par Senfablab</strong><div class='step-images count-2'><figure><img src='/images/thumb/f/f7/TOLOU_SENFABLAB_CC-BY-SA_icon_white.svg.png/800px-TOLOU_SENFABLAB_CC-BY-SA_icon_white.svg.png' alt='TOLOU SENFABLAB CC-BY-SA icon white.svg.png' loading='lazy'></figure><figure><img src='/images/thumb/f/f7/TOLOU_SENFABLAB_CC-BY-SA_icon_white.svg.png/800px-TOLOU_SENFABLAB_CC-BY-SA_icon_white.svg.png' alt='TOLOU SENFABLAB CC-BY-SA icon white.svg.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

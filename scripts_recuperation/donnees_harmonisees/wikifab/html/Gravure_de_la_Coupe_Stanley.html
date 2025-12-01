@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gravure de la Coupe Stanley</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Gravure de la Coupe Stanley</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/5/52/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_1.jpg/ia-7bc222af1110c58978762776305e37ca-px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_1.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Dans ce guide, nous vous expliquerons tout ce que vous devez savoir pour réussir la gravure laser d'une coupe Stanley. Du choix des matériaux à la maîtrise des réglages et des techniques, vous serez prêt à créer rapidement des designs impeccables et professionnels.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment gravure de la coupe stanley.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 40 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Gravure_de_la_Coupe_Stanley" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Gravure_de_la_Coupe_Stanley</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Une coupe Stanley (de préférence en acier inoxydable)</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Un graveur laser CO₂</li><li>Un accessoire rotatif (indispensable pour graver des objets ronds comme des tasses)</li><li>Ruban de protection (facultatif pour masquer les zones)</li><li>Règle ou pied à coulisse (pour une mesure précise)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparez votre Coupe Stanley</strong><div class='step-images count-2'><figure><img src='/images/thumb/c/cc/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_2.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_2.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/cc/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_2.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_2.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Nettoyer la surface : Essuyez la tasse avec de l'alcool isopropylique pour éliminer les traces de doigts, les traces de gras ou la poussière. Une surface propre permet une gravure laser plus uniforme.</li><li>Mesurez votre zone de gravure : utilisez une règle ou un pied à coulisse numérique pour mesurer l'espace disponible pour votre motif. La plupart des coupes Stanley ont une surface incurvée ; il est donc essentiel de connaître la largeur et la hauteur de votre gravure.</li><li>Installation de l'accessoire rotatif : Installez votre outil rotatif conformément au manuel de votre graveur laser. La coupelle doit être bien ajustée entre les rouleaux ou les mandrins sans glisser pendant la rotation.</li><li>Mise à niveau de la tasse : assurez-vous que la partie de la tasse à graver est à niveau avec le faisceau laser. Vous devrez peut-être lever ou abaisser le rotor pour obtenir la bonne hauteur.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Choisir votre design</strong><p><strong>Étapes :</strong></p><ol><li>Pour graver une coupe Stanley, privilégiez les motifs simples et audacieux. Les lignes fines et les détails complexes peuvent se perdre sur les surfaces courbes. Par conséquent :<ul><li>Privilégiez des polices de caractères fortes et claires pour le texte</li><li>Utiliser des illustrations vectorielles pour les logos ou les graphiques</li><li>Évitez les motifs avec des ombrages importants ou des remplissages complexes</li></ul></li><li>Conseil : si vous n'êtes pas sûr de la taille, créez d'abord un gabarit en papier. Enroulez-le autour de la tasse pour visualiser l'ajustement de votre motif.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Configuration dans le logiciel</strong><div class='step-images count-2'><figure><img src='/images/thumb/5/5c/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_3.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_3.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/5c/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_3.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_3.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Importez le fichier : ouvrez votre logiciel de gravure (tel que LightBurn) et téléchargez votre conception.</li><li>Ajustez la taille : Redimensionnez votre motif en fonction de vos mesures précédentes. Assurez-vous qu'il s'adapte parfaitement à la zone de gravure sans trop entourer la tasse.</li><li>Positionnement du motif : Alignez votre motif horizontalement pour une rotation régulière pendant la gravure. Certains logiciels proposent un mode rotatif pour vous aider à configurer correctement ce mode.</li><li>Miroir de l'image (si nécessaire) : selon vos paramètres rotatifs, vous devrez peut-être refléter l'image horizontalement pour qu'elle soit gravée dans la bonne direction.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Réglage des paramètres laser</strong><div class='step-images count-2'><figure><img src='/images/thumb/2/23/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_4.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_4.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/23/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_4.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_4.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 4.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Choisir les bons paramètres de vitesse, de puissance et de DPI est essentiel pour graver l'acier inoxydable :<ul><li>Vitesse : Commencez autour de 200–300 mm/s (vitesse modérée pour l'acier inoxydable)</li><li>Puissance : 50 % à 80 % pour la plupart des lasers CO₂ (à ajuster en fonction du revêtement et de la puissance du laser)</li><li>Lignes par pouce (LPI) : 300 à 500 LPI pour des détails fins sans surimpression</li></ul></li><li>Vous voudrez tester vos réglages sur une tasse de rechange ou dans un endroit peu visible pour éviter de gaspiller un bon produit.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Masquage (facultatif)</strong><p><strong>Étapes :</strong></p><ol><li>Si vous souhaitez une gravure plus nette avec des bords plus nets :<ul><li>Couvrir la zone de gravure avec du ruban de masquage ou un film de masquage laser</li><li>Brûler le ruban adhésif pendant la gravure</li><li>Retirez l'excédent une fois la gravure terminée</li></ul></li><li>Cela peut également réduire la décoloration causée par la fumée ou les débris pendant le processus laser.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Exécution de la gravure</strong><div class='step-images count-2'><figure><img src='/images/thumb/c/c0/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_5.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_5.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 5.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c0/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_5.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_5.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 5.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous êtes maintenant prêt à graver :<ul><li>Vérifiez l'alignement : assurez-vous que la tasse est centrée et tourne librement sans vaciller.</li><li>Concentrez votre laser : Réglez la mise au point de votre laser précisément sur la surface de la tasse pour des résultats optimaux.</li><li>Encadrez le design : utilisez la fonction de cadre ou de contour de votre logiciel pour prévisualiser l'endroit où le design atterrira.</li><li>Démarrage de la gravure : Commencez la gravure et surveillez attentivement. Arrêtez immédiatement toute trace de glissement, de désalignement ou de comportement anormal.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Nettoyage après gravure</strong><div class='step-images count-2'><figure><img src='/images/thumb/5/52/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_1.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_1.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/52/Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_1.jpg/800px-Gravure_de_la_Coupe_Stanley_Gravure_de_la_Coupe_Stanley_1.jpg' alt='Gravure de la Coupe Stanley Gravure de la Coupe Stanley 1.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois la gravure terminée :<ul><li>Retirez tout ruban de masquage ou résidu</li><li>Essuyez la zone gravée avec un chiffon doux et un nettoyant doux</li><li>Pour l'acier inoxydable, vous pouvez polir légèrement pour améliorer la brillance</li></ul></li><li>Si vous remarquez une légère décoloration, une gomme magique ou un produit de polissage pour acier inoxydable peut aider à éclaircir la gravure.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

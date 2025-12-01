@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Atelier Entrepreneuriat et démarche low-tech</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Atelier Entrepreneuriat et démarche low-tech</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/1/18/Atelier_Entrepreneuriat_et_d_marche_low-tech_Travail_collaboratif.png/ia-2f088bdecaae1c09d07ce3361349c4e9-px-Atelier_Entrepreneuriat_et_d_marche_low-tech_Travail_collaboratif.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Atelier 2h00 - Camp Low-tech d'Explore en parallèle du Festival Low-tech d'APALA, Nantes, juin 2023. L'objectif de cet atelier est de réfléchir ensemble à la manière dont la démarche low-tech peut se concrétiser dans une activité entrepreneuriale.</div>
+        
+      </div>
+    
+    
+      
+        <p>A partir d'un cas d'étude simple, l'atelier vise à réinvestir la démarche low-tech dans un projet d'entreprise, à travers la co-construction d'un projet d'activité entrepreneuriale low-tech.</p>
+      
+        <p>L'atelier très court (2h00) peut réunir une quinzaine de personnes aux profils très variés, et l'objectif n'est donc pas de creuser l'entrepreneuriat low-tech d'une manière qui se voudrait exhaustive. Au contraire, le cas proposé est plutôt destiné à alimenter des échanges autour de ce que pourrait être concrètement une activité entrepreneuriale low-tech : quelles représentations, quels leviers, quels freins ?</p>
+      
+        <p>Déroulement de l'atelier :</p>
+      
+        <p>Une fiche récapitule ces informations pour les participants.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Atelier_Entrepreneuriat_et_démarche_low-tech" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Atelier_Entrepreneuriat_et_démarche_low-tech</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>Eléments de connaissance de la démarche low-tech (un développement du triptyque Utile - Durable - Accessible)</li><li>Un modèle d'activité entrepreneuriale simple (ici, une boulangerie)</li><li>Un exemple concret et correspondant pouvant être observé (donc, une boulangerie)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Les outils peuvent bien sûr être numériques, ou non.</li><li>Un outil d'affichage (ici : un PC connecté, un vidéoprojecteur, un écran ou un mur)</li><li>Un outil de travail collaboratif (ici, une carte mentale collaborative en ligne)</li><li>Un support présentant l'exemple concret (ici, une carte mentale)</li><li>Feuilles de papier, crayons ou stylos pour les participants</li><li>Feutres pour tableau blanc / craies</li><li>Ma bonne humeur décrispée</li><li>Mon écoute et mon empathie</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparation - Choix d'une activité entrepreneuriale</strong><p><strong>Étapes :</strong></p><ol><li>Le modèle d'activité choisi doit être simple, connu, facilement compréhensible.</li><li>L'analyse du cas en groupe et les échanges qu'elle pourra générer amèneront suffisamment de complexité !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparation - Etude d'un cas réel</strong><p><strong>Étapes :</strong></p><ol><li>Voici un exemple de questions à se poser :<ul><li>Quels sont les produits/services proposés ?</li><li>A qui sont-ils proposés ?</li><li>Comment sont-ils proposés ?</li><li>Avec quelle communication ?</li><li>Comment sont-ils conçus ?</li><li>Qu'est-ce qui génère un revenu pour l'entreprise ?</li><li>Quel est l'écosystème de l'entreprise (financeurs, partenaires) ?</li><li>Quel est la forme juridique de l'entreprise ?</li><li>Comment s'est-elle construite, comment a-t-elle évolué ?</li><li>Quels sont les individus qui composent l'entreprise ?</li><li>Bon, et puis... en quoi est-ce low-tech ?</li></ul></li><li>Plusieurs sources de documentation peuvent être utilisées conjointement pour obtenir les informations et les croiser :<ul><li>L'analyse du site web et des réseaux sociaux de l'entreprise</li><li>Si c'est possible, l'expérimentation personnelle du produit/service</li><li>La recherche et l'analyse d'articles, concernant l'entreprise, les individus qui lui sont liés, les techniques en lien avec le cas étudié... (presse, monographies, audio-visuel, articles scientifiques ou académiques, blogs et sites web tiers...)</li><li>La lecture des documents légaux liés à l'activité de l'entreprise (Pappers ou bien l'Annuaire des entreprises françaises)</li><li>L'entretien avec des personnes liées à l'entreprise (acteurs de l'entreprise, clients, fournisseurs...)</li></ul></li><li>Finalement, il s'agit d'essayer de reconstruire le modèle d'affaires de l'entreprise.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Préparation - Mise en forme et choix des données (cas réel)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c7/Atelier_Entrepreneuriat_et_d_marche_low-tech_Activit_boulangerie_-_NeoLoco.JPG/800px-Atelier_Entrepreneuriat_et_d_marche_low-tech_Activit_boulangerie_-_NeoLoco.JPG' alt='Atelier Entrepreneuriat et d marche low-tech Activit boulangerie - NeoLoco.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Toutes les informations recueillies ne sont peut-être pas essentielles ou intéressantes pour l'objectif visé par cet atelier.</li><li>Le choix des informations qui constitueront le support présentant l'exemple concret se fait aussi en fonction :<ul><li>du degré d'acculturation des participants à la démarche low-tech</li><li>de leur degré d'acculturation au fonctionnement d'une entreprise</li><li>du niveau de complexité du cas étudié</li><li>du temps imparti</li><li>d'éléments dont on pense qu'ils pourraient (ou non !) susciter un débat intéressant, ou amener une problématique récurrente par rapport à la démarche low-tech (high-tech et low-tech, ou bien la question des revenus par ex.)</li></ul></li><li>Les données retenues sont mises en formes de manière plutôt visuelle, en tout cas ordonnée.</li><li>Il faut pouvoir comparer facilement avec les participants les 2 modèles :<ul><li>Leur propre élaboration au début de l'atelier</li><li>L'exemple concret préalablement renseigné</li></ul></li><li>Il faut donc organiser ces 2 jeux de données de façon similaire !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Préparation - L'outil de travail collaboratif</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f0/Atelier_Entrepreneuriat_et_d_marche_low-tech_Carte_mentale_globale.JPG/800px-Atelier_Entrepreneuriat_et_d_marche_low-tech_Carte_mentale_globale.JPG' alt='Atelier Entrepreneuriat et d marche low-tech Carte mentale globale.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>C'est la préparation du moment de toutes les angoisses, au contenu non maîtrisé et au temps limité : le support collaboratif qui servira à construire (trop) rapidement, durant l'atelier, un modèle d'activité entrepreneuriale low-tech de boulangerie.</li><li>5 pôles de l'activité entrepreneuriale sont ici déterminés pour faciliter la répartition des participants en groupes :<ul><li>Structure juridique et gouvernance</li><li>Outillage et matériel professionnels / Logistique</li><li>Process, méthode de fabrication du produit</li><li>Fournisseurs, Approvisionnements, Partenaires</li><li>Distribution, vente, clients / Communication</li></ul></li><li>J'utilise un jeu de cartes mentales en ligne (par exemple GitHub).</li><li>J'ai créé 6 cartes identiques :<ul><li>1 carte par groupe de travail (soit 1 carte par pôle, 5 au total)</li><li>1 carte à l'intérieur de laquelle je copie-collerai les constructions de chaque pôle, afin de pouvoir afficher l'ensemble du projet construit.</li></ul></li><li>La fiche récapitulative, donnée aux participants, indique les liens web correspondant aux cartes mentales en ligne pour chaque pôle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Préparation - La fiche récapitulative pour les participants</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/f/fa/Atelier_Entrepreneuriat_et_d_marche_low-tech_Fiche_r_capitulative.JPG' alt='Atelier Entrepreneuriat et d marche low-tech Fiche r capitulative.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Toutes les informations nécessaires y figurent :<ul><li>Le déroulement de l'atelier</li><li>Le temps associé à chaque étape</li><li>Le découpage en pôles thématiques</li><li>Les liens vers les différentes cartes mentales</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - L'atelier : Gestion du temps et adaptation</strong><p><strong>Étapes :</strong></p><ol><li>Les temps associés à chaque étape varient bien sûr en fonction du contexte.</li><li>Toutefois, le temps limité imparti à la 1re étape mérite d'être tenu, pour conserver ensuite des moments suffisants aux échanges et interactions.</li><li>L'articulation de l'atelier en 3 étapes suit cette logique :<ul><li>Implication des participants, brainstorming et projection dans le cas proposé, construction d'une première opinion personnelle et d'une première vision globale d'un projet entrepreneurial low-tech</li><li>Comparaison avec un exemple d'entreprise réelle, pour approfondir la phase de réflexion et de questionnement de la démarche, et la confronter aux réalités du terrain, et aux choix stratégiques ou opérationnels réalisés dans ce cas-là.</li><li>Comparaison avec les éléments clés de la démarche low-tech, dans le but de rappeler éventuellement ses grands principes, de comprendre en quoi les propositions élaborées (travail collaboratif) ou constatées (cas réel) s'en rapprochent ou s'en éloignent, d'entrevoir d'autres solutions, ou peut-être de faire ressortir des éléments de compromis potentiellement présents dans l'étape précédente, et qui ouvriront aux discussions</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - L'atelier : l'articulation avec les éléments clés de la démarche low-tech</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/8/87/Atelier_Entrepreneuriat_et_d_marche_low-tech_Atelier_boulangerie_-_Travail_collaboratif.JPG' alt='Atelier Entrepreneuriat et d marche low-tech Atelier boulangerie - Travail collaboratif.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fa/Atelier_Entrepreneuriat_et_d_marche_low-tech_Articulation_avec_les_points_cl_s_de_la_d_marche_low-tech.png/800px-Atelier_Entrepreneuriat_et_d_marche_low-tech_Articulation_avec_les_points_cl_s_de_la_d_marche_low-tech.png' alt='Atelier Entrepreneuriat et d marche low-tech Articulation avec les points cl s de la d marche low-tech.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les réflexions des participants, les questions soulevées, l'étude du cas réel ont fait émerger des remarques et des questionnements.</li><li>L'animateur veille à ce que les points clés de la démarche low-tech soient illustrés.</li><li>J'ai trouvé important de revenir clairement sur ces points à l'issue des échanges : cela permet de revenir à l'essentiel.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Après l'atelier : synthèse et prolongements</strong><p><strong>Étapes :</strong></p><ol><li>Pour que les participants puissent recueillir les fruits de cet atelier ou prolonger leur réflexion, on transmet :<ul><li>La carte mentale issue du travail collaboratif et reprise si besoin (clarifiée ou commentée)</li><li>La carte mentale présentant le cas réel</li><li>La carte mentale associant les points clés de la démarche au travail collaboratif</li></ul></li><li>Pour que l'animateur puisse améliorer ses outils, on peut :<ul><li>A froid : Transmettre un lien dirigeant vers un questionnaire en ligne</li><li>A chaud : Recueillir les ressentis au sortir de l'atelier</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

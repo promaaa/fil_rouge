@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Oreille urbaine</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Oreille urbaine</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/1/19/Oreille_urbaine_IMG_5037.jpeg/ia-5d2addcbdb7278d4be71197d4ee372ab-px-Oreille_urbaine_IMG_5037.jpeg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Coquillage en plastique recyclé</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment oreille urbaine.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 4 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 20 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Oreille_urbaine" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Oreille_urbaine</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>- Plastique PP5 et PP2</li><li>- 3 tasseaux bois (H 1m; L 5cm; l 3cm)</li><li>- ficelle</li><li>- vis</li><li>- coquillage</li><li>- colle</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li>- pistolet à colle</li><li>- visseuse / perceuse</li><li>- cutter</li><li>- ciseaux</li><li>- règle</li><li>- crayon gris<ul><li>- preciousplastic : broyeuse, presse à chaud, presse à froid</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - broyer le plastique de type PP5 ou/PP2</strong><div class='step-images count-6'><figure><img src='/images/thumb/7/77/Oreille_urbaine_IMG_6524.JPG/800px-Oreille_urbaine_IMG_6524.JPG' alt='Oreille urbaine IMG 6524.JPG' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-35-11 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/77/Oreille_urbaine_IMG_6524.JPG/800px-Oreille_urbaine_IMG_6524.JPG' alt='Oreille urbaine IMG 6524.JPG' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-35-11 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/77/Oreille_urbaine_IMG_6524.JPG/800px-Oreille_urbaine_IMG_6524.JPG' alt='Oreille urbaine IMG 6524.JPG' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-35-11 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Prendre l'objet en plastique et le découper au préalable de sorte à ce qu'il ne soit pas plus gros que votre pomme de la main. (ici nous avons pris du plastique transparent et blanc)</li><li>Disposez les morceaux au fur et à mesure dans la broyeuse Preciousplastic.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Placer les confettis de plastique sur la presse à chaud</strong><div class='step-images count-12'><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg/ia-9ddde6cf4b9dc949bebe40871c17d8fe-px-Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/2/21/Oreille_urbaine_Capture_d_e_cran_2025-05-08_a_16.40.13.png' alt='Oreille urbaine Capture d e cran 2025-05-08 a 16.40.13.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e6/Oreille_urbaine_IMG_7255.jpeg/800px-Oreille_urbaine_IMG_7255.jpeg' alt='Oreille urbaine IMG 7255.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Oreille_urbaine_IMG_7256.jpeg/800px-Oreille_urbaine_IMG_7256.jpeg' alt='Oreille urbaine IMG 7256.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg/ia-9ddde6cf4b9dc949bebe40871c17d8fe-px-Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/2/21/Oreille_urbaine_Capture_d_e_cran_2025-05-08_a_16.40.13.png' alt='Oreille urbaine Capture d e cran 2025-05-08 a 16.40.13.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e6/Oreille_urbaine_IMG_7255.jpeg/800px-Oreille_urbaine_IMG_7255.jpeg' alt='Oreille urbaine IMG 7255.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Oreille_urbaine_IMG_7256.jpeg/800px-Oreille_urbaine_IMG_7256.jpeg' alt='Oreille urbaine IMG 7256.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg/ia-9ddde6cf4b9dc949bebe40871c17d8fe-px-Oreille_urbaine_PHOTO-2025-05-08-14-35-11_2.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/2/21/Oreille_urbaine_Capture_d_e_cran_2025-05-08_a_16.40.13.png' alt='Oreille urbaine Capture d e cran 2025-05-08 a 16.40.13.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e6/Oreille_urbaine_IMG_7255.jpeg/800px-Oreille_urbaine_IMG_7255.jpeg' alt='Oreille urbaine IMG 7255.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Oreille_urbaine_IMG_7256.jpeg/800px-Oreille_urbaine_IMG_7256.jpeg' alt='Oreille urbaine IMG 7256.jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Disposer sur une plaque d'aluminium les confettis de plastique. (Voir image 2).</li><li>Placer deux cales de 0.5cm d'épaisseur sur les extrémités de la plaque d'aluminium. Recouvrir d'une autre plaque d'aluminium le plastique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Presse à chaud</strong><div class='step-images count-6'><figure><img src='/images/thumb/9/9e/Oreille_urbaine_IMG_7258.jpeg/800px-Oreille_urbaine_IMG_7258.jpeg' alt='Oreille urbaine IMG 7258.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Oreille_urbaine_IMG_7256.jpeg/800px-Oreille_urbaine_IMG_7256.jpeg' alt='Oreille urbaine IMG 7256.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/9/9e/Oreille_urbaine_IMG_7258.jpeg/800px-Oreille_urbaine_IMG_7258.jpeg' alt='Oreille urbaine IMG 7258.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Oreille_urbaine_IMG_7256.jpeg/800px-Oreille_urbaine_IMG_7256.jpeg' alt='Oreille urbaine IMG 7256.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/9/9e/Oreille_urbaine_IMG_7258.jpeg/800px-Oreille_urbaine_IMG_7258.jpeg' alt='Oreille urbaine IMG 7258.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/b/b0/Oreille_urbaine_IMG_7256.jpeg/800px-Oreille_urbaine_IMG_7256.jpeg' alt='Oreille urbaine IMG 7256.jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Fermer la presse et attendre 240 secondes</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Presse à froid</strong><div class='step-images count-2'><figure><img src='/images/thumb/7/71/Oreille_urbaine_IMG_7260.jpeg/ia-476c36cdd0f312eead3e1a8c46c91a41-px-Oreille_urbaine_IMG_7260.jpeg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/7/71/Oreille_urbaine_IMG_7260.jpeg/ia-476c36cdd0f312eead3e1a8c46c91a41-px-Oreille_urbaine_IMG_7260.jpeg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Après avoir retiré l'ensemble de la presse à chaud, placer le tout dans la presse hydraulique pendant 30 minutes .</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 6 - résultat plaque plastique</strong><div class='step-images count-2'><figure><img src='/images/thumb/f/fe/Oreille_urbaine_IMG_6518.JPG/800px-Oreille_urbaine_IMG_6518.JPG' alt='Oreille urbaine IMG 6518.JPG' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_IMG_6518.JPG/800px-Oreille_urbaine_IMG_6518.JPG' alt='Oreille urbaine IMG 6518.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Au bout de 30 minutes, retirer les plaques d'aluminium de la presse hydraulique avec précaution.</li><li>Observer l'aspect des plaques plastiques.</li><li>Lorsqu'elles sont bien rigides et de bonnes consistances (sans trous, d'épaisseur régulière), elles sont alors prêtes à être découpées.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 7 - Tracer et couper</strong><div class='step-images count-6'><figure><img src='/images/thumb/a/ae/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_6.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_6.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 6.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/79/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_5.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_5.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 5.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/ae/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_6.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_6.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 6.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/79/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_5.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_5.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 5.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/ae/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_6.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_6.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 6.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/79/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_5.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_5.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 5.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tracer des traits au crayon gris dans la longueur des plaques plastiques, d'une épaisseur variant de 1 cm à 3cm.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 8 - Découper les bandes</strong><div class='step-images count-6'><figure><img src='/images/thumb/e/e3/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_3.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_3.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7a/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_2.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_2.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e3/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_3.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_3.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7a/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_2.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_2.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e3/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_3.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_3.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7a/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_2.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_2.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 2.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découper chacune des bandes de la façon suivante :</li><li>- 6 bandes de 2 cm chacune</li><li>- 6 bandes de 3 cm</li><li>- 6 bandes de 4 cm</li><li>- 5 bandes de 5 cm</li><li>- 5 bandes de 6 cm</li><li>- 5 bandes de 8 cm</li><li>- 3 bandes de 13 cm</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 9 - Coller</strong><div class='step-images count-6'><figure><img src='/images/thumb/a/a4/Oreille_urbaine_PHOTO-2025-05-08-14-34-37.jpg/ia-20a9858e1b28a5a952390bf9c866bfd2-px-Oreille_urbaine_PHOTO-2025-05-08-14-34-37.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_4.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_4.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/Oreille_urbaine_PHOTO-2025-05-08-14-34-37.jpg/ia-20a9858e1b28a5a952390bf9c866bfd2-px-Oreille_urbaine_PHOTO-2025-05-08-14-34-37.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_4.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_4.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/Oreille_urbaine_PHOTO-2025-05-08-14-34-37.jpg/ia-20a9858e1b28a5a952390bf9c866bfd2-px-Oreille_urbaine_PHOTO-2025-05-08-14-34-37.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/f/fe/Oreille_urbaine_PHOTO-2025-05-08-14-34-38_4.jpg/800px-Oreille_urbaine_PHOTO-2025-05-08-14-34-38_4.jpg' alt='Oreille urbaine PHOTO-2025-05-08-14-34-38 4.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Assembler 3 bandes de la même longueur ensemble sur la tranche de la découpe. (Voir photo 1).</li><li>Continuer ainsi pour toutes les bandes de plastique.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 10 - Assembler</strong><div class='step-images count-6'><figure><img src='/images/thumb/d/d0/Oreille_urbaine_IMG_6500.jpeg/800px-Oreille_urbaine_IMG_6500.jpeg' alt='Oreille urbaine IMG 6500.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/Oreille_urbaine_IMG_6505.jpeg/800px-Oreille_urbaine_IMG_6505.jpeg' alt='Oreille urbaine IMG 6505.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/d/d0/Oreille_urbaine_IMG_6500.jpeg/800px-Oreille_urbaine_IMG_6500.jpeg' alt='Oreille urbaine IMG 6500.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/Oreille_urbaine_IMG_6505.jpeg/800px-Oreille_urbaine_IMG_6505.jpeg' alt='Oreille urbaine IMG 6505.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/d/d0/Oreille_urbaine_IMG_6500.jpeg/800px-Oreille_urbaine_IMG_6500.jpeg' alt='Oreille urbaine IMG 6500.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/Oreille_urbaine_IMG_6505.jpeg/800px-Oreille_urbaine_IMG_6505.jpeg' alt='Oreille urbaine IMG 6505.jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Disposer de façon déséquilibrée en faisant une pyramide et coller tous les triangles en suivant l'ordre de l'étape 8 .</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 11 - 2e partie</strong><div class='step-images count-9'><figure><img src='/images/thumb/f/fd/Oreille_urbaine_IMG_6528-min.jpg/800px-Oreille_urbaine_IMG_6528-min.jpg' alt='Oreille urbaine IMG 6528-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f2/Oreille_urbaine_IMG_6530-min.jpg/800px-Oreille_urbaine_IMG_6530-min.jpg' alt='Oreille urbaine IMG 6530-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c8/Oreille_urbaine_IMG_6534-min.jpg/800px-Oreille_urbaine_IMG_6534-min.jpg' alt='Oreille urbaine IMG 6534-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/fd/Oreille_urbaine_IMG_6528-min.jpg/800px-Oreille_urbaine_IMG_6528-min.jpg' alt='Oreille urbaine IMG 6528-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f2/Oreille_urbaine_IMG_6530-min.jpg/800px-Oreille_urbaine_IMG_6530-min.jpg' alt='Oreille urbaine IMG 6530-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c8/Oreille_urbaine_IMG_6534-min.jpg/800px-Oreille_urbaine_IMG_6534-min.jpg' alt='Oreille urbaine IMG 6534-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/fd/Oreille_urbaine_IMG_6528-min.jpg/800px-Oreille_urbaine_IMG_6528-min.jpg' alt='Oreille urbaine IMG 6528-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f2/Oreille_urbaine_IMG_6530-min.jpg/800px-Oreille_urbaine_IMG_6530-min.jpg' alt='Oreille urbaine IMG 6530-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c8/Oreille_urbaine_IMG_6534-min.jpg/800px-Oreille_urbaine_IMG_6534-min.jpg' alt='Oreille urbaine IMG 6534-min.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Reproduire la symétrie de la pyramide en dessous de la longueur de bande de 13 cm.</li><li>Commencer par les bandes qui sont associées par deux. (Pour pouvoir y rapprocher l'oreille).</li><li>Finir par le triangle de 2 cm de côté.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 12 - Lier</strong><div class='step-images count-6'><figure><img src='/images/thumb/e/ed/Oreille_urbaine_IMG_5035-min.jpg/ia-dfb5ccbdafe89371e75bce863a00a38c-px-Oreille_urbaine_IMG_5035-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/e/e6/Oreille_urbaine_IMG_5029-min.jpg/ia-a9d81b909206934e92ea70b6cb7754da-px-Oreille_urbaine_IMG_5029-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/e/ed/Oreille_urbaine_IMG_5035-min.jpg/ia-dfb5ccbdafe89371e75bce863a00a38c-px-Oreille_urbaine_IMG_5035-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/e/e6/Oreille_urbaine_IMG_5029-min.jpg/ia-a9d81b909206934e92ea70b6cb7754da-px-Oreille_urbaine_IMG_5029-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/e/ed/Oreille_urbaine_IMG_5035-min.jpg/ia-dfb5ccbdafe89371e75bce863a00a38c-px-Oreille_urbaine_IMG_5035-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/e/e6/Oreille_urbaine_IMG_5029-min.jpg/ia-a9d81b909206934e92ea70b6cb7754da-px-Oreille_urbaine_IMG_5029-min.jpg.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Accrocher une ficelle à la jonction entre le triangle 3 cm et le triangle 2 cm.</li><li>faire un noeud à l'intérieur</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 13 - structure en bois</strong><div class='step-images count-6'><figure><img src='/images/thumb/7/7b/Oreille_urbaine_pdt_1879.jpg/800px-Oreille_urbaine_pdt_1879.jpg' alt='Oreille urbaine pdt 1879.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Oreille_urbaine_IMG_6567_2.jpeg/800px-Oreille_urbaine_IMG_6567_2.jpeg' alt='Oreille urbaine IMG 6567 2.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/7/7b/Oreille_urbaine_pdt_1879.jpg/800px-Oreille_urbaine_pdt_1879.jpg' alt='Oreille urbaine pdt 1879.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Oreille_urbaine_IMG_6567_2.jpeg/800px-Oreille_urbaine_IMG_6567_2.jpeg' alt='Oreille urbaine IMG 6567 2.jpeg' loading='lazy'></figure><figure><img src='/images/thumb/7/7b/Oreille_urbaine_pdt_1879.jpg/800px-Oreille_urbaine_pdt_1879.jpg' alt='Oreille urbaine pdt 1879.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Oreille_urbaine_IMG_6567_2.jpeg/800px-Oreille_urbaine_IMG_6567_2.jpeg' alt='Oreille urbaine IMG 6567 2.jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Prendre 2 tasseaux d'1m de haut, de 5cm de long, et 3cm de largeur.</li><li>Percer deux trous dans la largeur en partie haute du tasseau.</li><li>Prendre 1 tasseau de ganivelle de 90 cm de haut, 3 cm de long et de large.</li><li>Visser les extrémités du ganivelle aux deux autres tasseaux.</li><li>De face, la structure ressemble à un cadre de porte.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 14 - Fixation au socle</strong><div class='step-images count-2'><figure><img src='/images/thumb/c/c7/Oreille_urbaine_IMG_6566.jpg/800px-Oreille_urbaine_IMG_6566.jpg' alt='Oreille urbaine IMG 6566.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c7/Oreille_urbaine_IMG_6566.jpg/800px-Oreille_urbaine_IMG_6566.jpg' alt='Oreille urbaine IMG 6566.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Percer le bas des deux tasseaux dans la base. Mettre une tige de boulon dans les trous. Placer les boulons dans les trous des socles. Puis placer des écrous pour serrer la structure au socle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 15 - Finalisation</strong><div class='step-images count-12'><figure><img src='/images/thumb/9/9b/Oreille_urbaine_IMG_5027-min.jpg/800px-Oreille_urbaine_IMG_5027-min.jpg' alt='Oreille urbaine IMG 5027-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/d0/Oreille_urbaine_IMG_5030-min.jpg/800px-Oreille_urbaine_IMG_5030-min.jpg' alt='Oreille urbaine IMG 5030-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f7/Oreille_urbaine_IMG_5033-min.jpg/ia-734c9ee20943f68fc66b7652028d390c-px-Oreille_urbaine_IMG_5033-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Oreille_urbaine_photomontage.png/ia-ac4287b7bc2533d5f049050e0b9e9085-px-Oreille_urbaine_photomontage.png.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/Oreille_urbaine_IMG_5027-min.jpg/800px-Oreille_urbaine_IMG_5027-min.jpg' alt='Oreille urbaine IMG 5027-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/d0/Oreille_urbaine_IMG_5030-min.jpg/800px-Oreille_urbaine_IMG_5030-min.jpg' alt='Oreille urbaine IMG 5030-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f7/Oreille_urbaine_IMG_5033-min.jpg/ia-734c9ee20943f68fc66b7652028d390c-px-Oreille_urbaine_IMG_5033-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Oreille_urbaine_photomontage.png/ia-ac4287b7bc2533d5f049050e0b9e9085-px-Oreille_urbaine_photomontage.png.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/Oreille_urbaine_IMG_5027-min.jpg/800px-Oreille_urbaine_IMG_5027-min.jpg' alt='Oreille urbaine IMG 5027-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/d/d0/Oreille_urbaine_IMG_5030-min.jpg/800px-Oreille_urbaine_IMG_5030-min.jpg' alt='Oreille urbaine IMG 5030-min.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f7/Oreille_urbaine_IMG_5033-min.jpg/ia-734c9ee20943f68fc66b7652028d390c-px-Oreille_urbaine_IMG_5033-min.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Oreille_urbaine_photomontage.png/ia-ac4287b7bc2533d5f049050e0b9e9085-px-Oreille_urbaine_photomontage.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Prendre différents coquillages (coquille Saint-Jacques). Nouer une ficelle sur chacun des coquillages préalablement percés à la perceuse (dans le creux du coquillage).</li><li>Nouer à environ 15cm du ganivelle le reste de la ficelle.</li><li>Placer les coquillages, tous les 5cm environ.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

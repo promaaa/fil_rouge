@@ -1,0 +1,821 @@
+{
+    "Bentolux a code": {
+        "titre": [
+            "Bentolux a code"
+        ],
+        "image": [
+            {
+                "url": "/images/thumb/e/ec/Bentolux_a_code_IMG.jpg/ia-dfe402d342c53d57b77c888d790b9d46-px-Bentolux_a_code_IMG.jpg.png",
+                "alt": "",
+                "description": "En s'appuyant sur la base de la bentolux, on a réalisé un troisième étage avec une ouverture codée par un mot de passe"
+            }
+        ],
+        "difficulté": [
+            "Moyen"
+        ],
+        "durée": [
+            "3 day(s) jour(s)"
+        ],
+        "coût": [
+            "30 EUR (€)"
+        ],
+        "liens": [
+            "https://wikifab.org/wiki/Bentolux_a_code"
+        ],
+        "introduction": [
+            {
+                "titre": "Dans le cadre de la formation FabNumAURA, j'ai profité de la formation pour développer le code du troisième étage autour de capteurs et d'actionneurs sur lesquels je n'avais jamais travaillé. Cela faisait quelques temps également que je souhaitais réaliser un projet qui permet l'ouverture et la fermeture d'une box (qui pourrait aussi bien servir à crèer des box pour géo camp que des box pour des jeux de piste ou escape game). Cela se traduit par :",
+                "sous_items": []
+            },
+            {
+                "titre": "- Utiliser un keypad",
+                "sous_items": []
+            },
+            {
+                "titre": "- Piloter un moteur solénoïde",
+                "sous_items": []
+            },
+            {
+                "titre": "- Utiliser 2 alimentations avec des tensions différentes (une pour l'arduino l'autre pour le moteur)",
+                "sous_items": []
+            },
+            {
+                "titre": "- Gérer un mot de passe",
+                "sous_items": []
+            },
+            {
+                "titre": "- Connecter plusieurs éléments sur le bus I2C",
+                "sous_items": []
+            },
+            {
+                "titre": "Pour la partie découpe et marquage de la boîte, la aussi j'ai souhaité profité de la formation pour aller sur de nouvelles pratiques que je n'avais pas encore eu le temps d'explorer ou de tester :",
+                "sous_items": []
+            },
+            {
+                "titre": "- Boîte avec des charnière sur le coté",
+                "sous_items": []
+            },
+            {
+                "titre": "- Préparation et gravure d'une map",
+                "sous_items": []
+            },
+            {
+                "titre": "- Gravure de vonoroi",
+                "sous_items": []
+            }
+        ],
+        "mentions légales": [],
+        "matériaux": [],
+        "outils": [],
+        "étapes": [
+            {
+                "numero": 1,
+                "titre": "Étape 1 - Outils et Matériaux",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Matériaux :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "contreplaqué de peuplier 3mm 800*500mm (pour 2 boîtes)",
+                                    "colle à bois",
+                                    "serre-joint",
+                                    "Filament PLA pour les supports écran OLED et LCD (cf fichier joint)",
+                                    "tapis de découpe (pour garder un plan de travail propre)"
+                                ]
+                            },
+                            {
+                                "titre": "Electronique :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Une carte Arduino Uno",
+                                    "4 borniers wago",
+                                    "Un moteur solenoide 6 volts",
+                                    "Un keypad 4x3",
+                                    "Un écran LCD",
+                                    "Un connecteur de pile 9V",
+                                    "Une diode 1N4004",
+                                    "Une résistance de 2,2k (ou 1k)",
+                                    "Un transistor TIP102",
+                                    "Un anneau 12 LED neopixel"
+                                ]
+                            },
+                            {
+                                "titre": "Machines :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Découpeuse laser Perez Camp 13/90",
+                                    "Imprimante 3D Creality ender3"
+                                ]
+                            },
+                            {
+                                "titre": "Logiciels :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Tinkercad",
+                                    "Arduino IDE",
+                                    "Ultimaker Cura"
+                                ]
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 2,
+                "titre": "Étape 2 - Préparer les fichiers des étages 2 et 3 de la bentolux (une demi-journée)",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Cette étape a consisté à dessiner les plans sous Inkscape en adaptant la boite de notre étage 3 à celle de l'étage 2.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "On a mesurer les dimensions de l'étage 2 pour pouvoir générer notre étage 3.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "On a utilisé l'outil Boxes.pi pour générer un fichier de boîte à charnières intégrées. Une fois le fichier généré aux bonnes dimensions, on l'a intégré aux plans de découpe de l'étage 2.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Les pièces de l'étage 2 sont en rouge et les pièces de l'étage 3 sont en noires. Les couleurs ne sont pas essentielles et non reconnues comme de la découpe, de la gravure ou du marquage en utilisant SmartCarve le logiciel qui pilote la découpeuse laser. De cette façon cela me permet de retrouver plus rapidement les pièces de chacun des étages.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "On a ensuite réparties nos différentes pièces sur le fichier pour assurer la gravure et la découpe des pièces de nos deux boîtes pour qu'elles tiennent sur un seul panneau de contreplaqué de peuplier de 3mm.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Après cela on a intégré les gravures de nos fichiers :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "- On a mis un vonoroi sur les 4 petits coté de notre couvercle",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "- Et sur le haut du couvercle de la boîte, on a réalisé une gravure à partir d'un plan personnalisé, en s'inspirant de ce tutoriel d'epiloglaser.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Pour réaliser cet export de map on a utilisé l'outil en ligne snazzymaps",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Enfin on a fait une découpe dans une face de la boîte pour intégrer notre écran LCD.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "/images/thumb/4/40/Bentolux_a_code_plan_etage_2_et_3.jpg/800px-Bentolux_a_code_plan_etage_2_et_3.jpg",
+                                "alt": "Bentolux a code plan etage 2 et 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/c/c4/Bentolux_a_code_boxes_py.jpg/800px-Bentolux_a_code_boxes_py.jpg",
+                                "alt": "Bentolux a code boxes py.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/e/e4/Bentolux_a_code_snazzymap.jpg/800px-Bentolux_a_code_snazzymap.jpg",
+                                "alt": "Bentolux a code snazzymap.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/1/1e/Bentolux_a_code_vonori.jpg/800px-Bentolux_a_code_vonori.jpg",
+                                "alt": "Bentolux a code vonori.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/2/2a/Bentolux_a_code_map.png",
+                                "alt": "Bentolux a code map.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/4/40/Bentolux_a_code_plan_etage_2_et_3.jpg/800px-Bentolux_a_code_plan_etage_2_et_3.jpg",
+                                "alt": "Bentolux a code plan etage 2 et 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/c/c4/Bentolux_a_code_boxes_py.jpg/800px-Bentolux_a_code_boxes_py.jpg",
+                                "alt": "Bentolux a code boxes py.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/e/e4/Bentolux_a_code_snazzymap.jpg/800px-Bentolux_a_code_snazzymap.jpg",
+                                "alt": "Bentolux a code snazzymap.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/1/1e/Bentolux_a_code_vonori.jpg/800px-Bentolux_a_code_vonori.jpg",
+                                "alt": "Bentolux a code vonori.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/2/2a/Bentolux_a_code_map.png",
+                                "alt": "Bentolux a code map.png",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/4/40/Bentolux_a_code_plan_etage_2_et_3.jpg/800px-Bentolux_a_code_plan_etage_2_et_3.jpg",
+                                "alt": "Bentolux a code plan etage 2 et 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/c/c4/Bentolux_a_code_boxes_py.jpg/800px-Bentolux_a_code_boxes_py.jpg",
+                                "alt": "Bentolux a code boxes py.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/e/e4/Bentolux_a_code_snazzymap.jpg/800px-Bentolux_a_code_snazzymap.jpg",
+                                "alt": "Bentolux a code snazzymap.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/1/1e/Bentolux_a_code_vonori.jpg/800px-Bentolux_a_code_vonori.jpg",
+                                "alt": "Bentolux a code vonori.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/2/2a/Bentolux_a_code_map.png",
+                                "alt": "Bentolux a code map.png",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 3,
+                "titre": "Étape 3 - Assembler et coller l'étage 2 (une demi-journée)",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "On a commencé par repérer les pièces découpées de chacun des étages en se servant des couleurs indiqué dans le fichiers svg pour chacun des étages.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Ensuite on a disposé nos pièces à plat prête à être encollées (ça me permet de vérifier la bonne disposition des pièces et de les encoller au bon endroit).",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "Enfin pour assurer une bonne prise de la colle on a utilisé des serres joints pour fixer la boite.",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "/images/3/3d/Bentolux_a_code_Etage2DecoupePiece.jpg",
+                                "alt": "Bentolux a code Etage2DecoupePiece.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/4/4e/Bentolux_a_code_positionnement_etage2.jpg",
+                                "alt": "Bentolux a code positionnement etage2.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/c/ce/Bentolux_a_code_collage_etage_2jpg.jpg",
+                                "alt": "Bentolux a code collage etage 2jpg.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/3/3d/Bentolux_a_code_Etage2DecoupePiece.jpg",
+                                "alt": "Bentolux a code Etage2DecoupePiece.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/4/4e/Bentolux_a_code_positionnement_etage2.jpg",
+                                "alt": "Bentolux a code positionnement etage2.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/c/ce/Bentolux_a_code_collage_etage_2jpg.jpg",
+                                "alt": "Bentolux a code collage etage 2jpg.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/3/3d/Bentolux_a_code_Etage2DecoupePiece.jpg",
+                                "alt": "Bentolux a code Etage2DecoupePiece.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/4/4e/Bentolux_a_code_positionnement_etage2.jpg",
+                                "alt": "Bentolux a code positionnement etage2.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/c/ce/Bentolux_a_code_collage_etage_2jpg.jpg",
+                                "alt": "Bentolux a code collage etage 2jpg.jpg",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 4,
+                "titre": "Étape 4 - Assembler et coller l'étage 3 (une demi-journée)",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "La procédure est identique à celle de l'étage 2 avec quelques spécificités liées qu système de charnière de la boite qui nécessite de respecter l'ordre suivant pour l'ordre d'encollage des pièces :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Coller les pièces rondes sur les parois du couvercle",
+                                    "Coller les pièces composants le couvercle"
+                                ]
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Coller les pièces composant le boitier de notre boîte à charnière"
+                                ]
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "/images/6/6a/Bentolux_a_code_piece_decoupee_etage3.jpg",
+                                "alt": "Bentolux a code piece decoupee etage3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/8/81/Bentolux_a_code_montage_charniere_couvercle.jpg",
+                                "alt": "Bentolux a code montage charniere couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/1/19/Bentolux_a_code_collage_etage_3_couvercle.jpg",
+                                "alt": "Bentolux a code collage etage 3 couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/5/5e/Bentolux_a_code_collage_etage_3_boite_et_couvercle.jpg",
+                                "alt": "Bentolux a code collage etage 3 boite et couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/0/0c/Bentolux_a_code_positionnement_boite_etage_3.jpg",
+                                "alt": "Bentolux a code positionnement boite etage 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/2/2e/Bentolux_a_code_assemblage_des_etages_2_et_3.jpg",
+                                "alt": "Bentolux a code assemblage des etages 2 et 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/6/6a/Bentolux_a_code_piece_decoupee_etage3.jpg",
+                                "alt": "Bentolux a code piece decoupee etage3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/8/81/Bentolux_a_code_montage_charniere_couvercle.jpg",
+                                "alt": "Bentolux a code montage charniere couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/1/19/Bentolux_a_code_collage_etage_3_couvercle.jpg",
+                                "alt": "Bentolux a code collage etage 3 couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/5/5e/Bentolux_a_code_collage_etage_3_boite_et_couvercle.jpg",
+                                "alt": "Bentolux a code collage etage 3 boite et couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/0/0c/Bentolux_a_code_positionnement_boite_etage_3.jpg",
+                                "alt": "Bentolux a code positionnement boite etage 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/2/2e/Bentolux_a_code_assemblage_des_etages_2_et_3.jpg",
+                                "alt": "Bentolux a code assemblage des etages 2 et 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/6/6a/Bentolux_a_code_piece_decoupee_etage3.jpg",
+                                "alt": "Bentolux a code piece decoupee etage3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/8/81/Bentolux_a_code_montage_charniere_couvercle.jpg",
+                                "alt": "Bentolux a code montage charniere couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/1/19/Bentolux_a_code_collage_etage_3_couvercle.jpg",
+                                "alt": "Bentolux a code collage etage 3 couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/5/5e/Bentolux_a_code_collage_etage_3_boite_et_couvercle.jpg",
+                                "alt": "Bentolux a code collage etage 3 boite et couvercle.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/0/0c/Bentolux_a_code_positionnement_boite_etage_3.jpg",
+                                "alt": "Bentolux a code positionnement boite etage 3.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/2/2e/Bentolux_a_code_assemblage_des_etages_2_et_3.jpg",
+                                "alt": "Bentolux a code assemblage des etages 2 et 3.jpg",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 5,
+                "titre": "Étape 5 - Modéliser les pièces à imprimer en 3D",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "On a ensuite préparer les fichiers 3D ci-dessous :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "support écran OLED (réalisé par Hubert qu'on a hacké à l'image d'OpenFactory en utilisant TinkerCAD)",
+                                    "support écran LCD (ressource trouvé sur thingiverse et réalisé by ksamuelsen)",
+                                    "bouton potentiomètre (réalisé par Mayak qu'on a imprimé pour le reste du groupe car on était tous à la bourre ;) )"
+                                ]
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "/images/thumb/b/b7/Bentolux_a_code_ecranOledTinkercad.jpg/800px-Bentolux_a_code_ecranOledTinkercad.jpg",
+                                "alt": "Bentolux a code ecranOledTinkercad.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/b0/Bentolux_a_code_ecran_LCD_16x02.jpg/800px-Bentolux_a_code_ecran_LCD_16x02.jpg",
+                                "alt": "Bentolux a code ecran LCD 16x02.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/6/6a/Bentolux_a_code_bouton_potentiometre.jpg/800px-Bentolux_a_code_bouton_potentiometre.jpg",
+                                "alt": "Bentolux a code bouton potentiometre.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/b7/Bentolux_a_code_ecranOledTinkercad.jpg/800px-Bentolux_a_code_ecranOledTinkercad.jpg",
+                                "alt": "Bentolux a code ecranOledTinkercad.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/b0/Bentolux_a_code_ecran_LCD_16x02.jpg/800px-Bentolux_a_code_ecran_LCD_16x02.jpg",
+                                "alt": "Bentolux a code ecran LCD 16x02.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/6/6a/Bentolux_a_code_bouton_potentiometre.jpg/800px-Bentolux_a_code_bouton_potentiometre.jpg",
+                                "alt": "Bentolux a code bouton potentiometre.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/b7/Bentolux_a_code_ecranOledTinkercad.jpg/800px-Bentolux_a_code_ecranOledTinkercad.jpg",
+                                "alt": "Bentolux a code ecranOledTinkercad.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/b0/Bentolux_a_code_ecran_LCD_16x02.jpg/800px-Bentolux_a_code_ecran_LCD_16x02.jpg",
+                                "alt": "Bentolux a code ecran LCD 16x02.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/6/6a/Bentolux_a_code_bouton_potentiometre.jpg/800px-Bentolux_a_code_bouton_potentiometre.jpg",
+                                "alt": "Bentolux a code bouton potentiometre.jpg",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 6,
+                "titre": "Étape 6 - Intégrer l'électronique (1 journée)",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Cette dernière étape doit permettre d'intégrer les différents éléments dans chacun des étages.",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Etage 1 : Carte arduino Uno Potentiomètre Ecran OLED Interrupteur (non présent sur notre version)",
+                                    "Carte arduino Uno",
+                                    "Potentiomètre",
+                                    "Ecran OLED",
+                                    "Interrupteur (non présent sur notre version)",
+                                    "Etage 2 : les borniers wago Anneau OLED Capteur de température BMP280",
+                                    "les borniers wago",
+                                    "Anneau OLED",
+                                    "Capteur de température BMP280",
+                                    "Etage 3 : Carte électronique Pile 9 Volts Keypad 4*3 Ecran LCD I2C 16x02 Moteur solénoïde 6 Volts",
+                                    "Carte électronique",
+                                    "Pile 9 Volts",
+                                    "Keypad 4*3",
+                                    "Ecran LCD I2C 16x02",
+                                    "Moteur solénoïde 6 Volts"
+                                ]
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Carte arduino Uno",
+                                    "Potentiomètre",
+                                    "Ecran OLED",
+                                    "Interrupteur (non présent sur notre version)"
+                                ]
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "les borniers wago",
+                                    "Anneau OLED",
+                                    "Capteur de température BMP280"
+                                ]
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Carte électronique",
+                                    "Pile 9 Volts",
+                                    "Keypad 4*3",
+                                    "Ecran LCD I2C 16x02",
+                                    "Moteur solénoïde 6 Volts"
+                                ]
+                            },
+                            {
+                                "titre": "C'est un sacré casse tête d'arriver à tout intégrer (avec des fils un peu court... mais je n'avais pas le temps de câbler ça proprement).",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "En tout cas pour cette étape, il vaut mieux avoir un bon photographe car sinon il y aurait pas beaucoup de visuel ! Merci à Mayak de la team BentoGhooost",
+                                "sous_etapes": []
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": [
+                            {
+                                "url": "/images/thumb/8/8d/Bentolux_a_code_IMG_20220614_153104.jpg/800px-Bentolux_a_code_IMG_20220614_153104.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153104.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/2/2d/Bentolux_a_code_IMG_20220614_153105.jpg/800px-Bentolux_a_code_IMG_20220614_153105.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153105.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/4/4c/Bentolux_a_code_IMG_20220614_153109.jpg/800px-Bentolux_a_code_IMG_20220614_153109.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153109.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/3/31/Bentolux_a_code_IMG_20220614_153838.jpg/800px-Bentolux_a_code_IMG_20220614_153838.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153838.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/9/95/Bentolux_a_code_IMG_20220614_171103.jpg/800px-Bentolux_a_code_IMG_20220614_171103.jpg",
+                                "alt": "Bentolux a code IMG 20220614 171103.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/bb/Bentolux_a_code_IMG_20220614_153840.jpg/800px-Bentolux_a_code_IMG_20220614_153840.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153840.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/8/8d/Bentolux_a_code_IMG_20220614_153104.jpg/800px-Bentolux_a_code_IMG_20220614_153104.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153104.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/2/2d/Bentolux_a_code_IMG_20220614_153105.jpg/800px-Bentolux_a_code_IMG_20220614_153105.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153105.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/4/4c/Bentolux_a_code_IMG_20220614_153109.jpg/800px-Bentolux_a_code_IMG_20220614_153109.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153109.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/3/31/Bentolux_a_code_IMG_20220614_153838.jpg/800px-Bentolux_a_code_IMG_20220614_153838.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153838.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/9/95/Bentolux_a_code_IMG_20220614_171103.jpg/800px-Bentolux_a_code_IMG_20220614_171103.jpg",
+                                "alt": "Bentolux a code IMG 20220614 171103.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/bb/Bentolux_a_code_IMG_20220614_153840.jpg/800px-Bentolux_a_code_IMG_20220614_153840.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153840.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/8/8d/Bentolux_a_code_IMG_20220614_153104.jpg/800px-Bentolux_a_code_IMG_20220614_153104.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153104.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/2/2d/Bentolux_a_code_IMG_20220614_153105.jpg/800px-Bentolux_a_code_IMG_20220614_153105.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153105.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/4/4c/Bentolux_a_code_IMG_20220614_153109.jpg/800px-Bentolux_a_code_IMG_20220614_153109.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153109.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/3/31/Bentolux_a_code_IMG_20220614_153838.jpg/800px-Bentolux_a_code_IMG_20220614_153838.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153838.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/9/95/Bentolux_a_code_IMG_20220614_171103.jpg/800px-Bentolux_a_code_IMG_20220614_171103.jpg",
+                                "alt": "Bentolux a code IMG 20220614 171103.jpg",
+                                "description": ""
+                            },
+                            {
+                                "url": "/images/thumb/b/bb/Bentolux_a_code_IMG_20220614_153840.jpg/800px-Bentolux_a_code_IMG_20220614_153840.jpg",
+                                "alt": "Bentolux a code IMG 20220614 153840.jpg",
+                                "description": ""
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "numero": 7,
+                "titre": "Étape 7 - Ressources",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Quelques sites qui m'ont aidé dans la réalisation de ce projet :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Pour le branchement du solenoide, le wiki de mchobby",
+                                    "Pour utiliser et brancher un keypad, le site aranacorp",
+                                    "Pour arriver a gérer un mot de passe , le tutoriel alarme diy de captainarduino"
+                                ]
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            },
+            {
+                "numero": 8,
+                "titre": "Étape 8 - Aller plus loin",
+                "solutions": [
+                    {
+                        "objectif": "",
+                        "materiaux_outils": [],
+                        "etapes": [
+                            {
+                                "titre": "Ceci est un peu le démarrage d'un projet et pour aller plus loin j'aimerais me pencher sur les questionnements suivants :",
+                                "sous_etapes": []
+                            },
+                            {
+                                "titre": "",
+                                "sous_etapes": [
+                                    "Améliorer la gestion de mon mot de passe (voir faire une procédure d'administration pour modifier le mot de passe)",
+                                    "Prévoir une fonctionnalité pour la fermeture du couvercle (Ex: en affichant les consignes suivantes à l'écran \" fermer la boîte => appuyer sur la touche étoile => boîte fermée\" et ca verrouille la serrure en changeant la position du solenoïde)",
+                                    "Intégrer un compteur d'essai (3 essais maximum et une tempo de blocage avec un compte a rebours avant une nouvelle tentative)",
+                                    "Pour des jeux en extérieurs modifier l'alimentation avec une batterie rechargeable et un panneau solaire"
+                                ]
+                            }
+                        ],
+                        "remarques": [],
+                        "fichiers": [
+                            {
+                                "nom": "",
+                                "type": "",
+                                "description": "",
+                                "lien": ""
+                            }
+                        ],
+                        "images": []
+                    }
+                ]
+            }
+        ],
+        "annexes": []
+    }
+}

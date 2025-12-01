@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Concentrateur solaire likes</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Concentrateur solaire likes</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/e/e5/Concentrateur_solaire_likes_cooopiiie.jpg/ia-8e12b5f51db7d8120766db86c40e1302-px-Concentrateur_solaire_likes_cooopiiie.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">tuto création d'un concentrateur solaire avec tracker solaire pour produire de l'eau potable.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment concentrateur solaire likes.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Difficile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 72 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 350 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Concentrateur_solaire_likes" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Concentrateur_solaire_likes</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>2 demi sphère en plexiglass</li><li>socle de récupération d'eau en inox</li><li>parabole</li><li>film aluminium réfléchissant</li><li>moteur pas à pas</li><li>roue</li><li>chaine de vélo</li><li>pignon de sortie de boite</li><li>couronne de 49 dents</li><li>2 batteries solaire</li><li>cabble grove 20 et 50 cm</li><li>détecteur de lumière grove</li><li>module grove base Shield</li><li>pompe à eau</li><li>tuyaux flexibles</li><li>vanne pneumatique</li><li>mâchoire de tuyau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>poste à soudure</li><li>clés plates</li><li>perceuse</li><li>ordinateur</li><li>briquet</li><li>fraiseuse</li><li>crayon</li><li>mètre</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Principe et fonctionnement</strong><div class='step-images count-12'><figure><img src='/images/thumb/7/7d/Concentrateur_solaire_likes_bloc.png/800px-Concentrateur_solaire_likes_bloc.png' alt='Concentrateur solaire likes bloc.png' loading='lazy'></figure><figure><img src='/images/thumb/4/4f/Concentrateur_solaire_likes_sysml.png/800px-Concentrateur_solaire_likes_sysml.png' alt='Concentrateur solaire likes sysml.png' loading='lazy'></figure><figure><img src='/images/thumb/c/cd/Concentrateur_solaire_likes_exigence.png/800px-Concentrateur_solaire_likes_exigence.png' alt='Concentrateur solaire likes exigence.png' loading='lazy'></figure><figure><img src='/images/thumb/f/f4/Concentrateur_solaire_likes_l_existant.png/800px-Concentrateur_solaire_likes_l_existant.png' alt='Concentrateur solaire likes l existant.png' loading='lazy'></figure><figure><img src='/images/thumb/7/7d/Concentrateur_solaire_likes_bloc.png/800px-Concentrateur_solaire_likes_bloc.png' alt='Concentrateur solaire likes bloc.png' loading='lazy'></figure><figure><img src='/images/thumb/4/4f/Concentrateur_solaire_likes_sysml.png/800px-Concentrateur_solaire_likes_sysml.png' alt='Concentrateur solaire likes sysml.png' loading='lazy'></figure><figure><img src='/images/thumb/c/cd/Concentrateur_solaire_likes_exigence.png/800px-Concentrateur_solaire_likes_exigence.png' alt='Concentrateur solaire likes exigence.png' loading='lazy'></figure><figure><img src='/images/thumb/f/f4/Concentrateur_solaire_likes_l_existant.png/800px-Concentrateur_solaire_likes_l_existant.png' alt='Concentrateur solaire likes l existant.png' loading='lazy'></figure><figure><img src='/images/thumb/7/7d/Concentrateur_solaire_likes_bloc.png/800px-Concentrateur_solaire_likes_bloc.png' alt='Concentrateur solaire likes bloc.png' loading='lazy'></figure><figure><img src='/images/thumb/4/4f/Concentrateur_solaire_likes_sysml.png/800px-Concentrateur_solaire_likes_sysml.png' alt='Concentrateur solaire likes sysml.png' loading='lazy'></figure><figure><img src='/images/thumb/c/cd/Concentrateur_solaire_likes_exigence.png/800px-Concentrateur_solaire_likes_exigence.png' alt='Concentrateur solaire likes exigence.png' loading='lazy'></figure><figure><img src='/images/thumb/f/f4/Concentrateur_solaire_likes_l_existant.png/800px-Concentrateur_solaire_likes_l_existant.png' alt='Concentrateur solaire likes l existant.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le système utilise l’énergie solaire comme source principale pour déminéraliser l’eau de mer. L'objectif est de produire de l'eau douce sans recourir à des énergies fossiles, en s’appuyant sur un concentrateur solaire pour chauffer l’eau et provoquer son évaporation, suivie d’une condensation.</li><li>Les composants clés du système sont :<ul><li>Concentrateur solaire (avec réflecteurs et structure de support)</li><li>Tracker solaire (avec moteur pas à pas et microcontrôleur Arduino)</li><li>Système de déminéralisation (avec évaporateur et condensateur)</li></ul></li><li>Pour notre projet nous nous sommes inspiré de projet déjà existant.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Présentation</strong><div class='step-images count-9'><figure><img src='/images/c/c6/Concentrateur_solaire_likes_aaffiicchhee.png' alt='Concentrateur solaire likes aaffiicchhee.png' loading='lazy'></figure><figure><img src='/images/thumb/6/6b/Concentrateur_solaire_likes_propre.jpg/800px-Concentrateur_solaire_likes_propre.jpg' alt='Concentrateur solaire likes propre.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Concentrateur_solaire_likes_ChatGPT_Image_19_mai_2025_14_57_14.png/800px-Concentrateur_solaire_likes_ChatGPT_Image_19_mai_2025_14_57_14.png' alt='Concentrateur solaire likes ChatGPT Image 19 mai 2025 14 57 14.png' loading='lazy'></figure><figure><img src='/images/c/c6/Concentrateur_solaire_likes_aaffiicchhee.png' alt='Concentrateur solaire likes aaffiicchhee.png' loading='lazy'></figure><figure><img src='/images/thumb/6/6b/Concentrateur_solaire_likes_propre.jpg/800px-Concentrateur_solaire_likes_propre.jpg' alt='Concentrateur solaire likes propre.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Concentrateur_solaire_likes_ChatGPT_Image_19_mai_2025_14_57_14.png/800px-Concentrateur_solaire_likes_ChatGPT_Image_19_mai_2025_14_57_14.png' alt='Concentrateur solaire likes ChatGPT Image 19 mai 2025 14 57 14.png' loading='lazy'></figure><figure><img src='/images/c/c6/Concentrateur_solaire_likes_aaffiicchhee.png' alt='Concentrateur solaire likes aaffiicchhee.png' loading='lazy'></figure><figure><img src='/images/thumb/6/6b/Concentrateur_solaire_likes_propre.jpg/800px-Concentrateur_solaire_likes_propre.jpg' alt='Concentrateur solaire likes propre.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/54/Concentrateur_solaire_likes_ChatGPT_Image_19_mai_2025_14_57_14.png/800px-Concentrateur_solaire_likes_ChatGPT_Image_19_mai_2025_14_57_14.png' alt='Concentrateur solaire likes ChatGPT Image 19 mai 2025 14 57 14.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nom des différentes parties du concentrateur solaire:<ul><li>Le moteur</li><li>Le tracker</li><li>Le condensateur</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Condensateur</strong><div class='step-images count-9'><figure><img src='/images/thumb/6/61/Concentrateur_solaire_likes_sphere_haut.jpg/800px-Concentrateur_solaire_likes_sphere_haut.jpg' alt='Concentrateur solaire likes sphere haut.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Concentrateur_solaire_likes_sphere_bas.jpg/800px-Concentrateur_solaire_likes_sphere_bas.jpg' alt='Concentrateur solaire likes sphere bas.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7b/Concentrateur_solaire_likes_socle_inoxtage.jpg/800px-Concentrateur_solaire_likes_socle_inoxtage.jpg' alt='Concentrateur solaire likes socle inoxtage.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/61/Concentrateur_solaire_likes_sphere_haut.jpg/800px-Concentrateur_solaire_likes_sphere_haut.jpg' alt='Concentrateur solaire likes sphere haut.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Concentrateur_solaire_likes_sphere_bas.jpg/800px-Concentrateur_solaire_likes_sphere_bas.jpg' alt='Concentrateur solaire likes sphere bas.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7b/Concentrateur_solaire_likes_socle_inoxtage.jpg/800px-Concentrateur_solaire_likes_socle_inoxtage.jpg' alt='Concentrateur solaire likes socle inoxtage.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/61/Concentrateur_solaire_likes_sphere_haut.jpg/800px-Concentrateur_solaire_likes_sphere_haut.jpg' alt='Concentrateur solaire likes sphere haut.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Concentrateur_solaire_likes_sphere_bas.jpg/800px-Concentrateur_solaire_likes_sphere_bas.jpg' alt='Concentrateur solaire likes sphere bas.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7b/Concentrateur_solaire_likes_socle_inoxtage.jpg/800px-Concentrateur_solaire_likes_socle_inoxtage.jpg' alt='Concentrateur solaire likes socle inoxtage.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous avons choisi d'utiliser deux dômes de plexiglass car c'est un matériau qui dure dans le temps et pratique pour faire couler l'eau qui s'évapore sur les cotés.</li><li>Prendre les deux demi sphères en plexiglass.</li><li>La partie du haut:<ul><li>percer en son centre la demi sphère et y relier le tube flexible de la pompe d'eau.</li></ul></li><li>La partie du bas:<ul><li>percer en son centre la demi sphère et y relier la vanne pneumatique (robinet pour évacuer l'eau propre).</li></ul></li><li>Entre les deux demi sphère:<ul><li>placer le socle en inox au centre des deux demi sphère. Il sert à y verser l'eau salle qui va être évaporé.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Tracker solaire</strong><div class='step-images count-2'><figure><img src='/images/thumb/6/6e/Concentrateur_solaire_likes_tracker.jpg/800px-Concentrateur_solaire_likes_tracker.jpg' alt='Concentrateur solaire likes tracker.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/6e/Concentrateur_solaire_likes_tracker.jpg/800px-Concentrateur_solaire_likes_tracker.jpg' alt='Concentrateur solaire likes tracker.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour ce projet il est essentiel d'avoir un tracker solaire. Pour rendre ce système optimal en production d'eau pure il est essentiel de capter le plus possible la chaleur des rayons du soleil.</li><li>On prend un support en métal. Souder deux pignons de chaque extrémités du support. Sur la grande couronne on fabrique un palier ce qui permet d'avoir un axe qui bouge pour que la couronne tourne autour.</li><li>Ensuite on relie les deux pignons avec une chaine.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Arduino</strong><div class='step-images count-12'><figure><img src='/images/0/0d/Concentrateur_solaire_likes_grove.png' alt='Concentrateur solaire likes grove.png' loading='lazy'></figure><figure><img src='/images/1/15/Concentrateur_solaire_likes_arduino.png' alt='Concentrateur solaire likes arduino.png' loading='lazy'></figure><figure><img src='/images/6/6f/Concentrateur_solaire_likes_cable.png' alt='Concentrateur solaire likes cable.png' loading='lazy'></figure><figure><img src='/images/f/ff/Concentrateur_solaire_likes_batterie.png' alt='Concentrateur solaire likes batterie.png' loading='lazy'></figure><figure><img src='/images/0/0d/Concentrateur_solaire_likes_grove.png' alt='Concentrateur solaire likes grove.png' loading='lazy'></figure><figure><img src='/images/1/15/Concentrateur_solaire_likes_arduino.png' alt='Concentrateur solaire likes arduino.png' loading='lazy'></figure><figure><img src='/images/6/6f/Concentrateur_solaire_likes_cable.png' alt='Concentrateur solaire likes cable.png' loading='lazy'></figure><figure><img src='/images/f/ff/Concentrateur_solaire_likes_batterie.png' alt='Concentrateur solaire likes batterie.png' loading='lazy'></figure><figure><img src='/images/0/0d/Concentrateur_solaire_likes_grove.png' alt='Concentrateur solaire likes grove.png' loading='lazy'></figure><figure><img src='/images/1/15/Concentrateur_solaire_likes_arduino.png' alt='Concentrateur solaire likes arduino.png' loading='lazy'></figure><figure><img src='/images/6/6f/Concentrateur_solaire_likes_cable.png' alt='Concentrateur solaire likes cable.png' loading='lazy'></figure><figure><img src='/images/f/ff/Concentrateur_solaire_likes_batterie.png' alt='Concentrateur solaire likes batterie.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><translate>Programme arduino du tracker:<ul><li>const int LDR1 = A0; // Capteur gauche</li><li>const int LDR2 = A1; // Capteur droit</li><li>const int MotorPin1 = 8; // Direction 1</li><li>const int MotorPin2 = 9; // Direction 2</li><li>const int MotorSpeed = 3; // Vitesse moteur (ENA)</li></ul></li><li>void setup() {</li><li>Serial.begin(9600);</li><li>pinMode(LDR1, INPUT);</li><li>pinMode(LDR2, INPUT);</li><li>pinMode(MotorPin1, OUTPUT);</li><li>pinMode(MotorPin2, OUTPUT);</li><li>pinMode(MotorSpeed, OUTPUT);</li><li>// S'assurer que le moteur est bien éteint au départ</li><li>digitalWrite(MotorPin1, LOW);</li><li>digitalWrite(MotorPin2, LOW);</li><li>analogWrite(MotorSpeed, 0);</li><li>}</li><li>void loop() {<ul><li>int valeurLDR1 = analogRead(LDR1);</li><li>int valeurLDR2 = analogRead(LDR2);</li><li>int diff = valeurLDR1 - valeurLDR2;</li></ul></li><li>// Affichage des valeurs pour debug</li><li>Serial.print("LDR1 : ");</li><li>.....</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Montage électronique</strong><div class='step-images count-2'><figure><img src='/images/4/48/Concentrateur_solaire_likes_nnnnn.png' alt='Concentrateur solaire likes nnnnn.png' loading='lazy'></figure><figure><img src='/images/4/48/Concentrateur_solaire_likes_nnnnn.png' alt='Concentrateur solaire likes nnnnn.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voici le montage électronique de notre système:</li><li>Il comporte une carte arduino sur laquelle il y a un shield grove. Sur celui ci est branché 2 capteur de lumière et un driver. Le driver est relié a une pile 9V et un moteur pas à pas via une breadboard.</li><li>Ce système permet d'orienté la parabole sur le soleil tout au long de la journée.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Parabole</strong><div class='step-images count-15'><figure><img src='/images/thumb/a/a3/Concentrateur_solaire_likes_mikmik.jpg/800px-Concentrateur_solaire_likes_mikmik.jpg' alt='Concentrateur solaire likes mikmik.jpg' loading='lazy'></figure><figure><img src='/images/d/da/Concentrateur_solaire_likes_filmmmmm.png' alt='Concentrateur solaire likes filmmmmm.png' loading='lazy'></figure><figure><img src='/images/thumb/1/1b/Concentrateur_solaire_likes_texteee.jpg/800px-Concentrateur_solaire_likes_texteee.jpg' alt='Concentrateur solaire likes texteee.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/75/Concentrateur_solaire_likes_texxxte.jpg/800px-Concentrateur_solaire_likes_texxxte.jpg' alt='Concentrateur solaire likes texxxte.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/Concentrateur_solaire_likes_imagggee_projettt.jpg/800px-Concentrateur_solaire_likes_imagggee_projettt.jpg' alt='Concentrateur solaire likes imagggee projettt.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a3/Concentrateur_solaire_likes_mikmik.jpg/800px-Concentrateur_solaire_likes_mikmik.jpg' alt='Concentrateur solaire likes mikmik.jpg' loading='lazy'></figure><figure><img src='/images/d/da/Concentrateur_solaire_likes_filmmmmm.png' alt='Concentrateur solaire likes filmmmmm.png' loading='lazy'></figure><figure><img src='/images/thumb/1/1b/Concentrateur_solaire_likes_texteee.jpg/800px-Concentrateur_solaire_likes_texteee.jpg' alt='Concentrateur solaire likes texteee.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/75/Concentrateur_solaire_likes_texxxte.jpg/800px-Concentrateur_solaire_likes_texxxte.jpg' alt='Concentrateur solaire likes texxxte.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/Concentrateur_solaire_likes_imagggee_projettt.jpg/800px-Concentrateur_solaire_likes_imagggee_projettt.jpg' alt='Concentrateur solaire likes imagggee projettt.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a3/Concentrateur_solaire_likes_mikmik.jpg/800px-Concentrateur_solaire_likes_mikmik.jpg' alt='Concentrateur solaire likes mikmik.jpg' loading='lazy'></figure><figure><img src='/images/d/da/Concentrateur_solaire_likes_filmmmmm.png' alt='Concentrateur solaire likes filmmmmm.png' loading='lazy'></figure><figure><img src='/images/thumb/1/1b/Concentrateur_solaire_likes_texteee.jpg/800px-Concentrateur_solaire_likes_texteee.jpg' alt='Concentrateur solaire likes texteee.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/75/Concentrateur_solaire_likes_texxxte.jpg/800px-Concentrateur_solaire_likes_texxxte.jpg' alt='Concentrateur solaire likes texxxte.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/Concentrateur_solaire_likes_imagggee_projettt.jpg/800px-Concentrateur_solaire_likes_imagggee_projettt.jpg' alt='Concentrateur solaire likes imagggee projettt.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour obtenir un rendement plus élevé on a choisi de placer une parabole sur laquelle on place du film aluminium réfléchissant .<ul><li>placer du film réfléchissant sur toute la parabole .</li><li>placer la parabole à 1 mètre du dôme en plexiglass.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Motorisation</strong><div class='step-images count-6'><figure><img src='/images/thumb/c/c9/Concentrateur_solaire_likes_moteur_brieuc.jpg/800px-Concentrateur_solaire_likes_moteur_brieuc.jpg' alt='Concentrateur solaire likes moteur brieuc.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/Concentrateur_solaire_likes_mach.jpg/800px-Concentrateur_solaire_likes_mach.jpg' alt='Concentrateur solaire likes mach.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c9/Concentrateur_solaire_likes_moteur_brieuc.jpg/800px-Concentrateur_solaire_likes_moteur_brieuc.jpg' alt='Concentrateur solaire likes moteur brieuc.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/Concentrateur_solaire_likes_mach.jpg/800px-Concentrateur_solaire_likes_mach.jpg' alt='Concentrateur solaire likes mach.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c9/Concentrateur_solaire_likes_moteur_brieuc.jpg/800px-Concentrateur_solaire_likes_moteur_brieuc.jpg' alt='Concentrateur solaire likes moteur brieuc.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/Concentrateur_solaire_likes_mach.jpg/800px-Concentrateur_solaire_likes_mach.jpg' alt='Concentrateur solaire likes mach.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>On utilise un moteur pas a pas de 2N/m de couple pour que notre tracker puisse suivre le soleil.</li><li>On relie le moteur avec la mâchoire de tuyau.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Montage du condensateur</strong><div class='step-images count-2'><figure><img src='/images/thumb/a/a2/Concentrateur_solaire_likes_bruhhhh.jpg/800px-Concentrateur_solaire_likes_bruhhhh.jpg' alt='Concentrateur solaire likes bruhhhh.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a2/Concentrateur_solaire_likes_bruhhhh.jpg/800px-Concentrateur_solaire_likes_bruhhhh.jpg' alt='Concentrateur solaire likes bruhhhh.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Commencer par monter le dôme:<ul><li>bien placer les deux demi sphères avec le socle de récupération d'eau sale au centre.</li><li>relier la pompe à une source d'eau sale.</li><li>alimenter la pompe grâce à la batterie solaire.</li><li>placer un seau pour récupérer l'eau propre sous la vanne pneumatique.</li></ul></li><li>Réaliser le montage du tracker solaire:<ul><li>souder le dôme grâce à un tube en métal à la hauteur de la parabole.</li><li>y relier le moteur pas à pas sur le pignon qui tourne.</li></ul></li><li>Activer le programme arduino.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Utilisation</strong><p><strong>Étapes :</strong></p><ol><li>Pour une utilisation optimale il faut placer notre concentrateur solaire dans une zone ou il y a peu d'ombre et orienté au maximum vers le soleil( le tracker solaire arrivera a suivre l'orientation du soleil).</li><li>Attention, on rappelle qu’il ne faut pas s’absenter trop longtemps lorsqu’un concentrateur est en marche ! Il faut toujours garder un œil dessus car c’est une machine puissante. Il ne faut pas la laisser sans aucune surveillance.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Conclusion</strong><p><strong>Étapes :</strong></p><ol><li>Pour faire évoluer le projet on pourrais:<ul><li>ajouter des capteurs intelligents pour surveiller la température, la salinité, le niveau d’eau, etc.</li><li>utiliser des matériaux recyclés et recyclables dans la construction.</li></ul></li><li>Mais ce sont des évolutions pas forcement obligatoire le projet peut tout à fait fonctionner sans .</li><li>Attention au temps qui passe vite lors des temps de projet !!</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

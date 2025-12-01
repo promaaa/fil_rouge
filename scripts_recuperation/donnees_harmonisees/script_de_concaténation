@@ -1,0 +1,239 @@
+import json
+import os
+from pathlib import Path
+import re
+from urllib.parse import urlparse
+
+# ========== CONFIG ==========
+# Ce script est placé dans : maker_lens/scripts_recuperation/donnees_harmonisees
+BASE_DIR = Path(__file__).resolve().parent
+
+# Dossier où sont les JSON bruts :
+# → c'est exactement donnees_harmonisees et ses sous-dossiers
+RAW_DIR = BASE_DIR
+
+# Fichier de sortie pour l'interface :
+# maker_lens/interface/js/data.js
+# BASE_DIR.parent -> scripts_recuperation
+# BASE_DIR.parents[1] -> maker_lens
+PROJECT_ROOT = BASE_DIR.parents[1]
+OUTPUT_FILE = PROJECT_ROOT / "interface" / "js" / "data.js"
+# ============================
+
+
+def fix_relative_image_urls_in_html(html, source_url):
+    """
+    Remplace src="/images/..." par src="<origin>/images/..."
+    en se basant sur l'URL source (ex: https://wikifab.org/wiki/Truc).
+    """
+    if not isinstance(html, str) or not source_url:
+        return html
+
+    try:
+        origin = "{uri.scheme}://{uri.netloc}".format(uri=urlparse(source_url))
+    except Exception:
+        return html
+
+    # Remplace les chemins relatifs commençant par /images
+    def repl(match):
+        quote = match.group(1)
+        path = match.group(2)
+        if path.startswith("/images"):
+            return f'src={quote}{origin}{path}{quote}'
+        return match.group(0)
+
+    return re.sub(r'src=(["\'])(/[^"\']*)\1', repl, html)
+
+
+def normalize_tutorial(t):
+    """Transforme un JSON harmonisé en ancien format utilisé par l'interface."""
+
+    out = {}
+
+    # ---- TITRE ----
+    if isinstance(t.get("titre"), str):
+        out["titre"] = [t["titre"]]
+    else:
+        out["titre"] = t.get("titre", [])
+
+    # ---- IMAGE PRINCIPALE ----
+    if t.get("main_image_url"):
+        out["image"] = [{
+            "url": t["main_image_url"],
+            "alt": t.get("titre", ""),
+            "description": t.get("main_image_caption", "")
+        }]
+
+    # ---- INTRODUCTION ----
+    intro_block = []
+
+    if t.get("intro"):
+        intro_block.append({"titre": t["intro"], "sous_items": []})
+
+    if t.get("intro_items"):
+        intro_block.append({
+            "titre": "",
+            "sous_items": t["intro_items"]
+        })
+
+    if intro_block:
+        out["introduction"] = intro_block
+
+    # ---- METADONNEES ----
+    if t.get("difficulte"):
+        out["difficulté"] = [t["difficulte"]]
+
+    if t.get("duree"):
+        out["durée"] = [t["duree"]]
+
+    if t.get("cout"):
+        out["coût"] = [t["cout"]]
+
+    if t.get("source_link"):
+        out["liens"] = [t["source_link"]]
+
+    # ---- MATERIAUX ----
+    if t.get("materiaux"):
+        out["matériaux"] = [{
+            "titre": "Liste",
+            "sous_items": t["materiaux"]
+        }]
+
+    # ---- OUTILS ----
+    if t.get("outils"):
+        out["outils"] = [{
+            "titre": "Liste",
+            "sous_items": t["outils"]
+        }]
+
+    # ---- ETAPES ----
+    etapes = t.get("etapes", [])
+    converted_steps = []
+
+    for i, e in enumerate(etapes, start=1):
+        html = e.get("html", "")
+
+        converted_steps.append({
+            "numero": i,
+            "titre": f"Étape {i}",
+            "solutions": [
+                {
+                    "objectif": "",
+                    "description": html,
+                    "images": []
+                }
+            ]
+        })
+
+    if converted_steps:
+        out["étapes"] = converted_steps
+
+    return out
+
+def preprocess_tutorial_html(tuto):
+    """Corrige les URLs relatives dans les champs HTML du tuto."""
+    source_url = tuto.get("source_link") or tuto.get("url") or ""
+
+    # 1) intro si tu as un champ HTML brut (facultatif)
+    if isinstance(tuto.get("intro"), str):
+        tuto["intro"] = fix_relative_image_urls_in_html(tuto["intro"], source_url)
+
+    # 2) étapes harmonisées (ton cas Wikifab : etapes[i]["html"])
+    if isinstance(tuto.get("etapes"), list):
+        for etape in tuto["etapes"]:
+            if isinstance(etape, dict) and "html" in etape:
+                etape["html"] = fix_relative_image_urls_in_html(etape["html"], source_url)
+
+    return tuto
+
+
+def load_all_tutorials():
+    tutorial_data = {}
+    json_files_found = 0
+
+    print(f"🔍 Recherche de JSON dans : {RAW_DIR} (existe = {RAW_DIR.exists()})")
+
+    if not RAW_DIR.exists():
+        print("❌ Le dossier RAW_DIR n'existe pas, vérifie le chemin dans le script.")
+        return tutorial_data
+
+    # Parcours récursif : dossiers par site, puis sous-dossiers html/json, etc.
+    for root, _, files in os.walk(RAW_DIR):
+        for fname in files:
+            if not fname.lower().endswith(".json"):
+                continue
+
+            path = Path(root) / fname
+            json_files_found += 1
+            print(f"  📄 Fichier JSON trouvé : {path}")
+
+            with path.open("r", encoding="utf-8") as f:
+                content = json.load(f)
+
+            # Cas 1 : le fichier contient déjà un mapping {id: tuto, ...}
+            if (
+                isinstance(content, dict)
+                and all(isinstance(v, dict) for v in content.values())
+                and not ("titre" in content or "image" in content)
+            ):
+                for key, tuto in content.items():
+                    if key in tutorial_data:
+                        print(f"[WARN] Clé '{key}' déjà présente, écrasée par {path}")
+                    tuto = normalize_tutorial(tuto)
+                    tuto = preprocess_tutorial_html(tuto)
+                    tutorial_data[key] = tuto
+
+            else:
+                # Cas 2 : un seul tuto par fichier
+                tuto = content
+
+                if "id" in tuto:
+                    key = tuto["id"]
+                elif "titre" in tuto and isinstance(tuto["titre"], list) and tuto["titre"]:
+                    key = tuto["titre"][0]
+                else:
+                    # fallback : nom du fichier sans extension
+                    key = path.stem
+
+                # Normalisation de la clé
+                key_norm = (
+                    str(key)
+                    .strip()
+                    .replace(" ", "_")
+                    .replace("/", "_")
+                )
+
+                if key_norm in tutorial_data:
+                    print(f"[WARN] Clé '{key_norm}' déjà présente, ajout suffixe.")
+                    suffix = 2
+                    new_key = f"{key_norm}_{suffix}"
+                    while new_key in tutorial_data:
+                        suffix += 1
+                        new_key = f"{key_norm}_{suffix}"
+                    key_norm = new_key
+
+                tuto = normalize_tutorial(tuto)
+                tuto = preprocess_tutorial_html(tuto)
+                tutorial_data[key_norm] = tuto
+
+    print(f"📊 Nombre total de fichiers JSON trouvés : {json_files_found}")
+    print(f"📊 Nombre total de tutoriels chargés : {len(tutorial_data)}")
+
+    return tutorial_data
+
+
+def main():
+    tutorials = load_all_tutorials()
+
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+    with OUTPUT_FILE.open("w", encoding="utf-8") as f:
+        f.write("window.tutorialData = ")
+        json.dump(tutorials, f, ensure_ascii=False, indent=4)
+        f.write(";\n")
+
+    print(f"✅ Généré {OUTPUT_FILE} avec {len(tutorials)} tutoriels.")
+
+
+if __name__ == "__main__":
+    main()

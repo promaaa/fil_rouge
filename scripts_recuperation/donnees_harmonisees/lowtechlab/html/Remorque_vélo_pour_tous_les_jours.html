@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Remorque vélo pour tous les jours</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Remorque vélo pour tous les jours</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/8/85/Remorque_v_lo_pour_tous_les_jours_IMG_20210806_174206_5.jpg/ia-b0b9b2b3d1f487cd43f074915c18c160-px-Remorque_v_lo_pour_tous_les_jours_IMG_20210806_174206_5.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Petite remorque vélo légère (6 kg) et super agréable à rouler, pour tous les jours ou voyager confortablement avec des bagages.</div>
+        
+      </div>
+    
+    
+      
+        <p>Le vélo c'est super, mais pour véritablement remplacer la voiture bien souvent il manque un coffre. Voici donc une petite remorque légère (6 kg environ) et pas cher dont je ne peux plus me passer dés que je vais faire les courses, rend visite, voyage, etc. Et quel plaisir de pouvoir pédaler sans sac à dos! Plus de 3000 km effectués à ce jour, c'est dire :D. Contrairement aux remorques mono-roues qui se balancent de façon très désagréable (en tout cas celle que j'ai testé), celle-ci passerait presque inaperçue si ce n'est le poids supplémentaire du chargement évidemment ;)</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 40 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Remorque_vélo_pour_tous_les_jours" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Remorque_vélo_pour_tous_les_jours</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>2 roues de vélo d'enfant, diamètre 16" c'est parfait, fixation avec écrous, une avant et une arrière ça va bien. Vélos faciles à trouver d'occasion pour 30€ environs...</li><li>2 équerres bien rigides (2x plus larges/solides que celles de la vidéo que j'ai remplacé après 2 semaines) avec si possible un trou central qui permet de passer les axes des roues (>= d10 mm) sinon il faudra percer et c'est pas forcément facile... Là j'ai des équerres qui font environ 8 cm de large en acier 2mm et je transporte 20 kg sans souci...</li><li>Un "attelage universel de remorque de vélo" ou "bicycle trailer connector" (voir vidéo) à 10 € sur votre site chinois favori ou un ressort de sommier pour les plus bricoleurs</li><li>2 liteaux (bois) de 20x60x400 et 20x60x340 environs (en mm)</li><li>1 panneau bois (osb ou autre) de 12x400x600</li><li>1 tube acier ou alu de 1,5 m de long possible à plier (pas top épais) et dont le diamètre intérieur est >= au diamètre du ressort de l'attelage universel ci-dessus. Celui de la vidéo a cassé après 1400 km, je l'ai remplacé pas un autre un peu plus costaud et c'est nickel!</li><li>1 cagette de récup de 400x600 (super léger)</li><li>Vis à bois d4x25</li><li>2 vis d'assemblage M5x50 et 2 écrous M5 auto-freinés (type nylstop, sinon ils vont finir par se dévisser avec les vibrations)</li><li>Une tige en bois d8x100 pour tenir le drapeau</li><li>Un drapeau orange ou autre truc léger et bien visible^^</li><li>...</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Des clefs à fourche pour serrer les écrous des roues</li><li>Un mètre pour aligner les roues</li><li>De quoi visser des vis à bois (visseuse pratique mais une main et un tournevis ça va aussi et ça dure plus longtemps)</li><li>De quoi visser les vis d'assemblage M5 et leurs écrous (clef/douille/pince...)</li><li>De quoi plier le tube (un endroit où le coincer et si nécessaire de quoi le chauffer un peu, comme une lampe à souder, un chalumeau ou un feu dehors :D )</li><li>...</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Train roulant</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e5/Remorque_v_lo_pour_tous_les_jours_2.png/800px-Remorque_v_lo_pour_tous_les_jours_2.png' alt='Remorque v lo pour tous les jours 2.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c5/Remorque_v_lo_pour_tous_les_jours_3.png/800px-Remorque_v_lo_pour_tous_les_jours_3.png' alt='Remorque v lo pour tous les jours 3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0c/Remorque_v_lo_pour_tous_les_jours_4.png/800px-Remorque_v_lo_pour_tous_les_jours_4.png' alt='Remorque v lo pour tous les jours 4.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cd/Remorque_v_lo_pour_tous_les_jours_5.png/800px-Remorque_v_lo_pour_tous_les_jours_5.png' alt='Remorque v lo pour tous les jours 5.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Vissez avec 1 vis chacune les équerres aux extrémités du bois de 20x60x400</li><li>Visser les roues aux équerres et bien serrer les écrous (mettre du frein filet si possible sinon ce ne sera qu'une question de temps avant le déserrage, après 1000 km parcourus chez moi..)</li><li>Aligner les roues à l'aide du mètre: même distance entre les roues à l'avant et à l'arrière (cf- vidéo)</li><li>Visser 2 vis supplémentaires à travers chaque équerre une fois les roues bien alignées</li></ul></li><li>Pour les détails voir la vidéo ci-dessus ;)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Plateau et axe</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8d/Remorque_v_lo_pour_tous_les_jours_6.png/800px-Remorque_v_lo_pour_tous_les_jours_6.png' alt='Remorque v lo pour tous les jours 6.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/50/Remorque_v_lo_pour_tous_les_jours_IMG_20230309_115838_733.jpg/800px-Remorque_v_lo_pour_tous_les_jours_IMG_20230309_115838_733.jpg' alt='Remorque v lo pour tous les jours IMG 20230309 115838 733.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Pour plier le tube après 20 cm à 30° vers la droite (vers axe roue arrière vélo) puis environ 1 m plus loin vers le haut (support fanion) : Mieux que la lampe à souder c'est le chalumeau ou laisser la barre 15 mn dans un feu (bien plus chaud donc plus facile à cintrer proprement, mais gare aux brûlures). Utiliser ensuite si possible de gros tubes acier pour faire levier et plier, ou serrer dans un étau et taper à la massette (gros marteau)...</li><li>Positionner le bois de 20x60x340 et le tube entre les équerres sur le bois de 20x60x400</li><li>Visser le bois de 20x60x340 sur le bois de 20x60x400 en laissant la place pour le tube côté gauche</li><li>Visser le panneau bois de 12x400x600 sur le bois de 20x60x340 avec 2/3 du plateau vers l'avant et 1/3 vers l'arrière pour des questions de stabilité (poids sur l'avant)</li><li>Fixer le tube au panneau bois à l'aide des vis d'assemblages M5x50</li></ul></li><li>Pour les détails voir la vidéo ci-dessus ;)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Attelage et finitions</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/14/Remorque_v_lo_pour_tous_les_jours_7.png/800px-Remorque_v_lo_pour_tous_les_jours_7.png' alt='Remorque v lo pour tous les jours 7.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Remorque_v_lo_pour_tous_les_jours_8.png/800px-Remorque_v_lo_pour_tous_les_jours_8.png' alt='Remorque v lo pour tous les jours 8.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b4/Remorque_v_lo_pour_tous_les_jours_9.png/800px-Remorque_v_lo_pour_tous_les_jours_9.png' alt='Remorque v lo pour tous les jours 9.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/05/Remorque_v_lo_pour_tous_les_jours_10.png/800px-Remorque_v_lo_pour_tous_les_jours_10.png' alt='Remorque v lo pour tous les jours 10.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0a/Remorque_v_lo_pour_tous_les_jours_IMG_20230309_115740_518.jpg/800px-Remorque_v_lo_pour_tous_les_jours_IMG_20230309_115740_518.jpg' alt='Remorque v lo pour tous les jours IMG 20230309 115740 518.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Percer le tube au niveau de la boucle du ressort de l'attelage</li><li>Insérer le ressort dans le tube et le tenir en place avec un fil de fer plié, une goupille ou autre</li><li>Visser la cagette sur le plateau</li><li>Mettre le tube en bois et le fanion</li><li>Fixer la pièce de l'attelage sur le vélo</li><li>Atteler la remorque au vélo</li></ul></li><li>Bravo! C'est fini! C'est le moment d'aller tester tout ça :D</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Entretiens et bonus !</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/35/Remorque_v_lo_pour_tous_les_jours_IMG_20240622_162617.jpg/800px-Remorque_v_lo_pour_tous_les_jours_IMG_20240622_162617.jpg' alt='Remorque v lo pour tous les jours IMG 20240622 162617.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/06/Remorque_v_lo_pour_tous_les_jours_IMG_20240622_162653.jpg/800px-Remorque_v_lo_pour_tous_les_jours_IMG_20240622_162653.jpg' alt='Remorque v lo pour tous les jours IMG 20240622 162653.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/88/Remorque_v_lo_pour_tous_les_jours_Remorque_Benoist.jpg/800px-Remorque_v_lo_pour_tous_les_jours_Remorque_Benoist.jpg' alt='Remorque v lo pour tous les jours Remorque Benoist.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Niveau entretiens pas grand chose à prévoir si ce n'est que les roulements des roues de vélo d'enfant sont souvent très mal protégés, à tel point qu'on peut carrément voir les billes! Personnellement je les baigne de graisse à chaîne pour temps humide (graisse collante qui va bien protéger les billes) 1-2x par an et après chaque trajet sous la pluie. C'est tout! :)</li><li>Bonus: Deux ans et 3000 km plus tard, la remorque est agrandie pour pouvoir transporter le chien, avec un vieil anorak bleu en guide de bâche (bravo Gaëlle). Et comme elle est bien plus grosse et beaucoup plus visible même plus besoin de fanion :).</li><li>Aussi ajout de l'atelage rapide qui permet de monter la remorque facilement sur différents vélo :)</li><li>Enfin Benoist nous fait le plaisir de partager une photo de sa remorque avec grand plateau pour transporter une planche de wingsurf (71 cm de large et plus de 15 kg), merci à lui !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Infrastructure d'entraide inconditionelle</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Infrastructure d'entraide inconditionelle</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/c/ca/Infrastructure_d_entraide_inconditionelle_frigo.jpg/ia-d4529180afd40f023ea568aa9564271d-px-Infrastructure_d_entraide_inconditionelle_frigo.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Infrastructure d'entraide inconditionelle: Frigo d’entraide inconditionnelle (« Community fridge » de la « mutual aid » américaine à la sauce locale) L’entraide plutot que la charité, pour éviter la bonne conscience des riches et encourager la transformation sociale. Pourquoi pas adapter l’idée à la sauce locale ? Faire un frigo d’entraide. Un frigo d’entraide inconditionnelle. Un frigo républicain ? pour se réapproprier un symbole qui s’est un peu droitisé, qui sonne un peu trop laïcité islamophobe quand on écoute la propagande. Un frigo « de chacun selon ses capacités, à chacun selon ses besoins ». Un frigo où tu peux donner et prendre du bio, de l’indus, du hallal, du kasher, du végé, du pas végé, du vegan, du pas vegan. Un frigo que tu peux brancher sur des modules photovoltaïques, à un lampadaire ou au bout d’une rallonge branchée en bas d’immeuble.</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment infrastructure d'entraide inconditionelle.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Infrastructure_d_entraide_inconditionelle" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Infrastructure_d_entraide_inconditionelle</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>1 frigo</li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>1 tournevis plat</li><li>1 tournevis testeur</li><li>1 clé lampadaire</li><li>1 ciseau</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Récupérer ou acheter un frigo</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a7/Infrastructure_d_entraide_inconditionelle_IMG_20250616_085212.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250616_085212.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250616 085212.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Leboncoin, recyclerie, etc.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Coller ce texte dessus</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Infrastructure_d_entraide_inconditionelle_IMG_20250624_204858.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250624_204858.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250624 204858.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Frigo d’entraide inconditionnelle</li><li>(« Community fridge » de la « mutual aid » américaine à la sauce locale)</li><li>L’entraide plutot que la charité, pour éviter la bonne conscience des riches et encourager la transformation sociale. Pourquoi pas adapter l’idée à la sauce locale ? Faire un frigo d’entraide. Un frigo d’entraide inconditionnelle. Un frigo républicain ? pour se réapproprier un symbole qui s’est un peu droitisé, qui sonne un peu trop laïcité islamophobe quand on écoute la propagande. Un frigo « de chacun selon ses capacités, à chacun selon ses besoins ». Un frigo où tu peux donner et prendre du bio, de l’indus, du hallal, du kasher, du végé, du pas végé, du vegan, du pas vegan. Un frigo que tu peux brancher sur des modules photovoltaïques, à un lampadaire ou au bout d’une rallonge branchée en bas d’immeuble.</li><li>NOURRITURE GRATUITE</li><li>DONNEZ CE QUE VOUS POUVEZ</li><li>PRENEZ CE DONT VOUS AVEZ BESOIN</li><li>PAS DE VIANDE, VOLAILLE, POISSON, ALCOOL DANS LE FRIGO.</li><li>TOUT LES ALIMENTS DOIVENT ETRE ETIQUETES LA DATE D’EXPIRATION ET AVEC LES INGREDIENTS ALLERGENES LE CAS ECHEANT.</li><li>SEULS LES COMMERCES PEUVENT DONNER DES PLATS PREPARES AVEC LE NOM DU COMMERCE DE PROVENANCE.</li><li>LA NOURRITURE CONDITIONNEE DOIT ETRE DANS SON EMBALLAGE D’ORIGINE.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Adapter les branchements</strong><p><strong>Étapes :</strong></p><ol><li>https://www.youtube.com/@onelegstinkybreath</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Repérer les branchements lampadaires</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/91/Infrastructure_d_entraide_inconditionelle_IMG_20250623_185821.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250623_185821.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250623 185821.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/46/Infrastructure_d_entraide_inconditionelle_IMG_20250623_185831.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250623_185831.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250623 185831.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/73/Infrastructure_d_entraide_inconditionelle_IMG_20250623_185825.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250623_185825.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250623 185825.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/33/Infrastructure_d_entraide_inconditionelle_IMG_20250623_185928.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250623_185928.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250623 185928.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Neutre sur neutre,</li><li>Phase sur phase,</li><li>Terre sur metal du lampadaire</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Connecter le frigo</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/bb/Infrastructure_d_entraide_inconditionelle_IMG_20250624_204851.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250624_204851.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250624 204851.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d1/Infrastructure_d_entraide_inconditionelle_IMG_20250625_020233.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250625_020233.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250625 020233.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/42/Infrastructure_d_entraide_inconditionelle_IMG_20250527_203451.jpg/800px-Infrastructure_d_entraide_inconditionelle_IMG_20250527_203451.jpg' alt='Infrastructure d entraide inconditionelle IMG 20250527 203451.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Voir youtube</li><li>Pour infos:</li><li>Cout pour la collectivité (exemple de toulouse):</li><li>2775 lampadaires dans les données open data</li><li>hypothèse 200W pendant 12h tours les jours:<ul><li>200W*12h=2.4kWh</li><li>2.4*2775=6660kWh=6.66MWh</li></ul></li><li>1332€ par jour à 20ct€ du kWh</li><li>Avec 530 000 hab:</li><li>0.0025€ par habitant par jour</li><li>0.91€ par habitant par an</li><li>Un frigo comme celui ci consomme en moyenne 50W sur 24h, cad 4 à 6 fois moins qu'une lampe de lampadaire.</li><li>C'est à dire que si le frigo tournait 24h/24, il consommerait tout de meme 2 à 3 fois moins qu'un lampadaire.</li><li>La fourchette du coût pour la collectivité de 2775 frigos dans toulouse couterait donc entre 0.45€ et 0.3€ par habitant par an.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

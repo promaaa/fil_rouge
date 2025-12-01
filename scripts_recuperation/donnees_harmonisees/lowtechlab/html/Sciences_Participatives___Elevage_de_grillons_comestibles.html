@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sciences Participatives : Elevage de grillons comestibles</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sciences Participatives : Elevage de grillons comestibles</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/c/cb/Mission_5_-_Miam_des_grillons_IMG_1264.jpg/ia-f272a70fdf32177f96f048afdca6df0f-px-Mission_5_-_Miam_des_grillons_IMG_1264.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a été créé dans le cadre de la mission #5 “Miam, des grillons !” du programme de sciences participatives porté par l'association Biosphère Expérience. Il présente les étapes de fabrication de la boîte des grillons à réaliser avant le 31 août 2024 ainsi que le protocole suivi par les volontaires au programme durant les 2 mois d’expérience du 1er septembre au 31 octobre 2024.</div>
+        
+      </div>
+    
+    
+      
+        <p>Projet</p>
+      
+        <p>En parallèle de l'expérience urbaine menée à Boulogne Billancourt par Caroline Pultz, Corentin de Chatelperron et des voisins, Emma Bousquet-Pasturel a conduit un programme de sciences participatives afin d’évaluer la pertinence de 8 systèmes et pratiques low-tech dans le quotidien de citoyens, entreprises et écoles en France et à l’étranger. Au total, 699 expériences ont été menées entre septembre et octobre 2024. Ces expériences citoyennes ont permis de collecter un large panel de données techniques, ergonomiques, sociologiques et psychologiques sur la mise en place et la pratique de ces low-tech au quotidien.</p>
+      
+        <p>Mission #5 : Miam, des grillons !</p>
+      
+        <p>Véritables bombes nutritionnelles, les grillons sont particulièrement riches en vitamines B12 tout en apportant une quantité de protéine similaire à celle des produits carnés conventionnels. Cependant, l’élevage de grillons domestiques émet 100 fois moins de gaz à effet de serre que la production de viande bovine tout en nécessitant 25 fois moins de nourriture, 2000 fois moins d’eau et 15 fois moins d’espace. La mission consistait à expérimenter un élevage de grillons domestique. La décision de consommer ou non les grillons revenait aux volontaires. À noter que les personnes allergiques aux crustacés sont susceptibles d'être allergiques aux grillons.</p>
+      
+        <p>Objectifs</p>
+      
+        <p>L’objectif était d’étudier l’efficacité, l’ergonomie et l’acceptabilité d’un tel élevage adapté au contexte urbain, d’évaluer les éventuels changements de comportements alimentaires engendrés par cette expérience. Les volontaires à cette mission ont expérimenté cette pratique durant 2 mois, de septembre à octobre 2024.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 15 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Sciences_Participatives___Elevage_de_grillons_comestibles" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Sciences_Participatives___Elevage_de_grillons_comestibles</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Ceci est une liste de matériaux exhaustive. Si vous avez déjà certains éléments, nous vous conseillons de favoriser la seconde main et d’adapter les diamètres et dimensions indiqués dans le tutoriel.</li><li>Montage 1 : fabrication de la boîte d'élevage de grillons et du couvercle<ul><li>4 tasseaux: 500 x 25 x 25 mm</li><li>2 planches en bois: 370 x 370 x 20 mm</li><li>4 baguettes d'angle: 525 x 30 x 30 mm</li><li>4 vitres: 350 x 500 mm par 2 mm d'épaisseur</li><li>4 tasseaux pour réaliser le couvercle (ils reprennent les dimensions extérieures de la boîte). Ici, 2 tasseaux de 374 mm et 2 tasseaux de 430 mm</li><li>Tissu de moustiquaire de 450 x 450 mm</li><li>9 boîtes d'œufs (boîte de 20 oeufs)</li><li>un bocal avec couvercle d'environ 200 g</li><li>2 couvercles de bocaux</li><li>Agrafes</li><li>16 vis (ici de 4 mm de diamètre)</li></ul></li><li>Montage 2 : achat d'une boîte d'élevage de grillons et fabrication du couvercle<ul><li>1 boîte plastique d'environ 65 L (ici les dimensions : 560 x 390 x 420 mm)</li><li>4 tasseaux pour réaliser le couvercle (ils reprennent les dimensions extérieures de la boîte). Ici, 2 tasseaux de 394 mm et 2 tasseaux de 624 mm</li><li>Tissu de moustiquaire de 465 x 700 mm</li><li>9 boîtes d'œufs (boîte de 20 oeufs)</li><li>un bocal avec couvercle d'environ 200 g</li><li>2 couvercles de bocaux</li><li>Agrafes</li><li>4 vis (ici de 4 mm de diamètre)</li></ul></li><li>Grillons<ul><li>Dans le cadre de l'expérience, le partenaire France Insectes fournissait des boîtes de 400 grillons à chaque début de cycle. Vous pouvez aussi réaliser le cycle complet d'élevage : filière élevage de grillons comestibles.</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Ceci est une liste d'outils exhaustive à adapter en fonction de ce que vous possédez déjà.</li></ul></li><li>Commun aux deux montages<ul><li>foret à bois : 3 mm (à adapter en fonction de vos vis)</li><li>visseuse / perceuse</li><li>scie sauteuse</li><li>agrafeuse</li><li>mètre</li><li>papier à poncer</li><li>ciseaux</li><li>gants de bricolage</li><li>lunettes de protection</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Démarrez l'expérience !</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Pour plus de détail sur les expériences citoyennes, consultez le rapport d'expérience (en cours d'écriture).</li><li>Ce tutoriel a été modifié par Emma Bousquet-Pasturel en ajoutant des résultats, pistes d'amélioration et retours d'expérience des volontaires au programme, suite à l'analyse des données.</li><li>Nous vous invitons à rejoindre le groupe Facebook "Biosphère - Elevage de grillons" dédié à cette pratique pour faciliter l'organisation (achats groupés, rencontres sur le territoire) et les échanges avec d'autres expérimentateurs.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Choix du montage</strong><p><strong>Étapes :</strong></p><ol><li>A vous de choisir le montage ! Une fois votre choix effectué, référez-vous aux étapes suivantes :<ul><li>Montage 1 (fabrication de la boîte d'élevage de grillons et du couvercle) : Etape 5 à 14</li><li>Montage 2 (achat d'une boîte d'élevage de grillons et fabrication du couvercle) : Etape 15 à 18</li></ul></li><li>Commun aux deux montages : Etape 19 à 24</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Achat du matériel</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>En moyenne, les volontaires ont dépensé 13€ pour construire le dispositif. Ce budget fluctue suivant le montage choisi et le type de matériaux utilisé.</li><li>Avant de faire vos achats, nous vous conseillons fortement de lire en entier le tutoriel, car la liste de matériels peut varier d'un montage à un autre.</li><li>Tout le matériel nécessaire pour les 2 montages peut se trouver dans les magasins de bricolage et de tissu.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Conseils et précautions</strong><p><strong>Étapes :</strong></p><ol><li>Avant de débuter la fabrication, veillez à sécuriser votre espace de travail et à optimiser le rangement de vos outils.<ul><li>Munissez-vous d’outils en bon état et adaptés aux travaux à réaliser</li><li>Lisez attentivement le mode d’emploi des outils et faites attention aux pictogrammes sur les emballages</li><li>Installez-vous dans un endroit dégagé, aéré et bien éclairé</li><li>Equipez-vous des protections nécessaires : gants, chaussures, lunettes, vêtements, casque, masque protecteur, tampons d’oreille (casque/boules quies)...</li><li>Débranchez les outils électriques et refermez les produits lorsque vous ne les utilisez pas</li><li>Demandez de l’aide à votre entourage si vous êtes amené.e.s à manier des charges lourdes (outils, matériaux…)</li></ul></li><li>Ceci est une liste non exhaustive de conseils et précautions.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Les étapes suivantes concernent le montage 1</strong><p><strong>Étapes :</strong></p><ol><li>Vous avez décidé de fabriquer vous-même la boîte d'élevage ? Suivez les étapes suivantes !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Découpes de la structure</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d5/Mission_5_-_Miam_des_grillons_IMG_0199.jpeg/800px-Mission_5_-_Miam_des_grillons_IMG_0199.jpeg' alt='Mission 5 - Miam des grillons IMG 0199.jpeg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/93/Mission_5_-_Miam_des_grillons_sche_ma_final.jpg/800px-Mission_5_-_Miam_des_grillons_sche_ma_final.jpg' alt='Mission 5 - Miam des grillons sche ma final.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les pieds de la structure<ul><li>Découpez 4 tasseaux aux dimensions suivantes : 500 x 25 x 25 mm (voir photos)</li></ul></li><li>Les parois<ul><li>Récupérez ou découpez 4 vitres aux dimensions suivantes : 350 x 500 mm par 2 mm d'épaisseur (voir photos)</li></ul></li><li>Les baguettes d'angles<ul><li>Découpez les 4 baguettes d'angles aux dimensions suivantes : 525 x 30 x 30 mm (voir photos)</li></ul></li><li>La planche A (dessus)<ul><li>Découpez une planche de bois aux dimensions suivantes: 370 x 370 x 20 mm</li><li>Vous retrouverez les explications de la découpe intérieure de la planche A à l'étape 8 du tutoriel (voir photos)</li></ul></li><li>La planche B (dessous)<ul><li>Découpez une planche de bois aux dimensions suivantes: 370 x 370 x 20 mm (voir photos)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Préparation de la planche B (planche inférieure) et de la planche A (cadre supérieur)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1f/Mission_E_sche_ma_trace_.png/800px-Mission_E_sche_ma_trace_.png' alt='Mission E sche ma trace .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Tracés de repère sur les planches A et B<ul><li>Les vitres viendront se placer aux bordures de la planche. Tracez un premier carré en fonction de leur épaisseur. Ici, nous prenons 2 mm du bord (voir tracé violet de la photo 1)</li><li>À chaque coin intérieur du carré obtenu (de 368 mm de coté pour nous) positionnez vos tasseaux et dessinez en les contours (voir tracé blanc de la photo 1)</li><li>Enfin, tracez un second carré reliant les sommets des emplacements des tasseaux (voir tracé vert de la photo 1)</li><li>Vous pouvez dès à présent visualiser la position de vos tasseaux sur la planche.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Découpe du carré intérieur de la planche A</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/54/Mission_5_-_Miam_des_grillons_gr8.png/800px-Mission_5_-_Miam_des_grillons_gr8.png' alt='Mission 5 - Miam des grillons gr8.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6c/Mission_5_-_Miam_des_grillons_gr9.png/800px-Mission_5_-_Miam_des_grillons_gr9.png' alt='Mission 5 - Miam des grillons gr9.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Mission_5_-_Miam_des_grillons_gr10.png/800px-Mission_5_-_Miam_des_grillons_gr10.png' alt='Mission 5 - Miam des grillons gr10.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Pour faciliter cette opération, percer à l'intérieur des 4 angles, des trous suffisamment larges pour y introduire une lame de scie sauteuse (voir photo 2)</li><li>Vous pouvez maintenant procéder à la découpe (voir photo 3)</li><li>Vous obtenez le cadre supérieur ou planche A (voir photo 4)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Fixation des 4 tasseaux à la planche B</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/89/Mission_E_Capture_d_e_cran_2024-07-09_a_16.42.52.png/800px-Mission_E_Capture_d_e_cran_2024-07-09_a_16.42.52.png' alt='Mission E Capture d e cran 2024-07-09 a 16.42.52.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5e/Mission_5_-_Miam_des_grillons_gr5.png/ia-f97bc158452c4f4a64f6f88b44737d19-px-Mission_5_-_Miam_des_grillons_gr5.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Pré-percez la planche B : réaliser des trous au centre des emplacements des tasseaux, d'un diamètre légèrement inférieur à vos vis. Ici, on utilise un foret de 3 mm (voir photo 1)</li><li>Positionnez les tasseaux à leur emplacement et vissez-les à la planche B. Ici, on utilise des vis de 4 mm (voir photo 2)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Finition des tasseaux</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3b/Mission_5_-_Miam_des_grillons_gr3.png/800px-Mission_5_-_Miam_des_grillons_gr3.png' alt='Mission 5 - Miam des grillons gr3.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Appliquez du scotch sur une longueur de 15 cm à l'extrémité extérieure des 4 tasseaux (sur les 4 faces de l'extrémité).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Fixation des baguettes d'angle</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cd/Mission_5_-_Miam_des_grillons_IMG_0200.png/800px-Mission_5_-_Miam_des_grillons_IMG_0200.png' alt='Mission 5 - Miam des grillons IMG 0200.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ea/Mission_5_-_Miam_des_grillons_gr6.png/ia-4f8c2ee9aed01309976e2c3b1617e1f9-px-Mission_5_-_Miam_des_grillons_gr6.png.png' alt='' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d6/Mission_5_-_Miam_des_grillons_gr7.png/800px-Mission_5_-_Miam_des_grillons_gr7.png' alt='Mission 5 - Miam des grillons gr7.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Une fois les baguettes d'angle fixées, la vitre se logera entre celles-ci et les 4 pieds fixés à la planche B.<ul><li>Positionnez les baguettes d'angle à l'extérieur de chaque angle de la planche B (voir photo 1)</li><li>Pré-percez une face des baguettes d'angle et la planche B. Ici, on utilise un foret de 3 mm (voir photo 2)</li><li>Vissez les baguettes d'angle à la planche B. Ici, on utilise des vis de 4 mm (voir photo 3)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Assemblage de la boîte</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/15/Mission_5_-_Miam_des_grillons_gr11.png/800px-Mission_5_-_Miam_des_grillons_gr11.png' alt='Mission 5 - Miam des grillons gr11.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8d/Mission_5_-_Miam_des_grillons_gr12.png/800px-Mission_5_-_Miam_des_grillons_gr12.png' alt='Mission 5 - Miam des grillons gr12.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/ab/Mission_5_-_Miam_des_grillons_gr13.png/800px-Mission_5_-_Miam_des_grillons_gr13.png' alt='Mission 5 - Miam des grillons gr13.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/50/Mission_5_-_Miam_des_grillons_gr14.png/800px-Mission_5_-_Miam_des_grillons_gr14.png' alt='Mission 5 - Miam des grillons gr14.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Installation des vitres (voir photo 1 et 2)<ul><li>Glissez les 4 vitres entre les pieds et les baguettes d'angles</li></ul></li><li>Fixation des baguettes d'angle à la planche A (voir photo 3)<ul><li>Pré-percez une face des baguettes d'angle et la planche A (attention à ne pas perçer la vitre). Ici, on utilise un foret de 3 mm</li><li>Vissez les baguettes d'angle à la planche B. Ici, on utilise des vis de 4 mm</li></ul></li><li>Fixation de la planche A aux 4 pieds (voir photo 4)<ul><li>Pré-percez la planche A et les 4 pieds en leur centre. Ici, on utilise un foret de 3 mm</li><li>Vissez la planche A aux 4 pieds. Ici, on utilise des vis de 4 mm</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Le couvercle</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/71/Mission_5_-_Miam_des_grillons_gr15.png/800px-Mission_5_-_Miam_des_grillons_gr15.png' alt='Mission 5 - Miam des grillons gr15.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découpes<ul><li>Coupez 4 tasseaux qui reprennent les dimensions extérieures de la boîte. Ici, on découpe 2 tasseaux de 374 mm (marge de 4 mm) et 2 tasseaux de 430 mm (374 + 2 épaisseurs d'un tasseaux de 30 mm)</li></ul></li><li>Assemblage<ul><li>Assemblez les tasseaux pour créer un cadre</li><li>Découpez un morceau de moustiquaire plus grand que le cadre</li><li>Agrafez la moustiquaire à ce cadre</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Finalisation de la boîte d'élevage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/0d/Mission_5_-_Miam_des_grillons_PS5A1490.JPG/800px-Mission_5_-_Miam_des_grillons_PS5A1490.JPG' alt='Mission 5 - Miam des grillons PS5A1490.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Placez les 9 boîtes d'œufs verticalement sans les coller à l'intérieur de la boîte.</li><li>Assemblez les boîtes d'œufs en positionnant les faces rugueuses entre elles. De la même manière, les faces lisses s'assemblent entre elles.</li><li>Votre boîte à grillons est maintenant prête à être utilisée !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Les étapes suivantes concernent le montage 2</strong><p><strong>Étapes :</strong></p><ol><li>Vous avez décidé de réaliser le montage 2 ? Suivez les étapes suivantes !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - La boîte</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9b/Mission_5_-_Miam_des_grillons_PL1.png/800px-Mission_5_-_Miam_des_grillons_PL1.png' alt='Mission 5 - Miam des grillons PL1.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Munissez-vous d'un bac en plastique d'environ 65 L. Ici, nous utilisons une boîte aux dimensions extérieures suivantes : 560x390x420 mm</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Le couvercle</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/25/Mission_5_-_Miam_des_grillons_pl3.png/800px-Mission_5_-_Miam_des_grillons_pl3.png' alt='Mission 5 - Miam des grillons pl3.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/78/Mission_5_-_Miam_des_grillons_pl2.png/800px-Mission_5_-_Miam_des_grillons_pl2.png' alt='Mission 5 - Miam des grillons pl2.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Découpes<ul><li>Coupez 4 tasseaux qui reprennent les dimensions extérieures de la boîte. Ici, on découpe 2 tasseaux de 394 mm (4 mm de marge) et 2 tasseaux de 624 (564 + 2 épaisseurs d'un tasseau de 30 mm)</li></ul></li><li>Assemblage<ul><li>Assemblez les tasseaux pour créer un cadre</li><li>Découpez un morceau de moustiquaire plus grand que le cadre</li><li>Agrafez la moustiquaire à ce cadre</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Finalisation de la boîte d'élevage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1b/Mission_5_-_Miam_des_grillons_PS5A1499.JPG/800px-Mission_5_-_Miam_des_grillons_PS5A1499.JPG' alt='Mission 5 - Miam des grillons PS5A1499.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Placez les 9 boîtes d'œufs verticalement sans les coller à l'intérieur de la boîte.</li><li>Assemblez les boîtes d'œufs en positionnant les faces rugueuses entre elles. De la même manière, les faces lisses s'assemblent entre elles.</li><li>Votre boîte à grillons est maintenant prête à être utilisée !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - Mise en place de la boîte d'élevage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8c/Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-07-20_a_09.09.07.png/800px-Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-07-20_a_09.09.07.png' alt='Mission 5 - Miam des grillons Capture d e cran 2024-07-20 a 09.09.07.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Pour se développer, les grillons ont besoin d’un endroit calme où ils bénéficieront de 12 à 14h de luminosité. Il faut par ailleurs évitez de placer la boîte dans un endroit ensoleillé (les grillons ne supportent pas les fortes chaleurs).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - Nourriture des grillons</strong><div class='step-images count-3'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/66/Mission_5_-_Miam_des_grillons_ce_re_ale.jpg/800px-Mission_5_-_Miam_des_grillons_ce_re_ale.jpg' alt='Mission 5 - Miam des grillons ce re ale.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/22/Mission_5_-_Miam_des_grillons_IMG_9103-01.png/800px-Mission_5_-_Miam_des_grillons_IMG_9103-01.png' alt='Mission 5 - Miam des grillons IMG 9103-01.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fc/Mission_5_-_Miam_des_grillons_IMG_1254.jpg/800px-Mission_5_-_Miam_des_grillons_IMG_1254.jpg' alt='Mission 5 - Miam des grillons IMG 1254.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le régime alimentaire des grillons se compose principalement d'un mélange de céréales en poudre. Nous vous conseillons d'acheter les ingrédients en poudre ou bien de les concasser vous-même.</li><li>Les quantités indiquées sont adaptées pour un bocal d'environ 200 g, ce qui devrait suffire pour les 2 mois d'expérience. Si besoin, reprenez la recette pour faire un nouveau pot de nourriture.<ul><li>Dans un saladier, mélangez les ingrédients suivants :</li><li>112,5 g de son de blé en poudre</li><li>66 g de farine de maïs</li><li>51 g de soja en poudre</li><li>45 g d'avoine en poudre</li><li>2 cuillères à soupe d’huile de colza</li></ul></li><li>Le total vous coûtera environ 1.5 € par pot.</li><li>2. Transférez le mélange dans un bocal d'environ 200 g</li><li>3. Utilisez un couvercle de bocal pour y déposer la nourriture des grillons dans la boîte.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Abreuvoir des grillons</strong><p><strong>Étapes :</strong></p><ol><li>Technique 1 :<ul><li>Remplissez-le couvercle d'eau et de billes d'argile (ou pouzzolane, ou gravier) pour évitez que les grillons ne se noient au stade bébé.</li><li>Positionnez-le dans la boite</li><li>Utiliser un abreuvoir à abeille qui demande encore moins de maintenance</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>22. Étape 22 - Maintenance et suivi</strong><p><strong>Étapes :</strong></p><ol><li>La maintenance quotidienne consiste à s’assurer qu’il ne manque ni eau, nourriture ou chaleur.</li><li>Temps de maintenance : 4 minutes par jour</li><li>Nourriture et eau<ul><li>Assurez-vous que les couvercles d’eau et de nourriture ne soient jamais vides</li></ul></li><li>Suivi de la croissance<ul><li>Nous vous encourageons à noter vos observations sur la croissance et de partager vos astuces sur le groupe Facebook "Grillons"</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>23. Étape 23 - Récolte des grillons (version 1)</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/1/1b/Sciences_Participatives_-_Elevage_de_grillons_comestibles_WhatsApp_Image_2024-09-26_at_11.17.59_1_.jpeg' alt='Sciences Participatives - Elevage de grillons comestibles WhatsApp Image 2024-09-26 at 11.17.59 1 .jpeg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette technique vous permettra de récolter des grillons au jour le jour.<ul><li>Placez une bouteille en verre à l'intérieur de la boîte d'élevage</li><li>Placez un bout de ficelle qui descend assez bas dans la bouteille (mais pas tout en bas) et proche du sol à l’extérieur de la bouteille</li><li>A l’intérieur de la bouteille, vous pouvez placer des aromatiques comme de la menthe ou du basilic. Les grillons vont être attirés par ces aromatiques : ils vont grimper sur la corde puis tomber dans la bouteille sans pouvoir faire le chemin inverse</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>24. Étape 24 - Récolte des grillons (version 2)</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5c/Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-09-13_a_12.19.24.png/800px-Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-09-13_a_12.19.24.png' alt='Mission 5 - Miam des grillons Capture d e cran 2024-09-13 a 12.19.24.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a2/Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-09-16_a_11.25.58.png/800px-Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-09-16_a_11.25.58.png' alt='Mission 5 - Miam des grillons Capture d e cran 2024-09-16 a 11.25.58.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/b/ba/Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-09-13_a_12.23.49.png' alt='Mission 5 - Miam des grillons Capture d e cran 2024-09-13 a 12.23.49.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/a/a2/Mission_5_-_Miam_des_grillons_contenants.png/800px-Mission_5_-_Miam_des_grillons_contenants.png' alt='Mission 5 - Miam des grillons contenants.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cette technique vous permettra de récolter tous les grillons en une seule fois.</li><li>Transvasez les grillons dans un premier contenant<ul><li>Assurez-vous que les grillons aient bien atteint leur maturité, généralement après 3 à 4 semaines d'élevage.</li><li>Transvasez les grillons de la boite d'élevage dans une autre contenant en utilisant les boites d'oeufs : secouez les boite d'oeufs pour faire tomber les grillons (voir photo 1)</li><li>S'il reste des grillons dans la boite d'élevage, replacez les boite d'oeufs à l'intérieur et attendez quelques minutes que les grillons se mettent dessus. Puis, réitérez l'opération jusqu'à avoir transvaser tous les grillons dans le nouveau contenant</li></ul></li><li>Transvasez les grillons dans un second contenant</li><li>A ce stade, vous avez collecter les grillons dans un premier contenant mais il est très probable que vous ayez des restes de nourriture et des mues de grillons (voir photo 2). Vous pouvez donc transvaser une seconde fois les grillons dans un nouveau contenant pour enlever ces restes.<ul><li>Penchez votre premier contenant (avec une légère pente) afin que les grillons sautent dans le second contenant (voir photo 3). Faite attention à ne pas faire glisser les restes de nourriture ou les mues dans le second contenant</li><li>Si vous n'arrivez pas à récupérer tous les grillons de cette manière, utilisez une boite à oeuf pour récolter les derniers grillons du premier contenant (voir photo 4)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>25. Étape 25 - Consommation des grillons</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/6/6e/Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-09-13_a_12.34.43.png' alt='Mission 5 - Miam des grillons Capture d e cran 2024-09-13 a 12.34.43.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/8/8d/Mission_5_-_Miam_des_grillons_Capture_d_e_cran_2024-09-13_a_12.33.09_1.png' alt='Mission 5 - Miam des grillons Capture d e cran 2024-09-13 a 12.33.09 1.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>La décision de consommer des grillons vous revient entièrement. À noter que les personnes allergiques aux crustacés sont susceptibles d'être allergiques aux grillons.</li><li>Consommation des grillons<ul><li>Faite bouillir une casserole d'eau chaude</li><li>Une fois l'eau bouillante, placez un panier vapeur (ou un égoutoire en métal) dans la casserole puis verser les grillons à l'intérieur. Attendez quelques minutes avant de sortir le panier vapeur (ou l'égoutoire). Vous pouvez conserver l'eau chaude pour d'autre cuisson ou pour la valoriser une fois froide</li><li>Cuisinez les grillons selon vos goûts. Rendez-vous à l'étape suivante pour découvrir des idées de recettes !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>26. Étape 26 - Exemples de préparations pour la consommation</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3a/Sciences_Participatives_-_Elevage_de_grillons_comestibles_Capture_d_e_cran_2025-02-26_a_10.51.37.png/800px-Sciences_Participatives_-_Elevage_de_grillons_comestibles_Capture_d_e_cran_2025-02-26_a_10.51.37.png' alt='Sciences Participatives - Elevage de grillons comestibles Capture d e cran 2025-02-26 a 10.51.37.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Grillons grillés (recette favorite des volontaires au programme)</li><li>Vous pouvez saisir les grillons dans une poêle avec de l'huile pendant 5 minutes, jusqu'à ce qu'ils soient croustillants. Ils peuvent être consommés tels quels, ou assaisonnés avec des épices pour plus de saveur. Ils peuvent être ajoutés à des salades, des soupes ou des plats principaux pour un apport en protéines.</li><li>Salade de Grillons Croquants (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>1 cuillère à soupe d'huile d'olive</li><li>1 gousse d'ail émincée</li><li>1 concombre, tranché finement</li><li>1 poivron rouge, coupé en dés</li><li>1 carotte râpée</li><li>10 tomates cerises, coupées en deux</li><li>50 g de feta émiettée</li><li>Quelques feuilles de menthe et de coriandre</li><li>Jus d'un citron</li><li>Sel et poivre</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile d'olive dans une poêle à feu moyen.</li><li>Ajoutez l'ail émincé et faites-le revenir jusqu'à ce qu'il soit doré.</li><li>Ajoutez les grillons et faites-les sauter jusqu'à ce qu'ils soient croustillants, environ 5 minutes.</li><li>Dans un grand saladier, mélangez le concombre, le poivron, la carotte, et les tomates cerises.</li><li>Ajoutez les grillons croustillants et mélangez bien.</li><li>Ajoutez la feta émiettée et les feuilles de menthe et de coriandre.</li><li>Assaisonnez avec du jus de citron, du sel et du poivre.</li><li>Servez frais.</li></ul></li><li>Grillons au reblochon (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>150 g de Reblochon</li><li>1 cuillère à soupe d'huile d'olive</li><li>1 gousse d'ail émincée</li><li>Sel et poivre</li><li>Quelques brins de ciboulette pour la décoration</li><li>Pain</li><li>Accompagnement : une petite salade fraicheur</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile d'olive dans une poêle à feu moyen.</li><li>Ajoutez l'ail émincé et faites-le revenir jusqu'à ce qu'il soit doré.</li><li>Ajoutez les grillons et faites-les sauter pendant environ 5 minutes jusqu'à ce qu'ils soient croustillants.</li><li>Coupez le reblochon en petits morceaux et ajoutez-le dans la poêle.</li><li>Mélangez jusqu'à ce que le fromage soit fondu et bien incorporé aux grillons.</li><li>Assaisonnez avec du sel et du poivre selon votre goût.</li><li>Servez chaud, garni de quelques brins de ciboulette.</li><li>Dégustez avec une petite salade fraicheur !</li></ul></li><li>Grillons au Piment (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>2 cuillères à soupe d'huile d'olive</li><li>1 piment rouge émincé</li><li>1 cuillère à café de paprika fumé</li><li>1 cuillère à café de cumin moulu</li><li>Sel et poivre</li><li>Jus d'un demi-citron</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile d'olive dans une poêle à feu moyen.</li><li>Ajoutez le piment émincé et faites-le revenir pendant 2-3 minutes.</li><li>Ajoutez les grillons et faites-les sauter jusqu'à ce qu'ils soient croustillants, environ 5 minutes.</li><li>Saupoudrez le paprika fumé et le cumin moulu sur les grillons. Mélangez bien pour enrober uniformément.</li><li>Assaisonnez avec du sel et du poivre selon votre goût.</li><li>Pressez le jus de citron sur les grillons avant de servir.</li><li>Servez chaud en accompagnement ou en apéritif.</li></ul></li><li>Grillons Caramélisés au Miel et au Sésame (2 personnes)</li><li>Ingrédients :<ul><li>10 g de grillons</li><li>2 cuillères à soupe de miel</li><li>1 cuillère à soupe de sauce soja</li><li>1 cuillère à soupe d'huile de sésame</li><li>1 gousse d'ail émincée</li><li>1 cuillère à soupe de graines de sésame</li></ul></li><li>Instructions :<ul><li>Faites chauffer l'huile de sésame dans une poêle à feu moyen.</li><li>Ajoutez l'ail émincé et faites-le revenir jusqu'à ce qu'il soit doré.</li><li>Ajoutez les grillons et faites-les sauter jusqu'à ce qu'ils soient croustillants, environ 5 minutes.</li><li>Réduisez le feu et ajoutez le miel et la sauce soja, mélangez bien pour enrober les grillons.</li><li>Continuez à cuire pendant 2-3 minutes jusqu'à ce que le mélange épaississe et caramélise légèrement.</li><li>Saupoudrez de graines de sésame et mélangez.</li><li>Servez chaud en apéritif ou en accompagnement.</li></ul></li><li>Brownie aux grillons (6 personnes)</li><li>Ingrédients :<ul><li>25 g de grillons</li><li>150 g de sucre</li><li>150 g de farine</li><li>4 oeufs</li><li>125 g de beurre</li><li>125 g de chocolat noir (70% de cacao ou plus)</li></ul></li><li>Instructions :<ul><li>Préchauffez votre four à 180°C</li><li>Chemisez un moule à cake avec du papier sulfurisé ou du beurre et de la farine</li><li>Pour l’appareil : faites fondre le chocolat coupé en morceaux au bain-marie. Une fois le chocolat presque fondu, ajoutez le beurre en morceaux également. Retirez du feu et mélanger le tout. L’inertie du chocolat fondu fera fondre le beurre très rapidement</li><li>Dans un saladier, mélanger la farine avec le sucre et une pointe de sel (relève le goût des pâtisseries !)</li><li>Ajouter les œufs au mélange chocolat/beurre, en mélangeant après chaque œuf. Verser ensuite progressivement la farine dans ce dernier mélange, en remuant assez énergiquement pour éviter la formation de grumeaux.</li><li>Passer vos grillons au four. Il faut qu'ils soient croustillants ! Ajouter-les au mélange précédent, coupés ou non</li><li>Pour la cuisson : Verser cet appareil dans son moule, mettez à cuire une vingtaine de minutes.</li><li>Il ne reste plus qu'à déguster !</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>27. Étape 27 - Retours d'expérience & Pistes d'amélioration</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/35/Sciences_Participatives_-_Elevage_de_grillons_comestibles_Capture_d_e_cran_2025-02-26_a_10.45.13.png/800px-Sciences_Participatives_-_Elevage_de_grillons_comestibles_Capture_d_e_cran_2025-02-26_a_10.45.13.png' alt='Sciences Participatives - Elevage de grillons comestibles Capture d e cran 2025-02-26 a 10.45.13.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retours d'expérience<ul><li>Les volontaires ont une impression générale très bonne du système</li><li>La production de grillons était relativement faible pour la consommation</li><li>La majorité des volontaires a testé la consommation de grillons et a apprécié l’expérience</li><li>L’acte de tuer les grillons a été la plus grande difficulté rencontrée par les volontaires</li></ul></li><li>Pistes d'amélioration suggérées et/ou testées par certains volontaires.<ul><li>Augmenter la taille de l'élevage pour produire plus de grillons</li><li>Réaliser le cycle complet d’élevage pour être autonome</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>28. Étape 28 - FAQ</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Est-ce que les grillons peuvent monter sur les parois de la boîte ?</li></ul></li><li>Les grillons ne sont pas capables de se déplacer sur des surfaces lisses comme du plastique ou du verre. Si vous utilisez du bois, veillez à appliquer du scotch dessus. Par ailleurs, faite attention à l'espace entre les boîtes à oeufs et le haut de boîte : les grillons sont capables de sauter et donc de s'échapper à ce moment !<ul><li>Il y a de nombreux grillons morts dans ma boîte...</li></ul></li><li>Il est possible que ce soit des mues ! Si ce n'est pas le cas, vérifiez qu'il y est suffisamment d'eau et de nourriture dans la boîte ou qu'il ne fasse pas trop chaud.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

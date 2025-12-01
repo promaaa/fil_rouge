@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tranformer un smart-phone en smart-ordi</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Tranformer un smart-phone en smart-ordi</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/7/73/Tranformer_un_smart-phone_en_smart-ordi_IMG_8256.JPG/ia-3e0de9823fa17d64fa2c70084f12361b-px-Tranformer_un_smart-phone_en_smart-ordi_IMG_8256.JPG.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel présente les étapes de transformation d'un smartphone en ordinateur, conçu pendant l'expédition Nomade des Mers et optimisé dans le cadre du projet expérimental "Biosphère, capsule en milieu aride" porté par Corentin de Chatelperron et Caroline Pultz du Low-tech Lab. Ce prototype a été fabriqué dans la Biosphère durant la période d'expérimentation dans le désert.</div>
+        
+      </div>
+    
+    
+      
+        <p>Dans un monde où l'empreinte numérique augmente de manière exponentielle, selon GreenIT France, le numérique représente aujourd'hui 3 à 4 % des émissions de gaz à effet de serre dans le monde, soit l'équivalent de 1,5 fois l'impact de l'ensemble du secteur du transport aérien.</p>
+      
+        <p>Il est grand temps de reconsidérer notre utilisation du numérique. Mais qu'est-ce que le numérique représente ? Il se compose de trois éléments : 60 % pour les terminaux (ordinateurs, smartphones, objets connectés), 15 % pour les espaces de stockage (data centers) et 25 % pour le réseau de transmission. Non seulement le transfert et le stockage des données de l'internet mondial consomment beaucoup d'énergie, mais le nombre croissant d'appareils numériques par personne joue également un rôle majeur dans cette empreinte écologique. Et oui, la majeure partie de l'impact provient de la fabrication des terminaux ! Ainsi, la manière la plus efficace de réduire notre empreinte digitale est d'utiliser nos équipements le plus longtemps possible et d'opter pour des appareils reconditionnés.</p>
+      
+        <p>Mais pas que! Nous nous sommes penchés sur une solution innovante : il est possible d'optimiser son smartphone pour remplacer l'ordinateur ! En exploitant tout le potentiel souvent sous-estimé de nos téléphones, ceux-ci sont capables d'accomplir diverses tâches de bureau, telles que le traitement de texte, la gestion des e-mails, la navigation web et même les visioconférences. On se rend compte que nous utilisons nos ordinateurs et nos smartphones de la même façon ! Nous pouvons faire tout ce que nous faisions avec notre ordinateur, les batteries durent longtemps et nous pouvons les recharger avec l'énergie solaire. Si un élément se casse, nous pouvons facilement le remplacer, et nous pouvons le garder dans notre poche. Cette pratique s'adresse particulièrement aux personnes qui effectuent principalement des tâches de bureau, éliminant ainsi le besoin d'un ordinateur ou d'une tablette !</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 30 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 50 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Tranformer_un_smart-phone_en_smart-ordi" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Tranformer_un_smart-phone_en_smart-ordi</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li><ul><li>1 smartphone, vérifiez le branchement (USB C ou micro USB)</li><li>1 câble d’extension OTG USB vers USB C ou micro USB en fonction de votre téléphone</li><li>1 mini clavier azerty avec câble USB sans rétro-éclairage</li><li>1 hub 4 ports usb (pour brancher téléphone, clavier, souris et éventuellement une clé USB)</li><li>1 mini souris de voyage rétractable avec câble USB</li><li>1 aimant pour téléphone (voir système d’accrochage pour moto ou voiture)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>fer à souder à pointe fine pour plus de précision, sur son support</li><li>fil à souder et un noyau de résine</li><li>dénudeur de câble ou couteau</li><li>éponge humide ou autre pour nettoyer la pointe du fer à souder entre les soudures, en éliminant les résidus de soudure</li><li>gaines thermorétractables pour fils électriques, voir taille en fonction du diamètre de vos câbles à isoler</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Avant de commencer</strong><p><strong>Étapes :</strong></p><ol><li>Avant de commencer, vérifiez la compatibilité de votre téléphone avec la fonctionnalité OTG (USB On-The-Go). L'USB On-The-Go est une fonctionnalité matérielle qui permet à un appareil mobile, tel qu'un smartphone ou une tablette, de fonctionner en tant qu'hôte USB, ce qui signifie qu'il peut se connecter à d'autres périphériques USB tels que des clés USB, des souris, des claviers, des disques durs externes, des manettes de jeu, etc.</li><li>- Matériel : Pour prendre en charge OTG, un appareil doit avoir un port micro USB ou USB-C compatible OTG. De plus, le matériel interne doit être conçu pour gérer la fonctionnalité OTG.</li><li>- Logiciel : Le système d'exploitation de l'appareil doit également prendre en charge OTG. La plupart des smartphones Android sont compatibles avec OTG, mais certains fabricants peuvent personnaliser leur version d'Android, ce qui peut influencer la compatibilité.</li><li>- Configuration : Dans certains cas, vous devrez peut-être activer la fonctionnalité OTG dans les paramètres de votre téléphone.</li><li>- Support logiciel : Les applications que vous utilisez doivent également prendre en charge OTG pour fonctionner correctement avec des périphériques USB.</li><li>- Vérifiez votre câble USB : tout d'abord, assurez-vous que votre câble USB de recharge de téléphone peut également transférer des données. Certains câbles sont conçus uniquement pour la charge et ne prennent pas en charge le transfert de données.</li><li>- Connectez votre smartphone à un ordinateur : Pour vérifier la capacité de transfert de données de votre câble, branchez votre smartphone à un ordinateur. Vous pouvez utiliser un ordinateur Windows, un Mac ou un autre système. Si vous utilisez un Mac et possédez un smartphone Android, vous pouvez télécharger l'application "Android File Transfer" pour faciliter le processus. Cependant, pour les transferts depuis un PC vers un téléphone Android, il n'est généralement pas nécessaire d'installer une application supplémentaire.</li><li>- Testez le transfert de données : une fois que votre téléphone est connecté à l'ordinateur, essayez de transférer des fichiers. Vous pouvez par exemple copier un fichier de l'ordinateur vers votre téléphone ou vice versa. Si le transfert de données s'effectue sans problème, votre téléphone est compatible avec OTG.</li><li>Si le transfert de données fonctionne, votre téléphone est prêt à être utilisé avec divers périphériques USB grâce à la fonctionnalité OTG. Vous pouvez ainsi connecter des clés USB, des souris, des claviers, des disques durs externes, et d'autres accessoires compatibles.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Boîtier</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/00/Tranformer_un_smart-phone_en_smart-ordi_IMG_6689.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6689.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6689.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/84/Tranformer_un_smart-phone_en_smart-ordi_IMG_6684.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6684.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6684.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/08/Tranformer_un_smart-phone_en_smart-ordi_IMG_6687.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6687.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6687.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b0/Tranformer_un_smart-phone_en_smart-ordi_IMG_6691.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6691.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6691.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Tranformer_un_smart-phone_en_smart-ordi_IMG_6694.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6694.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6694.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Trouvez ou fabriquez un boîtier pour votre "smart-ordinateur” adapté aux dimensions de votre matériel. Sur base de notre clavier 27.6 x 13.8 x 1.4 cm, nous avons dimensionné notre boîtier à 29,6x21x2,8 cm. Assurez-vous qu'il convienne à votre smartphone.</li><li>Ajoutez un système pour ajuster/orienter le clapet-écran au niveau de vos yeux. Cela vous permettra d'obtenir un angle de vue confortable.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Hub USB et clavier USB</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9d/Tranformer_un_smart-phone_en_smart-ordi_IMG_6696.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6696.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6696.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8e/Tranformer_un_smart-phone_en_smart-ordi_IMG_6699.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6699.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6699.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Tranformer_un_smart-phone_en_smart-ordi_IMG_6709.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6709.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6709.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4a/Tranformer_un_smart-phone_en_smart-ordi_IMG_6707.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6707.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6707.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Collez le hub au clavier. Idéalement, collez-le à droite du clavier pour les droitiers.</li><li>Soudez les fils pour les connecter en insérant des gaines thermorétractables (à ne pas chauffer pour l’instant).</li><li>Une fois soudé, tester le clavier en pluggant le câble dans un adaptateur usb ou à un port usb d’ordinateur. Observez si la lumière du clavier s’allume.</li><li>Puis isolez les fils électriques en chauffant les gaines thermorétractables.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Fixation du téléphone</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/fd/Tranformer_un_smart-phone_en_smart-ordi_IMG_6728.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6728.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6728.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Collez un aimant de téléphone pour voiture sur le dos de votre smartphone et à l'intérieur du clapet-écran. Assurez-vous que l'aimant est suffisamment solide pour maintenir le téléphone en place.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Câble d’extension OTG</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/58/Tranformer_un_smart-phone_en_smart-ordi_IMG_6739.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6739.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6739.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3b/Tranformer_un_smart-phone_en_smart-ordi_IMG_6742.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6742.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6742.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/18/Tranformer_un_smart-phone_en_smart-ordi_IMG_6746.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6746.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6746.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3b/Tranformer_un_smart-phone_en_smart-ordi_IMG_6754.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6754.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6754.JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/20/Tranformer_un_smart-phone_en_smart-ordi_IMG_6755.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6755.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6755.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Branchez le câble au téléphone aimanté et vérifiez sa longueur lorsque le téléphone est orienté de manière verticale et horizontale.</li><li>Coupez le câble à la longueur appropriée et le câble port USB, puis soudez-les ensemble. Isolez soigneusement les fils pour éviter les courts-circuits. Testez la connexion au téléphone avant d'isoler définitivement le câble global.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Votre smart-ordi</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/46/Tranformer_un_smart-phone_en_smart-ordi_IMG_6761_1_.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6761_1_.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6761 1 .JPG' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Tranformer_un_smart-phone_en_smart-ordi_IMG_6762.JPG/800px-Tranformer_un_smart-phone_en_smart-ordi_IMG_6762.JPG' alt='Tranformer un smart-phone en smart-ordi IMG 6762.JPG' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Fixez le clavier à l'intérieur du boîtier à l'aide de ruban adhésif double-face (ou autres méthodes de fixation comme des cales).</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

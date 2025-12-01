@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Lampe frontale à partir de batterie récupérable</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Lampe frontale à partir de batterie récupérable</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/9/98/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145755.jpg/ia-c4661c6dc552e9ea9293d583f3f2d1a3-px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145755.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Imaginez avoir une lampe frontale entièrement personnalisée, simple, efficace et accessible, que vous avez créée de vos propres mains. Ce tuto vous guide pas à pas pour concevoir une lampe durable, à faible coût et adaptée à vos besoins spécifiques. Plus besoin de dépendre de modèles commerciaux coûteux ou compliqués : vous pouvez fabriquer une lampe fiable, que ce soit pour vos randonnées, vos activités en plein air ou même pour des situations d'urgence à la maison.</div>
+        
+      </div>
+    
+    
+      
+        <p>Au fil de ce tutoriel, vous allez découvrir une manière simple et gratifiante de répondre à vos besoins en lumière, tout en restant fidèle à des principes écoresponsables. La conception de votre lampe frontale se déroule en 5 étapes décrites ci-dessous.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 5 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 4 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Lampe_frontale_à_partir_de_batterie_récupérable" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Lampe_frontale_à_partir_de_batterie_récupérable</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Pour l’élaboration du circuit électronique :<ul><li>batterie 18650 (3.7V)</li><li>plaque connecteur (USB-C + BMS)</li><li>Lampe LED 3W</li><li>résistance de puissance 10 ohm, 4W</li><li>résistance “classique” 45 ohm</li><li>interrupteur 3 états</li><li>1 vis M3 FHC</li><li>2 vis M3 FHC (ou CHC)</li><li>2 écrous M3</li><li>rouleau de duct tape</li><li>boitier (carton, bois, imprimante 3D….)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Pour l'extraction des cellules :</li><li>Gants (pour ne pas se couper avec les rubans en nickel qui relient les batteries)</li><li>Marteaux</li><li>Burin</li><li>Pince coupante</li><li>lunettes de protection</li><li>fer à souder</li><li>tournevis</li><li>pistolet à colle</li><li>Pour la conception de la lampe :</li><li>* Poste à souder</li><li>* Imprimante 3D</li><li>*Pistolet à colle</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Principe de fonctionnement</strong><p><strong>Étapes :</strong></p><ol><li>Ce tutoriel explique comment concevoir une lampe frontale en utilisant une batterie récupérée comme source d’énergie rechargeable par USB-C.</li><li>Le fonctionnement du système repose sur trois modules distincts :<ul><li>Le module de stockage d’énergie : la batterie</li><li>Le module de restitution de l’énergie : une lampe LED associée à un circuit électrique</li><li>Le module d’attache : un support permettant de fixer la lampe selon l’usage souhaité (frontale, sur un vélo, etc.)</li></ul></li><li>La batterie est constituée de deux cellules au lithium récupérées dans un ordinateur. Pour simplifier, une batterie peut être comparée à un boîtier contenant plusieurs piles, où chaque pile correspond à une cellule capable de fournir du courant grâce à une réaction électrochimique.</li><li>Les cellules lithium utilisées dans les ordinateurs ont toutes une capacité similaire en termes de stockage d’énergie, mais leur capacité à restituer cette énergie peut varier. Lors de l’assemblage d’une batterie, il est essentiel d’associer des cellules ayant des performances homogènes pour garantir une restitution d’énergie équilibrée. Cela nécessite de mesurer la capacité de décharge de chaque cellule afin d’assurer une compatibilité optimale.</li><li>La batterie fournit un courant de 3,7V, une tension compatible avec les lampes LED utilisées dans ce projet. Ainsi, aucun convertisseur de tension n'est nécessaire. Cependant, pour optimiser les performances et prolonger la durée de vie de la batterie, il est essentiel de réguler son niveau de charge. Un circuit de gestion permet d'éviter les surtensions et les décharges excessives, garantissant ainsi un fonctionnement stable et durable du système.</li><li>L’objectif est de concevoir un bloc compact regroupant la lampe et la batterie, pouvant être fixé facilement sur différents supports grâce à un module d’attache adaptable.</li><li>Ce module d’attache peut prendre différentes formes en fonction de l’usage souhaité : un bandeau réglable pour une utilisation en lampe frontale, un support spécifique pour le fixer sur un vélo, ou encore d’autres systèmes selon les besoins. L’idée est de garantir une fixation sécurisée et modulable, permettant de passer d’un mode d’attache à un autre sans difficulté.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Extraction des cellules de la batterie d’ordinateur et Mesure du voltage et de la capacité des cellules</strong><p><strong>Étapes :</strong></p><ol><li>Pour cette partie, nous vous invitons à consulter le tutoriel Récupération de batteries</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Impression du corps de lampe 3D.</strong><div class='step-images count-6'><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/05/Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_105214.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_105214.jpg' alt='Lampe frontale partir de batterie r cup rable 20250402 105214.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_160406.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_160406.jpg' alt='Lampe frontale partir de batterie r cup rable 20250402 160406.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d4/Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_111455.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_111455.jpg' alt='Lampe frontale partir de batterie r cup rable 20250402 111455.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/0/07/Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_111443.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_111443.jpg' alt='Lampe frontale partir de batterie r cup rable 20250402 111443.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/89/Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_115806.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250402_115806.jpg' alt='Lampe frontale partir de batterie r cup rable 20250402 115806.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4b/Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2877.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2877.jpg' alt='Lampe frontale partir de batterie r cup rable IMG 2877.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Il nous faut établir un réceptacle ergonomique pour stocker le circuit électronique du système. Nous avons opté pour un corps de lampe imprimé en 3D composé de 4 pièces à imprimer de manière indépendante mais il est possible d’imaginer d’autres possibilités.</li><li>Si vous ne possédez pas d’imprimante 3D, voici un lien qui décrit les ateliers fablab en France où des imprimantes 3D peuvent être disponible en libre accès : https://www.fablabs.io/labs/map</li><li>Comment imprimer une pièce 3D ?</li><li>Imprimer une pièce en 3D nécessite 3 étapes :</li><li>1.Modélisation de la pièce à l’aide d’un logiciel : lors de cette étape on dessine la pièce en précisant les dimensions puis on enregistre le fichier son format STL pour qu’il puisse être lisible par le logiciel d’impression.</li><li>2.Ouverture du fichier sur le logiciel propre à l’imprimante :</li><li>On ouvre le fichier SVG fourni par le logiciel de CAO pour qu'il le transforme en G-Code, le langage de l'imprimante. Cette étape est crucial puisque c'est à ce moment que l'on choisi les paramètres d’impression tels que la position de la pièce, la précision d’impression en mm (joue sur la texture de la pièce et la solidité), le paramétrages des supports s’il y en a (les supports sont des excédent d'impression qui servent à maintenir les parties de l'objet imprimé qui ne peuvent pas être construites directement en raison de leur inclinaison ou de leur position dans l’espace. Il sont aussi générés parfois pour assurer l'adhésion de la pièce au plateau chauffant de l'imprimante.)</li><li>Attention : certaines imprimantes 3D peuvent avoir des défauts d’impression et présenter des décalages entre la côte entrée sur le logiciel de modélisation et la pièce créée par la machine, pensez à demander l’avis du responsable d’impression si vous faîtes appel à un FabLab pour votre impression. Il est donc conseillé de se faire aider par une personne connaissant correctement les paramètres du logiciel de l’imprimante.</li><li>3.Lancement de l’impression :</li><li>On transmet le G-Code à l'imprimante, soit par le biais d'une clé USB, soit en utilisant les connexions de l'imprimante au réseau. L'imprimante va, dans un premier temps, chauffer le plateau puis l'impression va se lancer. Il faut rester proche de l'imprimante pour les premiers dépôts afin de s'assurer que le plastique adhère correctement au plateau. Sinon, il faudra sûrement recommencer l'impression.</li><li>4.Récupération de la pièce finale: une fois l'impression terminée, (image 5) il vous suffit de retirer les supports à l'aide d'une spatule. Votre pièce est prête à l'utilisation !</li><li>Vous êtes maintenant prêt à imprimer les pièces de la lampe frontale . Vous pouvez sans problème imprimer toute les pièces en une impression<ul><li>Vous trouverez les fichiers Openscad (pour modifications si nécessaires) et les fichiers STL de chaque pièce sur le lien suivant : https://drive.google.com/drive/folders/1FksXRzWj1qkUsPcDeMHi4aSFxS8zGiQP?usp=drive_link</li></ul></li><li>La pièce numéro 1 est le boitier principal, la pièce numéro 2 est le couvercle du boîtier, la pièce numéro 3 est la pièce en U et la 4 est l’attache tête</li><li>Voici les fichiers ainsi que des instructions pour les différentes pièces.</li><li>→ Boîtier principal. (1) (image 1)</li><li>Fichier Openscade (si modification souhaité) : À télécharger</li><li>Fichier STL (compatible avec l’imprimante) : À télécharger</li><li>Cette pièce (numéro 1) servira de boîtier pour monter le circuit électronique et le protéger.</li><li>→ Couvercle. (2) (image2)</li><li>Fichier Openscade (si modification souhaité) : À télécharger</li><li>Fichier STL (compatible avec l’imprimante) : À télécharger</li><li>Cette pièce (numéro 2) servira de couvercle au boîtier,la LED va venir être fixée à ce couvercle.</li><li>→ Pièce en U ou pince-batterie. (3) (image3)</li><li>Fichier Openscade (si modification souhaité) : À télécharger</li><li>Fichier STL (compatible avec l’imprimante) : À télécharger</li><li>Cette pièce (numéro 3) fait le lien entre l’attache tête et le boitier, elle permet de venir pincer la batterie.</li><li>→ Pièce attache-tête. (4) (image4)</li><li>Fichier Openscade (si modification souhaité) : À télécharger</li><li>Fichier STL (compatible avec l’imprimante) : À télécharger</li><li>Cette pièce (numéro 4) permet d’attacher la lampe à la tête. Après impression, elle doit être “transformée” pour qu’elle épouse la forme de votre tête.</li><li>Si votre pièce est en PLA (matériaux le plus courant), la méthode est la suivante :<ul><li>Chauffer cette plaque à l’aide d’un sèche-cheveux ou l'immerger dans un bac d’eau chaude à 60-70 °C. A cette température, le PLA se ramollit.</li><li>Placer la plaque sur votre front de manière à ce que le PLA ramollit épouse la forme de votre front en prenant garde de ne pas vous brûler (vous pouvez immiscer un tissu entre votre front et la plaque pour réduire ces risques).</li></ul></li><li>Sinon, pour éviter cette étape vous pouvez directement imprimer la pièce avec un matériau plus souple.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - assemblage des pièces imprimer</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/e5/Lampe_frontale_partir_de_batterie_r_cup_rable_20250416_103353.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250416_103353.jpg' alt='Lampe frontale partir de batterie r cup rable 20250416 103353.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/9a/Lampe_frontale_partir_de_batterie_r_cup_rable_1000013629.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_1000013629.jpg' alt='Lampe frontale partir de batterie r cup rable 1000013629.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/3a/Lampe_frontale_partir_de_batterie_r_cup_rable_1000013630.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_1000013630.jpg' alt='Lampe frontale partir de batterie r cup rable 1000013630.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d9/Lampe_frontale_partir_de_batterie_r_cup_rable_20250416_103615.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250416_103615.jpg' alt='Lampe frontale partir de batterie r cup rable 20250416 103615.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Matériel :<ul><li>Tournevis étoile</li><li>Pince</li><li>2 vis M3 FHC (ou CHC)</li><li>Pièce en U (3)</li><li>Pièce frontale (4)</li><li>1 vis M3 FHC</li><li>3 écrou M3</li><li>Porte batterie</li><li>Boîtier (1)</li></ul></li><li>→ Se munir de la pièce en U (3), de la pièce frontale (4), de 2 vis M3 et de 2 écrous adaptés.Les assembler en alignant les trous des deux pièces et introduire les vis à l’aide d’un tournevis dans la pièce frontale. Les écrous peuvent être introduits à l’aide de la pince dans les trous de la pièce en U.</li><li>→ Se munir du porte batterie, du carter, d’une vis M3 FHC et d’un écrou. Attention, il est nécessaire de faire passer le fil rouge et le fil noir dans la fente du pôle - du porte batterie puis dans la fente du carter (cf photo). Les assembler en alignant les trous et en y introduisant la vis à l’aide d’un tournevis (attention, il peut être nécessaire de forcer afin que la vis ressorte correctement du coté du carter). Les écrous peuvent être introduits à l’aide de la pince. (cf photo)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Explication du circuit électronique.</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/e/ee/Lampe_frontale_partir_de_batterie_r_cup_rable_488821166_2150040608750106_5358362469037199431_n.jpg' alt='Lampe frontale partir de batterie r cup rable 488821166 2150040608750106 5358362469037199431 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7a/Lampe_frontale_partir_de_batterie_r_cup_rable_489690938_1157256129466391_4299568245318935926_n.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_489690938_1157256129466391_4299568245318935926_n.jpg' alt='Lampe frontale partir de batterie r cup rable 489690938 1157256129466391 4299568245318935926 n.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ce/Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2882.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2882.jpg' alt='Lampe frontale partir de batterie r cup rable IMG 2882.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7f/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_101939.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_101939.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 101939.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/78/Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2883.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2883.jpg' alt='Lampe frontale partir de batterie r cup rable IMG 2883.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Dans cette section, nous détaillerons les différentes partie du circuit électronique puis, dans les étapes, nous expliquerons comment confectionner les trois modules qui constitue, selon nous, l’électronique de la lampe</li><li>Le circuit électronique de la lampe frontale est composé de plusieurs composants :<ul><li>Un interrupteur 3 états</li><li>Une résistance de puissance 10 ohm</li><li>Une résistance “classique” 45 ohm</li><li>Une lampe LED</li><li>Le porte batterie</li><li>La batterie 18650 (2,2Ah - 3,7V)</li></ul></li><li>(photo circuit)</li><li>Les trois modules, mentionnés ci-avant seront soudés séparément dans un premier temps avant d’être assemblés.</li><li>→ Module 1 : l'interrupteur + les résistances (10 ohm et 45 ohm) + 1 fil noir (image 1 et 2)</li><li>La lampe a été pensée de manière à avoir deux modes d’éclairage : un plus lumineux que l’autre (d’où l’interrupteur 3 états). La résistance de puissance de 10 ohms 4W correspond au fort éclairage et la résistance 45 ohms à l’éclairage faible (en effet, en augmentant la résistance du circuit, on diminue la valeur du courant qui y circule et plus le courant est faible, moins la Led éclaire).</li><li>→ Module 2 : la carte + 4 fils (2 noirs et 2 rouges) + ensemble porte batterie-carter (1) (image 3 et 4)</li><li>On relie ici la batterie à la carte électronique, la partie qui la protège des surtensions</li><li>→ Module 3 : la LED + couvercle (image 5)</li><li>La LED est naturellement la partie qui fournit la lumière et le couvercle protège le circuit.</li><li>Le processus de soudage nécessite un fer à souder un du fil d’étain. Vous trouverez ci-dessous, un lien vers une vidéo explicative.</li><li>conseil de soudage pour débutants :<ul><li>https://www.youtube.com/watch?v=V_HkMbssIGE&ab_channel=Tom%27sBasement</li></ul></li><li>Les étapes suivantes seront toutes illustrées à raison d’une image par tiret.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Assemblage du module 1.</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2910.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2910.jpg' alt='Lampe frontale partir de batterie r cup rable IMG 2910.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/71/Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2912.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_IMG_2912.jpg' alt='Lampe frontale partir de batterie r cup rable IMG 2912.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/94/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_113047.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_113047.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 113047.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/49/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_113320.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_113320.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 113320.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/29/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_113444.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_113444.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 113444.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Coupez les fils de la résistance (cela minimiser l’espace entre l'interrupteur et les blocs de résistances)</li><li>Soudez la résistance 10 ohm (en bleu ou verte selon les différentes versions) à une borne en extrémité de l'interrupteur.</li><li>Soudez un fil noir à la borne centrale</li><li>Soudez la résistance 45 ohm à la deuxième borne en extrémité.</li><li>Il est nécessaire de lier les résistances entre elles. Pour ce faire prendre les les pattes libre des résistances, les enrouler l’une à l’autre avant de les souder (l’image est plus parlante que le texte ici)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Assemblage du module 2.</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/64/Lampe_frontale_partir_de_batterie_r_cup_rable_1745396865600.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_1745396865600.jpg' alt='Lampe frontale partir de batterie r cup rable 1745396865600.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/18/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114017.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114017.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 114017.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ef/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114224.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114224.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 114224.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/cf/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114308.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114308.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 114308.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/77/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114616.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114616.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 114616.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Nous allons passer au soudure sur la plaque connecteur. Celle-ci possède 4 bornes : OUT+, B+, B- et OUT-, c'est uniquement sur ces bornes que nous viendrons souder nos fils. Pour des questions de praticité, nous vous conseillons de souder tous les fils par le haut de la carte.<ul><li>Soudez le fil rouge du porte batterie à la borne B+. Veuillez bien faire passer le fil dans la fente du carter.</li><li>Soudez le fil noir du porte batterie à la borne B-. Veuillez bien faire passer le fil dans la fente du carter.</li><li>Munissez-vous d’un fil rouge et souder à la borne OUT+</li><li>Munissez-vous d’un fil noir et souder à la borne OUT-</li><li>Coupez l’excédent des fils qui dépassent en dessous la carte.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Définition du module 3.</strong><p><strong>Étapes :</strong></p><ol><li>la LED + couvercle</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Assemblage du module 1 avec le module 2.</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/7/7c/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114718.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_114718.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 114718.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d5/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_115132.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_115132.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 115132.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Faites passer le bouton de l'interrupteur dans le trou rond du carter.</li><li>Soudez l’extrémité du fil noir (provenant de la borne OUT- de la carte) avec la borne rassemblant les 2 résistances.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Assemblage du module 2 avec les autres modules.</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_135555.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_135555.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 135555.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d9/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_135853.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_135853.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 135853.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li><ul><li>Faire passer le fil rouge provenant de la borne OUT+, le passer dans la fente du couvercle et le souder à la borne + de la LED.</li><li>Prendre le fil noir provenant de la borne centrale de l’interrupteur et le passer dans la fente du couvercle.</li><li>Souder à la borne - de la LED.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - technologie du module d’attache</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d4/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145430.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145430.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 145430.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/f/f9/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145728.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145728.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 145728.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Afin d’attacher la lampe à votre front, laissez libre cours à votre imagination. Prenez ce qui va permettre à la lampe de tenir sur votre tête et qui vous sera le plus confortable.</li><li>Par exemple, vous pouvez prendre un ruban en tissu et le faire passer par les orifices du support.</li><li>Vous pouvez aussi utiliser une sangle, ce qui vous permettra de rendre l’attache-tête réglable.</li><li>Vous pouvez même utiliser la partie élastique provenant d’un slip que vous étiez sur le point de jeter !</li><li>Privilégiez des éléments de récupération afin de respecter au maximum l'esprit Low Tech.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Finition de la lampe.</strong><div class='step-images count-5'><figure><img src='https://wiki.lowtechlab.org/images/thumb/d/d2/Lampe_frontale_partir_de_batterie_r_cup_rable_1745396865578.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_1745396865578.jpg' alt='Lampe frontale partir de batterie r cup rable 1745396865578.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/6b/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_151213.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_151213.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 151213.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/5/5f/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_151225.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_151225.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 151225.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/e/ec/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_151258.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_151258.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 151258.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/9/98/Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145755.jpg/800px-Lampe_frontale_partir_de_batterie_r_cup_rable_20250423_145755.jpg' alt='Lampe frontale partir de batterie r cup rable 20250423 145755.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Se munir d’un pistolet à colle.</li><li>→ Coller la carte bleue (BMS) avec du silicone au carter, afin qu’elle reste stable. Penser à bien aligner la sortie usb-c avec la fente prévue.</li><li>→ Coller la LED au couvercle avec quelques points de colle (image 2)</li><li>→Mettre des fils de colle dans la jonction entre le porte batterie et le carter. (image 3)</li><li>→ Pour stabiliser la batterie dans la pièce en U, recouvrir les parois intérieurs du U par une légère épaisseur de colle. (image 4)</li><li>→Fixer le couvercle au carter à l’aide de plusieurs traits de colle. Le carter reste démontable, il suffit de retirer les points de colle à l'aide d'un cutter. (image 3)</li><li>Se munir d’une pince coupante ou d’un cutter et enlever une partie du porte batterie pour pouvoir faire passer le U. (image 3)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Autonomie et temps de recharge</strong><p><strong>Étapes :</strong></p><ol><li>L'autonomie de la lampe va dépendre de l'état de la batterie. D'après des mesures de courant et des essais de charge et décharge, on peut considérer que l'autonomie de la lampe est au minimum de 10 heures pour le mode d'éclairage élevé et 30 heures pour le mode d'éclairage faible. A noter que votre lampe, lorsqu'elle est déchargée, ne s'éteint pas d'un seul coup mais va plutôt perdre en intensité. Vous aurez donc le temps de vous apercevoir que la lampe perd de son intensité pour la recharger !Concernant le temps de recharge, 3 heures suffisent pour recharger entièrement une lampe vide.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Perspective d'amélioration</strong><p><strong>Étapes :</strong></p><ol><li>Nous avons envisagé plusieurs pistes d’amélioration pour optimiser le système.</li><li>1. Obtenir une lampe étanche</li><li>Une première idée serait de remodéliser entièrement la géométrie de la lampe en remplaçant le carter imprimé en 3D par un tube en PVC. Le système électronique serait inséré à l’intérieur. Cette solution permettrait de se passer de l’impression 3D pour cette pièce, tout en améliorant l’étanchéité du dispositif.</li><li>Un tuto complet est disponible sur ce même site : "lampe frontale étanche à partir de batterie récupérable"</li><li>2. Intégration d’un module PWM</li><li>Au niveau électrique, l’intégration d’un module PWM (Pulse Width Modulation) permettrait de réguler l’intensité lumineuse sans utiliser de résistances. Cette modulation de largeur d’impulsion ajuste le temps pendant lequel le courant est appliqué à la LED, réduisant ainsi les pertes d’énergie par effet Joule et limitant l’échauffement de la lampe.</li><li>3. Régulateur d’intensité</li><li>L’ajout d’un composant régulateur de courant pourrait stabiliser la luminosité tout au long de la décharge de la batterie. Cependant, cela impliquerait que la lampe s’éteigne brutalement une fois la batterie vide, contrairement au système actuel qui permet d’anticiper cette fin d’autonomie grâce à une baisse progressive de l’intensité lumineuse.</li><li>4. Impact économique</li><li>Il serait pertinent d’étudier le coût de ces composants supplémentaires (PWM, régulateur), car ils pourraient faire augmenter le prix final de la lampe.</li><li>5. Réglage de l’élastique</li><li>Enfin, un système de réglage de la longueur de l’élastique pourrait être envisagé afin d’adapter la lampe à toutes les tailles de tête et améliorer le confort d’usage.</li><li>6. Attacher la lampe à un vélo</li><li>Nous avons conçu une version zéro d'un système qui pourrait s'attacher à l'avant ou à l'arrière du vélo et ainsi clipser la lampe rapidement.<ul><li>Le fichier STL est à télécharger via le lien suivant https://drive.google.com/drive/folders/1FksXRzWj1qkUsPcDeMHi4aSFxS8zGiQP?usp=drive_link</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

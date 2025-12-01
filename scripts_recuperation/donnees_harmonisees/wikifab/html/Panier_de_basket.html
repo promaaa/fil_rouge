@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Panier de basket</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Panier de basket</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/3/30/Panier_de_basket_Panier_final_2_1_.png/ia-2ff25ee5f46188f59a8cc840504cbfd5-px-Panier_de_basket_Panier_final_2_1_.png.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Création d'un panier de basket en bois</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment panier de basket.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 2 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Panier_de_basket" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Panier_de_basket</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Dimensions du panneau</strong><div class='step-images count-6'><figure><img src='/images/thumb/1/14/Panier_de_basket_MicrosoftTeams-image-_3_1.jpg/ia-3489783f2bc9047a8a8d0fe0ead52657-px-Panier_de_basket_MicrosoftTeams-image-_3_1.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/f/fb/Panier_de_basket_fond.png/800px-Panier_de_basket_fond.png' alt='Panier de basket fond.png' loading='lazy'></figure><figure><img src='/images/thumb/1/14/Panier_de_basket_MicrosoftTeams-image-_3_1.jpg/ia-3489783f2bc9047a8a8d0fe0ead52657-px-Panier_de_basket_MicrosoftTeams-image-_3_1.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/f/fb/Panier_de_basket_fond.png/800px-Panier_de_basket_fond.png' alt='Panier de basket fond.png' loading='lazy'></figure><figure><img src='/images/thumb/1/14/Panier_de_basket_MicrosoftTeams-image-_3_1.jpg/ia-3489783f2bc9047a8a8d0fe0ead52657-px-Panier_de_basket_MicrosoftTeams-image-_3_1.jpg.png' alt='' loading='lazy'></figure><figure><img src='/images/thumb/f/fb/Panier_de_basket_fond.png/800px-Panier_de_basket_fond.png' alt='Panier de basket fond.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Couper une planche en bois du même format d'une feuille A4 (21 cm x 29,7 cm).</li><li>Puis couper des planches de façon à obtenir un bâton de 36 cm de haut (x2) et un autre de 13 cm (x2). Fixez-les entre eux avec des vis en les superposant.</li><li>Viser le tout sur une grande plaque en bois de manière que la structure tienne verticalement et soit stable. Imprimer une feuille de papier pour le fond du panneau de basket format A4 (21 cm x 29,7 cm)(facultatif).</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Mise en place d'une rampe</strong><div class='step-images count-2'><figure><img src='/images/thumb/9/9f/Panier_de_basket_Panier_tape_3.jpg/800px-Panier_de_basket_Panier_tape_3.jpg' alt='Panier de basket Panier tape 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9f/Panier_de_basket_Panier_tape_3.jpg/800px-Panier_de_basket_Panier_tape_3.jpg' alt='Panier de basket Panier tape 3.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Couper un bout de carton</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Cration du panier en 3D dans SolidWorks</strong><div class='step-images count-2'><figure><img src='/images/thumb/3/3d/Panier_de_basket_MicrosoftTeams-image_10_.png/800px-Panier_de_basket_MicrosoftTeams-image_10_.png' alt='Panier de basket MicrosoftTeams-image 10 .png' loading='lazy'></figure><figure><img src='/images/thumb/3/3d/Panier_de_basket_MicrosoftTeams-image_10_.png/800px-Panier_de_basket_MicrosoftTeams-image_10_.png' alt='Panier de basket MicrosoftTeams-image 10 .png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Créer un cercle sur SolidWorks, ainsi qu'un rectangle, puis assemblez le tout.</li><li>À l'aide de l'outil "Bossage/Base avec révolution" Lissez les bords du cercle.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Collage de la feuille de papier</strong><div class='step-images count-2'><figure><img src='/images/thumb/f/ff/Panier_de_basket_Fond_panier.jpg/800px-Panier_de_basket_Fond_panier.jpg' alt='Panier de basket Fond panier.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Panier_de_basket_Fond_panier.jpg/800px-Panier_de_basket_Fond_panier.jpg' alt='Panier de basket Fond panier.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Collez la feuille du fond du panier sur la plaquer de bois format A4.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Bâtons de sécurité</strong><div class='step-images count-2'><figure><img src='/images/thumb/6/60/Panier_de_basket_Pics.jpg/800px-Panier_de_basket_Pics.jpg' alt='Panier de basket Pics.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/60/Panier_de_basket_Pics.jpg/800px-Panier_de_basket_Pics.jpg' alt='Panier de basket Pics.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Prenez le maximum de petits bâtons fins et fixez-les en les plantant sur la rampe en carton, ils servent à ne pas faire tomber la balle de la rampe.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Fixation de l'anneau</strong><div class='step-images count-2'><figure><img src='/images/thumb/f/f1/Panier_de_basket_Pannier_fianl.jpg/800px-Panier_de_basket_Pannier_fianl.jpg' alt='Panier de basket Pannier fianl.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f1/Panier_de_basket_Pannier_fianl.jpg/800px-Panier_de_basket_Pannier_fianl.jpg' alt='Panier de basket Pannier fianl.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Faites un petit trou dans l'anneau à l'aide d'un foret puis fixez-le en le vissant par l'arri</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Finalisation</strong><p><strong>Étapes :</strong></p><ol><li>Voilà, tout est prêt à l'utilisation !</li><li>Amusez-vous bien ! ;)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

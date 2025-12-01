@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sciences Participatives : Les larves de BSF, les stars du compost</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Sciences Participatives : Les larves de BSF, les stars du compost</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="https://wiki.lowtechlab.org/images/thumb/4/47/Mission_8_-_Toilettes_vivantes_IMG_1366.jpg/800px-Mission_8_-_Toilettes_vivantes_IMG_1366.jpg" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Ce tutoriel a été créé dans le cadre de la mission #7 "Les larves BSF, star du compost” du programme de sciences participatives porté par l'association Biosphère Expérience. Il présente les étapes de fabrication ainsi que le protocole suivi par les volontaires au programme durant les 2 mois d’expérience du 1er septembre au 31 octobre 2024.</div>
+        
+      </div>
+    
+    
+      
+        <p>Projet</p>
+      
+        <p>En parallèle de l'expérience urbaine menée à Boulogne Billancourt par Caroline Pultz, Corentin de Chatelperron et des voisins, Emma Bousquet-Pasturel a conduit un programme de sciences participatives afin d’évaluer la pertinence de 8 systèmes et pratiques low-tech dans le quotidien de citoyens, entreprises et écoles en France et à l’étranger. Au total, 699 expériences ont été menées entre septembre et octobre 2024. Ces expériences citoyennes ont permis de collecter un large panel de données techniques, ergonomiques, sociologiques et psychologiques sur la mise en place et la pratique de ces low-tech au quotidien.</p>
+      
+        <p>Mission #7 : Les larves BSF, star du compost</p>
+      
+        <p>La gestion des déchets, notamment en zone urbaine, fait partie des enjeux environnementaux des prochaines années. Alors qu’ils sont principalement jetés, incinérés, enfouis, les déchets organiques contiennent des nutriments précieux qui pourraient être recyclés pour fertiliser les sols et nourrir les plantes. En les jetant, nous favorisons la contamination des sols et des eaux souterraines et nous perdons l’opportunité de les valoriser. Pourtant, il existe un moyen très facile de transformer ces déchets en ressources précieuses : la mission consistait à expérimenter la transformation des déchets organiques par des larves de mouches soldats noires (Black Soldiers Flies). En décomposant ces déchets, les larves produisent rapidement un compost très nutritif pour les sols. Une fois adultes, les larves pouvaient être valorisées comme nourriture animale et le compost épandu dans des jardins ou terrains agricoles.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 1 hour(s) heure(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 10 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wiki.lowtechlab.org/wiki/Sciences_Participatives___Les_larves_de_BSF__les_stars_du_compost" target="_blank" rel="noopener" style="color:#066;">https://wiki.lowtechlab.org/wiki/Sciences_Participatives___Les_larves_de_BSF__les_stars_du_compost</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <ul>
+        <li>Ceci est une liste de matériaux exhaustive. Si vous avez déjà certains éléments, nous vous conseillons de favoriser la seconde main et d’adapter leurs diamètres et tailles au long du tuto.</li><li>Boîte<ul><li>2 boîtes opaques de 35L environ, de plus de 20 cm de hauteur</li><li>8 tasseaux de bois</li><li>un textile respirant (tulle, moustiquaire avec des petites mailles...)</li><li>8 vis</li><li>agrafes ou clous</li><li>tissu</li><li>sciure de bois, 10kg environ</li><li>filtre à charbon actif (pour hotte aspirante par exemple)</li></ul></li><li>Larves<ul><li>Dans le cadre de l'expérience, le partenaire Biomimetic fournissait des boîtes de 50g ou 100g à chaque début de cycle. Vous pouvez aussi réaliser le cycle complet d'élevage : filière élevage de larves de mouches soldats noires (BSF)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <ul>
+        <li><ul><li>Agrafeuse murale ou marteau</li><li>Perceuse / visseuse</li><li>Scie manuelle ou scie sauteuse</li><li>Tamis (optionnel)</li></ul></li>
+      </ul>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Démarrez l'expérience !</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>Pour plus de détail sur les expériences citoyennes, consultez le rapport d'expérience (en cours d'écriture).</li><li>Ce tutoriel a été modifié par Emma Bousquet-Pasturel en ajoutant des résultats, pistes d'amélioration et retours d'expérience des volontaires au programme, suite à l'analyse des données.</li><li>Nous vous invitons à rejoindre le groupe Facebook "Biosphère - Élevage de larves de mouches soldats noires" dédié à cette pratique pour faciliter l'organisation (achats groupés, rencontres sur le territoire) et les échanges avec d'autres expérimentateurs.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Achat du matériel</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>En moyenne, les volontaires ont dépensé 10€ pour construire le dispositif. Ce budget fluctue suivant le montage choisi et le type de matériaux utilisé.</li><li>Avant de faire vos achats, nous vous conseillons fortement de lire en entier le tutoriel, car la liste de matériels peut varier d'un montage à un autre.</li><li>Tout le matériel nécessaire à la fabrication peut se trouver dans les magasins de bricolage ou de tissu.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Conseils et précautions</strong><p><strong>Étapes :</strong></p><ol><li>Avant de débuter la fabrication, veillez à sécuriser votre espace de travail et à optimiser le rangement de vos outils.<ul><li>Munissez-vous d’outils en bon état et adaptés aux travaux à réaliser</li><li>Lisez attentivement le mode d’emploi des outils et faites attention aux pictogrammes sur les emballages</li><li>Installez-vous dans un endroit dégagé, aéré et bien éclairé</li><li>Equipez-vous des protections nécessaires : gants, chaussures, lunettes, vêtements, casque, masque protecteur, tampons d’oreille (casque/boules quies)...</li><li>Débranchez les outils électriques et refermez les produits lorsque vous ne les utilisez pas</li><li>Demandez de l’aide à votre entourage si vous êtes amené.e.s à manier des charges lourdes (outils, matériaux…)</li></ul></li><li>Ceci est une liste non exhaustive de conseils et précautions.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Se procurer des boîtes adéquates</strong><div class='step-images count-2'><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c8/Mission_7_-_les_larves_BSF_star_du_compost_Capture_d_e_cran_2024-07-09_a_15.56.09.png/800px-Mission_7_-_les_larves_BSF_star_du_compost_Capture_d_e_cran_2024-07-09_a_15.56.09.png' alt='Mission 7 - les larves BSF star du compost Capture d e cran 2024-07-09 a 15.56.09.png' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/3/35/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1349.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1349.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1349.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Vous aurez besoin de 2 boites similaires afin d'assurer une valorisation constante de vos déchets ainsi que le nettoyage des boîtes :<ul><li>Des boites de 25L minimum (35L idéalement). La hauteur minimale est de 20 cm</li><li>Ces boites doivent être opaques pour éviter d'exposer les larves à la lumière</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Réaliser les 2 couvercles</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/1/1e/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1358.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1358.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1358.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8e/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1360.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1360.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1360.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/ca/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1364.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1364.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1364.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/4f/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1365.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1365.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1365.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Réaliser 2 couvercles adaptés aux boîtes</li><li>Le cadre en bois<ul><li>Le cadre du couvercle est composé de 4 tasseaux.</li><li>Il reprend les dimensions extérieures de la boîte avec une marge de 2 mm de chaque côté pour faciliter l'emboîtement.</li><li>Avant de les visser entre eux, percer des trous légèrement inférieurs à la taille de vos vis afin de faciliter leur passage.</li></ul></li><li>Le tissu<ul><li>Découpez un rectangle de tissu de manière à pouvoir l'agrafer sur le cadre. Le tissu permet d'éviter la ponte d'autres insectes dans la boîte. Par ailleurs, le tissu doit être suffisamment respirant pour favoriser les échanges gazeux.</li><li>Veillez à le tendre</li></ul></li><li>Le filtre à charbon actif<ul><li>Placez le filtre à charbon, de la taille des couvercles, par-dessus les couvercles. Cela permettra de réduire les odeurs désagréables</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Se procurer les larves</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/8/8e/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1356.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1356.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1356.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>A vous de déterminer la quantité nécessaire de larves pour dégrader vos déchets !<ul><li>Estimez la quantité de déchets générés chaque jour : de notre côté, on a environ 200 g de déchets organiques</li><li>Calculez le nombre de larves nécessaire pour dégrader cette quantité de déchets. Voilà le ratio : 50 g de larves pour 200 g de déchets journalier. Globalement, il faut faire attention à ce que le contenu de la boîte ne soit pas trop humide au fil des jours</li><li>Commandez les larves auprès du fournisseur. Vous aurez le choix entre des boîtes de 50 g et 100 g de larves. Vous pourrez ajuster la quantité de déchets à placer dans la boîte selon la quantité de larves choisie.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Fonctionnement du bac de compostage</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b6/Mission_G_PHASE_D_EXPERIMENTAIOTN-3.png/ia-32a5aba4188bad06bd2033adda0950cd-px-Mission_G_PHASE_D_EXPERIMENTAIOTN-3.png.png' alt='' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Au bout d'une quinzaine de jours les larves arrivent à maturité. À ce moment-là :<ul><li>Valoriser le contenu de votre bac</li><li>Introduisez de nouvelles larves dans votre bac pour poursuivre la dégradation de vos déchets organiques</li><li>Entre les deux générations, vous pouvez nettoyer la boîte avec de l'eau et du vinaigre blanc.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Accueil des larves</strong><div class='step-images count-4'><figure><img src='https://wiki.lowtechlab.org/images/thumb/6/69/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1224.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1224.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1224.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/b/b5/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1228.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1228.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1228.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/c/c3/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1231.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1231.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1231.jpg' loading='lazy'></figure><figure><img src='https://wiki.lowtechlab.org/images/thumb/4/45/Mission_7_-_les_larves_BSF_star_du_compost_IMG_1232.jpg/800px-Mission_7_-_les_larves_BSF_star_du_compost_IMG_1232.jpg' alt='Mission 7 - les larves BSF star du compost IMG 1232.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Accueil des larves<ul><li>Avant de disposer vos larves dans la boîte, tapissez le fond avec de la sciure de bois.</li><li>Vous pouvez maintenant mettre les larves</li></ul></li><li>Alimentation<ul><li>Globalement, il faut faire attention à ce que le contenu de la boîte ne soit pas trop humide au fil des jours</li><li>Elles sont omnivores. Les seules choses à éviter sont : les agrumes, les avocats, les épluchures d'oignons ou d'ail</li><li>Par ailleurs, plus les morceaux sont petits, mieux c'est pour elles. Il est aussi préférable de diversifier leur alimentation.</li><li>À chaque fois que vous les nourrissez vous devez ensuite recouvrir la nourriture de sciure de bois (cela permet d'absorber l'humidité et ainsi éviter qu'elles grimpent en se collant à la boîte)</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Maintenance et suivi</strong><p><strong>Étapes :</strong></p><ol><li>La maintenance quotidienne consiste à donner une fois par jour les déchets organiques aux larves.</li><li>Temps de maintenance : 5 minutes par jour</li><li>Alimentation<ul><li>Nourrir tous les jours les larves. Globalement, il faut faire attention à ce que le contenu de la boîte ne soit pas trop humide au fil des jours</li><li>Par ailleurs, plus les morceaux sont petits, mieux c'est pour elles. Il est aussi préférable de diversifier leur alimentation.</li><li>À chaque fois que vous les nourrissez vous devez ensuite recouvrir la nourriture de sciure de bois (cela permet d'absorber l'humidité et ainsi éviter qu'elles grimpent en se collant à la boîte)</li></ul></li><li>Suivi de la croissance<ul><li>Nous vous encourageons à noter vos observations tout au long de la croissance des larves et à partager vos astuces et retours d'expérience sur le groupe Facebook "Larves de mouches soldats noires".</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Fin de cycle</strong><p><strong>Étapes :</strong></p><ol><li>Récolte<ul><li>Lorsque les larves atteignent la maturité (généralement au bout de 2-3 semaines), elles possèdent le maximum de propriétés nutritives</li></ul></li><li>Valorisation<ul><li>Les larves peuvent être utilisées comme nourriture animale</li><li>Le compost généré peut être utilisé pour vos plantes ou donné à un maraîcher</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Retours d'expérience & Pistes d'amélioration</strong><div class='step-images count-1'><figure><img src='https://wiki.lowtechlab.org/images/thumb/2/2d/Sciences_Participatives_-_Les_larves_de_BSF_les_stars_du_compost_Capture_d_e_cran_2025-02-26_a_14.35.58.png/800px-Sciences_Participatives_-_Les_larves_de_BSF_les_stars_du_compost_Capture_d_e_cran_2025-02-26_a_14.35.58.png' alt='Sciences Participatives - Les larves de BSF les stars du compost Capture d e cran 2025-02-26 a 14.35.58.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Retours d'expérience<ul><li>Les larves sont efficaces et autonomes dans la gestion des déchets organiques.</li><li>Le compost restant peut facilement être valorisé. Le tamisage reste une étape longue et pénible.</li><li>L’activité des larves dépend fortement de la température ambiante : plus il fait froid, moins les larves dégradent les déchets, ce qui rend le processus de dégradation plus long en période hivernale.</li></ul></li><li>Pistes d'amélioration suggérées et/ou testées par certains volontaires<ul><li>Ajouter un filtre au charbon sous le couvercle pour réduire les odeurs.</li><li>Utiliser des sources de chaleur résiduelles et locales (chaudière) pour pallier aux chutes de températures de l’habitat.</li><li>Réaliser le cycle complet d’élevage pour être autonome.</li></ul></li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - FAQ</strong><p><strong>Étapes :</strong></p><ol><li><ul><li>En quoi les larves de mouches sont intéressantes?</li></ul></li><li>Elles représentent un véritable atout pour l'écosystème. Au bout d'une quinzaine de jours, 1 kg d'œufs de mouches devient en moyenne 10 tonnes de larves vivantes, ce qui permet d'éliminer 40 à 50 tonnes de déchets alimentaires! Les larves sont aussi une excellente source de protéines pour l'alimentation des animaux d'élevage. Leur utilisation permettrait de réduire la surface agricole ainsi que la pêche dédiées à la production de nourriture pour l'élevage.<ul><li>Pourquoi les larves ne sont pas actives en ce moment ?</li></ul></li><li>L’activité des larves dépend fortement de la température ambiante : plus il fait froid, moins les larves dégradent les déchets, ce qui rend le processus de dégradation plus long en période hivernale.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

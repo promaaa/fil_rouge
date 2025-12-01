@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gravograph - Mode d'emploi au fab-c</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Gravograph - Mode d'emploi au fab-c</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/e/ea/Gravograph_-_Mode_d_emploi_au_fab-c_decoupelaser.jpg/ia-3e9a971fc05e720fb1cd8756e55fa488-px-Gravograph_-_Mode_d_emploi_au_fab-c_decoupelaser.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">Mode d'emploi sur l'utilisation des découpeuses laser au fab-c (fablab de Charleroi)</div>
+        
+      </div>
+    
+    
+      <p>Ce tutoriel explique comment gravograph - mode d'emploi au fab-c.</p>
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Very easy Très facile &nbsp;&nbsp; 
+      <strong>Durée :</strong> 30 minute(s) minute(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 0 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Gravograph_-_Mode_d_emploi_au_fab-c" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Gravograph_-_Mode_d_emploi_au_fab-c</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Préparation du/des fichiers sur PC prévus à cet effet</strong><div class='step-images count-2'><figure><img src='/images/9/94/Gravograph_-_Mode_d_emploi_au_fab-c_Step1.png' alt='Gravograph - Mode d emploi au fab-c Step1.png' loading='lazy'></figure><figure><img src='/images/9/94/Gravograph_-_Mode_d_emploi_au_fab-c_Step1.png' alt='Gravograph - Mode d emploi au fab-c Step1.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Préparation du fichier sur GS8 Laser mode</strong><div class='step-images count-2'><figure><img src='/images/5/54/Gravograph_-_Mode_d_emploi_au_fab-c_002.png' alt='Gravograph - Mode d emploi au fab-c 002.png' loading='lazy'></figure><figure><img src='/images/5/54/Gravograph_-_Mode_d_emploi_au_fab-c_002.png' alt='Gravograph - Mode d emploi au fab-c 002.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Démarrer le programme en cliquant sur l'icône GS 8 Laser mode</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Dimensions de votre plaque</strong><div class='step-images count-2'><figure><img src='/images/e/ee/Gravograph_-_Mode_d_emploi_au_fab-c_003.png' alt='Gravograph - Mode d emploi au fab-c 003.png' loading='lazy'></figure><figure><img src='/images/e/ee/Gravograph_-_Mode_d_emploi_au_fab-c_003.png' alt='Gravograph - Mode d emploi au fab-c 003.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Indiquer les dimensions de votre plan de travail.</li><li>Régler les marges, s'il y en a.</li><li>Valider (V vert) quand tout est correct</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Importer le fichier</strong><div class='step-images count-18'><figure><img src='/images/thumb/8/85/Gravograph_-_Mode_d_emploi_au_fab-c_004.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_004.png' alt='Gravograph - Mode d emploi au fab-c 004.png' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/Gravograph_-_Mode_d_emploi_au_fab-c_005.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_005.png' alt='Gravograph - Mode d emploi au fab-c 005.png' loading='lazy'></figure><figure><img src='/images/thumb/e/ed/Gravograph_-_Mode_d_emploi_au_fab-c_006.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_006.png' alt='Gravograph - Mode d emploi au fab-c 006.png' loading='lazy'></figure><figure><img src='/images/2/23/Gravograph_-_Mode_d_emploi_au_fab-c_007.png' alt='Gravograph - Mode d emploi au fab-c 007.png' loading='lazy'></figure><figure><img src='/images/1/10/Gravograph_-_Mode_d_emploi_au_fab-c_008.png' alt='Gravograph - Mode d emploi au fab-c 008.png' loading='lazy'></figure><figure><img src='/images/thumb/a/a0/Gravograph_-_Mode_d_emploi_au_fab-c_009.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_009.png' alt='Gravograph - Mode d emploi au fab-c 009.png' loading='lazy'></figure><figure><img src='/images/thumb/8/85/Gravograph_-_Mode_d_emploi_au_fab-c_004.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_004.png' alt='Gravograph - Mode d emploi au fab-c 004.png' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/Gravograph_-_Mode_d_emploi_au_fab-c_005.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_005.png' alt='Gravograph - Mode d emploi au fab-c 005.png' loading='lazy'></figure><figure><img src='/images/thumb/e/ed/Gravograph_-_Mode_d_emploi_au_fab-c_006.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_006.png' alt='Gravograph - Mode d emploi au fab-c 006.png' loading='lazy'></figure><figure><img src='/images/2/23/Gravograph_-_Mode_d_emploi_au_fab-c_007.png' alt='Gravograph - Mode d emploi au fab-c 007.png' loading='lazy'></figure><figure><img src='/images/1/10/Gravograph_-_Mode_d_emploi_au_fab-c_008.png' alt='Gravograph - Mode d emploi au fab-c 008.png' loading='lazy'></figure><figure><img src='/images/thumb/a/a0/Gravograph_-_Mode_d_emploi_au_fab-c_009.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_009.png' alt='Gravograph - Mode d emploi au fab-c 009.png' loading='lazy'></figure><figure><img src='/images/thumb/8/85/Gravograph_-_Mode_d_emploi_au_fab-c_004.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_004.png' alt='Gravograph - Mode d emploi au fab-c 004.png' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/Gravograph_-_Mode_d_emploi_au_fab-c_005.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_005.png' alt='Gravograph - Mode d emploi au fab-c 005.png' loading='lazy'></figure><figure><img src='/images/thumb/e/ed/Gravograph_-_Mode_d_emploi_au_fab-c_006.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_006.png' alt='Gravograph - Mode d emploi au fab-c 006.png' loading='lazy'></figure><figure><img src='/images/2/23/Gravograph_-_Mode_d_emploi_au_fab-c_007.png' alt='Gravograph - Mode d emploi au fab-c 007.png' loading='lazy'></figure><figure><img src='/images/1/10/Gravograph_-_Mode_d_emploi_au_fab-c_008.png' alt='Gravograph - Mode d emploi au fab-c 008.png' loading='lazy'></figure><figure><img src='/images/thumb/a/a0/Gravograph_-_Mode_d_emploi_au_fab-c_009.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_009.png' alt='Gravograph - Mode d emploi au fab-c 009.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Img1 - Cliquer sur le cadenas afin de libérer le déplacement en dehors du plan de travail</li><li>Img2 - Cliquer sur LASERSTYLE (bouton vert) pour faire apparaître le menu correspondant</li><li>Img3- Cliquer sur Importer pour charger votre fichier</li><li>Img4 - Si votre fichier n'apparaît pas, changer le 'Types de fichiers" avec l'extension voulu</li><li>Img5 - La fenêtre "Options Import s'ouvre. Valider.</li><li>Img6 - Le fichier est importé</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Attribution des travaux à réaliser</strong><div class='step-images count-2'><figure><img src='/images/thumb/3/3a/Gravograph_-_Mode_d_emploi_au_fab-c_011.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_011.png' alt='Gravograph - Mode d emploi au fab-c 011.png' loading='lazy'></figure><figure><img src='/images/thumb/3/3a/Gravograph_-_Mode_d_emploi_au_fab-c_011.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_011.png' alt='Gravograph - Mode d emploi au fab-c 011.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cliquer sur le dernier bouton de couleur orange</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Rappel</strong><div class='step-images count-2'><figure><img src='/images/a/a9/Gravograph_-_Mode_d_emploi_au_fab-c_010bis.png' alt='Gravograph - Mode d emploi au fab-c 010bis.png' loading='lazy'></figure><figure><img src='/images/a/a9/Gravograph_-_Mode_d_emploi_au_fab-c_010bis.png' alt='Gravograph - Mode d emploi au fab-c 010bis.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Décombiner</strong><div class='step-images count-2'><figure><img src='/images/thumb/e/e0/Gravograph_-_Mode_d_emploi_au_fab-c_012.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_012.png' alt='Gravograph - Mode d emploi au fab-c 012.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e0/Gravograph_-_Mode_d_emploi_au_fab-c_012.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_012.png' alt='Gravograph - Mode d emploi au fab-c 012.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Décombiner (dégrouper) votre importation pour pouvoir affecter les travaux aux différentes sélections.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Enregistrer</strong><div class='step-images count-2'><figure><img src='/images/c/c7/Gravograph_-_Mode_d_emploi_au_fab-c_013.png' alt='Gravograph - Mode d emploi au fab-c 013.png' loading='lazy'></figure><figure><img src='/images/c/c7/Gravograph_-_Mode_d_emploi_au_fab-c_013.png' alt='Gravograph - Mode d emploi au fab-c 013.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Enregistrer (dans le format du logiciel) dans votre répertoire (S'il n'existe pas, créer-le dans Bureau>>Projets>>votre nom.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Appliquer les couleurs</strong><div class='step-images count-2'><figure><img src='/images/thumb/2/20/Gravograph_-_Mode_d_emploi_au_fab-c_014.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_014.png' alt='Gravograph - Mode d emploi au fab-c 014.png' loading='lazy'></figure><figure><img src='/images/thumb/2/20/Gravograph_-_Mode_d_emploi_au_fab-c_014.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_014.png' alt='Gravograph - Mode d emploi au fab-c 014.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Appliquer les couleurs afin de définir les différents travaux à effectuer</li><li>Enregistrer votre fichier.</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Sur le PC machine laser</strong><div class='step-images count-2'><figure><img src='/images/9/90/Gravograph_-_Mode_d_emploi_au_fab-c_Step2.png' alt='Gravograph - Mode d emploi au fab-c Step2.png' loading='lazy'></figure><figure><img src='/images/9/90/Gravograph_-_Mode_d_emploi_au_fab-c_Step2.png' alt='Gravograph - Mode d emploi au fab-c Step2.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Lancer le programme</strong><div class='step-images count-2'><figure><img src='/images/5/54/Gravograph_-_Mode_d_emploi_au_fab-c_002.png' alt='Gravograph - Mode d emploi au fab-c 002.png' loading='lazy'></figure><figure><img src='/images/5/54/Gravograph_-_Mode_d_emploi_au_fab-c_002.png' alt='Gravograph - Mode d emploi au fab-c 002.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Démarrer le programme en cliquant sur l'icône GS 8 Laser mode</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Annuler "Propriétés Matière et Gravure"</strong><div class='step-images count-2'><figure><img src='/images/thumb/8/89/Gravograph_-_Mode_d_emploi_au_fab-c_015.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_015.png' alt='Gravograph - Mode d emploi au fab-c 015.png' loading='lazy'></figure><figure><img src='/images/thumb/8/89/Gravograph_-_Mode_d_emploi_au_fab-c_015.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_015.png' alt='Gravograph - Mode d emploi au fab-c 015.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cliquer sur la croix rouge</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Ouvrir votre fichier</strong><div class='step-images count-6'><figure><img src='/images/thumb/f/ff/Gravograph_-_Mode_d_emploi_au_fab-c_016.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_016.png' alt='Gravograph - Mode d emploi au fab-c 016.png' loading='lazy'></figure><figure><img src='/images/thumb/a/ae/Gravograph_-_Mode_d_emploi_au_fab-c_017.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_017.png' alt='Gravograph - Mode d emploi au fab-c 017.png' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Gravograph_-_Mode_d_emploi_au_fab-c_016.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_016.png' alt='Gravograph - Mode d emploi au fab-c 016.png' loading='lazy'></figure><figure><img src='/images/thumb/a/ae/Gravograph_-_Mode_d_emploi_au_fab-c_017.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_017.png' alt='Gravograph - Mode d emploi au fab-c 017.png' loading='lazy'></figure><figure><img src='/images/thumb/f/ff/Gravograph_-_Mode_d_emploi_au_fab-c_016.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_016.png' alt='Gravograph - Mode d emploi au fab-c 016.png' loading='lazy'></figure><figure><img src='/images/thumb/a/ae/Gravograph_-_Mode_d_emploi_au_fab-c_017.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_017.png' alt='Gravograph - Mode d emploi au fab-c 017.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ouvrir et non importer votre fichier .gnh</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Votre fichier apparaît à l'écran</strong><div class='step-images count-2'><figure><img src='/images/thumb/e/e4/Gravograph_-_Mode_d_emploi_au_fab-c_018.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_018.png' alt='Gravograph - Mode d emploi au fab-c 018.png' loading='lazy'></figure><figure><img src='/images/thumb/e/e4/Gravograph_-_Mode_d_emploi_au_fab-c_018.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_018.png' alt='Gravograph - Mode d emploi au fab-c 018.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Cliquez sur l'icône Laser afin de rentrer dans les paramètres de la machine</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Fenêtre Propriétés Marquage Laser</strong><div class='step-images count-9'><figure><img src='/images/thumb/7/7d/Gravograph_-_Mode_d_emploi_au_fab-c_019.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_019.png' alt='Gravograph - Mode d emploi au fab-c 019.png' loading='lazy'></figure><figure><img src='/images/thumb/7/70/Gravograph_-_Mode_d_emploi_au_fab-c_020.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_020.png' alt='Gravograph - Mode d emploi au fab-c 020.png' loading='lazy'></figure><figure><img src='/images/thumb/8/84/Gravograph_-_Mode_d_emploi_au_fab-c_021.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_021.png' alt='Gravograph - Mode d emploi au fab-c 021.png' loading='lazy'></figure><figure><img src='/images/thumb/7/7d/Gravograph_-_Mode_d_emploi_au_fab-c_019.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_019.png' alt='Gravograph - Mode d emploi au fab-c 019.png' loading='lazy'></figure><figure><img src='/images/thumb/7/70/Gravograph_-_Mode_d_emploi_au_fab-c_020.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_020.png' alt='Gravograph - Mode d emploi au fab-c 020.png' loading='lazy'></figure><figure><img src='/images/thumb/8/84/Gravograph_-_Mode_d_emploi_au_fab-c_021.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_021.png' alt='Gravograph - Mode d emploi au fab-c 021.png' loading='lazy'></figure><figure><img src='/images/thumb/7/7d/Gravograph_-_Mode_d_emploi_au_fab-c_019.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_019.png' alt='Gravograph - Mode d emploi au fab-c 019.png' loading='lazy'></figure><figure><img src='/images/thumb/7/70/Gravograph_-_Mode_d_emploi_au_fab-c_020.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_020.png' alt='Gravograph - Mode d emploi au fab-c 020.png' loading='lazy'></figure><figure><img src='/images/thumb/8/84/Gravograph_-_Mode_d_emploi_au_fab-c_021.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_021.png' alt='Gravograph - Mode d emploi au fab-c 021.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Img1 :</li><li>Img2 :Tous les paramètres sont réinitialisés</li><li>Img3 : Mettre vos paramètres de découpes / gravure / marquage</li><li>Voici un lien vers des réglages partagés pour vous aider : https://fab-c.notion.site/Lasercut-12c9360d33ef4e7a8ff1aab263d1da07</li><li>N'oubliez pas de tester avant de lancer un grand travail.</li><li>Valider - regarder l'apercu (vous obtenez une estimation du temps)</li><li>Vous êtes prêt à lancer le travail - Étape 3</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>16. Étape 16 - Démarrage et étalonnage de la machine</strong><div class='step-images count-2'><figure><img src='/images/8/82/Gravograph_-_Mode_d_emploi_au_fab-c_Step3.png' alt='Gravograph - Mode d emploi au fab-c Step3.png' loading='lazy'></figure><figure><img src='/images/8/82/Gravograph_-_Mode_d_emploi_au_fab-c_Step3.png' alt='Gravograph - Mode d emploi au fab-c Step3.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>17. Étape 17 - Allumer la machine</strong><div class='step-images count-6'><figure><img src='/images/3/36/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141245_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141245 800x600.jpg' loading='lazy'></figure><figure><img src='/images/d/d5/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141256_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141256 800x600.jpg' loading='lazy'></figure><figure><img src='/images/3/36/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141245_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141245 800x600.jpg' loading='lazy'></figure><figure><img src='/images/d/d5/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141256_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141256 800x600.jpg' loading='lazy'></figure><figure><img src='/images/3/36/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141245_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141245 800x600.jpg' loading='lazy'></figure><figure><img src='/images/d/d5/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141256_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141256 800x600.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Img1 - Laser 1000XP</li><li>Img2 - Laser 900XP</li><li>Voir la séquence de démarrage : vidéo</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>18. Étape 18 - Placer votre matériel</strong><div class='step-images count-2'><figure><img src='/images/7/7a/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141650_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141650 800x600.jpg' loading='lazy'></figure><figure><img src='/images/7/7a/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141650_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141650 800x600.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>19. Étape 19 - Réglage de la hauteur de la focal</strong><div class='step-images count-12'><figure><img src='/images/0/0b/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141703_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141703 800x600.jpg' loading='lazy'></figure><figure><img src='/images/1/14/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141718_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141718 800x600.jpg' loading='lazy'></figure><figure><img src='/images/7/77/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141730_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141730 800x600.jpg' loading='lazy'></figure><figure><img src='/images/0/06/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141749_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141749 800x600.jpg' loading='lazy'></figure><figure><img src='/images/0/0b/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141703_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141703 800x600.jpg' loading='lazy'></figure><figure><img src='/images/1/14/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141718_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141718 800x600.jpg' loading='lazy'></figure><figure><img src='/images/7/77/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141730_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141730 800x600.jpg' loading='lazy'></figure><figure><img src='/images/0/06/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141749_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141749 800x600.jpg' loading='lazy'></figure><figure><img src='/images/0/0b/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141703_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141703 800x600.jpg' loading='lazy'></figure><figure><img src='/images/1/14/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141718_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141718 800x600.jpg' loading='lazy'></figure><figure><img src='/images/7/77/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141730_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141730 800x600.jpg' loading='lazy'></figure><figure><img src='/images/0/06/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141749_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141749 800x600.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Img1 - On utilise la pige conçue à cet effet</li><li>Img2 - Panneau de contrôle</li><li>Img3 et 4 - On positionne la tête de la laser au milieu de l'endroit du travail à effectuer (Dans le cas d'un travail sur une plaque complète, on se positionne au milieu)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>20. Étape 20 - Réglage suite</strong><div class='step-images count-9'><figure><img src='/images/4/4b/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141808_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141808 800x600.jpg' loading='lazy'></figure><figure><img src='/images/f/fd/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141932_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141932 800x600.jpg' loading='lazy'></figure><figure><img src='/images/f/f8/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141939_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141939 800x600.jpg' loading='lazy'></figure><figure><img src='/images/4/4b/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141808_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141808 800x600.jpg' loading='lazy'></figure><figure><img src='/images/f/fd/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141932_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141932 800x600.jpg' loading='lazy'></figure><figure><img src='/images/f/f8/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141939_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141939 800x600.jpg' loading='lazy'></figure><figure><img src='/images/4/4b/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141808_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141808 800x600.jpg' loading='lazy'></figure><figure><img src='/images/f/fd/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141932_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141932 800x600.jpg' loading='lazy'></figure><figure><img src='/images/f/f8/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_141939_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 141939 800x600.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Img1 - On positionne la pige</li><li>Vidéo : On appuie sur Z, puis on règle en abaissant ou en montant la table</li><li>Img2 - Lorqu'on est bon (la pige doit glisser en dessous du palpeur), on valide en appuyant sur V</li><li>Img3 - On appuie, enfin sur le croix. La tête revient en position 0,0</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>21. Étape 21 - Lancer le travail</strong><div class='step-images count-6'><figure><img src='/images/thumb/b/bf/Gravograph_-_Mode_d_emploi_au_fab-c_022.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_022.png' alt='Gravograph - Mode d emploi au fab-c 022.png' loading='lazy'></figure><figure><img src='/images/1/1e/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_142025_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 142025 800x600.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/bf/Gravograph_-_Mode_d_emploi_au_fab-c_022.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_022.png' alt='Gravograph - Mode d emploi au fab-c 022.png' loading='lazy'></figure><figure><img src='/images/1/1e/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_142025_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 142025 800x600.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/bf/Gravograph_-_Mode_d_emploi_au_fab-c_022.png/800px-Gravograph_-_Mode_d_emploi_au_fab-c_022.png' alt='Gravograph - Mode d emploi au fab-c 022.png' loading='lazy'></figure><figure><img src='/images/1/1e/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_142025_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 142025 800x600.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Img1 - Vous êtes prêt à lancer votre travail. Cliquer sur lancer,</li><li>le fichier est envoyé au laser. Lorsque ce dernier "bip",</li><li>Img2 - démarrer l'extracteur (pour la grande laser) (Pour la petite, ne rien faire, c'est automatique)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>22. Étape 22 - Dernière étape</strong><div class='step-images count-9'><figure><img src='/images/d/db/Gravograph_-_Mode_d_emploi_au_fab-c_fin.jpg' alt='Gravograph - Mode d emploi au fab-c fin.jpg' loading='lazy'></figure><figure><img src='/images/2/2c/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_143648_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 143648 800x600.jpg' loading='lazy'></figure><figure><img src='/images/7/7c/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_143835_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 143835 800x600.jpg' loading='lazy'></figure><figure><img src='/images/d/db/Gravograph_-_Mode_d_emploi_au_fab-c_fin.jpg' alt='Gravograph - Mode d emploi au fab-c fin.jpg' loading='lazy'></figure><figure><img src='/images/2/2c/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_143648_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 143648 800x600.jpg' loading='lazy'></figure><figure><img src='/images/7/7c/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_143835_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 143835 800x600.jpg' loading='lazy'></figure><figure><img src='/images/d/db/Gravograph_-_Mode_d_emploi_au_fab-c_fin.jpg' alt='Gravograph - Mode d emploi au fab-c fin.jpg' loading='lazy'></figure><figure><img src='/images/2/2c/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_143648_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 143648 800x600.jpg' loading='lazy'></figure><figure><img src='/images/7/7c/Gravograph_-_Mode_d_emploi_au_fab-c_IMG_20200114_143835_800x600.jpg' alt='Gravograph - Mode d emploi au fab-c IMG 20200114 143835 800x600.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Éteindre l'aspiration</li><li>Nettoyer la machine avant de partir</li><li>Img1 - Avant</li><li>Img2 - Après</li><li>Éteindre la machine Encoder le temps machine (disponible sur le bureau)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>

@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Séchoir Solaire</title>
+  <style>
+    body {
+      font-family: "Helvetica", Arial, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #fafafa;
+      color: #222;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #210dfd8b;
+      border-bottom: 2px solid #ce510dff;
+      padding-bottom: 0.2em;
+    }
+
+    h2 {
+      color: #333;
+      margin-top: 1.5em;
+    }
+
+    ul, ol {
+      margin-left: 1.5em;
+    }
+
+    /* Sous-listes dans les étapes */
+    ol > li ul {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+    ol > li strong {
+      color: #444;
+      display: block;
+      margin-bottom: 0.3em;
+    }
+
+    .section {
+      margin-bottom: 2em;
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Styliser le titre principal de chaque étape : encadré gris et police un peu plus grande
+       Ciblé uniquement dans la section Étapes (classe .steps) pour éviter d'impacter d'autres <strong>. */
+    .section.steps > ol > li > strong:first-child {
+      display: block;
+      background: #f3f3f3; /* gris très clair */
+      color: #222;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #d6d6d6;
+      border-radius: 6px;
+      font-size: 1.06em; /* légèrement plus grand */
+      margin-bottom: 0.45rem;
+    }
+
+    /* Matériaux: rendre les sous-items grisés et en police plus petite */
+    .section.materials ul ul {
+      color: #666;
+      font-size: 0.9em;
+      margin-top: 0.35em;
+    }
+
+    /* (Step title framed styles were removed per user request to revert) */
+
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+  /* Layout for image boxes: adjust columns based on count via classes .count-N */
+  .step-images.count-1 { grid-template-columns: 1fr; }
+  .step-images.count-2 { grid-template-columns: repeat(2, 1fr); }
+  .step-images.count-3 { grid-template-columns: repeat(3, 1fr); }
+  /* For 4 or more images, use 2 columns thumbnail layout for a more harmonious small-preview look */
+  .step-images.count-4,
+  .step-images.count-5,
+  .step-images.count-6,
+  .step-images.count-7,
+  .step-images.count-8,
+  .step-images.count-9,
+  .step-images.count-10 { grid-template-columns: repeat(2, 1fr); }
+
+    /* container box around the whole set of images for the step */
+    .step-images {
+      margin: 1em 0;
+      display: grid;
+      gap: 0.6rem;
+      background: #fafafa; /* subtle gray background */
+      border: 1px solid #e6e6e6;
+      padding: 0.6rem;
+      border-radius: 8px;
+    }
+
+    figure {
+      margin: 0;
+      text-align: center;
+      background: transparent;
+      padding: 0.25rem 0;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Thumbnails: show the whole image (no cropping). Use contain with max dims so
+       small images display fully while larger images are constrained. Center them. */
+    .step-images figure img {
+      width: auto;
+      max-width: 100%;
+      max-height: 160px; /* control thumbnail height but do not crop */
+      object-fit: contain; /* show full image */
+      background: #f5f5f5; /* subtle neutral background for small images */
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto; /* center narrower images */
+    }
+    /* Single-image steps: let the image take available width while preserving aspect */
+    .step-images.count-1 figure img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      max-height: none;
+    }
+
+    /* Hide figcaptions in thumbnail/grid mode; captions are shown in the lightbox */
+    .step-images figure figcaption { display: none; }
+
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5em;
+      font-style: italic;
+    }
+    
+
+    /* Lightbox overlay */
+    .lightbox-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 1rem;
+    }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-content {
+      max-width: 95%;
+      max-height: 95%;
+      text-align: center;
+    }
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 6px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .lightbox-caption { color: #fff; margin-top: 0.6rem; font-size: 0.95em; }
+    .lightbox-close {
+      position: absolute; top: 12px; right: 16px; color: #fff; background: transparent;
+      border: none; font-size: 1.6rem; cursor: pointer;
+    }
+
+    footer {
+      margin-top: 2em;
+      font-size: 0.9em;
+      color: #666;
+      border-top: 1px solid #ddd;
+      padding-top: 1em;
+    }
+
+    /* Style impression PDF */
+    @media print {
+      body { background: white; color: black; }
+      a { color: black; text-decoration: none; }
+      .section { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Séchoir Solaire</h1>
+    
+      <div style="text-align:center; margin-bottom:1.2em;">
+        <img src="/images/thumb/7/71/S_choir_Solaire_Sechoir_final_0.jpg/ia-ac68868e371e719a5c4a7a5ef4349d19-px-S_choir_Solaire_Sechoir_final_0.jpg.png" alt="Image principale du tutoriel" style="max-width:100%; max-height:320px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        
+          <div style="color:#666; font-size:0.97em; margin-top:0.4em; font-style:italic;">c'est un système fonctionnant à énergie solaire pour sécher légumes, fruits, plantes, etc...</div>
+        
+      </div>
+    
+    
+      
+        <p>Le séchoir solaire est constitué de deux parties: capteur solaire et caisson de séchage.</p>
+      
+        <p>Capteur solaire: Grâce à la vitre qui capte les rayons du soleil (effet de serre), les ardoises vont accumuler de la chaleur. L'air extérieur est introduit par le bas du capteur (trous), il va se chauffer en circulant autour des ardoises chaudes, et sortir par le haut du capteur à une température élevée (dépend de localisation, ensoleillement et de la saison). L'air chaud est ensuite introduit dans le caisson par des trous dans la partie supérieure du capteur ( gradient thermique). Le capteur sera inséré dans le bas du caisson.</p>
+      
+        <p>Caisson de séchage: il reçoit de l'air chaud dans sa partie basse. Il comprend à l'intérieur des clayettes ( sorte d'étagères comportant un grillage) sur lesquelles seront déposées les aliments ou plantes à sécher. L'air chaud circule à travers les clayettes grillagées et sort par le toit du Caisson (trous). Un système de ventilation forcée (alimentation photo voltaïque) a été installé au niveau des trous supérieurs du caisson pour accélérer la montée en température dans le caisson.</p>
+      
+    
+    
+    <p style="color: #666; font-size: 0.95em;">
+      <strong>Difficulté :</strong> Moyen &nbsp;&nbsp; 
+      <strong>Durée :</strong> 3 day(s) jour(s) &nbsp;&nbsp; 
+      <strong>Coût :</strong> 100 EUR (€)
+    </p>
+    
+    
+    <p style="font-size:0.95em; color:#066; margin-top:0.2em;">
+      <strong>Lien du tutoriel de base :</strong>
+      <a href="https://wikifab.org/wiki/Séchoir_Solaire" target="_blank" rel="noopener" style="color:#066;">https://wikifab.org/wiki/Séchoir_Solaire</a>
+    </p>
+    
+  </header>
+
+  <div class="section materials">
+    <h2>🛠️ Matériaux</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section">
+    <h2>🔧 Outils</h2>
+    
+      <p><em>Non spécifié</em></p>
+    
+  </div>
+
+  <div class="section steps">
+    <h2> Étapes</h2>
+    
+      <ol>
+        
+          <li>
+            
+            
+              <strong>1. Étape 1 - Outils & Matériaux</strong><p><strong>Étapes :</strong></p><ol><li>Outils:</li><li>Scie circulaire, Visseuse / perceuse, Scie circulaire sur table</li><li>Mèches à bois, Equerre, mètre, râpes, ciseau à bois, .....</li><li>Vis bois tête fraisée - Torx - diamètre 4 mm, longueur 40 mm</li><li>Vis bois tête fraisée - Torx - diamètre 4 mm, longueur 80 mm</li><li>vis bois tête fraisée diamètre 3 à 3,5 mm, longueur 20 mm</li><li>Matériaux:</li><li>Tablette sapin: 2 m x 0,40 m x épaisseur 18mm (cotés et fond du caisson)</li><li>Panneaux récup OSB, CP, etc... pour faces avant et arrière + toit</li><li>Tasseaux (récup): 20 mm x20 mm , longueur 3,5 m (glissières pour les clayettes)</li><li>Tasseaux (récup): 18 mm x 37 mm , longueur 8 m (clayettes)</li><li>Charnières métal ( porte AR et portillon AV)</li><li>Vitre 900 mm x 500 mm</li><li>Tasseaux (récup): 37mm x 48 mm , longueur 5,5 m ( pieds caisson et chicanes capteur)</li><li>Mastic colle noire type Sikaflex 11 FC (fixation vitre et étanchéité capteur)</li><li>Elastique type Sandow de vélo</li><li>morceau de tapis basic (récup)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>2. Étape 2 - Capteur Solaire - base</strong><div class='step-images count-6'><figure><img src='/images/thumb/9/91/S_choir_Solaire_capteur_size.png/800px-S_choir_Solaire_capteur_size.png' alt='S choir Solaire capteur size.png' loading='lazy'></figure><figure><img src='/images/8/8e/S_choir_Solaire_capteur_fond.png' alt='S choir Solaire capteur fond.png' loading='lazy'></figure><figure><img src='/images/thumb/9/91/S_choir_Solaire_capteur_size.png/800px-S_choir_Solaire_capteur_size.png' alt='S choir Solaire capteur size.png' loading='lazy'></figure><figure><img src='/images/8/8e/S_choir_Solaire_capteur_fond.png' alt='S choir Solaire capteur fond.png' loading='lazy'></figure><figure><img src='/images/thumb/9/91/S_choir_Solaire_capteur_size.png/800px-S_choir_Solaire_capteur_size.png' alt='S choir Solaire capteur size.png' loading='lazy'></figure><figure><img src='/images/8/8e/S_choir_Solaire_capteur_fond.png' alt='S choir Solaire capteur fond.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Le Capteur solaire va permettre l'entrée d'air extérieur depuis le bas. Cet air va se chauffer progressivement en captant la chaleur accumulée par les ardoises. Grâce au gradient thermique créé, l'air va circuler entre les chicanes jusqu'à la partie supérieur du capteur . La température de l'air en sortie de capteur peut atteindre 65 à 70°C en plein été !</li><li>Le capteur étant encastré dans le bas du caisson de chauffage, l'air chaud va continuer de monter et passer au travers des clayettes sur lesquelles reposent l'aliment à sécher .</li><li>Le plateau est du CP de récup de 15 mm d'épaisseur .</li><li>Dimensions du plateau : 500 mm x 900 mm ( côtes externes)</li><li>Hauteur des cotés (même hauteur que les chicanes), ici 48 mm !</li><li>Longueurs des petits et grands cotés (voir plan).</li><li>Les cotés son collés , puis vissés par l'AR du plateau (voir photo)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>3. Étape 3 - Capteur Solaire - Chicanes</strong><div class='step-images count-9'><figure><img src='/images/thumb/2/29/S_choir_Solaire_Position_chicanes.jpg/800px-S_choir_Solaire_Position_chicanes.jpg' alt='S choir Solaire Position chicanes.jpg' loading='lazy'></figure><figure><img src='/images/5/5d/S_choir_Solaire_Chicanes.png' alt='S choir Solaire Chicanes.png' loading='lazy'></figure><figure><img src='/images/3/33/S_choir_Solaire_chicane_vis.png' alt='S choir Solaire chicane vis.png' loading='lazy'></figure><figure><img src='/images/thumb/2/29/S_choir_Solaire_Position_chicanes.jpg/800px-S_choir_Solaire_Position_chicanes.jpg' alt='S choir Solaire Position chicanes.jpg' loading='lazy'></figure><figure><img src='/images/5/5d/S_choir_Solaire_Chicanes.png' alt='S choir Solaire Chicanes.png' loading='lazy'></figure><figure><img src='/images/3/33/S_choir_Solaire_chicane_vis.png' alt='S choir Solaire chicane vis.png' loading='lazy'></figure><figure><img src='/images/thumb/2/29/S_choir_Solaire_Position_chicanes.jpg/800px-S_choir_Solaire_Position_chicanes.jpg' alt='S choir Solaire Position chicanes.jpg' loading='lazy'></figure><figure><img src='/images/5/5d/S_choir_Solaire_Chicanes.png' alt='S choir Solaire Chicanes.png' loading='lazy'></figure><figure><img src='/images/3/33/S_choir_Solaire_chicane_vis.png' alt='S choir Solaire chicane vis.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les chicanes vont forcer l'air froid à faire un long chemin pour circuler le long des ardoises et ainsi capter la chaleur qu'elles ont accumulée.</li><li>Les chicanes (récup) sont de dimensions: 37 mmx 48 mm x 320 mm</li><li>Les chicanes sont collées , puis vissées par l'arrière du plateau</li><li>Positionnement des chicanes: voir plan</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>4. Étape 4 - Capteur Solaire - Ardoise & trous ( Bas et Haut)</strong><div class='step-images count-15'><figure><img src='/images/5/5d/S_choir_Solaire_Chicanes.png' alt='S choir Solaire Chicanes.png' loading='lazy'></figure><figure><img src='/images/c/c2/S_choir_Solaire_ardoise1.png' alt='S choir Solaire ardoise1.png' loading='lazy'></figure><figure><img src='/images/f/ff/S_choir_Solaire_ardoise2.png' alt='S choir Solaire ardoise2.png' loading='lazy'></figure><figure><img src='/images/c/c8/S_choir_Solaire_trous_bas.png' alt='S choir Solaire trous bas.png' loading='lazy'></figure><figure><img src='/images/4/40/S_choir_Solaire_trous_haut.png' alt='S choir Solaire trous haut.png' loading='lazy'></figure><figure><img src='/images/5/5d/S_choir_Solaire_Chicanes.png' alt='S choir Solaire Chicanes.png' loading='lazy'></figure><figure><img src='/images/c/c2/S_choir_Solaire_ardoise1.png' alt='S choir Solaire ardoise1.png' loading='lazy'></figure><figure><img src='/images/f/ff/S_choir_Solaire_ardoise2.png' alt='S choir Solaire ardoise2.png' loading='lazy'></figure><figure><img src='/images/c/c8/S_choir_Solaire_trous_bas.png' alt='S choir Solaire trous bas.png' loading='lazy'></figure><figure><img src='/images/4/40/S_choir_Solaire_trous_haut.png' alt='S choir Solaire trous haut.png' loading='lazy'></figure><figure><img src='/images/5/5d/S_choir_Solaire_Chicanes.png' alt='S choir Solaire Chicanes.png' loading='lazy'></figure><figure><img src='/images/c/c2/S_choir_Solaire_ardoise1.png' alt='S choir Solaire ardoise1.png' loading='lazy'></figure><figure><img src='/images/f/ff/S_choir_Solaire_ardoise2.png' alt='S choir Solaire ardoise2.png' loading='lazy'></figure><figure><img src='/images/c/c8/S_choir_Solaire_trous_bas.png' alt='S choir Solaire trous bas.png' loading='lazy'></figure><figure><img src='/images/4/40/S_choir_Solaire_trous_haut.png' alt='S choir Solaire trous haut.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ardoises de récupération:</li><li>•Elles doivent être brossées /lavées afin d’obtenir la surface la plus noire possible !</li><li>•elles doivent être assez épaisses, sinon les mettre sur plusieurs épaisseurs ( la masse va permettre d'accumuler plus de chaleur)</li><li>•elles sont taillées et ajustées autour des chicanes en bois</li><li>•elles sont fixées par vis, sans colle (elles ne doivent pas être fendues)!</li><li>•Un film d’aluminium a été déroulé en dessous des ardoises (option pas nécessaire)</li><li>Une fois les ardoises fixées, faites 3 trous (voir plan étape 3) en bas et en haut du capteur en respectant le sens de circulation de l'air (voir photos).</li><li>ATTENTION : les trous doivent être juste tangents ou légèrement au dessus des ardoises ( mais pas en dessous)</li><li>Pour les trous du haut, une fois percés, les limer en biais (voir photo)</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>5. Étape 5 - Capteur Solaire - Vitre</strong><div class='step-images count-2'><figure><img src='/images/c/cb/S_choir_Solaire_vitre.png' alt='S choir Solaire vitre.png' loading='lazy'></figure><figure><img src='/images/c/cb/S_choir_Solaire_vitre.png' alt='S choir Solaire vitre.png' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Les dimensions de la vitre sont:</li><li>Longueur: 895 mm</li><li>Largeur: 495 mm</li><li>épaisseur: 5 mm</li><li>La vitre est collée avec du mastic colle noir Sicaflex 11 FC. Le mastic colle assure l'étanchéité sur le pourtour du capteur, mais aussi sur le dessus des chicanes. Vous enduisez de mastic colle les parties indiquées ci avant, mais RIEN sur la vitre !</li><li>Avec l'aide d'une autre personne, posez la vitre sur le cadre (centrez la bien ) et appuyez assez fort avec les mains sur les bords du capteur et sur les chicanes. Le mastic colle doit refluer un peu. Lissez ensuite le mastic colle sur le pourtour de la vitre ( attention bord de la vitre coupant - prenez un chiffon!)</li><li>Vérifier qu'il n'existe aucune fuite autour de la vitre, dans le cas contraire remettre du mastic colle , puis le lisser</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>6. Étape 6 - Capteur Solaire - Inclinaison selon la saison</strong><div class='step-images count-18'><figure><img src='/images/thumb/f/f8/S_choir_Solaire_trajectoire_soleil.png/800px-S_choir_Solaire_trajectoire_soleil.png' alt='S choir Solaire trajectoire soleil.png' loading='lazy'></figure><figure><img src='/images/2/22/S_choir_Solaire_trajet_soleil_Paris.png' alt='S choir Solaire trajet soleil Paris.png' loading='lazy'></figure><figure><img src='/images/thumb/6/6f/S_choir_Solaire_sunearthtools_concarneau.png/800px-S_choir_Solaire_sunearthtools_concarneau.png' alt='S choir Solaire sunearthtools concarneau.png' loading='lazy'></figure><figure><img src='/images/f/f3/S_choir_Solaire_Cale_inclinaison0.png' alt='S choir Solaire Cale inclinaison0.png' loading='lazy'></figure><figure><img src='/images/thumb/0/0f/S_choir_Solaire_ise_en_service_capteur.png/800px-S_choir_Solaire_ise_en_service_capteur.png' alt='S choir Solaire ise en service capteur.png' loading='lazy'></figure><figure><img src='/images/thumb/b/b5/S_choir_Solaire_Inclinaison_optimale_capteur_solaire.jpg/800px-S_choir_Solaire_Inclinaison_optimale_capteur_solaire.jpg' alt='S choir Solaire Inclinaison optimale capteur solaire.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f8/S_choir_Solaire_trajectoire_soleil.png/800px-S_choir_Solaire_trajectoire_soleil.png' alt='S choir Solaire trajectoire soleil.png' loading='lazy'></figure><figure><img src='/images/2/22/S_choir_Solaire_trajet_soleil_Paris.png' alt='S choir Solaire trajet soleil Paris.png' loading='lazy'></figure><figure><img src='/images/thumb/6/6f/S_choir_Solaire_sunearthtools_concarneau.png/800px-S_choir_Solaire_sunearthtools_concarneau.png' alt='S choir Solaire sunearthtools concarneau.png' loading='lazy'></figure><figure><img src='/images/f/f3/S_choir_Solaire_Cale_inclinaison0.png' alt='S choir Solaire Cale inclinaison0.png' loading='lazy'></figure><figure><img src='/images/thumb/0/0f/S_choir_Solaire_ise_en_service_capteur.png/800px-S_choir_Solaire_ise_en_service_capteur.png' alt='S choir Solaire ise en service capteur.png' loading='lazy'></figure><figure><img src='/images/thumb/b/b5/S_choir_Solaire_Inclinaison_optimale_capteur_solaire.jpg/800px-S_choir_Solaire_Inclinaison_optimale_capteur_solaire.jpg' alt='S choir Solaire Inclinaison optimale capteur solaire.jpg' loading='lazy'></figure><figure><img src='/images/thumb/f/f8/S_choir_Solaire_trajectoire_soleil.png/800px-S_choir_Solaire_trajectoire_soleil.png' alt='S choir Solaire trajectoire soleil.png' loading='lazy'></figure><figure><img src='/images/2/22/S_choir_Solaire_trajet_soleil_Paris.png' alt='S choir Solaire trajet soleil Paris.png' loading='lazy'></figure><figure><img src='/images/thumb/6/6f/S_choir_Solaire_sunearthtools_concarneau.png/800px-S_choir_Solaire_sunearthtools_concarneau.png' alt='S choir Solaire sunearthtools concarneau.png' loading='lazy'></figure><figure><img src='/images/f/f3/S_choir_Solaire_Cale_inclinaison0.png' alt='S choir Solaire Cale inclinaison0.png' loading='lazy'></figure><figure><img src='/images/thumb/0/0f/S_choir_Solaire_ise_en_service_capteur.png/800px-S_choir_Solaire_ise_en_service_capteur.png' alt='S choir Solaire ise en service capteur.png' loading='lazy'></figure><figure><img src='/images/thumb/b/b5/S_choir_Solaire_Inclinaison_optimale_capteur_solaire.jpg/800px-S_choir_Solaire_Inclinaison_optimale_capteur_solaire.jpg' alt='S choir Solaire Inclinaison optimale capteur solaire.jpg' loading='lazy'></figure></div><p><strong>Étapes :</strong></p><ol><li>Ce capteur a été conçu pour être utiliser à KAL - Concarneau (29) - France, dont la latitude est 47.8847452 et longitude: -3.91152189.</li><li>Pour cette latitude et longitude, le site "www.sunearthtools.com" donne:</li><li>- les inclinaisons /élévations ( par rapport à l'horizontale) du soleil de janvier à décembre.</li><li>- pour chaque mois les inclinaisons du soleil dans la période de jour (6h - 22h )</li><li>- Vous pouvez aussi l'avoir pour un jour donné en allant sur le site à la date du jour.</li><li>Pour permettre d'optimiser l'utilisation du séchoir solaire selon la saison, le capteur solaire peut pivoter pour maximiser la réception solaire (voir photos).</li><li>Une cale étagée a été créée en tenant compte de la géométrie du séchoir et se place sur le devant du capteur. Chaque étage est graduée selon les "couples" de mois d'utilisation (voir photos et fichier de calculs).</li><li>Remarque: en Bretagne, il a été constaté que le fonctionnement optimum du séchoir pour sécher rapidement les aliments s'effectue entre Juin et Aout !</li></ol>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>7. Étape 7 - Caisson de séchage - corps principal</strong><div class='step-images count-18'><figure><img src='/images/thumb/6/64/S_choir_Solaire_caisson_1.png/800px-S_choir_Solaire_caisson_1.png' alt='S choir Solaire caisson 1.png' loading='lazy'></figure><figure><img src='/images/0/02/S_choir_Solaire_caisson_vue1.png' alt='S choir Solaire caisson vue1.png' loading='lazy'></figure><figure><img src='/images/d/d0/S_choir_Solaire_caisson_vue2.png' alt='S choir Solaire caisson vue2.png' loading='lazy'></figure><figure><img src='/images/thumb/1/15/S_choir_Solaire_vue_de_cot_.jpg/800px-S_choir_Solaire_vue_de_cot_.jpg' alt='S choir Solaire vue de cot .jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/39/S_choir_Solaire_Cot_1.jpg/800px-S_choir_Solaire_Cot_1.jpg' alt='S choir Solaire Cot 1.jpg' loading='lazy'></figure><figure><img src='/images/1/1d/S_choir_Solaire_cot_2.jpg' alt='S choir Solaire cot 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/S_choir_Solaire_caisson_1.png/800px-S_choir_Solaire_caisson_1.png' alt='S choir Solaire caisson 1.png' loading='lazy'></figure><figure><img src='/images/0/02/S_choir_Solaire_caisson_vue1.png' alt='S choir Solaire caisson vue1.png' loading='lazy'></figure><figure><img src='/images/d/d0/S_choir_Solaire_caisson_vue2.png' alt='S choir Solaire caisson vue2.png' loading='lazy'></figure><figure><img src='/images/thumb/1/15/S_choir_Solaire_vue_de_cot_.jpg/800px-S_choir_Solaire_vue_de_cot_.jpg' alt='S choir Solaire vue de cot .jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/39/S_choir_Solaire_Cot_1.jpg/800px-S_choir_Solaire_Cot_1.jpg' alt='S choir Solaire Cot 1.jpg' loading='lazy'></figure><figure><img src='/images/1/1d/S_choir_Solaire_cot_2.jpg' alt='S choir Solaire cot 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/64/S_choir_Solaire_caisson_1.png/800px-S_choir_Solaire_caisson_1.png' alt='S choir Solaire caisson 1.png' loading='lazy'></figure><figure><img src='/images/0/02/S_choir_Solaire_caisson_vue1.png' alt='S choir Solaire caisson vue1.png' loading='lazy'></figure><figure><img src='/images/d/d0/S_choir_Solaire_caisson_vue2.png' alt='S choir Solaire caisson vue2.png' loading='lazy'></figure><figure><img src='/images/thumb/1/15/S_choir_Solaire_vue_de_cot_.jpg/800px-S_choir_Solaire_vue_de_cot_.jpg' alt='S choir Solaire vue de cot .jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/39/S_choir_Solaire_Cot_1.jpg/800px-S_choir_Solaire_Cot_1.jpg' alt='S choir Solaire Cot 1.jpg' loading='lazy'></figure><figure><img src='/images/1/1d/S_choir_Solaire_cot_2.jpg' alt='S choir Solaire cot 2.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>8. Étape 8 - Caisson de séchage - Porte AR</strong><div class='step-images count-18'><figure><img src='/images/thumb/9/97/S_choir_Solaire_Porte_AR1.jpg/800px-S_choir_Solaire_Porte_AR1.jpg' alt='S choir Solaire Porte AR1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/08/S_choir_Solaire_Porte_AR2.jpg/800px-S_choir_Solaire_Porte_AR2.jpg' alt='S choir Solaire Porte AR2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/87/S_choir_Solaire_Porte_AR3.jpg/800px-S_choir_Solaire_Porte_AR3.jpg' alt='S choir Solaire Porte AR3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/28/S_choir_Solaire_Porte_AR4.jpg/800px-S_choir_Solaire_Porte_AR4.jpg' alt='S choir Solaire Porte AR4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c2/S_choir_Solaire_Porte_AR5.jpg/800px-S_choir_Solaire_Porte_AR5.jpg' alt='S choir Solaire Porte AR5.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/0f/S_choir_Solaire_Porte_AR6.jpg/800px-S_choir_Solaire_Porte_AR6.jpg' alt='S choir Solaire Porte AR6.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/97/S_choir_Solaire_Porte_AR1.jpg/800px-S_choir_Solaire_Porte_AR1.jpg' alt='S choir Solaire Porte AR1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/08/S_choir_Solaire_Porte_AR2.jpg/800px-S_choir_Solaire_Porte_AR2.jpg' alt='S choir Solaire Porte AR2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/87/S_choir_Solaire_Porte_AR3.jpg/800px-S_choir_Solaire_Porte_AR3.jpg' alt='S choir Solaire Porte AR3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/28/S_choir_Solaire_Porte_AR4.jpg/800px-S_choir_Solaire_Porte_AR4.jpg' alt='S choir Solaire Porte AR4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c2/S_choir_Solaire_Porte_AR5.jpg/800px-S_choir_Solaire_Porte_AR5.jpg' alt='S choir Solaire Porte AR5.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/0f/S_choir_Solaire_Porte_AR6.jpg/800px-S_choir_Solaire_Porte_AR6.jpg' alt='S choir Solaire Porte AR6.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/97/S_choir_Solaire_Porte_AR1.jpg/800px-S_choir_Solaire_Porte_AR1.jpg' alt='S choir Solaire Porte AR1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/08/S_choir_Solaire_Porte_AR2.jpg/800px-S_choir_Solaire_Porte_AR2.jpg' alt='S choir Solaire Porte AR2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/87/S_choir_Solaire_Porte_AR3.jpg/800px-S_choir_Solaire_Porte_AR3.jpg' alt='S choir Solaire Porte AR3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/28/S_choir_Solaire_Porte_AR4.jpg/800px-S_choir_Solaire_Porte_AR4.jpg' alt='S choir Solaire Porte AR4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c2/S_choir_Solaire_Porte_AR5.jpg/800px-S_choir_Solaire_Porte_AR5.jpg' alt='S choir Solaire Porte AR5.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/0f/S_choir_Solaire_Porte_AR6.jpg/800px-S_choir_Solaire_Porte_AR6.jpg' alt='S choir Solaire Porte AR6.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>9. Étape 9 - Caisson de séchage - Portillon AV</strong><div class='step-images count-15'><figure><img src='/images/thumb/7/7f/S_choir_Solaire_portillon_AV.jpg/800px-S_choir_Solaire_portillon_AV.jpg' alt='S choir Solaire portillon AV.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2b/S_choir_Solaire_portillon_1.jpg/800px-S_choir_Solaire_portillon_1.jpg' alt='S choir Solaire portillon 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/24/S_choir_Solaire_portillon_3.jpg/800px-S_choir_Solaire_portillon_3.jpg' alt='S choir Solaire portillon 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2b/S_choir_Solaire_portillon_4.jpg/800px-S_choir_Solaire_portillon_4.jpg' alt='S choir Solaire portillon 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c1/S_choir_Solaire_portillon_7.jpg/800px-S_choir_Solaire_portillon_7.jpg' alt='S choir Solaire portillon 7.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7f/S_choir_Solaire_portillon_AV.jpg/800px-S_choir_Solaire_portillon_AV.jpg' alt='S choir Solaire portillon AV.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2b/S_choir_Solaire_portillon_1.jpg/800px-S_choir_Solaire_portillon_1.jpg' alt='S choir Solaire portillon 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/24/S_choir_Solaire_portillon_3.jpg/800px-S_choir_Solaire_portillon_3.jpg' alt='S choir Solaire portillon 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2b/S_choir_Solaire_portillon_4.jpg/800px-S_choir_Solaire_portillon_4.jpg' alt='S choir Solaire portillon 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c1/S_choir_Solaire_portillon_7.jpg/800px-S_choir_Solaire_portillon_7.jpg' alt='S choir Solaire portillon 7.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/7f/S_choir_Solaire_portillon_AV.jpg/800px-S_choir_Solaire_portillon_AV.jpg' alt='S choir Solaire portillon AV.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2b/S_choir_Solaire_portillon_1.jpg/800px-S_choir_Solaire_portillon_1.jpg' alt='S choir Solaire portillon 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/24/S_choir_Solaire_portillon_3.jpg/800px-S_choir_Solaire_portillon_3.jpg' alt='S choir Solaire portillon 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2b/S_choir_Solaire_portillon_4.jpg/800px-S_choir_Solaire_portillon_4.jpg' alt='S choir Solaire portillon 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c1/S_choir_Solaire_portillon_7.jpg/800px-S_choir_Solaire_portillon_7.jpg' alt='S choir Solaire portillon 7.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>10. Étape 10 - Caisson de séchage - Liaison avec Capteur solaire</strong><div class='step-images count-6'><figure><img src='/images/thumb/4/4f/S_choir_Solaire_Liaison_capteur_solaire_caisson_s_chage.jpg/800px-S_choir_Solaire_Liaison_capteur_solaire_caisson_s_chage.jpg' alt='S choir Solaire Liaison capteur solaire caisson s chage.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c4/S_choir_Solaire_Mise_en_service_capteur_solaire.png/800px-S_choir_Solaire_Mise_en_service_capteur_solaire.png' alt='S choir Solaire Mise en service capteur solaire.png' loading='lazy'></figure><figure><img src='/images/thumb/4/4f/S_choir_Solaire_Liaison_capteur_solaire_caisson_s_chage.jpg/800px-S_choir_Solaire_Liaison_capteur_solaire_caisson_s_chage.jpg' alt='S choir Solaire Liaison capteur solaire caisson s chage.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c4/S_choir_Solaire_Mise_en_service_capteur_solaire.png/800px-S_choir_Solaire_Mise_en_service_capteur_solaire.png' alt='S choir Solaire Mise en service capteur solaire.png' loading='lazy'></figure><figure><img src='/images/thumb/4/4f/S_choir_Solaire_Liaison_capteur_solaire_caisson_s_chage.jpg/800px-S_choir_Solaire_Liaison_capteur_solaire_caisson_s_chage.jpg' alt='S choir Solaire Liaison capteur solaire caisson s chage.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c4/S_choir_Solaire_Mise_en_service_capteur_solaire.png/800px-S_choir_Solaire_Mise_en_service_capteur_solaire.png' alt='S choir Solaire Mise en service capteur solaire.png' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>11. Étape 11 - Caisson de séchage - Toit</strong><div class='step-images count-9'><figure><img src='/images/thumb/4/46/S_choir_Solaire_Toit_1.jpg/800px-S_choir_Solaire_Toit_1.jpg' alt='S choir Solaire Toit 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/88/S_choir_Solaire_Toit_2.jpg/800px-S_choir_Solaire_Toit_2.jpg' alt='S choir Solaire Toit 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/30/S_choir_Solaire_Toit_3.jpg/800px-S_choir_Solaire_Toit_3.jpg' alt='S choir Solaire Toit 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/4/46/S_choir_Solaire_Toit_1.jpg/800px-S_choir_Solaire_Toit_1.jpg' alt='S choir Solaire Toit 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/88/S_choir_Solaire_Toit_2.jpg/800px-S_choir_Solaire_Toit_2.jpg' alt='S choir Solaire Toit 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/30/S_choir_Solaire_Toit_3.jpg/800px-S_choir_Solaire_Toit_3.jpg' alt='S choir Solaire Toit 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/4/46/S_choir_Solaire_Toit_1.jpg/800px-S_choir_Solaire_Toit_1.jpg' alt='S choir Solaire Toit 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/88/S_choir_Solaire_Toit_2.jpg/800px-S_choir_Solaire_Toit_2.jpg' alt='S choir Solaire Toit 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/30/S_choir_Solaire_Toit_3.jpg/800px-S_choir_Solaire_Toit_3.jpg' alt='S choir Solaire Toit 3.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>12. Étape 12 - Caisson de séchage - Clayettes</strong><div class='step-images count-15'><figure><img src='/images/thumb/7/79/S_choir_Solaire_Clayette_plan.jpg/800px-S_choir_Solaire_Clayette_plan.jpg' alt='S choir Solaire Clayette plan.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/72/S_choir_Solaire_Clayette_1.jpg/800px-S_choir_Solaire_Clayette_1.jpg' alt='S choir Solaire Clayette 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/3d/S_choir_Solaire_Clayette_2.jpg/800px-S_choir_Solaire_Clayette_2.jpg' alt='S choir Solaire Clayette 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/38/S_choir_Solaire_Clayette_3.jpg/800px-S_choir_Solaire_Clayette_3.jpg' alt='S choir Solaire Clayette 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/21/S_choir_Solaire_Clayette_4.jpg/800px-S_choir_Solaire_Clayette_4.jpg' alt='S choir Solaire Clayette 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/79/S_choir_Solaire_Clayette_plan.jpg/800px-S_choir_Solaire_Clayette_plan.jpg' alt='S choir Solaire Clayette plan.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/72/S_choir_Solaire_Clayette_1.jpg/800px-S_choir_Solaire_Clayette_1.jpg' alt='S choir Solaire Clayette 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/3d/S_choir_Solaire_Clayette_2.jpg/800px-S_choir_Solaire_Clayette_2.jpg' alt='S choir Solaire Clayette 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/38/S_choir_Solaire_Clayette_3.jpg/800px-S_choir_Solaire_Clayette_3.jpg' alt='S choir Solaire Clayette 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/21/S_choir_Solaire_Clayette_4.jpg/800px-S_choir_Solaire_Clayette_4.jpg' alt='S choir Solaire Clayette 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/79/S_choir_Solaire_Clayette_plan.jpg/800px-S_choir_Solaire_Clayette_plan.jpg' alt='S choir Solaire Clayette plan.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/72/S_choir_Solaire_Clayette_1.jpg/800px-S_choir_Solaire_Clayette_1.jpg' alt='S choir Solaire Clayette 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/3d/S_choir_Solaire_Clayette_2.jpg/800px-S_choir_Solaire_Clayette_2.jpg' alt='S choir Solaire Clayette 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/3/38/S_choir_Solaire_Clayette_3.jpg/800px-S_choir_Solaire_Clayette_3.jpg' alt='S choir Solaire Clayette 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/21/S_choir_Solaire_Clayette_4.jpg/800px-S_choir_Solaire_Clayette_4.jpg' alt='S choir Solaire Clayette 4.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>13. Étape 13 - Caisson de séchage - Support des clayettes</strong><div class='step-images count-9'><figure><img src='/images/thumb/7/71/S_choir_Solaire_Support_clayette.jpg/800px-S_choir_Solaire_Support_clayette.jpg' alt='S choir Solaire Support clayette.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/0d/S_choir_Solaire_Support_clayette_3.jpg/800px-S_choir_Solaire_Support_clayette_3.jpg' alt='S choir Solaire Support clayette 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2f/S_choir_Solaire_support_clayette_2.jpg/800px-S_choir_Solaire_support_clayette_2.jpg' alt='S choir Solaire support clayette 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/71/S_choir_Solaire_Support_clayette.jpg/800px-S_choir_Solaire_Support_clayette.jpg' alt='S choir Solaire Support clayette.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/0d/S_choir_Solaire_Support_clayette_3.jpg/800px-S_choir_Solaire_Support_clayette_3.jpg' alt='S choir Solaire Support clayette 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2f/S_choir_Solaire_support_clayette_2.jpg/800px-S_choir_Solaire_support_clayette_2.jpg' alt='S choir Solaire support clayette 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/7/71/S_choir_Solaire_Support_clayette.jpg/800px-S_choir_Solaire_Support_clayette.jpg' alt='S choir Solaire Support clayette.jpg' loading='lazy'></figure><figure><img src='/images/thumb/0/0d/S_choir_Solaire_Support_clayette_3.jpg/800px-S_choir_Solaire_Support_clayette_3.jpg' alt='S choir Solaire Support clayette 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/2/2f/S_choir_Solaire_support_clayette_2.jpg/800px-S_choir_Solaire_support_clayette_2.jpg' alt='S choir Solaire support clayette 2.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>14. Étape 14 - Caisson de séchage - Pieds</strong><div class='step-images count-18'><figure><img src='/images/thumb/a/ac/S_choir_Solaire_Pieds_caisson.jpg/800px-S_choir_Solaire_Pieds_caisson.jpg' alt='S choir Solaire Pieds caisson.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/5f/S_choir_Solaire_Pieds_3.jpg/800px-S_choir_Solaire_Pieds_3.jpg' alt='S choir Solaire Pieds 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b6/S_choir_Solaire_pieds_1.jpg/800px-S_choir_Solaire_pieds_1.jpg' alt='S choir Solaire pieds 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/S_choir_Solaire_Pieds_2.jpg/800px-S_choir_Solaire_Pieds_2.jpg' alt='S choir Solaire Pieds 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c1/S_choir_Solaire_Pieds_7.jpg/800px-S_choir_Solaire_Pieds_7.jpg' alt='S choir Solaire Pieds 7.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/S_choir_Solaire_Pieds_6.jpg/800px-S_choir_Solaire_Pieds_6.jpg' alt='S choir Solaire Pieds 6.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/ac/S_choir_Solaire_Pieds_caisson.jpg/800px-S_choir_Solaire_Pieds_caisson.jpg' alt='S choir Solaire Pieds caisson.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/5f/S_choir_Solaire_Pieds_3.jpg/800px-S_choir_Solaire_Pieds_3.jpg' alt='S choir Solaire Pieds 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b6/S_choir_Solaire_pieds_1.jpg/800px-S_choir_Solaire_pieds_1.jpg' alt='S choir Solaire pieds 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/S_choir_Solaire_Pieds_2.jpg/800px-S_choir_Solaire_Pieds_2.jpg' alt='S choir Solaire Pieds 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c1/S_choir_Solaire_Pieds_7.jpg/800px-S_choir_Solaire_Pieds_7.jpg' alt='S choir Solaire Pieds 7.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/S_choir_Solaire_Pieds_6.jpg/800px-S_choir_Solaire_Pieds_6.jpg' alt='S choir Solaire Pieds 6.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/ac/S_choir_Solaire_Pieds_caisson.jpg/800px-S_choir_Solaire_Pieds_caisson.jpg' alt='S choir Solaire Pieds caisson.jpg' loading='lazy'></figure><figure><img src='/images/thumb/5/5f/S_choir_Solaire_Pieds_3.jpg/800px-S_choir_Solaire_Pieds_3.jpg' alt='S choir Solaire Pieds 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/b/b6/S_choir_Solaire_pieds_1.jpg/800px-S_choir_Solaire_pieds_1.jpg' alt='S choir Solaire pieds 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/8/8d/S_choir_Solaire_Pieds_2.jpg/800px-S_choir_Solaire_Pieds_2.jpg' alt='S choir Solaire Pieds 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/c/c1/S_choir_Solaire_Pieds_7.jpg/800px-S_choir_Solaire_Pieds_7.jpg' alt='S choir Solaire Pieds 7.jpg' loading='lazy'></figure><figure><img src='/images/thumb/9/9b/S_choir_Solaire_Pieds_6.jpg/800px-S_choir_Solaire_Pieds_6.jpg' alt='S choir Solaire Pieds 6.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+          <li>
+            
+            
+              <strong>15. Étape 15 - Extraction d'air forcé</strong><div class='step-images count-12'><figure><img src='/images/thumb/6/61/S_choir_Solaire_ventilo_3.jpg/800px-S_choir_Solaire_ventilo_3.jpg' alt='S choir Solaire ventilo 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/62/S_choir_Solaire_ventilo_2.jpg/800px-S_choir_Solaire_ventilo_2.jpg' alt='S choir Solaire ventilo 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e3/S_choir_Solaire_ventilo_1.jpg/800px-S_choir_Solaire_ventilo_1.jpg' alt='S choir Solaire ventilo 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/S_choir_Solaire_ventilo_4.jpg/800px-S_choir_Solaire_ventilo_4.jpg' alt='S choir Solaire ventilo 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/61/S_choir_Solaire_ventilo_3.jpg/800px-S_choir_Solaire_ventilo_3.jpg' alt='S choir Solaire ventilo 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/62/S_choir_Solaire_ventilo_2.jpg/800px-S_choir_Solaire_ventilo_2.jpg' alt='S choir Solaire ventilo 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e3/S_choir_Solaire_ventilo_1.jpg/800px-S_choir_Solaire_ventilo_1.jpg' alt='S choir Solaire ventilo 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/S_choir_Solaire_ventilo_4.jpg/800px-S_choir_Solaire_ventilo_4.jpg' alt='S choir Solaire ventilo 4.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/61/S_choir_Solaire_ventilo_3.jpg/800px-S_choir_Solaire_ventilo_3.jpg' alt='S choir Solaire ventilo 3.jpg' loading='lazy'></figure><figure><img src='/images/thumb/6/62/S_choir_Solaire_ventilo_2.jpg/800px-S_choir_Solaire_ventilo_2.jpg' alt='S choir Solaire ventilo 2.jpg' loading='lazy'></figure><figure><img src='/images/thumb/e/e3/S_choir_Solaire_ventilo_1.jpg/800px-S_choir_Solaire_ventilo_1.jpg' alt='S choir Solaire ventilo 1.jpg' loading='lazy'></figure><figure><img src='/images/thumb/a/a4/S_choir_Solaire_ventilo_4.jpg/800px-S_choir_Solaire_ventilo_4.jpg' alt='S choir Solaire ventilo 4.jpg' loading='lazy'></figure></div>
+            
+
+            
+            
+            
+              
+              
+                
+                
+                
+              
+
+              
+            
+          </li>
+        
+      </ol>
+    
+  </div>
+
+  
+
+  <!-- Lightbox overlay for viewing images -->
+  <div id="lightbox" class="lightbox-overlay" aria-hidden="true">
+    <button id="lb-close" class="lightbox-close" aria-label="Fermer">×</button>
+    <!-- Prev/Next visible controls -->
+    <button id="lb-prev" class="lightbox-control lightbox-prev" aria-label="Image précédente">‹</button>
+    <button id="lb-next" class="lightbox-control lightbox-next" aria-label="Image suivante">›</button>
+    <div class="lightbox-content">
+      <img id="lb-img" src="" alt="">
+      <div id="lb-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <script>
+    // JS lightbox: delegate clicks from step-images figures
+    document.addEventListener('click', function(ev){
+      const fig = ev.target.closest('.step-images figure');
+      if(!fig) return;
+      const container = fig.closest('.step-images');
+      if(!container) return;
+      const figures = Array.from(container.querySelectorAll('figure'));
+      const idx = figures.indexOf(fig);
+      if(idx < 0) return;
+
+      const overlay = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lb-img');
+      const captionEl = document.getElementById('lb-caption');
+      const btnPrev = document.getElementById('lb-prev');
+      const btnNext = document.getElementById('lb-next');
+
+      let current = idx;
+      function show(i){
+        const f = figures[i];
+        const im = f.querySelector('img');
+        const cap = f.querySelector('figcaption');
+        if(im){ imgEl.src = im.src; imgEl.alt = im.alt || ''; }
+        captionEl.textContent = cap ? cap.textContent : '';
+        overlay.classList.add('active');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      function hide(){ overlay.classList.remove('active'); overlay.setAttribute('aria-hidden','true'); }
+
+      show(current);
+
+      // close handlers
+      document.getElementById('lb-close').onclick = hide;
+      overlay.onclick = function(e){ if(e.target === overlay) hide(); };
+      // prev/next click handlers
+      if(btnPrev){ btnPrev.onclick = function(e){ e.stopPropagation(); current = Math.max(current-1, 0); show(current); }; }
+      if(btnNext){ btnNext.onclick = function(e){ e.stopPropagation(); current = Math.min(current+1, figures.length-1); show(current); }; }
+      document.onkeydown = function(e){
+        if(e.key === 'Escape') hide();
+        if(e.key === 'ArrowRight') { current = Math.min(current+1, figures.length-1); show(current); }
+        if(e.key === 'ArrowLeft') { current = Math.max(current-1, 0); show(current); }
+      };
+    });
+  </script>
+
+  <style>
+    /* lightbox visible controls styling */
+    .lightbox-control {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.35);
+      color: #fff;
+      border: none;
+      width: 44px;
+      height: 70px;
+      font-size: 2rem;
+      line-height: 1;
+      border-radius: 6px;
+      cursor: pointer;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    .lightbox-prev { left: 12px; }
+    .lightbox-next { right: 12px; }
+    .lightbox-control:hover { background: rgba(0,0,0,0.6); }
+    @media (max-width: 600px){ .lightbox-control { width: 36px; height: 56px; font-size: 1.6rem; } }
+  </style>
+
+  
+
+</body>
+</html>
