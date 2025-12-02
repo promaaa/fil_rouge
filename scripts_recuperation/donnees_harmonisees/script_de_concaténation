@@ -74,7 +74,7 @@ def normalize_tutorial(t):
 
     # ---- METADONNEES ----
     if t.get("difficulte"):
-        out["difficulté"] = [t["difficulte"]]
+        out["difficulté"] = [clean_difficulty(t["difficulte"])]
 
     if t.get("duree"):
         out["durée"] = [clean_duration(t["duree"])]
@@ -127,15 +127,65 @@ def preprocess_tutorial_html(tuto):
 
     # 1) intro si tu as un champ HTML brut (facultatif)
     if isinstance(tuto.get("intro"), str):
-        tuto["intro"] = fix_relative_image_urls_in_html(tuto["intro"], source_url)
+        fixed = fix_relative_image_urls_in_html(tuto["intro"], source_url)
+        fixed = dedupe_images_in_html(fixed)
+        tuto["intro"] = fixed
 
     # 2) étapes harmonisées (ton cas Wikifab : etapes[i]["html"])
     if isinstance(tuto.get("etapes"), list):
         for etape in tuto["etapes"]:
             if isinstance(etape, dict) and "html" in etape:
-                etape["html"] = fix_relative_image_urls_in_html(etape["html"], source_url)
+                raw = etape["html"]
+                fixed = fix_relative_image_urls_in_html(raw, source_url)
+                fixed = dedupe_images_in_html(fixed)
+                etape["html"] = fixed
 
     return tuto
+
+def clean_difficulty(raw):
+    """
+    Nettoie les champs de difficulté :
+    - garde la version FR si le champ est bilingue (Very hard / Très difficile)
+    - corrige des cas comme 'Very hard Très difficile'
+    - mappe quelques valeurs EN → FR
+    """
+    if not raw:
+        return ""
+    s = str(raw).strip()
+    s = re.sub(r"\s+", " ", s)  # espaces multiples → espace simple
+
+    # 🔹 Cas particulier : "Very hard Très difficile" (sans slash)
+    if re.search(r"very\s+hard.*tr[èe]s\s+difficile", s, flags=re.IGNORECASE):
+        return "Très difficile"
+
+    # 🔹 Cas génériques bilingues avec "/"
+    if "/" in s:
+        parts = [p.strip() for p in s.split("/")]
+        fr_keywords = ("facile", "moyen", "moyenne", "difficile", "très", "tres")
+
+        # On essaie de trouver la partie FR
+        for p in parts:
+            low = p.lower()
+            if any(k in low for k in fr_keywords):
+                return p
+
+        # Sinon on garde la dernière partie
+        return parts[-1]
+
+    # 🔹 Mapping simple EN → FR pour quelques valeurs
+    mapping = {
+        "easy": "Facile",
+        "medium": "Moyen",
+        "hard": "Difficile",
+        "very hard": "Très difficile",
+    }
+    low = s.lower()
+    if low in mapping:
+        return mapping[low]
+
+    # fallback : on renvoie tel quel
+    return s
+
 
 def clean_duration(raw):
     """
@@ -203,6 +253,29 @@ def clean_duration(raw):
     s = s.replace("1 semaines", "1 semaine")
 
     return s
+
+def dedupe_images_in_html(html):
+    """
+    Supprime les <img> dupliquées (même src) dans un bloc HTML.
+    Utile pour Wikifab où les galeries répètent les mêmes fichiers.
+    """
+    if not isinstance(html, str) or "<img" not in html.lower():
+        return html
+
+    soup = BeautifulSoup(html, "html.parser")
+    seen = set()
+
+    for img in soup.find_all("img"):
+        src = img.get("src")
+        if not src:
+            continue
+        if src in seen:
+            img.decompose()  # la supprimer
+        else:
+            seen.add(src)
+
+    return str(soup)
+
 
 def normalize_html_list(html_str):
     """
