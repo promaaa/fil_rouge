@@ -93,10 +93,15 @@ function normalizeData(rawData) {
 
         // Extraction des conseils (souvent dans introduction ou remarques)
         let conseils = [];
+        let description_text = ""; // Pour la recherche
+
         if (Array.isArray(item.introduction)) {
             item.introduction.forEach(intro => {
-                if (intro.titre && (intro.titre.toLowerCase().includes("attention") || intro.titre.toLowerCase().includes("conseil"))) {
-                    conseils.push(intro.titre);
+                if (intro.titre) {
+                    description_text += intro.titre + " ";
+                    if (intro.titre.toLowerCase().includes("attention") || intro.titre.toLowerCase().includes("conseil")) {
+                        conseils.push(intro.titre);
+                    }
                 }
             });
         }
@@ -147,6 +152,7 @@ function normalizeData(rawData) {
             outils: outils,
             etapes: etapes,
             conseils: conseils,
+            description_text: description_text,
             image: image,
             // Conservation de l'objet original pour usage avancé si besoin
             original: item
@@ -170,10 +176,12 @@ function initSearch() {
 
     const options = {
         includeScore: true,
-        threshold: 0.4,
+        threshold: 0.5, // Augmenté pour être plus tolérant
+        ignoreLocation: true, // Important pour trouver des mots n'importe où
         keys: [
-            "titre",
+            { name: "titre", weight: 2 }, // Le titre est plus important
             "materiaux",
+            "description_text", // Recherche dans l'intro
             "id"
         ]
     };

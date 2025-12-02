@@ -11,7 +11,7 @@ Ce dépôt contient le code source du projet MakerLens, une application web pour
 
 ## Comment lancer le projet
 
-Pour accéder à notre interface, vous pouvez ouvrir le fichier `interface/index.html` dans votre navigateur web ou accéder la page au GitHub dans [ce lien](.). 
+Pour accéder à notre interface, vous pouvez ouvrir le fichier `interface/index.html` dans votre navigateur web ou accéder la page au GitHub dans [ce lien](https://promaaa.github.io/fil_rouge/). 
 <!-- Il faut encore faire le deploy de la page. - Oliver -->
 
 ## Auteurs
